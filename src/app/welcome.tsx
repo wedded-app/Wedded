@@ -411,7 +411,13 @@ function WeddingReel() {
     useCallback(() => {
       if (reduceMotion) return;
       player.play();
-      return () => player.pause();
+      return () => {
+        // Leaving the screen releases the player before this runs, and
+        // pausing a released player throws.
+        try {
+          player.pause();
+        } catch {}
+      };
     }, [player, reduceMotion]),
   );
 
