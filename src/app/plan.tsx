@@ -29,6 +29,7 @@ import { FamilyShortlist } from '@/features/planner/family-shortlist';
 import { findForPlan } from '@/features/planner/find-for-plan';
 import { essentialNeeds } from '@/features/planner/plan';
 import { PlanTogether } from '@/features/planner/plan-together';
+import { StartPlanCard } from '@/features/planner/start-plan-card';
 import { usePlanView } from '@/features/planner/use-plan-view';
 import { localized } from '@/i18n/localized';
 import { useLocale } from '@/i18n/locale-context';
@@ -94,29 +95,39 @@ export default function PlanScreen() {
 
   return (
     <NavScreen title={t('planner.title')} subtitle={t('planner.subtitle')}>
-      <View style={styles.hero}>
-        <CountdownCard plan={plan} progress={progress} eventsCount={chosen.length} />
-        {canEdit && (
-          <DateField
-            value={plan.weddingDate}
-            onChange={(date) => {
-              successHaptic();
-              view.setWeddingDate(date);
-            }}
-            placeholder={plan.weddingDate ? t('planner.changeDate') : t('planner.pickDate')}
-          />
-        )}
-      </View>
+      {/* A plan belongs to an account: signed out, or not started yet, offer to start one. */}
+      {!wedding && !view.loading && (
+        <Animated.View entering={Motion.rise}>
+          <StartPlanCard />
+        </Animated.View>
+      )}
+      {!wedding && view.loading && <StateView state="loading" />}
+
+      {wedding && (
+        <View style={styles.hero}>
+          <CountdownCard plan={plan} progress={progress} eventsCount={chosen.length} />
+          {canEdit && (
+            <DateField
+              value={plan.weddingDate}
+              onChange={(date) => {
+                successHaptic();
+                view.setWeddingDate(date);
+              }}
+              placeholder={plan.weddingDate ? t('planner.changeDate') : t('planner.pickDate')}
+            />
+          )}
+        </View>
+      )}
 
       {saveFailed && (
         <AppText color="error" style={styles.pad}>
           {t('planTogether.saveFailed')}
         </AppText>
       )}
-      {view.isPending && <StateView state="loading" />}
+      {wedding && view.isPending && <StateView state="loading" />}
       {view.isError && <StateView state="error" onRetry={() => void view.refetch()} />}
 
-      {!view.isPending && !view.isError && chosen.length === 0 && canEdit && (
+      {wedding && !view.isPending && !view.isError && chosen.length === 0 && canEdit && (
         <Animated.View entering={Motion.rise} style={styles.start}>
           <View style={styles.startIcon}>
             <Icon name="sparkles-outline" size={28} color={Colors.primary} />
@@ -198,7 +209,7 @@ export default function PlanScreen() {
         </View>
       )}
 
-      <PlanTogether wedding={wedding} />
+      {wedding && <PlanTogether wedding={wedding} />}
       {wedding && <FamilyShortlist weddingId={wedding.id} />}
     </NavScreen>
   );

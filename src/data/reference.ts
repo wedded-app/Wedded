@@ -21,8 +21,6 @@ export const referenceKeys = {
   eventNeeds: (slug: string) => [...referenceKeys.all, 'event-needs', slug] as const,
   categories: () => [...referenceKeys.all, 'categories'] as const,
   traditions: () => [...referenceKeys.all, 'traditions'] as const,
-  backgrounds: () => [...referenceKeys.all, 'backgrounds'] as const,
-  faiths: () => [...referenceKeys.all, 'faiths'] as const,
   allEventNeeds: () => [...referenceKeys.all, 'all-event-needs'] as const,
 };
 
@@ -336,35 +334,6 @@ export function useAllEventNeeds() {
   return useQuery({
     queryKey: referenceKeys.allEventNeeds(),
     queryFn: fetchAllEventNeeds,
-    ...REFERENCE,
-  });
-}
-
-// First questions ------------------------------------------------------------
-
-/** A background (Punjabi, Pakistani...) or faith (Sikh, Muslim...) to pick. */
-export type Choice = { slug: string; name: LocalizedText };
-
-async function fetchChoices(table: 'backgrounds' | 'faiths'): Promise<Choice[]> {
-  const { data, error } = await supabase.from(table).select('slug, name').order('sort_order');
-  if (error) throw error;
-  return data.map((row) => ({ slug: row.slug, name: nameOf(row) }));
-}
-
-/** "Where is your family from?", in the founders' order. */
-export function useBackgrounds() {
-  return useQuery({
-    queryKey: referenceKeys.backgrounds(),
-    queryFn: () => fetchChoices('backgrounds'),
-    ...REFERENCE,
-  });
-}
-
-/** The faiths to pick from, in the founders' order. */
-export function useFaiths() {
-  return useQuery({
-    queryKey: referenceKeys.faiths(),
-    queryFn: () => fetchChoices('faiths'),
     ...REFERENCE,
   });
 }

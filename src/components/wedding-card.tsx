@@ -8,9 +8,9 @@ import { CheckCircle } from '@/components/check-circle';
 import { groupIcon } from '@/components/group-icon';
 import { Icon } from '@/components/icon';
 import { makeStyles, Radius, Sizes, Spacing, useColors } from '@/constants/theme';
-import { resetAnswers, setAnswers } from '@/features/onboarding/answers';
 import { CountdownCard } from '@/features/planner/countdown-card';
 import { findForPlan } from '@/features/planner/find-for-plan';
+import { StartPlanCard } from '@/features/planner/start-plan-card';
 import { usePlanView } from '@/features/planner/use-plan-view';
 import { localized } from '@/i18n/localized';
 import { useLocale } from '@/i18n/locale-context';
@@ -20,15 +20,27 @@ import { Motion } from '@/lib/motion';
 /**
  * The wedding on Home: the countdown card (opens My Wedding) and under it the
  * next few essentials to book, each with a tick and Find, so what to book is
- * one tap from the first screen. Before anything is planned it offers to
- * start. `compact` is just the countdown (Profile).
+ * one tap from the first screen. Without a plan (signed out, or not started)
+ * it offers to start one. `compact` is just the countdown (Profile), and
+ * nothing without a plan.
  */
 export function WeddingCard({ compact = false }: { compact?: boolean }) {
   const Colors = useColors();
   const styles = useStyles();
   const { t, locale } = useLocale();
-  const { plan, chosen, progress, next, isPending, canEdit, toggleBooked } = usePlanView();
+  const { plan, wedding, loading, chosen, progress, next, isPending, canEdit, toggleBooked } =
+    usePlanView();
   const openPlan = () => router.push('/plan');
+
+  // While the account loads, the phone's copy of the plan stands in (if any).
+  if (!wedding && (!loading || !plan.syncedWeddingId)) {
+    if (compact || loading) return null;
+    return (
+      <Animated.View entering={Motion.rise}>
+        <StartPlanCard />
+      </Animated.View>
+    );
+  }
   const countdown = (
     <CountdownCard
       plan={plan}
@@ -49,14 +61,9 @@ export function WeddingCard({ compact = false }: { compact?: boolean }) {
         <View style={styles.panel}>
           <AppText color="text2">{t('planner.pickEventsRow')}</AppText>
           <Button
-            label={t('planner.startPlanning')}
-            icon="sparkles-outline"
-            onPress={() => {
-              // The first questions again, starting from what the plan already has.
-              resetAnswers();
-              setAnswers({ weddingDate: plan.weddingDate });
-              router.push('/onboarding/who');
-            }}
+            label={t('planner.chooseEvents')}
+            icon="add"
+            onPress={() => router.push('/plan-events')}
           />
         </View>
       )}

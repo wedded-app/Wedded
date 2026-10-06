@@ -20,7 +20,8 @@ export type CountdownCardProps = {
   accessibilityLabel?: string;
 };
 
-const gradient = (Colors: Palette) => {
+/** The card's maroon-to-rose gradient (also behind "Plan your wedding"). */
+export const gradient = (Colors: Palette) => {
   const image = `linear-gradient(135deg, ${Colors.heroFrom} 0%, ${Colors.heroTo} 100%)`;
   return (
     Platform.OS === 'web' ? { backgroundImage: image } : { experimental_backgroundImage: image }

@@ -11,6 +11,7 @@ import { Switch } from '@/components/switch';
 import { makeStyles, Palettes, Spacing, useColors, type Scheme } from '@/constants/theme';
 import { useSession } from '@/features/auth/session';
 import { useSearchLocation } from '@/features/location/search-location';
+import { resetOnboarding } from '@/features/onboarding/onboarding-state';
 import { TEXT_SIZES, useSettings, type TextSize } from '@/features/settings/settings';
 import type { Locale } from '@/i18n';
 import { useLocale } from '@/i18n/locale-context';
@@ -174,6 +175,22 @@ export default function SettingsScreen() {
             title={t('profile.account.signIn')}
             tone="primary"
             onPress={() => router.push('/sign-in')}
+          />
+        </ListSection>
+      )}
+
+      {__DEV__ && (
+        // Expo Go and development builds only, so it's never in the store app (English only).
+        <ListSection inset header="Testing" footer="Signs you out first if you're signed in.">
+          <ListRow
+            icon="refresh-outline"
+            title="Show the welcome screen again"
+            onPress={async () => {
+              resetOnboarding();
+              if (status !== 'signedOut') await signOut();
+              if (router.canDismiss()) router.dismissAll();
+              router.replace('/');
+            }}
           />
         </ListSection>
       )}

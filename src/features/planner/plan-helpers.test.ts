@@ -9,7 +9,8 @@ import {
   nextToBook,
   pickTradition,
   planProgress,
-  traditionsFor,
+  signatureEvents,
+  startingEvents,
   type WeddingPlan,
 } from './plan-helpers';
 
@@ -126,53 +127,6 @@ describe('activeTraditions', () => {
   });
 });
 
-describe('traditionsFor', () => {
-  const culture = (slug: string, background: string | null, faith: string | null): Tradition => ({
-    slug,
-    name: { en: slug },
-    isDefault: slug === 'punjabi-sikh',
-    backgroundSlug: background,
-    faithSlug: faith,
-    events: [],
-  });
-  const all = [
-    culture('punjabi-sikh', 'punjabi', 'sikh'),
-    culture('punjabi-hindu', 'punjabi', 'hindu'),
-    culture('pakistani', 'pakistani', 'muslim'),
-    culture('muslim', null, 'muslim'),
-    culture('arab', 'arab', 'muslim'),
-  ];
-  const slugs = (b: string[], f: string[]) => traditionsFor(b, f, all).map((t) => t.slug);
-
-  it('matches background and faith together', () => {
-    expect(slugs(['pakistani'], ['muslim'])).toEqual(['pakistani']);
-    expect(slugs(['punjabi'], ['hindu'])).toEqual(['punjabi-hindu']);
-  });
-
-  it('handles a mixed wedding', () => {
-    expect(slugs(['punjabi', 'pakistani'], ['sikh', 'muslim'])).toEqual([
-      'punjabi-sikh',
-      'pakistani',
-    ]);
-  });
-
-  it('uses the faith-wide tradition when the background has none', () => {
-    expect(slugs(['afghan'], ['muslim'])).toEqual(['muslim']);
-    expect(slugs(['punjabi'], ['muslim'])).toEqual(['muslim']);
-  });
-
-  it("uses a background's traditions when no faith is picked", () => {
-    expect(slugs(['punjabi'], [])).toEqual(['punjabi-sikh', 'punjabi-hindu']);
-  });
-
-  it('falls back to the faith, then the background, then the default', () => {
-    expect(slugs(['indian'], ['hindu'])).toEqual(['punjabi-hindu']);
-    expect(slugs(['arab'], ['christian'])).toEqual(['arab']);
-    expect(slugs([], [])).toEqual(['punjabi-sikh']);
-    expect(slugs(['bangladeshi'], [])).toEqual(['punjabi-sikh']);
-  });
-});
-
 describe('pickTradition', () => {
   it('replaces the stand-in default with the first pick', () => {
     expect(pickTradition([], ['punjabi-sikh'], 'pakistani')).toEqual(['pakistani']);
@@ -216,6 +170,35 @@ describe('mergedEvents', () => {
     const milni = mergedEvents([sikh, withMainMilni]).find((e) => e.slug === 'milni');
     expect(milni?.name.en).toBe('milni');
     expect(milni?.isCore).toBe(true);
+  });
+});
+
+describe('startingEvents', () => {
+  it('starts a plan with the main events of every picked tradition, once each', () => {
+    expect(startingEvents([sikh, pakistani])).toEqual([
+      'maiyan',
+      'mehndi',
+      'jaago',
+      'nikah',
+      'reception',
+      'walima',
+      'whole-wedding',
+    ]);
+  });
+
+  it('starts empty when no tradition was picked', () => {
+    expect(startingEvents([])).toEqual([]);
+  });
+});
+
+describe('signatureEvents', () => {
+  it('shows the last main event before the day, then the day itself', () => {
+    expect(signatureEvents(sikh).map((e) => e.slug)).toEqual(['jaago', 'reception']);
+  });
+
+  it('keeps the first event after the day, giving up the day itself for room', () => {
+    expect(signatureEvents(pakistani).map((e) => e.slug)).toEqual(['mehndi', 'nikah', 'walima']);
+    expect(signatureEvents(pakistani, 2).map((e) => e.slug)).toEqual(['mehndi', 'walima']);
   });
 });
 

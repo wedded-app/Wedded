@@ -1,20 +1,26 @@
 /**
  * My Wedding (vision S15b/S15c, the planning board): the wedding date, the
  * family's traditions, which events they're having, and which vendor types
- * are booked for each. Works on the phone with no account. Once it's saved
- * to the account (Plan together, src/data/wedding.ts), this store holds a
- * copy of the account's plan (syncedWeddingId set), so Home and Profile show
- * it without waiting.
+ * are booked for each. A plan belongs to an account (src/data/wedding.ts,
+ * docs/DECISIONS.md 2026-10-02); this store only keeps a copy of the
+ * account's plan on the phone (syncedWeddingId set), so Home, Profile and
+ * the search filters show it without waiting. Signing out clears it.
  */
 import { useSyncExternalStore } from 'react';
 
 import { readSetting, StorageKeys, writeSetting } from '@/lib/storage';
 
-import { pickTradition, type WeddingPlan } from './plan-helpers';
+import type { WeddingPlan } from './plan-helpers';
 
 export type { WeddingPlan };
 
-const EMPTY: WeddingPlan = { weddingDate: null, traditions: [], events: [], booked: {} };
+export const EMPTY_PLAN: WeddingPlan = {
+  weddingDate: null,
+  traditions: [],
+  events: [],
+  booked: {},
+};
+const EMPTY = EMPTY_PLAN;
 
 const strings = (value: unknown): string[] =>
   Array.isArray(value) ? value.filter((item): item is string => typeof item === 'string') : [];
@@ -58,68 +64,26 @@ function subscribe(listener: () => void) {
   };
 }
 
-export function setWeddingDate(date: string | null) {
-  update((p) => ({ ...p, weddingDate: date }));
-}
-
-export function toggleEvent(slug: string) {
-  update((p) => ({
-    ...p,
-    events: p.events.includes(slug) ? p.events.filter((e) => e !== slug) : [...p.events, slug],
-  }));
-}
-
-/** Adds events (a tradition's main ones, say) without removing any. */
-export function addEvents(slugs: string[]) {
-  update((p) => ({ ...p, events: [...new Set([...p.events, ...slugs])] }));
-}
-
-/** Sets the family's traditions outright (the first questions). */
-export function setTraditions(slugs: string[]) {
-  update((p) => ({ ...p, traditions: slugs }));
-}
-
-/** Picks or unpicks a tradition; `current` is what the screen shows (see pickTradition). */
-export function toggleTradition(slug: string, current: string[]) {
-  update((p) => {
-    const picked = pickTradition(p.traditions, current, slug);
-    return picked ? { ...p, traditions: picked } : p;
-  });
-}
-
-export function toggleBooked(eventSlug: string, categorySlug: string) {
-  update((p) => {
-    const list = p.booked[eventSlug] ?? [];
-    const next = list.includes(categorySlug)
-      ? list.filter((c) => c !== categorySlug)
-      : [...list, categorySlug];
-    return { ...p, booked: { ...p.booked, [eventSlug]: next } };
-  });
-}
-
-/** About how many guests an event will have (a guest band, or null to clear). */
-export function setEventGuests(eventSlug: string, band: string | null) {
-  update((p) => {
-    const guests = { ...(p.guests ?? {}) };
-    if (band) guests[eventSlug] = band;
-    else delete guests[eventSlug];
-    return { ...p, guests };
-  });
-}
-
-/** Replace the whole plan: the copy of the account's plan (Plan together). */
+/** Replace the whole plan: the copy of the account's plan. */
 export function replacePlan(next: WeddingPlan) {
   update(() => next);
 }
 
-/** Forget the plan on this phone (after it's saved to the account, or on sign-out). */
+/** Forget the plan on this phone (signed out, or the account no longer has it). */
 export function clearPlan() {
   update(() => EMPTY);
 }
 
-/** The plan as it is right now, outside React (e.g. to save it to the account). */
-export function getPlan(): WeddingPlan {
-  return current();
+/** Whether there's anything to forget. */
+export function isEmptyPlan(plan: WeddingPlan): boolean {
+  return (
+    !plan.syncedWeddingId &&
+    !plan.weddingDate &&
+    plan.traditions.length === 0 &&
+    plan.events.length === 0 &&
+    Object.keys(plan.booked).length === 0 &&
+    Object.keys(plan.guests ?? {}).length === 0
+  );
 }
 
 /** The plan, re-rendering whenever it changes. */
@@ -137,5 +101,6 @@ export {
   nextToBook,
   pickTradition,
   planProgress,
-  traditionsFor,
+  signatureEvents,
+  startingEvents,
 } from './plan-helpers';

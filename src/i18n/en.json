@@ -333,7 +333,11 @@
     "codeTextedTo": "We texted a 6-digit code to {{phone}}.",
     "newCodeTexted": "We sent a new code. Check your messages.",
     "textDelay": "Texts can take a minute to arrive.",
-    "changePhone": "Use a different number"
+    "changePhone": "Use a different number",
+    "signInWithApple": "Sign in with Apple",
+    "signInWithGoogle": "Sign in with Google",
+    "signInWithPhone": "Sign in with phone number",
+    "signInWithEmail": "Sign in with email"
   },
   "saveVendor": {
     "title": "Save to which event?",
@@ -657,7 +661,10 @@
     },
     "cheerDone": "{{event}} is all booked!",
     "cheerNext": "Next up: {{event}}",
-    "cheerAll": "Every event is booked. Congratulations!"
+    "cheerAll": "Every event is booked. Congratulations!",
+    "startCardTitle": "Plan your wedding",
+    "startCardBody": "Your countdown, your events and what to book, shared with the family.",
+    "signInToPlan": "Sign in to start"
   },
   "filters": {
     "title": "Filters",
@@ -894,20 +901,30 @@
     }
   },
   "welcome": {
-    "title": "Plan your family's wedding, together.",
-    "subtitle": "Halls, caterers, DJs, dhol and mehndi artists across Northern California, and one plan the whole family can share.",
-    "browse": "Just look around first",
-    "terms": "By continuing, you agree to our Terms and Privacy Policy."
+    "browse": "Look around",
+    "brand": "Wedded",
+    "createAccount": "Create account",
+    "signIn": "Sign in",
+    "legal": "By tapping “Create account” or “Sign in”, you agree to our {{terms}}. Learn how we use your data in our {{privacy}}.",
+    "termsLink": "Terms of Service",
+    "privacyLink": "Privacy Policy",
+    "phrases": {
+      "plan": "Plan your family's wedding, together.",
+      "events": "Every event, every vendor, one plan.",
+      "vendors": "Find vendors your family will love.",
+      "ask": "Ask for prices and dates in one tap.",
+      "countdown": "Your countdown to the big day.",
+      "rituals": "Every ritual, beautifully planned."
+    }
   },
   "onboarding": {
     "close": "Not now",
     "skip": "Skip for now",
     "continue": "Continue",
     "stepOf": "{{step}} of {{total}}",
-    "preferNot": "Prefer not to say",
     "who": {
       "title": "Whose wedding are we planning?",
-      "subtitle": "Just 6 quick questions, and your plan is ready.",
+      "subtitle": "Just 3 quick questions, and your plan is ready.",
       "self": "My own",
       "child": "My son's or daughter's",
       "sibling": "My brother's or sister's",
@@ -916,35 +933,55 @@
       "vendorPrompt": "Run a wedding business?",
       "vendorLink": "List it free for families"
     },
+    "kind": {
+      "title": "What kind of wedding is it?",
+      "subtitle": "Pick all that fit: two families can pick two.",
+      "other": "Something else",
+      "otherDetail": "You can pick your events in My Wedding."
+    },
     "date": {
       "title": "When is the big day?",
       "subtitle": "We'll start your countdown. The main wedding day is enough.",
       "notYet": "We haven't picked a date yet",
-      "notYetDetail": "You can add it any time in My Wedding."
-    },
-    "background": {
-      "title": "Where are the families from?",
-      "subtitle": "Pick all that fit: two families can have two answers. We only use this to suggest your events, and we don't save it."
-    },
-    "faith": {
-      "title": "Which traditions will the wedding follow?",
-      "subtitle": "So we suggest the right ceremonies, like a Nikah, an Anand Karaj or Pheras. Pick all that fit. We don't save this either."
-    },
-    "events": {
-      "title": "Which events are you having?",
-      "subtitle": "We've ticked the usual ones for {{traditions}}. Untick any you're skipping, or add more."
-    },
-    "place": {
-      "title": "Where will the wedding be?",
-      "subtitle": "Roughly is fine. We'll show vendors near you first.",
-      "finish": "Make my plan"
+      "notYetDetail": "You can add it any time in My Wedding.",
+      "finish": "Make my plan",
+      "failed": "We couldn't save your plan. Check your internet and try again."
     },
     "ready": {
-      "title": "Congratulations! Your plan is ready.",
-      "subtitle": "Here's your wedding. Tick things off as you book them.",
+      "title": "Your plan is ready!",
+      "subtitle": {
+        "one": "We added {{count}} event to start you off. Change it any time in My Wedding.",
+        "other": "We added {{count}} events to start you off. Change them any time in My Wedding."
+      },
       "events": "Your events",
       "firstUp": "First things to book",
-      "go": "Take me to my wedding"
+      "go": "Take me to my wedding",
+      "subtitleNoEvents": "Pick your events in My Wedding to see what to book."
+    }
+  },
+  "phoneSignIn": {
+    "title": "What’s your phone number?",
+    "subtitle": "We’ll text you a code to make sure it’s you.",
+    "placeholder": "Phone number",
+    "country": "Country code: {{country}}, +{{dial}}",
+    "countryTitle": "Country code",
+    "useEmail": "Use email instead",
+    "continue": "Continue",
+    "smallPrint": "We’ll text you a 6-digit code. Message and data rates may apply.",
+    "required": "Enter your phone number to continue.",
+    "invalid": "That number doesn’t look right. Check it and try again.",
+    "codeTitle": "Enter your verification code",
+    "sentTo": "Sent to {{phone}}",
+    "changeNumber": "Change number",
+    "didntGet": "Didn’t get a code?",
+    "countries": {
+      "US": "United States",
+      "CA": "Canada",
+      "IN": "India",
+      "PK": "Pakistan",
+      "GB": "United Kingdom",
+      "AE": "United Arab Emirates",
+      "AU": "Australia"
     }
   },
   "reels": {

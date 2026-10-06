@@ -9,9 +9,9 @@ import { PressableScale } from '@/components/pressable-scale';
 import { ProgressBar } from '@/components/progress-bar';
 import { makeStyles, Radius, Spacing, useColors, type Palette } from '@/constants/theme';
 import { formatDate } from '@/features/inquiry/inquiry-helpers';
-import { resetAnswers, setAnswers } from '@/features/onboarding/answers';
 import { findForPlan } from '@/features/planner/find-for-plan';
 import { daysUntil } from '@/features/planner/plan';
+import { StartPlanCard } from '@/features/planner/start-plan-card';
 import { usePlanView } from '@/features/planner/use-plan-view';
 import { localized } from '@/i18n/localized';
 import { useLocale } from '@/i18n/locale-context';
@@ -32,25 +32,29 @@ const gradient = (Colors: Palette) => {
  * The top of Home: the wedding on maroon silk with light drifting over it.
  * The countdown, the date and how much is booked (tap for My Wedding), then
  * the one thing to do next with a Find button, so the first screen says
- * exactly where the family is. Before anything is planned it offers to start.
+ * exactly where the family is. Without a wedding in the account (signed out,
+ * or not started) it's the StartPlanCard; with no events yet, Choose your events.
  */
 export function HomeHero() {
   const Colors = useColors();
   const styles = useStyles();
   const { t, locale } = useLocale();
-  const { plan, chosen, progress, next, isPending, canEdit } = usePlanView();
+  const { plan, wedding, loading, chosen, progress, next, isPending, canEdit } = usePlanView();
   const days = plan.weddingDate ? daysUntil(plan.weddingDate) : null;
   const counting = days !== null && days >= 0;
   const shownDays = useCountUp(counting ? days : 0);
   const share = progress.total > 0 ? progress.done / progress.total : 0;
   const first = next[0];
 
-  const startPlanning = () => {
-    // The first questions again, starting from what the plan already has
-    resetAnswers();
-    setAnswers({ weddingDate: plan.weddingDate });
-    router.push('/onboarding/who');
-  };
+  // A plan belongs to an account. While it loads, the phone's copy (if any) stands in.
+  if (!wedding && (!loading || !plan.syncedWeddingId)) {
+    if (loading) return null;
+    return (
+      <Animated.View entering={Motion.rise}>
+        <StartPlanCard />
+      </Animated.View>
+    );
+  }
 
   return (
     <Animated.View entering={Motion.rise} style={[styles.card, gradient(Colors)]}>
@@ -113,12 +117,12 @@ export function HomeHero() {
       {!isPending && chosen.length === 0 && canEdit && (
         <PressableScale
           accessibilityRole="button"
-          onPress={startPlanning}
+          onPress={() => router.push('/plan-events')}
           style={styles.startButton}
         >
           <Icon name="sparkles" size={20} color={Colors.heroFrom} />
           <AppText weight={700} style={styles.startText}>
-            {t('planner.startPlanning')}
+            {t('planner.chooseEvents')}
           </AppText>
         </PressableScale>
       )}

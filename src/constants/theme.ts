@@ -79,6 +79,13 @@ const light = {
   // white), with grey cards on it instead of the usual grey page and white rows.
   canvas: '#FFFFFF',
   canvasCard: '#F2F2F7',
+  // AmbientGlow behind the phone sign-in screens: soft blush, champagne and
+  // rose lights drifting on the white page. Fills only, never under small text.
+  glowBlush: 'rgba(236, 160, 178, 0.55)',
+  glowGold: 'rgba(246, 196, 140, 0.5)',
+  glowRose: 'rgba(196, 120, 160, 0.32)',
+  // Text fields floating on the glow: white, a little see-through.
+  canvasField: 'rgba(255, 255, 255, 0.82)',
 };
 
 export type Palette = Record<keyof typeof light, string>;
@@ -138,6 +145,10 @@ const dark: Palette = {
   heroTrack: 'rgba(255, 255, 255, 0.24)',
   canvas: '#000000',
   canvasCard: '#1C1C1E',
+  glowBlush: 'rgba(184, 53, 78, 0.35)',
+  glowGold: 'rgba(240, 160, 75, 0.22)',
+  glowRose: 'rgba(150, 70, 130, 0.28)',
+  canvasField: 'rgba(44, 44, 46, 0.82)',
 };
 
 export type Scheme = 'light' | 'dark';
@@ -301,6 +312,16 @@ export const FontFamilies: Record<'en' | 'pa', Record<FontWeight, string>> = {
     800: 'MuktaMahee_800ExtraBold',
   },
 };
+
+/**
+ * Fraunces, a soft and lively serif, for the few big display lines (the
+ * welcome phrases, "What's your phone number?"). Loaded at runtime with the
+ * other fonts, in two weights, so it carries its weight in the family name
+ * like Inter. Latin only; Gurmukhi keeps Mukta Mahee.
+ */
+export function serifFamily(weight: FontWeight): string {
+  return weight >= 600 ? 'Fraunces_600SemiBold' : 'Fraunces_500Medium';
+}
 
 /** The style that draws `weight` in `script`: family, plus fontWeight for the system font. */
 export function fontStyle(script: 'en' | 'pa', weight: FontWeight) {

@@ -5,6 +5,7 @@ import {
   fontStyle,
   type FontWeight,
   GURMUKHI_SIZE_MULTIPLIER,
+  serifFamily,
   Typography,
   type TypographyVariant,
   useColors,
@@ -20,12 +21,15 @@ export type AppTextProps = TextProps & {
   /** Force a script; by default the app language decides, and any string that
    * contains Gurmukhi is rendered in the Gurmukhi font regardless. */
   lang?: Locale;
+  /** Fraunces (serifFamily) for a big display line, in English only. */
+  serif?: boolean;
 };
 
 type TypeStyleOptions = {
   variant?: TypographyVariant;
   weight?: FontWeight;
   lang?: Locale;
+  serif?: boolean;
   /** The text being shown; any Gurmukhi in it switches to the Gurmukhi font. */
   text?: string;
 };
@@ -35,16 +39,25 @@ type TypeStyleOptions = {
  * scaling cap for a type variant in the current script. AppText uses it; so
  * does anything that can't render AppText itself, like TextInput.
  */
-export function useTypeStyle({ variant = 'body', weight, lang, text = '' }: TypeStyleOptions) {
+export function useTypeStyle({
+  variant = 'body',
+  weight,
+  lang,
+  serif = false,
+  text = '',
+}: TypeStyleOptions) {
   const { locale } = useLocale();
   const textScale = useTextScale();
   const spec = Typography[variant];
   const script: Locale = lang ?? (locale === 'pa' || hasGurmukhi(text) ? 'pa' : 'en');
   const fontSize = (script === 'pa' ? spec.size * GURMUKHI_SIZE_MULTIPLIER : spec.size) * textScale;
+  const fontWeight = weight ?? spec.weight;
 
   return {
     script,
-    ...fontStyle(script, weight ?? spec.weight),
+    ...(serif && script === 'en'
+      ? { fontFamily: serifFamily(fontWeight) }
+      : fontStyle(script, fontWeight)),
     fontSize,
     lineHeight: Math.round(fontSize * (script === 'pa' ? spec.lineHeightPa : spec.lineHeight)),
     maxFontSizeMultiplier: spec.maxScale,
@@ -73,6 +86,7 @@ export function AppText({
   color = 'text',
   weight,
   lang,
+  serif,
   style,
   children,
   ...rest
@@ -83,6 +97,7 @@ export function AppText({
     variant,
     weight,
     lang,
+    serif,
     text,
   });
 

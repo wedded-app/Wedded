@@ -72,58 +72,6 @@ export function pickTradition(saved: string[], current: string[], slug: string):
 }
 
 /**
- * The traditions that fit a family's answers to "Where is your family from?"
- * and "Your faith" (several of each for a mixed wedding), in the founders'
- * order:
- * 1. traditions matching both a background and a faith they picked
- *    (Pakistani + Muslim is the Pakistani tradition);
- * 2. for a picked faith nothing matched yet, its faith-wide tradition
- *    (Afghan + Muslim finds Muslim);
- * 3. for a picked background nothing matched yet, and no faith picked, that
- *    background's traditions (Punjabi alone finds Punjabi Sikh and Hindu);
- * 4. still nothing: any tradition of a picked faith (Indian + Hindu finds
- *    Punjabi Hindu), then any of a picked background (Arab + Christian finds
- *    Arab), then the default.
- * No answers at all gives the default. The family changes the events next,
- * so a near miss only means unticking a few.
- */
-export function traditionsFor(
-  backgrounds: string[],
-  faiths: string[],
-  traditions: Tradition[],
-): Tradition[] {
-  const picked = new Set<Tradition>();
-  for (const t of traditions) {
-    if (t.backgroundSlug && t.faithSlug) {
-      if (backgrounds.includes(t.backgroundSlug) && faiths.includes(t.faithSlug)) picked.add(t);
-    }
-  }
-  const matchedFaiths = new Set([...picked].map((t) => t.faithSlug));
-  const matchedBackgrounds = new Set([...picked].map((t) => t.backgroundSlug));
-  for (const t of traditions) {
-    if (!t.backgroundSlug && t.faithSlug && faiths.includes(t.faithSlug)) {
-      if (!matchedFaiths.has(t.faithSlug)) picked.add(t);
-    }
-    if (faiths.length === 0 && t.backgroundSlug && backgrounds.includes(t.backgroundSlug)) {
-      if (!matchedBackgrounds.has(t.backgroundSlug)) picked.add(t);
-    }
-  }
-  if (picked.size === 0) {
-    for (const t of traditions) if (t.faithSlug && faiths.includes(t.faithSlug)) picked.add(t);
-  }
-  if (picked.size === 0) {
-    for (const t of traditions) {
-      if (t.backgroundSlug && backgrounds.includes(t.backgroundSlug)) picked.add(t);
-    }
-  }
-  if (picked.size === 0) {
-    const fallback = traditions.find((t) => t.isDefault) ?? traditions[0];
-    if (fallback) picked.add(fallback);
-  }
-  return traditions.filter((t) => picked.has(t));
-}
-
-/**
  * Every event across the traditions, once each, in ceremony order. A shared
  * event keeps the first tradition's name for it and is a main event if any
  * of the traditions says so.
@@ -140,6 +88,29 @@ export function mergedEvents(traditions: Tradition[]): TraditionEvent[] {
   return [...bySlug.values()].sort(
     (a, b) => phaseRank(a.phase) - phaseRank(b.phase) || a.order - b.order,
   );
+}
+
+/** The main events of the picked traditions: what a new plan starts with. */
+export function startingEvents(traditions: Tradition[]): string[] {
+  return mergedEvents(traditions)
+    .filter((event) => event.isCore)
+    .map((event) => event.slug);
+}
+
+/**
+ * A few events that say what a tradition's wedding is (Jaago · Baraat ·
+ * Anand Karaj, Mehndi · Nikah · Walima), for the "What kind of wedding?"
+ * cards: the last main event before the day, the first one after it (a
+ * Walima is what a Pakistani family looks for), and the day's own in
+ * between, in ceremony order.
+ */
+export function signatureEvents(tradition: Tradition, count = 3): TraditionEvent[] {
+  const main = tradition.events.filter((event) => event.isCore);
+  const before = main.filter((event) => event.phase === 'before').slice(-1);
+  const after = main.filter((event) => event.phase === 'after').slice(0, 1);
+  const day = main.filter((event) => event.phase === 'wedding_day');
+  const room = Math.max(0, count - before.length - after.length);
+  return [...before, ...day.slice(0, room), ...after].slice(0, count);
 }
 
 /** The events the family is having, in ceremony order (only those in their traditions). */

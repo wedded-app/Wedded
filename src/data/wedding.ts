@@ -4,10 +4,10 @@
  * planner, viewer); relatives join with an invite link sent in WhatsApp, which
  * opens in the app or on the web (/join/{token}).
  *
- * Without an account, My Wedding lives on the phone (features/planner/plan.ts).
- * Once saved to the account, the account's copy is the truth and the phone
- * keeps a mirror of it (WeddingSync, mounted in the root layout), so Home and
- * Profile show it straight away.
+ * Planning needs an account (docs/DECISIONS.md, 2026-10-02): the first
+ * questions create the wedding (useStartWedding). The account's copy is the
+ * truth and the phone keeps a mirror of it (WeddingSync, mounted in the root
+ * layout), so Home and Profile show it straight away; signing out clears it.
  */
 import { useMutation, useQuery, useQueryClient, type QueryClient } from '@tanstack/react-query';
 import * as Linking from 'expo-linking';
@@ -17,16 +17,11 @@ import { Platform, Share } from 'react-native';
 import { SITE_URL_IS_PLACEHOLDER, siteLink } from '@/constants/links';
 import { useSession } from '@/features/auth/session';
 import {
-  addEvents as addLocalEvents,
   clearPlan,
+  EMPTY_PLAN,
+  isEmptyPlan,
   pickTradition,
   replacePlan,
-  setEventGuests as setLocalGuests,
-  setWeddingDate as setLocalDate,
-  toggleBooked as toggleLocalBooked,
-  toggleEvent as toggleLocalEvent,
-  setTraditions as setLocalTraditions,
-  toggleTradition as toggleLocalTradition,
   usePlan,
   type WeddingPlan,
 } from '@/features/planner/plan';
@@ -158,8 +153,10 @@ export function useMyWeddings() {
 
 /**
  * Keeps the phone's copy of My Wedding in step with the account: copies the
- * account's plan in when it changes, and clears the copy on sign-out. Renders
- * nothing; mounted once in the root layout.
+ * account's plan in when it changes, and clears it on sign-out or when the
+ * account has no wedding, so a shared phone never shows the last person's
+ * plan (or one made before planning needed an account). Renders nothing;
+ * mounted once in the root layout.
  */
 export function WeddingSync() {
   const { status } = useSession();
@@ -172,10 +169,9 @@ export function WeddingSync() {
   }, [wedding]);
 
   useEffect(() => {
-    // Signed out (or the account no longer has this wedding): drop the copy
     const gone = status === 'signedOut' || (weddings.isSuccess && weddings.data.length === 0);
-    if (plan.syncedWeddingId && gone) clearPlan();
-  }, [status, weddings.isSuccess, weddings.data, plan.syncedWeddingId]);
+    if (gone && !isEmptyPlan(plan)) clearPlan();
+  }, [status, weddings.isSuccess, weddings.data, plan]);
 
   return null;
 }
@@ -309,14 +305,25 @@ function updateCachedWedding(
   );
 }
 
+const NO_EDITS = {
+  setWeddingDate: (_date: string | null) => {},
+  setTraditions: (_slugs: string[]) => {},
+  toggleTradition: (_slug: string, _current: string[]) => {},
+  toggleEvent: (_slug: string) => {},
+  addEvents: (_slugs: string[]) => {},
+  toggleBooked: (_event: string, _category: string) => {},
+  setEventGuests: (_event: string, _band: string | null) => {},
+};
+
 /**
- * My Wedding for the plan screen: the account's plan when there is one (with
- * edits saved to the account, shown at once and undone if saving fails), else
- * the phone's plan.
+ * My Wedding for the plan screen: the account's plan, with edits saved to the
+ * account (shown at once and undone if saving fails). Without a wedding there
+ * is nothing to edit: `wedding` is null and the screens offer to start one.
+ * While the account loads, the phone's copy stands in (`loading`).
  */
 export function useWeddingPlan() {
   const queryClient = useQueryClient();
-  const { session } = useSession();
+  const { session, status } = useSession();
   const userId = session?.user.id ?? '';
   const phonePlan = usePlan();
   const weddings = useMyWeddings();
@@ -338,18 +345,14 @@ export function useWeddingPlan() {
   });
 
   if (!wedding) {
+    const loading = status === 'loading' || (status === 'signedIn' && weddings.isPending);
     return {
-      plan: phonePlan,
+      plan: loading && phonePlan.syncedWeddingId ? phonePlan : EMPTY_PLAN,
       wedding: null,
-      canEdit: true,
+      loading,
+      canEdit: false,
       saveFailed: false,
-      setWeddingDate: setLocalDate,
-      setTraditions: setLocalTraditions,
-      toggleTradition: toggleLocalTradition,
-      toggleEvent: toggleLocalEvent,
-      addEvents: addLocalEvents,
-      toggleBooked: toggleLocalBooked,
-      setEventGuests: setLocalGuests,
+      ...NO_EDITS,
     };
   }
 
@@ -357,6 +360,7 @@ export function useWeddingPlan() {
   return {
     plan: toPlan(wedding),
     wedding,
+    loading: false,
     canEdit: wedding.role !== 'viewer',
     saveFailed: edit.isError,
     setWeddingDate: (date: string | null) => change({ kind: 'date', date }),

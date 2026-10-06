@@ -11,7 +11,7 @@ import Animated, {
 import { AppText } from '@/components/app-text';
 import { Icon, type IconName } from '@/components/icon';
 import { PressableScale } from '@/components/pressable-scale';
-import { makeStyles, Radius, Sizes, Spacing, useColors } from '@/constants/theme';
+import { makeStyles, Sizes, Spacing, useColors } from '@/constants/theme';
 import type { Locale } from '@/i18n';
 import { selectionHaptic } from '@/lib/haptics';
 import { Motion } from '@/lib/motion';
@@ -19,7 +19,7 @@ import { Motion } from '@/lib/motion';
 export type OptionCardProps = {
   label: string;
   labelLang?: Locale;
-  /** A second line, e.g. the name in the other script. */
+  /** A second line, e.g. a tradition's main events. */
   detail?: string;
   detailLang?: Locale;
   icon?: IconName;
@@ -31,9 +31,11 @@ export type OptionCardProps = {
   index?: number;
 };
 
+const RADIUS = 24;
+
 /**
- * A big answer to tap in the first questions: a grey card with an icon and
- * the answer. Picking it tints it, fills the icon and pops a tick in.
+ * A big answer to tap in the first questions: a soft grey bubble with black
+ * text. Picking it turns it white with a black outline and pops a tick in.
  */
 export function OptionCard({
   label,
@@ -50,11 +52,11 @@ export function OptionCard({
   const styles = useStyles();
   const reduceMotion = useReducedMotion();
   const on = useSharedValue(selected ? 1 : 0);
-  const [off, tint, edge, onEdge] = [
+  const [off, offEdge, picked, pickedEdge] = [
     Colors.canvasCard,
-    Colors.primaryTint,
     Colors.canvasCard,
-    Colors.primary,
+    Colors.canvas,
+    Colors.text,
   ];
 
   useEffect(() => {
@@ -62,8 +64,8 @@ export function OptionCard({
   }, [on, reduceMotion, selected]);
 
   const card = useAnimatedStyle(() => ({
-    backgroundColor: interpolateColor(on.value, [0, 1], [off, tint]),
-    borderColor: interpolateColor(on.value, [0, 1], [edge, onEdge]),
+    backgroundColor: interpolateColor(on.value, [0, 1], [off, picked]),
+    borderColor: interpolateColor(on.value, [0, 1], [offEdge, pickedEdge]),
   }));
 
   return (
@@ -81,7 +83,7 @@ export function OptionCard({
         <Animated.View style={[styles.card, card]}>
           {icon && (
             <View style={[styles.icon, selected && styles.iconOn]}>
-              <Icon name={icon} size={22} color={selected ? Colors.onPrimary : Colors.primary} />
+              <Icon name={icon} size={22} color={selected ? Colors.canvas : Colors.text} />
             </View>
           )}
           <View style={styles.text}>
@@ -94,10 +96,13 @@ export function OptionCard({
               </AppText>
             )}
           </View>
-          <View style={[styles.mark, selected && styles.markOn]}>
+          {/* Round when it's one of a kind, square when several can be ticked. */}
+          <View
+            style={[styles.mark, role === 'checkbox' && styles.square, selected && styles.markOn]}
+          >
             {selected && (
               <Animated.View entering={Motion.popIn} exiting={Motion.popOut}>
-                <Icon name="checkmark" size={15} color={Colors.onPrimary} weight="bold" />
+                <Icon name="checkmark" size={15} color={Colors.canvas} weight="bold" />
               </Animated.View>
             )}
           </View>
@@ -109,27 +114,26 @@ export function OptionCard({
 
 const useStyles = makeStyles((Colors) => ({
   card: {
-    minHeight: Sizes.row + 8,
+    minHeight: Sizes.row + 12,
     flexDirection: 'row',
     alignItems: 'center',
     gap: Spacing.md,
-    paddingHorizontal: Spacing.lg,
-    paddingVertical: Spacing.md,
-    borderRadius: Radius.photo,
+    paddingHorizontal: Spacing.lg + 2,
+    paddingVertical: Spacing.md + 2,
+    borderRadius: RADIUS,
     borderCurve: 'continuous',
-    borderWidth: 1.5,
+    borderWidth: 2,
   },
   icon: {
-    width: 40,
-    height: 40,
-    borderRadius: 12,
-    borderCurve: 'continuous',
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: Colors.primaryTint,
+    backgroundColor: Colors.canvas,
   },
   iconOn: {
-    backgroundColor: Colors.primaryFill,
+    backgroundColor: Colors.text,
   },
   text: {
     flex: 1,
@@ -144,8 +148,11 @@ const useStyles = makeStyles((Colors) => ({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  square: {
+    borderRadius: 8,
+  },
   markOn: {
-    borderColor: Colors.primaryFill,
-    backgroundColor: Colors.primaryFill,
+    borderColor: Colors.text,
+    backgroundColor: Colors.text,
   },
 }));

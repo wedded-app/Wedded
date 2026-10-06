@@ -1,14 +1,17 @@
 import { router } from 'expo-router';
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
+import Animated, { type SharedValue } from 'react-native-reanimated';
 
 import { AppText, useFontScale } from '@/components/app-text';
 import { FieldError } from '@/components/field-error';
 import { Icon, type IconName } from '@/components/icon';
 import { PressableScale } from '@/components/pressable-scale';
+import { Reveal } from '@/components/reveal';
 import { BorderWidth, Radius, Spacing, useScheme, type Scheme } from '@/constants/theme';
 import { useLocale } from '@/i18n/locale-context';
 import { selectionHaptic } from '@/lib/haptics';
+import { Motion } from '@/lib/motion';
 
 import {
   signInWithApple,
@@ -36,14 +39,28 @@ const BRAND: Record<Scheme, Record<Look, Brand>> = {
   },
 };
 
+// Over the welcome video all four are white, like Hinge's: Apple allows its
+// white button on dark backgrounds, and this is Google's light button.
+const ON_PHOTO: Brand = { fill: '#FFFFFF', stroke: '#747775', text: '#1F1F1F' };
+
 const PILL_HEIGHT = 56;
 const ICON_SIZE = 20;
 
-const LABEL_KEY: Record<Method, string> = {
-  apple: 'signIn.withApple',
-  google: 'signIn.withGoogle',
-  phone: 'signIn.withPhone',
-  email: 'signIn.withEmail',
+type Verb = 'continue' | 'signIn';
+
+const LABEL_KEY: Record<Verb, Record<Method, string>> = {
+  continue: {
+    apple: 'signIn.withApple',
+    google: 'signIn.withGoogle',
+    phone: 'signIn.withPhone',
+    email: 'signIn.withEmail',
+  },
+  signIn: {
+    apple: 'signIn.signInWithApple',
+    google: 'signIn.signInWithGoogle',
+    phone: 'signIn.signInWithPhone',
+    email: 'signIn.signInWithEmail',
+  },
 };
 
 // The Google "G" as a one-colour Ionicon for now; the store build needs
@@ -56,13 +73,31 @@ const ICON: Record<Method, IconName> = {
 };
 
 /**
- * "Continue with" Apple, Google, phone and email: four equal pills, Apple
- * first and only on iPhone. Methods the server has turned off still show,
- * greyed with "Coming soon". Apple and Google sign in right here (a spinner on
- * the tapped pill, a plain-words error under the pills if it fails); phone and
- * email call `onChoose`, or open the sign-in sheet on that method.
+ * "Continue with" (or "Sign in with") Apple, Google, phone and email: four
+ * equal pills, Apple first and only on iPhone. Methods the server has turned
+ * off show greyed with "Coming soon", or not at all with `hideUnavailable`
+ * (the welcome screen, which keeps its words few). Apple and Google sign in
+ * right here (a spinner on the tapped pill, a plain-words error under the
+ * pills if it fails); phone and email call `onChoose`, or open the sign-in
+ * sheet on that method. `onPhoto` draws them all white for the welcome
+ * video, and `reveal` raises them one after another as it goes to 1, with
+ * `after` (the welcome screen's Back) last.
  */
-export function SignInOptions({ onChoose }: { onChoose?: (method: 'phone' | 'email') => void }) {
+export function SignInOptions({
+  onChoose,
+  hideUnavailable = false,
+  verb = 'continue',
+  onPhoto = false,
+  reveal,
+  after,
+}: {
+  onChoose?: (method: 'phone' | 'email') => void;
+  hideUnavailable?: boolean;
+  verb?: Verb;
+  onPhoto?: boolean;
+  reveal?: SharedValue<number>;
+  after?: ReactNode;
+}) {
   const { t } = useLocale();
   const { server, appleDevice } = useProviderState();
   const [busy, setBusy] = useState<'apple' | 'google' | null>(null);
@@ -71,9 +106,10 @@ export function SignInOptions({ onChoose }: { onChoose?: (method: 'phone' | 'ema
   // Until the server answers (or when it can't be reached), everything looks
   // available: better than greying buttons that turn out to work.
   const isOn = (method: Method) => !server || server[method];
-  const methods: Method[] = appleDevice
+  const all: Method[] = appleDevice
     ? ['apple', 'google', 'phone', 'email']
     : ['google', 'phone', 'email'];
+  const methods = hideUnavailable ? all.filter(isOn) : all;
 
   async function signIn(provider: 'apple' | 'google') {
     setError(undefined);
@@ -107,19 +143,45 @@ export function SignInOptions({ onChoose }: { onChoose?: (method: 'phone' | 'ema
 
   return (
     <View style={styles.list}>
-      {methods.map((method) => (
-        <OptionPill
-          key={method}
-          method={method}
-          label={t(LABEL_KEY[method])}
-          comingSoon={!isOn(method)}
-          loading={busy === method}
-          // One sign-in at a time.
-          blocked={busy !== null && busy !== method}
-          onPress={() => choose(method)}
-        />
-      ))}
-      {error && <FieldError message={error} />}
+      {methods.map((method, index) => {
+        const pill = (
+          <OptionPill
+            key={method}
+            method={method}
+            label={t(LABEL_KEY[verb][method])}
+            onPhoto={onPhoto}
+            comingSoon={!isOn(method)}
+            loading={busy === method}
+            // One sign-in at a time.
+            blocked={busy !== null && busy !== method}
+            onPress={() => choose(method)}
+          />
+        );
+        return reveal ? (
+          <Reveal key={method} progress={reveal} index={index}>
+            {pill}
+          </Reveal>
+        ) : (
+          pill
+        );
+      })}
+      {error &&
+        (onPhoto ? (
+          // Red on a video can't be read: the error sits on a white card.
+          <Animated.View entering={Motion.enter} style={styles.errorCard}>
+            <FieldError message={error} />
+          </Animated.View>
+        ) : (
+          <FieldError message={error} />
+        ))}
+      {after &&
+        (reveal ? (
+          <Reveal progress={reveal} index={methods.length}>
+            {after}
+          </Reveal>
+        ) : (
+          after
+        ))}
     </View>
   );
 }
@@ -127,6 +189,7 @@ export function SignInOptions({ onChoose }: { onChoose?: (method: 'phone' | 'ema
 function OptionPill({
   method,
   label,
+  onPhoto,
   comingSoon,
   loading,
   blocked,
@@ -134,6 +197,7 @@ function OptionPill({
 }: {
   method: Method;
   label: string;
+  onPhoto: boolean;
   comingSoon: boolean;
   loading: boolean;
   blocked: boolean;
@@ -142,7 +206,7 @@ function OptionPill({
   const { t } = useLocale();
   const scheme = useScheme();
   const scale = useFontScale('button');
-  const brand = BRAND[scheme][method === 'apple' ? 'apple' : 'outlined'];
+  const brand = onPhoto ? ON_PHOTO : BRAND[scheme][method === 'apple' ? 'apple' : 'outlined'];
   const disabled = comingSoon || blocked || loading;
   const iconSize = Math.round(ICON_SIZE * scale);
 
@@ -216,5 +280,13 @@ const styles = StyleSheet.create({
   },
   center: {
     textAlign: 'center',
+  },
+  errorCard: {
+    paddingVertical: Spacing.md,
+    paddingHorizontal: Spacing.md,
+    borderRadius: Radius.field,
+    borderCurve: 'continuous',
+    // White under the light theme's red, like the pills (brand colours above).
+    backgroundColor: '#FFFFFF',
   },
 });

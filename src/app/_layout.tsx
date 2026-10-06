@@ -1,3 +1,4 @@
+import { Fraunces_500Medium, Fraunces_600SemiBold } from '@expo-google-fonts/fraunces';
 import {
   Inter_400Regular,
   Inter_500Medium,
@@ -49,6 +50,9 @@ export default function RootLayout() {
     MuktaMahee_600SemiBold,
     MuktaMahee_700Bold,
     MuktaMahee_800ExtraBold,
+    // The display serif for the welcome and phone sign-in screens.
+    Fraunces_500Medium,
+    Fraunces_600SemiBold,
   });
 
   useEffect(() => {
@@ -105,6 +109,7 @@ function AppShell() {
           <Stack.Screen name="auth-callback" options={{ animation: 'none' }} />
           <Stack.Screen name="onboarding" options={{ animation: 'fade', gestureEnabled: false }} />
           <Stack.Screen name="sign-in" options={{ presentation: 'modal' }} />
+          <Stack.Screen name="phone-sign-in" options={{ presentation: 'fullScreenModal' }} />
           <Stack.Screen name="save-vendor" options={{ presentation: 'modal' }} />
           <Stack.Screen name="menu" options={{ presentation: 'modal' }} />
           <Stack.Screen name="location" options={{ presentation: 'modal' }} />

@@ -30,6 +30,13 @@ export function markOnboarding(next: 'seen' | 'done') {
   listeners.forEach((listener) => listener());
 }
 
+/** Development only (Settings): forget it, so Home sends them to /welcome again. */
+export function resetOnboarding() {
+  state = 'new';
+  void writeSetting(StorageKeys.onboarding, 'new');
+  listeners.forEach((listener) => listener());
+}
+
 function subscribe(listener: () => void) {
   listeners.add(listener);
   return () => {

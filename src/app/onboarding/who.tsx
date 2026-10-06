@@ -1,10 +1,13 @@
-import { router } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
+import { useCallback } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { AppText } from '@/components/app-text';
 import type { IconName } from '@/components/icon';
 import { Spacing } from '@/constants/theme';
+import { useMyWeddings } from '@/data/wedding';
 import { setAnswers, useAnswers, type PlanningFor } from '@/features/onboarding/answers';
+import { markOnboarding } from '@/features/onboarding/onboarding-state';
 import { OnboardingStep } from '@/features/onboarding/onboarding-step';
 import { OptionCard } from '@/features/onboarding/option-card';
 import { nextHref } from '@/features/onboarding/steps';
@@ -22,7 +25,21 @@ const OPTIONS: { value: PlanningFor; icon: IconName }[] = [
 export default function WhoStep() {
   const { t } = useLocale();
   const answers = useAnswers();
+  const weddings = useMyWeddings();
   const next = () => router.push(nextHref('who'));
+
+  // Signed in to start planning, but the account already has a plan (they
+  // planned on another phone): straight to it. Only while this question is
+  // showing: it stays mounted under the others while the new plan is saved.
+  const existing = weddings.data?.[0];
+  useFocusEffect(
+    useCallback(() => {
+      if (existing && existing.events.length > 0) {
+        markOnboarding('done');
+        router.replace('/plan');
+      }
+    }, [existing]),
+  );
 
   return (
     <OnboardingStep
@@ -51,7 +68,7 @@ export default function WhoStep() {
         style={({ pressed }) => [styles.vendor, pressed && styles.pressed]}
       >
         <AppText color="text2">{t('onboarding.who.vendorPrompt')}</AppText>
-        <AppText weight={600} color="primary">
+        <AppText weight={600} style={styles.link}>
           {t('onboarding.who.vendorLink')}
         </AppText>
       </Pressable>
@@ -61,12 +78,15 @@ export default function WhoStep() {
 
 const styles = StyleSheet.create({
   list: {
-    gap: Spacing.sm,
+    gap: Spacing.sm + 2,
   },
   vendor: {
     alignItems: 'center',
     gap: 2,
     paddingVertical: Spacing.sm,
+  },
+  link: {
+    textDecorationLine: 'underline',
   },
   pressed: {
     opacity: 0.5,
