@@ -17,15 +17,15 @@
       "weddingDay": "Wedding day",
       "after": "After"
     },
-    "allCategories": "See all categories A to Z",
     "empty": "Events will show here soon.",
     "foundingWall": "Meet our founding vendors",
-    "browseByType": "Browse by vendor type",
     "planByEvent": "Plan by event",
     "forVendors": "Are you a vendor? Get listed",
-    "featured": "Founding vendors",
     "seeAll": "See all",
-    "watchStories": "Watch real weddings"
+    "whatDoYouNeed": "What do you need?",
+    "seeAllTypes": "All types",
+    "myEvents": "My events",
+    "nextUp": "Next up"
   },
   "event": {
     "needsTitle": "Vendors you'll need",

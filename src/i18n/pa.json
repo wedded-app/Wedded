@@ -17,15 +17,15 @@
       "weddingDay": "ਵਿਆਹ ਵਾਲਾ ਦਿਨ",
       "after": "ਵਿਆਹ ਤੋਂ ਬਾਅਦ"
     },
-    "allCategories": "ਸਾਰੀਆਂ ਸ਼੍ਰੇਣੀਆਂ ਦੇਖੋ",
     "empty": "ਸਮਾਗਮ ਜਲਦੀ ਇੱਥੇ ਦਿਸਣਗੇ।",
     "foundingWall": "ਸਾਡੇ ਮੋਢੀ ਵੈਂਡਰ ਦੇਖੋ",
-    "browseByType": "ਵੈਂਡਰ ਦੀ ਕਿਸਮ ਅਨੁਸਾਰ ਦੇਖੋ",
     "planByEvent": "ਸਮਾਗਮ ਅਨੁਸਾਰ ਤਿਆਰੀ",
     "forVendors": "ਕੀ ਤੁਸੀਂ ਵੈਂਡਰ ਹੋ? ਆਪਣਾ ਕਾਰੋਬਾਰ ਜੋੜੋ",
-    "featured": "ਮੋਢੀ ਵੈਂਡਰ",
     "seeAll": "ਸਾਰੇ ਵੇਖੋ",
-    "watchStories": "ਅਸਲ ਵਿਆਹ ਵੇਖੋ"
+    "whatDoYouNeed": "ਤੁਹਾਨੂੰ ਕੀ ਚਾਹੀਦਾ ਹੈ?",
+    "seeAllTypes": "ਸਾਰੀਆਂ ਕਿਸਮਾਂ",
+    "myEvents": "ਮੇਰੇ ਸਮਾਗਮ",
+    "nextUp": "ਅਗਲਾ ਕੰਮ"
   },
   "event": {
     "needsTitle": "ਤੁਹਾਨੂੰ ਲੋੜੀਂਦੇ ਵੈਂਡਰ",
