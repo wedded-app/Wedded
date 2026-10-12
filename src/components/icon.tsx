@@ -57,6 +57,7 @@ const SF_SYMBOLS: Partial<Record<IconName, SFSymbol>> = {
   'git-compare-outline': 'arrow.left.arrow.right',
   'person-add-outline': 'person.badge.plus',
   'options-outline': 'slider.horizontal.3',
+  storefront: 'storefront.fill',
   'storefront-outline': 'storefront',
   call: 'phone.fill',
   'call-outline': 'phone',
