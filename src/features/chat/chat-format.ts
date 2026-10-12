@@ -2,32 +2,33 @@ import type { Conversation } from '@/data/chat';
 
 type Translate = (key: string, options?: Record<string, string | number>) => string;
 
+/** A message as one plain line: its words, or what it is ("Photo", "Sent a quote"). */
+export function messageSnippet(
+  message: { kind: string; body: string | null },
+  t: Translate,
+): string {
+  switch (message.kind) {
+    case 'photo':
+      return t('chat.preview.photo');
+    case 'quote':
+      return t('chat.preview.quote');
+    case 'menu':
+      return t('chat.preview.menu');
+    case 'booking':
+      return t('chat.preview.booking');
+    case 'phone':
+      return t('chat.preview.phone');
+    default:
+      return (message.body ?? '').replace(/\s+/g, ' ').trim();
+  }
+}
+
 /** A conversation's last message as one line for the inbox. */
 export function lastMessagePreview(conversation: Conversation, t: Translate): string {
   const last = conversation.lastMessage;
   if (!last) return t('chat.noMessages');
-  const mine = last.senderRole === conversation.side;
-  let text: string;
-  switch (last.kind) {
-    case 'photo':
-      text = t('chat.preview.photo');
-      break;
-    case 'quote':
-      text = t('chat.preview.quote');
-      break;
-    case 'menu':
-      text = t('chat.preview.menu');
-      break;
-    case 'booking':
-      text = t('chat.preview.booking');
-      break;
-    case 'phone':
-      text = t('chat.preview.phone');
-      break;
-    default:
-      text = (last.body ?? '').replace(/\s+/g, ' ').trim();
-  }
-  return mine ? t('chat.preview.you', { text }) : text;
+  const text = messageSnippet(last, t);
+  return last.senderRole === conversation.side ? t('chat.preview.you', { text }) : text;
 }
 
 /** "2:05 PM" today, "Yesterday", or "Sep 12" for older ones. */

@@ -1,6 +1,15 @@
 import { router, useLocalSearchParams } from 'expo-router';
-import { useState } from 'react';
-import { Alert, FlatList, KeyboardAvoidingView, Platform, Pressable, View } from 'react-native';
+import { useRef, useState } from 'react';
+import {
+  Alert,
+  FlatList,
+  KeyboardAvoidingView,
+  Platform,
+  Pressable,
+  type TextInput,
+  View,
+} from 'react-native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AppText } from '@/components/app-text';
@@ -13,6 +22,8 @@ import { PhoneCard } from '@/components/chat/phone-card';
 import { ReactionChips } from '@/components/chat/reaction-chips';
 import { ReactionPicker } from '@/components/chat/reaction-picker';
 import { QuoteCard } from '@/components/chat/quote-card';
+import { ReplyBar, ReplyQuote } from '@/components/chat/reply-quote';
+import { SwipeToReply } from '@/components/chat/swipe-to-reply';
 import { TypingIndicator } from '@/components/chat/typing-indicator';
 import { Chip } from '@/components/chip';
 import { FieldError } from '@/components/field-error';
@@ -32,6 +43,7 @@ import {
 import { useTyping } from '@/data/chat-typing';
 import { useHomeEvents } from '@/data/reference';
 import { useVendorMenus } from '@/data/vendor-menus';
+import { messageSnippet } from '@/features/chat/chat-format';
 import { sentPhotoUri } from '@/features/chat/chat-photo';
 import { nextReaction, type ReactionCode } from '@/features/chat/reactions';
 import { layoutThread, type ThreadItem } from '@/features/chat/thread-layout';
@@ -51,7 +63,8 @@ const QUICK_REPLIES = ['available', 'price', 'visit', 'thanks'] as const;
  * Either side can send a photo, and sees "… is typing" while the other side
  * writes. Families get quick replies and "Share my number" (their number never
  * reaches the vendor otherwise, C2); vendors get "Send a quote" and "Send a
- * menu", and only ever reply.
+ * menu", and only ever reply. Holding a message reacts to it; swiping it
+ * (or the screen reader's Reply action) replies to it, quoting it above.
  * Opening it marks it read. /chat/{conversation id}
  */
 export default function ChatScreen() {
@@ -69,6 +82,8 @@ export default function ChatScreen() {
     react.mutate({ messageId: message.id, reaction: nextReaction(myReaction(message), picked) });
   const photos = usePhotoSender(id, send);
   const [draft, setDraft] = useState('');
+  const [replyingTo, setReplyingTo] = useState<Message | null>(null);
+  const input = useRef<TextInput>(null);
   const convo = thread.conversation;
   const side = convo?.side ?? 'family';
   const typing = useTyping(id, convo?.side ?? null);
@@ -94,8 +109,20 @@ export default function ChatScreen() {
     const body = text.trim();
     if (!body) return;
     typing.stopped();
-    send.mutate({ kind: 'text', body });
+    send.mutate({ kind: 'text', body, replyTo: replyingTo?.id });
     setDraft('');
+    setReplyingTo(null);
+  };
+
+  // A photo picked while replying goes as the reply
+  const sendPhoto = () =>
+    void photos.pick(replyingTo?.id).then((picked) => {
+      if (picked) setReplyingTo(null);
+    });
+
+  const startReply = (message: Message) => {
+    setReplyingTo(message);
+    input.current?.focus();
   };
 
   const changeDraft = (text: string) => {
@@ -125,137 +152,165 @@ export default function ChatScreen() {
       : localized(convo.vendor.name, locale)
     : '';
 
+  // Who wrote a quoted message, and the messages a reply can point at
+  const authorOf = (message: Message) =>
+    message.senderRole === side ? t('chat.reply.you') : title;
+  const byId = new Map(thread.messages.map((m) => [m.id, m]));
+
   return (
-    <Screen edges={['top']}>
-      <View style={styles.bar}>
-        <BackButton />
-        {convo && (
-          <Pressable
-            accessibilityRole={side === 'family' ? 'link' : 'header'}
-            accessibilityLabel={side === 'family' ? t('chat.openProfile', { name: title }) : title}
-            disabled={side !== 'family'}
-            onPress={() =>
-              router.push({ pathname: '/v/[slug]', params: { slug: convo.vendor.slug } })
-            }
-            style={({ pressed }) => [styles.titleWrap, pressed && styles.pressed]}
-          >
-            <AppText variant="heading" weight={700} numberOfLines={1}>
-              {title}
-            </AppText>
-            <AppText
-              variant="caption"
-              color={side === 'family' ? 'primary' : 'text2'}
-              numberOfLines={1}
+    <GestureHandlerRootView style={styles.root}>
+      <Screen edges={['top']}>
+        <View style={styles.bar}>
+          <BackButton />
+          {convo && (
+            <Pressable
+              accessibilityRole={side === 'family' ? 'link' : 'header'}
+              accessibilityLabel={
+                side === 'family' ? t('chat.openProfile', { name: title }) : title
+              }
+              disabled={side !== 'family'}
+              onPress={() =>
+                router.push({ pathname: '/v/[slug]', params: { slug: convo.vendor.slug } })
+              }
+              style={({ pressed }) => [styles.titleWrap, pressed && styles.pressed]}
             >
-              {side === 'family'
-                ? t('chat.viewProfile')
-                : t('chat.forBusiness', { name: localized(convo.vendor.name, locale) })}
-            </AppText>
-          </Pressable>
-        )}
-      </View>
-
-      <KeyboardAvoidingView
-        style={styles.fill}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        keyboardVerticalOffset={0}
-      >
-        {thread.isPending ? (
-          <StateView state="loading" />
-        ) : thread.isError ? (
-          <StateView state="error" onRetry={() => void thread.refetch()} />
-        ) : (
-          <FlatList
-            inverted
-            data={items}
-            keyExtractor={(item) => item.key}
-            renderItem={({ item }) =>
-              item.type === 'upload' ? (
-                <UploadRow
-                  upload={item.upload}
-                  onRetry={() => photos.retry(item.upload)}
-                  onRemove={() => photos.remove(item.upload.id)}
-                />
-              ) : (
-                <ThreadRow
-                  item={item}
-                  conversation={convo}
-                  onReply={setDraft}
-                  onSend={sendText}
-                  onHold={(message) => {
-                    selectionHaptic();
-                    setReactingTo(message);
-                  }}
-                  onToggleReaction={toggleReaction}
-                />
-              )
-            }
-            contentContainerStyle={styles.list}
-            keyboardShouldPersistTaps="handled"
-            keyboardDismissMode="interactive"
-            ListFooterComponent={<View style={styles.top} />}
-            // Inverted, the header sits at the bottom, under the newest message
-            ListHeaderComponent={
-              typing.otherTyping && title ? (
-                <TypingIndicator label={t('chat.typing', { name: title })} />
-              ) : null
-            }
-          />
-        )}
-
-        <View style={[styles.bottom, { paddingBottom: Math.max(insets.bottom, Spacing.md) }]}>
-          {error && (
-            <View style={styles.error}>
-              <FieldError message={error} />
-            </View>
+              <AppText variant="heading" weight={700} numberOfLines={1}>
+                {title}
+              </AppText>
+              <AppText
+                variant="caption"
+                color={side === 'family' ? 'primary' : 'text2'}
+                numberOfLines={1}
+              >
+                {side === 'family'
+                  ? t('chat.viewProfile')
+                  : t('chat.forBusiness', { name: localized(convo.vendor.name, locale) })}
+              </AppText>
+            </Pressable>
           )}
-          {side === 'vendor' && convo && (
-            <View style={styles.tools}>
-              <Chip
-                role="button"
-                label={t('chat.sendQuote')}
-                onPress={() => router.push({ pathname: '/chat-quote', params: { id } })}
-              />
-              <Chip
-                role="button"
-                label={t('chat.sendMenu')}
-                onPress={() =>
-                  router.push({ pathname: '/chat-menu', params: { id, vendorId: convo.vendor.id } })
-                }
-              />
-            </View>
-          )}
-          {side === 'family' && convo && profile?.phone && !sharedNumber && (
-            <View style={styles.tools}>
-              <Chip role="button" label={t('chat.phone.shareButton')} onPress={shareNumber} />
-            </View>
-          )}
-          <Composer
-            value={draft}
-            onChangeText={changeDraft}
-            onBlur={typing.stopped}
-            onSend={() => sendText(draft)}
-            onAddPhoto={convo ? photos.pick : undefined}
-            sending={send.isPending}
-            quickReplies={
-              side === 'family' && familyTexts < 2
-                ? QUICK_REPLIES.map((key) => t(`chat.quickReplies.${key}`))
-                : undefined
-            }
-            onQuickReply={sendText}
-          />
         </View>
-      </KeyboardAvoidingView>
-      <ReactionPicker
-        visible={reactingTo !== null}
-        current={reactingTo ? myReaction(reactingTo) : null}
-        onPick={(picked) => {
-          if (reactingTo) toggleReaction(reactingTo, picked);
-          setReactingTo(null);
-        }}
-        onClose={() => setReactingTo(null)}
-      />
-    </Screen>
+
+        <KeyboardAvoidingView
+          style={styles.fill}
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+          keyboardVerticalOffset={0}
+        >
+          {thread.isPending ? (
+            <StateView state="loading" />
+          ) : thread.isError ? (
+            <StateView state="error" onRetry={() => void thread.refetch()} />
+          ) : (
+            <FlatList
+              inverted
+              data={items}
+              keyExtractor={(item) => item.key}
+              renderItem={({ item }) =>
+                item.type === 'upload' ? (
+                  <UploadRow
+                    upload={item.upload}
+                    quoted={
+                      item.upload.replyTo ? (byId.get(item.upload.replyTo) ?? null) : undefined
+                    }
+                    authorOf={authorOf}
+                    onRetry={() => photos.retry(item.upload)}
+                    onRemove={() => photos.remove(item.upload.id)}
+                  />
+                ) : (
+                  <ThreadRow
+                    item={item}
+                    conversation={convo}
+                    quoted={item.type === 'message' ? quotedFor(item.message, byId) : undefined}
+                    authorOf={authorOf}
+                    onStartReply={startReply}
+                    onReply={setDraft}
+                    onSend={sendText}
+                    onHold={(message) => {
+                      selectionHaptic();
+                      setReactingTo(message);
+                    }}
+                    onToggleReaction={toggleReaction}
+                  />
+                )
+              }
+              contentContainerStyle={styles.list}
+              keyboardShouldPersistTaps="handled"
+              keyboardDismissMode="interactive"
+              ListFooterComponent={<View style={styles.top} />}
+              // Inverted, the header sits at the bottom, under the newest message
+              ListHeaderComponent={
+                typing.otherTyping && title ? (
+                  <TypingIndicator label={t('chat.typing', { name: title })} />
+                ) : null
+              }
+            />
+          )}
+
+          <View style={[styles.bottom, { paddingBottom: Math.max(insets.bottom, Spacing.md) }]}>
+            {error && (
+              <View style={styles.error}>
+                <FieldError message={error} />
+              </View>
+            )}
+            {side === 'vendor' && convo && (
+              <View style={styles.tools}>
+                <Chip
+                  role="button"
+                  label={t('chat.sendQuote')}
+                  onPress={() => router.push({ pathname: '/chat-quote', params: { id } })}
+                />
+                <Chip
+                  role="button"
+                  label={t('chat.sendMenu')}
+                  onPress={() =>
+                    router.push({
+                      pathname: '/chat-menu',
+                      params: { id, vendorId: convo.vendor.id },
+                    })
+                  }
+                />
+              </View>
+            )}
+            {side === 'family' && convo && profile?.phone && !sharedNumber && (
+              <View style={styles.tools}>
+                <Chip role="button" label={t('chat.phone.shareButton')} onPress={shareNumber} />
+              </View>
+            )}
+            {replyingTo && (
+              <ReplyBar
+                title={t('chat.reply.replyingTo', { name: authorOf(replyingTo) })}
+                text={messageSnippet(replyingTo, t)}
+                cancelLabel={t('chat.reply.cancel')}
+                onCancel={() => setReplyingTo(null)}
+              />
+            )}
+            <Composer
+              inputRef={input}
+              value={draft}
+              onChangeText={changeDraft}
+              onBlur={typing.stopped}
+              onSend={() => sendText(draft)}
+              onAddPhoto={convo ? sendPhoto : undefined}
+              sending={send.isPending}
+              quickReplies={
+                side === 'family' && familyTexts < 2
+                  ? QUICK_REPLIES.map((key) => t(`chat.quickReplies.${key}`))
+                  : undefined
+              }
+              onQuickReply={sendText}
+            />
+          </View>
+        </KeyboardAvoidingView>
+        <ReactionPicker
+          visible={reactingTo !== null}
+          current={reactingTo ? myReaction(reactingTo) : null}
+          onPick={(picked) => {
+            if (reactingTo) toggleReaction(reactingTo, picked);
+            setReactingTo(null);
+          }}
+          onClose={() => setReactingTo(null)}
+        />
+      </Screen>
+    </GestureHandlerRootView>
   );
 }
 
@@ -264,18 +319,32 @@ type Row = ThreadItem | { type: 'upload'; key: string; upload: PhotoUpload };
 /** A photo of mine still on its way: "Sending…", or what went wrong and what to do. */
 function UploadRow({
   upload,
+  quoted,
+  authorOf,
   onRetry,
   onRemove,
 }: {
   upload: PhotoUpload;
+  /** The message it replies to, as in ThreadRow. */
+  quoted: Message | null | undefined;
+  authorOf: (message: Message) => string;
   onRetry: () => void;
   onRemove: () => void;
 }) {
   const styles = useStyles();
   const { t } = useLocale();
   const failed = upload.status === 'failed';
+  const quotedName = quoted ? authorOf(quoted) : '';
+  const quotedText = quoted ? messageSnippet(quoted, t) : t('chat.reply.unavailable');
   return (
     <View style={styles.upload}>
+      {quoted !== undefined && (
+        <ReplyQuote
+          name={quotedName}
+          text={quotedText}
+          spoken={t('chat.reply.inReplyTo', { name: quotedName, text: quotedText })}
+        />
+      )}
       <View style={failed ? null : styles.pending}>
         <PhotoBubble url={upload.uri} label={t('chat.photo')} />
       </View>
@@ -314,10 +383,25 @@ function UploadRow({
   );
 }
 
-/** A day heading or one message, drawn by its kind. */
+/**
+ * What a reply quotes: the message, null when it isn't loaded or is gone,
+ * or undefined when the message isn't a reply.
+ */
+function quotedFor(message: Message, byId: Map<string, Message>): Message | null | undefined {
+  if (!message.replyTo) return undefined;
+  return byId.get(message.replyTo) ?? null;
+}
+
+/**
+ * A day heading or one message, drawn by its kind: the message it replies to
+ * above it, swipe it to reply, hold it to react, its reactions under it.
+ */
 function ThreadRow({
   item,
   conversation,
+  quoted,
+  authorOf,
+  onStartReply,
   onReply,
   onSend,
   onHold,
@@ -325,6 +409,11 @@ function ThreadRow({
 }: {
   item: ThreadItem;
   conversation: Conversation | null;
+  /** The message this one replies to; null when it's gone, undefined when it isn't a reply. */
+  quoted: Message | null | undefined;
+  authorOf: (message: Message) => string;
+  /** Swiped (or the Reply action): start a reply to it (C5d). */
+  onStartReply: (message: Message) => void;
   onReply: (text: string) => void;
   onSend: (text: string) => void;
   /** Held: pick a reaction (C5c). */
@@ -335,40 +424,58 @@ function ThreadRow({
   const { t } = useLocale();
   if (item.type === 'day') return <DaySeparator day={item.day} />;
   const { message, mine, first, last, seen } = item;
-  // Not until it's saved: a reaction needs the message's real id
-  const canReact = !message.id.startsWith('pending-');
+  // Not until it's saved: a reaction or a reply needs the message's real id
+  const saved = !message.id.startsWith('pending-');
+  const wide =
+    message.kind === 'quote' ||
+    message.kind === 'menu' ||
+    message.kind === 'booking' ||
+    message.kind === 'phone';
+  const quotedName = quoted ? authorOf(quoted) : '';
+  const quotedText = quoted ? messageSnippet(quoted, t) : t('chat.reply.unavailable');
   return (
-    <View style={message.id.startsWith('pending-') ? styles.pending : null}>
-      <MessageRow
-        mine={mine}
-        last={last}
-        seen={seen}
-        createdAt={message.createdAt}
-        wide={
-          message.kind === 'quote' ||
-          message.kind === 'menu' ||
-          message.kind === 'booking' ||
-          message.kind === 'phone'
-        }
-      >
-        <Pressable
-          onLongPress={canReact ? () => onHold(message) : undefined}
-          delayLongPress={350}
-          accessibilityActions={canReact ? [{ name: 'react', label: t('chat.react.action') }] : []}
-          onAccessibilityAction={(e) => {
-            if (e.nativeEvent.actionName === 'react') onHold(message);
-          }}
-        >
-          <MessageContent
-            message={message}
-            mine={mine}
-            first={first}
-            last={last}
-            conversation={conversation}
-            onReply={onReply}
-            onSend={onSend}
+    <View style={saved ? null : styles.pending}>
+      <MessageRow mine={mine} last={last} seen={seen} createdAt={message.createdAt} wide={wide}>
+        {quoted !== undefined && (
+          <ReplyQuote
+            name={quotedName}
+            text={quotedText}
+            spoken={t('chat.reply.inReplyTo', { name: quotedName, text: quotedText })}
           />
-        </Pressable>
+        )}
+        <SwipeToReply
+          enabled={saved}
+          align={wide ? 'stretch' : mine ? 'right' : 'left'}
+          onReply={() => onStartReply(message)}
+        >
+          <Pressable
+            onLongPress={saved ? () => onHold(message) : undefined}
+            delayLongPress={350}
+            // Screen readers react and reply through actions, instead of holding and swiping
+            accessibilityActions={
+              saved
+                ? [
+                    { name: 'react', label: t('chat.react.action') },
+                    { name: 'reply', label: t('chat.reply.action') },
+                  ]
+                : []
+            }
+            onAccessibilityAction={(e) => {
+              if (e.nativeEvent.actionName === 'react') onHold(message);
+              if (e.nativeEvent.actionName === 'reply') onStartReply(message);
+            }}
+          >
+            <MessageContent
+              message={message}
+              mine={mine}
+              first={first}
+              last={last}
+              conversation={conversation}
+              onReply={onReply}
+              onSend={onSend}
+            />
+          </Pressable>
+        </SwipeToReply>
         <ReactionChips
           reactions={message.reactions}
           mine={mine}
@@ -472,6 +579,9 @@ function ChatMenu({ vendorId, menuId }: { vendorId: string; menuId: string }) {
 }
 
 const useStyles = makeStyles((Colors) => ({
+  root: {
+    flex: 1,
+  },
   bar: {
     minHeight: Sizes.navBar + 4,
     flexDirection: 'row',

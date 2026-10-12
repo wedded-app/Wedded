@@ -844,6 +844,14 @@
     "addPhoto": "ਤਸਵੀਰ ਜੋੜੋ",
     "seen": "ਦੇਖ ਲਿਆ",
     "typing": "{{name}} ਲਿਖ ਰਹੇ ਹਨ…",
+    "reply": {
+      "action": "ਜਵਾਬ ਦਿਓ",
+      "replyingTo": "{{name}} ਨੂੰ ਜਵਾਬ",
+      "cancel": "ਜਵਾਬ ਨਾ ਦਿਓ",
+      "you": "ਤੁਸੀਂ",
+      "unavailable": "ਇਹ ਸੁਨੇਹਾ ਉਪਲਬਧ ਨਹੀਂ",
+      "inReplyTo": "{{name}} ਦੇ ਜਵਾਬ ਵਿੱਚ: {{text}}"
+    },
     "today": "ਅੱਜ",
     "yesterday": "ਕੱਲ੍ਹ",
     "photo": "ਤਸਵੀਰ",

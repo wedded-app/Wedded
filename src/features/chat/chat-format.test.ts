@@ -1,6 +1,6 @@
 import type { Conversation } from '@/data/chat';
 
-import { inboxTime, lastMessagePreview } from './chat-format';
+import { inboxTime, lastMessagePreview, messageSnippet } from './chat-format';
 
 jest.mock('@/lib/supabase', () => ({ supabase: {} }));
 
@@ -43,6 +43,16 @@ describe('lastMessagePreview', () => {
     expect(lastMessagePreview(convo({ kind: 'phone', body: null, senderRole: 'family' }), t)).toBe(
       'chat.preview.you {"text":"chat.preview.phone"}',
     );
+  });
+});
+
+describe('messageSnippet', () => {
+  it('quotes a message as one line: its words, or what it is', () => {
+    expect(messageSnippet({ kind: 'text', body: 'Is June 12\n  open?' }, t)).toBe(
+      'Is June 12 open?',
+    );
+    expect(messageSnippet({ kind: 'photo', body: null }, t)).toBe('chat.preview.photo');
+    expect(messageSnippet({ kind: 'booking', body: 'Price?' }, t)).toBe('chat.preview.booking');
   });
 });
 

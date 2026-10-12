@@ -844,6 +844,14 @@
     "addPhoto": "Add a photo",
     "seen": "Seen",
     "typing": "{{name}} is typing…",
+    "reply": {
+      "action": "Reply",
+      "replyingTo": "Replying to {{name}}",
+      "cancel": "Stop replying",
+      "you": "You",
+      "unavailable": "This message isn't available",
+      "inReplyTo": "In reply to {{name}}: {{text}}"
+    },
     "today": "Today",
     "yesterday": "Yesterday",
     "photo": "Photo",

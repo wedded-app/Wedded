@@ -59,6 +59,8 @@ export type Message = {
   booking: Booking | null;
   /** A family's number, shown only after they tap "Share my number". */
   phone: string | null;
+  /** The earlier message this one replies to (swipe to reply), by id. */
+  replyTo: string | null;
   createdAt: string;
   /** When the other side had read it (for "Seen"); only on my own messages. */
   readAt: string | null;
@@ -228,6 +230,7 @@ type MessageRow = {
   kind: string;
   body: string | null;
   data: Record<string, unknown>;
+  reply_to?: string | null;
   created_at: string;
 };
 
@@ -275,6 +278,7 @@ export function toMessage(
           }
         : null,
     phone: row.kind === 'phone' && typeof d.phone === 'string' ? d.phone : null,
+    replyTo: row.reply_to ?? null,
     createdAt: row.created_at,
     readAt: mine && otherReadAt && otherReadAt >= row.created_at ? otherReadAt : null,
     reactions: [],
@@ -293,7 +297,9 @@ async function fetchReactions(conversationId: string): Promise<ReactionRow[]> {
 async function fetchMessages(conversationId: string): Promise<MessageRow[]> {
   const { data, error } = await supabase
     .from('messages')
-    .select('id, conversation_id, sender_user_id, sender_role, kind, body, data, created_at')
+    .select(
+      'id, conversation_id, sender_user_id, sender_role, kind, body, data, reply_to, created_at',
+    )
     .eq('conversation_id', conversationId)
     .order('created_at')
     .limit(500);
@@ -452,13 +458,16 @@ export function messagePayload(message: NewMessage): {
   }
 }
 
+/** A message to send, optionally as a reply to an earlier one (swipe to reply). */
+export type Outgoing = NewMessage & { replyTo?: string | null };
+
 /** Send a message; it shows at once and is confirmed (or removed on failure). */
 export function useSendMessage(conversationId: string) {
   const queryClient = useQueryClient();
   const { session } = useSession();
   const key = chatKeys.messages(conversationId);
   return useMutation({
-    mutationFn: async (message: NewMessage) => {
+    mutationFn: async (message: Outgoing) => {
       const { kind, body, data } = messagePayload(message);
       const { data: id, error } = await supabase.rpc('send_message', {
         p_conversation_id: conversationId,
@@ -466,6 +475,7 @@ export function useSendMessage(conversationId: string) {
         p_body: body ?? undefined,
         // Only JSON values go in (numbers, strings, undefined dropped)
         p_data: JSON.parse(JSON.stringify(data)) as Json,
+        p_reply_to: message.replyTo ?? undefined,
       });
       if (error) throw new Error(error.message);
       return id;
@@ -486,6 +496,7 @@ export function useSendMessage(conversationId: string) {
         kind,
         body,
         data,
+        reply_to: message.replyTo ?? null,
         created_at: new Date().toISOString(),
       };
       queryClient.setQueryData<MessageRow[]>(key, (list) => [...(list ?? []), temp]);

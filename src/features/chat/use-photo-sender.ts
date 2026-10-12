@@ -19,6 +19,8 @@ export type PhotoUpload = {
   status: 'sending' | 'failed';
   /** Set once uploaded, so trying again only sends the message. */
   path?: string;
+  /** The message this photo replies to (swipe to reply), if any. */
+  replyTo?: string | null;
 };
 
 type Send = ReturnType<typeof useSendMessage>;
@@ -96,7 +98,7 @@ export function usePhotoSender(conversationId: string, send: Send) {
       }
       // The sent message shows from here on (from the phone's copy)
       remove(upload.id);
-      await send.mutateAsync({ kind: 'photo', path, width, height });
+      await send.mutateAsync({ kind: 'photo', path, width, height, replyTo: upload.replyTo });
     } catch {
       setUploads((all) => [
         ...all.filter((u) => u.id !== upload.id),
@@ -105,18 +107,19 @@ export function usePhotoSender(conversationId: string, send: Send) {
     }
   }
 
-  async function pick() {
+  /** Pick and send one photo, as a reply when `replyTo` is set. Says whether one was picked. */
+  async function pick(replyTo?: string | null): Promise<boolean> {
     setNotice(null);
-    if (!(await allowed())) return;
+    if (!(await allowed())) return false;
     let result: ImagePicker.ImagePickerResult;
     try {
       result = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ['images'], quality: 1 });
     } catch {
       setNotice(t('chat.photos.cantOpen'));
-      return;
+      return false;
     }
     const asset = result.canceled ? null : result.assets[0];
-    if (!asset) return;
+    if (!asset) return false;
     const upload: PhotoUpload = {
       id: `upload-${Date.now()}`,
       uri: asset.uri,
@@ -124,15 +127,17 @@ export function usePhotoSender(conversationId: string, send: Send) {
       height: asset.height,
       createdAt: new Date().toISOString(),
       status: 'sending',
+      replyTo: replyTo ?? null,
     };
     setUploads((all) => [...all, upload]);
-    await deliver(upload);
+    void deliver(upload);
+    return true;
   }
 
   return {
     uploads,
     notice,
-    pick: () => void pick(),
+    pick,
     retry: (upload: PhotoUpload) => void deliver(upload),
     remove,
   };
