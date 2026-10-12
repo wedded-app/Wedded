@@ -1294,7 +1294,7 @@
   },
   "business": {
     "title": "My business",
-    "profileHint": "Your menus and calendar",
+    "profileHint": "Your numbers, the families who asked, menus and calendar",
     "notVendor": "This is for vendor accounts. If you run a wedding business, ask us to add you.",
     "yourListing": "Your page",
     "listingHint": "Families see these on your page. Keep them up to date so they ask about the right things.",
@@ -1411,6 +1411,65 @@
       "freshBody": "Families only see your days as open while your calendar is fresh. Tap this whenever you've checked it.",
       "upToDate": "My calendar is up to date",
       "upToDateDone": "Thank you! Families will see your open days for the next 60 days."
+    },
+    "notLive": "Your page isn't live yet, so families can't find it. We'll tell you when it is.",
+    "viewPage": "View my page",
+    "viewPageHint": "See it the way families do",
+    "stats": {
+      "title": "How your page is doing",
+      "period": "Show the last",
+      "days": "{{days}} days",
+      "views": "People who viewed your page",
+      "contacts": "Times families reached out",
+      "inquiries": "Families who asked about price and date",
+      "saves": "Families who saved you",
+      "reelViews": "Views of your reels",
+      "howTitle": "How families reached out",
+      "calls": "Called you",
+      "texts": "Texted you",
+      "whatsapps": "WhatsApped you",
+      "directions": "Asked for directions",
+      "instagram": "Opened your Instagram",
+      "website": "Opened your website",
+      "shares": "Shared your page",
+      "change": {
+        "up": "Up {{percent}}% from the {{days}} days before",
+        "down": "Down {{percent}}% from the {{days}} days before",
+        "same": "Same as the {{days}} days before"
+      }
+    },
+    "leads": {
+      "title": "Families who asked",
+      "one": "Request",
+      "empty": "No one has asked yet. When a family asks about price and date, they show up here.",
+      "waiting": "Waiting for your reply",
+      "waitingCount": {
+        "one": "1 family is waiting for your reply",
+        "other": "{{count}} families are waiting for your reply"
+      },
+      "allReplied": "You've replied to everyone. Well done!",
+      "seeAll": "See all {{count}}",
+      "tour": "Wants a tour",
+      "dateNotSure": "Date not sure yet",
+      "guests": "{{band}} guests",
+      "notFound": "We couldn't find this request. It may be more than 100 requests ago.",
+      "asked": "Asked on {{date}}",
+      "askedTour": "Asked for a tour on {{date}}",
+      "events": "Events",
+      "date": "Date",
+      "guestsTitle": "Guests",
+      "where": "Where",
+      "replyBy": "They'd like you to",
+      "message": "Their message",
+      "answers": "Their answers",
+      "reply": "Reply",
+      "youReplied": "You've replied in the app.",
+      "openChat": "Reply in the app",
+      "call": "Call",
+      "text": "Text",
+      "whatsapp": "WhatsApp",
+      "email": "Email",
+      "noWay": "This family deleted their account, so there's no way to reply."
     }
   }
 }
