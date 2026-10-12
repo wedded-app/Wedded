@@ -1291,5 +1291,126 @@
     },
     "noteLabel": "Anything else we should know? (optional)",
     "send": "Send report"
+  },
+  "business": {
+    "title": "My business",
+    "profileHint": "Your menus and calendar",
+    "notVendor": "This is for vendor accounts. If you run a wedding business, ask us to add you.",
+    "yourListing": "Your page",
+    "listingHint": "Families see these on your page. Keep them up to date so they ask about the right things.",
+    "cancel": "Cancel",
+    "menus": {
+      "title": "Menus",
+      "rowHint": "What you serve and the price",
+      "empty": "No menus yet. Add one so families can see what you serve and the price.",
+      "hint": "Tap a menu to change it.",
+      "add": "Add a menu",
+      "editLabel": "Change {{name}}",
+      "newTitle": "New menu",
+      "editTitle": "Change menu",
+      "name": "Menu name",
+      "nameHint": "For example: Gold Package",
+      "namePa": "Menu name in Punjabi (if you like)",
+      "description": "About this menu",
+      "cuisine": "Cuisine",
+      "cuisineHint": "For example: Punjabi, Indo-Chinese",
+      "price": "Price in dollars",
+      "priceHint": "Whole dollars. Leave it empty to ask families to contact you.",
+      "priceFor": "Price for each",
+      "per": "Per {{unit}}",
+      "minGuests": "Fewest guests you'll take",
+      "diet": "Food",
+      "dishes": "Dishes",
+      "dishesHint": "Group dishes into parts like Starters and Mains.",
+      "sectionName": "Part name, like Starters",
+      "dish": "Dish {{number}}",
+      "removeDish": "Remove {{name}}",
+      "addDish": "Add a dish",
+      "removeSection": "Remove this part",
+      "addSection": "Add a part",
+      "save": "Save menu",
+      "saveFailed": "Your menu didn't save. Check your internet, then try again.",
+      "delete": "Delete menu",
+      "deleteTitle": "Delete this menu?",
+      "deleteConfirm": "Families won't see it on your page any more. This can't be undone.",
+      "deleteFailed": "The menu didn't delete. Check your internet, then try again.",
+      "problems": {
+        "name": "Give the menu a name.",
+        "price": "The price should be a whole number of dollars, more than 0.",
+        "minGuests": "The fewest guests should be a whole number, more than 0.",
+        "sectionTitle": "Give every part of the menu a name, like Starters.",
+        "tooLong": "Something is too long. Shorten the name, description or a dish."
+      }
+    },
+    "calendar": {
+      "title": "Calendar",
+      "rowHint": "Which days you're free",
+      "intro": "Tap a day to mark it booked or held. Families see which days you're free when they ask.",
+      "previous": "Previous month",
+      "next": "Next month",
+      "monthTitle": "{{month}} {{year}}",
+      "dayTitle": "{{weekday}}, {{month}} {{day}}",
+      "months": {
+        "1": "January",
+        "2": "February",
+        "3": "March",
+        "4": "April",
+        "5": "May",
+        "6": "June",
+        "7": "July",
+        "8": "August",
+        "9": "September",
+        "10": "October",
+        "11": "November",
+        "12": "December"
+      },
+      "days": {
+        "0": "Sunday",
+        "1": "Monday",
+        "2": "Tuesday",
+        "3": "Wednesday",
+        "4": "Thursday",
+        "5": "Friday",
+        "6": "Saturday"
+      },
+      "weekdays": {
+        "0": "S",
+        "1": "M",
+        "2": "T",
+        "3": "W",
+        "4": "T",
+        "5": "F",
+        "6": "S"
+      },
+      "status": {
+        "open": "open",
+        "booked": "booked",
+        "held": "held",
+        "partBooked": "part of the day booked",
+        "partHeld": "part of the day held"
+      },
+      "legend": {
+        "open": "Open",
+        "booked": "Booked",
+        "held": "Held",
+        "partBooked": "Part of the day"
+      },
+      "choice": {
+        "open": "Open",
+        "booked": "Booked",
+        "held": "Held"
+      },
+      "choiceHint": {
+        "open": "Families can ask about this day.",
+        "booked": "You're taken for the whole day.",
+        "held": "Someone is deciding. You're not free yet."
+      },
+      "partNote": "Part of this day is marked. Picking one of these sets the whole day.",
+      "saveFailed": "That didn't save. Check your internet, then try again.",
+      "freshTitle": "Is your calendar up to date?",
+      "freshBody": "Families only see your days as open while your calendar is fresh. Tap this whenever you've checked it.",
+      "upToDate": "My calendar is up to date",
+      "upToDateDone": "Thank you! Families will see your open days for the next 60 days."
+    }
   }
 }
