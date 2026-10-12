@@ -10,6 +10,13 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect } from 'react';
 
 import { useSession } from '@/features/auth/session';
+import {
+  applyReaction,
+  type ReactionCode,
+  type ReactionRow,
+  type ReactionSummary,
+  summarizeReactions,
+} from '@/features/chat/reactions';
 import type { LocalizedText } from '@/i18n/localized';
 import { supabase } from '@/lib/supabase';
 import type { Json } from '@/types/database';
@@ -57,6 +64,8 @@ export type Message = {
   createdAt: string;
   /** When the other side had read it (for "Seen"); only on my own messages. */
   readAt: string | null;
+  /** Emoji reactions under it, each once with its count (C5c). */
+  reactions: ReactionSummary[];
   /** Sent from this phone and not confirmed yet. */
   pending?: boolean;
 };
@@ -78,6 +87,7 @@ export const chatKeys = {
   all: ['chat'] as const,
   conversations: (userId: string) => [...chatKeys.all, 'conversations', userId] as const,
   messages: (conversationId: string) => [...chatKeys.all, 'messages', conversationId] as const,
+  reactions: (conversationId: string) => [...chatKeys.all, 'reactions', conversationId] as const,
   vendor: (userId: string) => [...chatKeys.all, 'vendor-of', userId] as const,
 };
 
@@ -271,7 +281,17 @@ export function toMessage(
     replyTo: row.reply_to ?? null,
     createdAt: row.created_at,
     readAt: mine && otherReadAt && otherReadAt >= row.created_at ? otherReadAt : null,
+    reactions: [],
   };
+}
+
+async function fetchReactions(conversationId: string): Promise<ReactionRow[]> {
+  const { data, error } = await supabase
+    .from('message_reactions')
+    .select('message_id, user_id, reaction')
+    .eq('conversation_id', conversationId);
+  if (error) throw error;
+  return data;
 }
 
 async function fetchMessages(conversationId: string): Promise<MessageRow[]> {
@@ -298,9 +318,17 @@ export function useConversation(conversationId: string) {
   const convo = conversations.data?.find((c) => c.id === conversationId) ?? null;
   const key = chatKeys.messages(conversationId);
 
+  const { session } = useSession();
+  const me = session?.user.id ?? null;
+
   const messages = useQuery({
     queryKey: key,
     queryFn: () => fetchMessages(conversationId),
+    enabled: conversationId.length > 0,
+  });
+  const reactions = useQuery({
+    queryKey: chatKeys.reactions(conversationId),
+    queryFn: () => fetchReactions(conversationId),
     enabled: conversationId.length > 0,
   });
 
@@ -331,19 +359,72 @@ export function useConversation(conversationId: string) {
           markRead();
         },
       )
+      // Reactions from either side, as they're added, changed or taken back
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'message_reactions',
+          filter: `conversation_id=eq.${conversationId}`,
+        },
+        () => void queryClient.invalidateQueries({ queryKey: chatKeys.reactions(conversationId) }),
+      )
       .subscribe();
     return () => {
       void supabase.removeChannel(channel);
     };
   }, [conversationId, queryClient]);
 
+  const byMessage = summarizeReactions(reactions.data ?? [], me);
   return {
     ...messages,
     conversation: convo,
-    messages: (messages.data ?? []).map((row) =>
-      toMessage(row, convo?.side ?? null, convo?.otherReadAt ?? null),
-    ),
+    messages: (messages.data ?? []).map((row) => ({
+      ...toMessage(row, convo?.side ?? null, convo?.otherReadAt ?? null),
+      reactions: byMessage.get(row.id) ?? [],
+    })),
   };
+}
+
+/**
+ * React to a message (or take your reaction back with null). Shows at once on
+ * this phone, and is undone if it doesn't save.
+ */
+export function useReactToMessage(conversationId: string) {
+  const queryClient = useQueryClient();
+  const { session } = useSession();
+  const key = chatKeys.reactions(conversationId);
+  return useMutation({
+    mutationFn: async ({
+      messageId,
+      reaction,
+    }: {
+      messageId: string;
+      reaction: ReactionCode | null;
+    }) => {
+      const { error } = await supabase.rpc('react_to_message', {
+        p_message_id: messageId,
+        // The API's types can't say "null"; null takes the reaction back
+        p_reaction: reaction as string,
+      });
+      if (error) throw new Error(error.message);
+    },
+    onMutate: async ({ messageId, reaction }) => {
+      const me = session?.user.id;
+      if (!me) return { previous: undefined };
+      await queryClient.cancelQueries({ queryKey: key });
+      const previous = queryClient.getQueryData<ReactionRow[]>(key);
+      queryClient.setQueryData<ReactionRow[]>(key, (rows) =>
+        applyReaction(rows ?? [], messageId, me, reaction),
+      );
+      return { previous };
+    },
+    onError: (_error, _vars, context) => {
+      if (context?.previous) queryClient.setQueryData(key, context.previous);
+    },
+    onSettled: () => queryClient.invalidateQueries({ queryKey: key }),
+  });
 }
 
 export type NewMessage =

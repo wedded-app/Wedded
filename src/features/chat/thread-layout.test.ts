@@ -15,6 +15,7 @@ const message = (id: string, role: 'family' | 'vendor', at: string, readAt: stri
     booking: null,
     phone: null,
     replyTo: null,
+    reactions: [],
     createdAt: at,
     readAt,
   }) satisfies ChatMessage;

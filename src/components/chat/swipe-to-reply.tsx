@@ -24,23 +24,16 @@ const MAX_PULL = 80;
  * the finger, a reply arrow fades in behind it, the phone ticks once the pull
  * is far enough, and letting go there replies. Scrolling up and down always
  * wins. With Reduce Motion it snaps back instead of springing. Screen
- * readers get a "Reply" action instead (when `label` is given, the message
- * is read as one item with that label).
+ * readers can't swipe: give the message itself a "Reply" accessibility action.
  */
 export function SwipeToReply({
   children,
   onReply,
-  actionLabel,
-  label,
   enabled = true,
   align,
 }: {
   children: ReactNode;
   onReply: () => void;
-  /** "Reply", the screen reader's action. */
-  actionLabel: string;
-  /** What the message says, to read it as one item with the Reply action. */
-  label?: string;
   enabled?: boolean;
   /** Where the message sits in its row: its side, or the full width for cards. */
   align: 'left' | 'right' | 'stretch';
@@ -80,15 +73,7 @@ export function SwipeToReply({
   }));
 
   return (
-    <View
-      style={styles[align]}
-      accessible={!!label}
-      accessibilityLabel={label}
-      accessibilityActions={enabled ? [{ name: 'reply', label: actionLabel }] : undefined}
-      onAccessibilityAction={(event) => {
-        if (event.nativeEvent.actionName === 'reply') onReply();
-      }}
-    >
+    <View style={styles[align]}>
       <Animated.View pointerEvents="none" style={[styles.arrow, arrow]}>
         <Icon name="arrow-undo" size={20} color={Colors.text2} />
       </Animated.View>

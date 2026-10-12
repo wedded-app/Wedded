@@ -19,6 +19,8 @@ import { Composer } from '@/components/chat/composer';
 import { DaySeparator } from '@/components/chat/day-separator';
 import { MessageRow, PhotoBubble, TextBubble } from '@/components/chat/message-row';
 import { PhoneCard } from '@/components/chat/phone-card';
+import { ReactionChips } from '@/components/chat/reaction-chips';
+import { ReactionPicker } from '@/components/chat/reaction-picker';
 import { QuoteCard } from '@/components/chat/quote-card';
 import { ReplyBar, ReplyQuote } from '@/components/chat/reply-quote';
 import { SwipeToReply } from '@/components/chat/swipe-to-reply';
@@ -33,6 +35,7 @@ import {
   sendErrorKind,
   useChatPhotoUrl,
   useConversation,
+  useReactToMessage,
   useSendMessage,
   type Conversation,
   type Message,
@@ -42,12 +45,14 @@ import { useHomeEvents } from '@/data/reference';
 import { useVendorMenus } from '@/data/vendor-menus';
 import { messageSnippet } from '@/features/chat/chat-format';
 import { sentPhotoUri } from '@/features/chat/chat-photo';
+import { nextReaction, type ReactionCode } from '@/features/chat/reactions';
 import { layoutThread, type ThreadItem } from '@/features/chat/thread-layout';
 import { type PhotoUpload, usePhotoSender } from '@/features/chat/use-photo-sender';
 import { useSession } from '@/features/auth/session';
 import { usd } from '@/features/vendors/profile-format';
 import { localized } from '@/i18n/localized';
 import { useLocale } from '@/i18n/locale-context';
+import { selectionHaptic } from '@/lib/haptics';
 import { formatPhone } from '@/lib/phone';
 
 const QUICK_REPLIES = ['available', 'price', 'visit', 'thanks'] as const;
@@ -58,8 +63,8 @@ const QUICK_REPLIES = ['available', 'price', 'visit', 'thanks'] as const;
  * Either side can send a photo, and sees "… is typing" while the other side
  * writes. Families get quick replies and "Share my number" (their number never
  * reaches the vendor otherwise, C2); vendors get "Send a quote" and "Send a
- * menu", and only ever reply. Swiping a message (or the screen reader's
- * Reply action) replies to it, quoting it above the reply.
+ * menu", and only ever reply. Holding a message reacts to it; swiping it
+ * (or the screen reader's Reply action) replies to it, quoting it above.
  * Opening it marks it read. /chat/{conversation id}
  */
 export default function ChatScreen() {
@@ -69,6 +74,12 @@ export default function ChatScreen() {
   const { t, locale } = useLocale();
   const thread = useConversation(id);
   const send = useSendMessage(id);
+  const react = useReactToMessage(id);
+  // The message being reacted to, while the picker is open (hold a message)
+  const [reactingTo, setReactingTo] = useState<Message | null>(null);
+  const myReaction = (message: Message) => message.reactions.find((r) => r.mine)?.code ?? null;
+  const toggleReaction = (message: Message, picked: ReactionCode) =>
+    react.mutate({ messageId: message.id, reaction: nextReaction(myReaction(message), picked) });
   const photos = usePhotoSender(id, send);
   const [draft, setDraft] = useState('');
   const [replyingTo, setReplyingTo] = useState<Message | null>(null);
@@ -102,6 +113,12 @@ export default function ChatScreen() {
     setDraft('');
     setReplyingTo(null);
   };
+
+  // A photo picked while replying goes as the reply
+  const sendPhoto = () =>
+    void photos.pick(replyingTo?.id).then((picked) => {
+      if (picked) setReplyingTo(null);
+    });
 
   const startReply = (message: Message) => {
     setReplyingTo(message);
@@ -191,6 +208,10 @@ export default function ChatScreen() {
                 item.type === 'upload' ? (
                   <UploadRow
                     upload={item.upload}
+                    quoted={
+                      item.upload.replyTo ? (byId.get(item.upload.replyTo) ?? null) : undefined
+                    }
+                    authorOf={authorOf}
                     onRetry={() => photos.retry(item.upload)}
                     onRemove={() => photos.remove(item.upload.id)}
                   />
@@ -203,6 +224,11 @@ export default function ChatScreen() {
                     onStartReply={startReply}
                     onReply={setDraft}
                     onSend={sendText}
+                    onHold={(message) => {
+                      selectionHaptic();
+                      setReactingTo(message);
+                    }}
+                    onToggleReaction={toggleReaction}
                   />
                 )
               }
@@ -263,7 +289,7 @@ export default function ChatScreen() {
               onChangeText={changeDraft}
               onBlur={typing.stopped}
               onSend={() => sendText(draft)}
-              onAddPhoto={convo ? photos.pick : undefined}
+              onAddPhoto={convo ? sendPhoto : undefined}
               sending={send.isPending}
               quickReplies={
                 side === 'family' && familyTexts < 2
@@ -274,6 +300,15 @@ export default function ChatScreen() {
             />
           </View>
         </KeyboardAvoidingView>
+        <ReactionPicker
+          visible={reactingTo !== null}
+          current={reactingTo ? myReaction(reactingTo) : null}
+          onPick={(picked) => {
+            if (reactingTo) toggleReaction(reactingTo, picked);
+            setReactingTo(null);
+          }}
+          onClose={() => setReactingTo(null)}
+        />
       </Screen>
     </GestureHandlerRootView>
   );
@@ -284,18 +319,32 @@ type Row = ThreadItem | { type: 'upload'; key: string; upload: PhotoUpload };
 /** A photo of mine still on its way: "Sending…", or what went wrong and what to do. */
 function UploadRow({
   upload,
+  quoted,
+  authorOf,
   onRetry,
   onRemove,
 }: {
   upload: PhotoUpload;
+  /** The message it replies to, as in ThreadRow. */
+  quoted: Message | null | undefined;
+  authorOf: (message: Message) => string;
   onRetry: () => void;
   onRemove: () => void;
 }) {
   const styles = useStyles();
   const { t } = useLocale();
   const failed = upload.status === 'failed';
+  const quotedName = quoted ? authorOf(quoted) : '';
+  const quotedText = quoted ? messageSnippet(quoted, t) : t('chat.reply.unavailable');
   return (
     <View style={styles.upload}>
+      {quoted !== undefined && (
+        <ReplyQuote
+          name={quotedName}
+          text={quotedText}
+          spoken={t('chat.reply.inReplyTo', { name: quotedName, text: quotedText })}
+        />
+      )}
       <View style={failed ? null : styles.pending}>
         <PhotoBubble url={upload.uri} label={t('chat.photo')} />
       </View>
@@ -343,7 +392,10 @@ function quotedFor(message: Message, byId: Map<string, Message>): Message | null
   return byId.get(message.replyTo) ?? null;
 }
 
-/** A day heading or one message, drawn by its kind, with the message it replies to above it. */
+/**
+ * A day heading or one message, drawn by its kind: the message it replies to
+ * above it, swipe it to reply, hold it to react, its reactions under it.
+ */
 function ThreadRow({
   item,
   conversation,
@@ -352,36 +404,37 @@ function ThreadRow({
   onStartReply,
   onReply,
   onSend,
+  onHold,
+  onToggleReaction,
 }: {
   item: ThreadItem;
   conversation: Conversation | null;
+  /** The message this one replies to; null when it's gone, undefined when it isn't a reply. */
   quoted: Message | null | undefined;
   authorOf: (message: Message) => string;
+  /** Swiped (or the Reply action): start a reply to it (C5d). */
   onStartReply: (message: Message) => void;
   onReply: (text: string) => void;
   onSend: (text: string) => void;
+  /** Held: pick a reaction (C5c). */
+  onHold: (message: Message) => void;
+  onToggleReaction: (message: Message, reaction: ReactionCode) => void;
 }) {
   const styles = useStyles();
   const { t } = useLocale();
   if (item.type === 'day') return <DaySeparator day={item.day} />;
   const { message, mine, first, last, seen } = item;
+  // Not until it's saved: a reaction or a reply needs the message's real id
+  const saved = !message.id.startsWith('pending-');
   const wide =
     message.kind === 'quote' ||
     message.kind === 'menu' ||
     message.kind === 'booking' ||
     message.kind === 'phone';
-  const pending = message.id.startsWith('pending-');
   const quotedName = quoted ? authorOf(quoted) : '';
   const quotedText = quoted ? messageSnippet(quoted, t) : t('chat.reply.unavailable');
-  // Bubbles are read as one item with a Reply action; cards keep their own buttons
-  const spoken =
-    message.kind === 'text'
-      ? (message.body ?? '')
-      : message.kind === 'photo'
-        ? t('chat.photo')
-        : undefined;
   return (
-    <View style={pending ? styles.pending : null}>
+    <View style={saved ? null : styles.pending}>
       <MessageRow mine={mine} last={last} seen={seen} createdAt={message.createdAt} wide={wide}>
         {quoted !== undefined && (
           <ReplyQuote
@@ -391,22 +444,43 @@ function ThreadRow({
           />
         )}
         <SwipeToReply
-          enabled={!pending}
+          enabled={saved}
           align={wide ? 'stretch' : mine ? 'right' : 'left'}
           onReply={() => onStartReply(message)}
-          actionLabel={t('chat.reply.action')}
-          label={spoken}
         >
-          <MessageContent
-            message={message}
-            mine={mine}
-            first={first}
-            last={last}
-            conversation={conversation}
-            onReply={onReply}
-            onSend={onSend}
-          />
+          <Pressable
+            onLongPress={saved ? () => onHold(message) : undefined}
+            delayLongPress={350}
+            // Screen readers react and reply through actions, instead of holding and swiping
+            accessibilityActions={
+              saved
+                ? [
+                    { name: 'react', label: t('chat.react.action') },
+                    { name: 'reply', label: t('chat.reply.action') },
+                  ]
+                : []
+            }
+            onAccessibilityAction={(e) => {
+              if (e.nativeEvent.actionName === 'react') onHold(message);
+              if (e.nativeEvent.actionName === 'reply') onStartReply(message);
+            }}
+          >
+            <MessageContent
+              message={message}
+              mine={mine}
+              first={first}
+              last={last}
+              conversation={conversation}
+              onReply={onReply}
+              onSend={onSend}
+            />
+          </Pressable>
         </SwipeToReply>
+        <ReactionChips
+          reactions={message.reactions}
+          mine={mine}
+          onToggle={(reaction) => onToggleReaction(message, reaction)}
+        />
       </MessageRow>
     </View>
   );

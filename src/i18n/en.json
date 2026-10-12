@@ -956,6 +956,20 @@
       "text": "Text",
       "callSpoken": "Call {{number}}",
       "textSpoken": "Text {{number}}"
+    },
+    "react": {
+      "action": "React",
+      "close": "Close reactions",
+      "takeBack": "Takes your reaction back",
+      "chip": "{{name}}, {{count}}",
+      "names": {
+        "heart": "Heart",
+        "thumbs_up": "Thumbs up",
+        "laugh": "Laughing",
+        "wow": "Surprised",
+        "sad": "Sad",
+        "pray": "Folded hands"
+      }
     }
   },
   "welcome": {
