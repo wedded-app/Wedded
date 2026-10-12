@@ -850,7 +850,9 @@
       "cancel": "Stop replying",
       "you": "You",
       "unavailable": "This message isn't available",
-      "inReplyTo": "In reply to {{name}}: {{text}}"
+      "inReplyTo": "In reply to {{name}}: {{text}}",
+      "showHint": "Shows the original message",
+      "shown": "Showing the original message"
     },
     "today": "Today",
     "yesterday": "Yesterday",

@@ -1,6 +1,7 @@
 import { router, useLocalSearchParams } from 'expo-router';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
+  AccessibilityInfo,
   Alert,
   FlatList,
   KeyboardAvoidingView,
@@ -10,6 +11,7 @@ import {
   View,
 } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { useReducedMotion } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AppText } from '@/components/app-text';
@@ -64,7 +66,8 @@ const QUICK_REPLIES = ['available', 'price', 'visit', 'thanks'] as const;
  * writes. Families get quick replies and "Share my number" (their number never
  * reaches the vendor otherwise, C2); vendors get "Send a quote" and "Send a
  * menu", and only ever reply. Holding a message reacts to it; swiping it
- * (or the screen reader's Reply action) replies to it, quoting it above.
+ * (or the screen reader's Reply action) replies to it, quoting it above, and
+ * tapping a quote scrolls to the original and lights it up for a moment.
  * Opening it marks it read. /chat/{conversation id}
  */
 export default function ChatScreen() {
@@ -84,6 +87,17 @@ export default function ChatScreen() {
   const [draft, setDraft] = useState('');
   const [replyingTo, setReplyingTo] = useState<Message | null>(null);
   const input = useRef<TextInput>(null);
+  const list = useRef<FlatList<Row>>(null);
+  const reduceMotion = useReducedMotion();
+  // The original a quote was tapped for, lit up for a moment
+  const [lit, setLit] = useState<string | null>(null);
+  const unlight = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(
+    () => () => {
+      if (unlight.current) clearTimeout(unlight.current);
+    },
+    [],
+  );
   const convo = thread.conversation;
   const side = convo?.side ?? 'family';
   const typing = useTyping(id, convo?.side ?? null);
@@ -157,6 +171,17 @@ export default function ChatScreen() {
     message.senderRole === side ? t('chat.reply.you') : title;
   const byId = new Map(thread.messages.map((m) => [m.id, m]));
 
+  // Tapping a quote: scroll to the original, light it up, and say so
+  const showOriginal = (messageId: string) => {
+    const index = items.findIndex((row) => row.key === messageId);
+    if (index < 0) return;
+    list.current?.scrollToIndex({ index, viewPosition: 0.5, animated: !reduceMotion });
+    setLit(messageId);
+    if (unlight.current) clearTimeout(unlight.current);
+    unlight.current = setTimeout(() => setLit(null), 1600);
+    AccessibilityInfo.announceForAccessibility(t('chat.reply.shown'));
+  };
+
   return (
     <GestureHandlerRootView style={styles.root}>
       <Screen edges={['top']}>
@@ -201,6 +226,7 @@ export default function ChatScreen() {
             <StateView state="error" onRetry={() => void thread.refetch()} />
           ) : (
             <FlatList
+              ref={list}
               inverted
               data={items}
               keyExtractor={(item) => item.key}
@@ -212,6 +238,7 @@ export default function ChatScreen() {
                       item.upload.replyTo ? (byId.get(item.upload.replyTo) ?? null) : undefined
                     }
                     authorOf={authorOf}
+                    onShowOriginal={showOriginal}
                     onRetry={() => photos.retry(item.upload)}
                     onRemove={() => photos.remove(item.upload.id)}
                   />
@@ -221,6 +248,8 @@ export default function ChatScreen() {
                     conversation={convo}
                     quoted={item.type === 'message' ? quotedFor(item.message, byId) : undefined}
                     authorOf={authorOf}
+                    lit={item.type === 'message' && item.message.id === lit}
+                    onShowOriginal={showOriginal}
                     onStartReply={startReply}
                     onReply={setDraft}
                     onSend={sendText}
@@ -235,6 +264,22 @@ export default function ChatScreen() {
               contentContainerStyle={styles.list}
               keyboardShouldPersistTaps="handled"
               keyboardDismissMode="interactive"
+              // An older message far up isn't measured yet: get near it, then try again
+              onScrollToIndexFailed={({ index, averageItemLength }) => {
+                list.current?.scrollToOffset({
+                  offset: index * averageItemLength,
+                  animated: false,
+                });
+                setTimeout(
+                  () =>
+                    list.current?.scrollToIndex({
+                      index,
+                      viewPosition: 0.5,
+                      animated: !reduceMotion,
+                    }),
+                  100,
+                );
+              }}
               ListFooterComponent={<View style={styles.top} />}
               // Inverted, the header sits at the bottom, under the newest message
               ListHeaderComponent={
@@ -321,6 +366,7 @@ function UploadRow({
   upload,
   quoted,
   authorOf,
+  onShowOriginal,
   onRetry,
   onRemove,
 }: {
@@ -328,6 +374,7 @@ function UploadRow({
   /** The message it replies to, as in ThreadRow. */
   quoted: Message | null | undefined;
   authorOf: (message: Message) => string;
+  onShowOriginal: (messageId: string) => void;
   onRetry: () => void;
   onRemove: () => void;
 }) {
@@ -343,6 +390,8 @@ function UploadRow({
           name={quotedName}
           text={quotedText}
           spoken={t('chat.reply.inReplyTo', { name: quotedName, text: quotedText })}
+          onPress={quoted ? () => onShowOriginal(quoted.id) : undefined}
+          hint={t('chat.reply.showHint')}
         />
       )}
       <View style={failed ? null : styles.pending}>
@@ -401,6 +450,8 @@ function ThreadRow({
   conversation,
   quoted,
   authorOf,
+  lit,
+  onShowOriginal,
   onStartReply,
   onReply,
   onSend,
@@ -412,6 +463,10 @@ function ThreadRow({
   /** The message this one replies to; null when it's gone, undefined when it isn't a reply. */
   quoted: Message | null | undefined;
   authorOf: (message: Message) => string;
+  /** Lit up for a moment: a quote of it was just tapped. */
+  lit: boolean;
+  /** A quote was tapped: show the original. */
+  onShowOriginal: (messageId: string) => void;
   /** Swiped (or the Reply action): start a reply to it (C5d). */
   onStartReply: (message: Message) => void;
   onReply: (text: string) => void;
@@ -434,13 +489,15 @@ function ThreadRow({
   const quotedName = quoted ? authorOf(quoted) : '';
   const quotedText = quoted ? messageSnippet(quoted, t) : t('chat.reply.unavailable');
   return (
-    <View style={saved ? null : styles.pending}>
+    <View style={[saved ? null : styles.pending, lit && styles.lit]}>
       <MessageRow mine={mine} last={last} seen={seen} createdAt={message.createdAt} wide={wide}>
         {quoted !== undefined && (
           <ReplyQuote
             name={quotedName}
             text={quotedText}
             spoken={t('chat.reply.inReplyTo', { name: quotedName, text: quotedText })}
+            onPress={quoted ? () => onShowOriginal(quoted.id) : undefined}
+            hint={t('chat.reply.showHint')}
           />
         )}
         <SwipeToReply
@@ -608,6 +665,11 @@ const useStyles = makeStyles((Colors) => ({
   },
   pending: {
     opacity: 0.6,
+  },
+  lit: {
+    marginHorizontal: -Sizes.pageGutter,
+    paddingHorizontal: Sizes.pageGutter,
+    backgroundColor: Colors.primaryTint,
   },
   photoWait: {
     width: 240,
