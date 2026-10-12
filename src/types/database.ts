@@ -939,6 +939,32 @@ export type Database = {
           },
         ];
       };
+      reel_views_daily: {
+        Row: {
+          count: number;
+          day: string;
+          reel_id: string;
+        };
+        Insert: {
+          count?: number;
+          day: string;
+          reel_id: string;
+        };
+        Update: {
+          count?: number;
+          day?: string;
+          reel_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'reel_views_daily_reel_id_fkey';
+            columns: ['reel_id'];
+            isOneToOne: false;
+            referencedRelation: 'reels';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
       reels: {
         Row: {
           author_id: string;
@@ -2011,6 +2037,44 @@ export type Database = {
     Functions: {
       accept_wedding_invite: { Args: { p_token: string }; Returns: string };
       add_reel_comment: { Args: { p_body: string; p_reel_id: string }; Returns: string };
+      business_leads: {
+        Args: { p_before?: string; p_limit?: number; p_vendor_id: string };
+        Returns: {
+          conversation_id: string;
+          created_at: string;
+          details: Json;
+          email: string;
+          event_date: string;
+          event_slugs: string[];
+          family_name: string;
+          guest_band: string;
+          id: string;
+          is_tour: boolean;
+          location: string;
+          message: string;
+          phone: string;
+          preferred_contact: string;
+          replied: boolean;
+          start_time: string;
+        }[];
+      };
+      business_stats: {
+        Args: { p_from: string; p_to: string; p_vendor_id: string };
+        Returns: {
+          calls: number;
+          contacts: number;
+          directions: number;
+          inquiries: number;
+          instagram: number;
+          reel_views: number;
+          saves: number;
+          shares: number;
+          texts: number;
+          views: number;
+          website: number;
+          whatsapps: number;
+        }[];
+      };
       claim_chat_notifications: {
         Args: { p_quiet_minutes?: number };
         Returns: {
@@ -2092,6 +2156,17 @@ export type Database = {
       hide_reel_comment: { Args: { p_comment_id: string }; Returns: undefined };
       inquiry_emails_left_today: { Args: Record<PropertyKey, never>; Returns: number };
       mark_conversation_read: { Args: { p_conversation_id: string }; Returns: undefined };
+      my_businesses: {
+        Args: Record<PropertyKey, never>;
+        Returns: {
+          id: string;
+          name: string;
+          name_pa: string;
+          role: string;
+          slug: string;
+          status: string;
+        }[];
+      };
       my_conversations: {
         Args: Record<PropertyKey, never>;
         Returns: {
@@ -2265,6 +2340,7 @@ export type Database = {
         Returns: string;
       };
       touch_vendor_calendar: { Args: { p_vendor_id: string }; Returns: undefined };
+      track_reel_view: { Args: { p_reel_id: string }; Returns: undefined };
       track_vendor_activity: { Args: { p_kind: string; p_vendor_id: string }; Returns: undefined };
       vendor_date_status: { Args: { p_day: string; p_vendor_id: string }; Returns: string };
       vendor_public_stats: {
