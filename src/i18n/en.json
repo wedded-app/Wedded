@@ -281,7 +281,12 @@
     },
     "emailLockedHint": "This is the email you signed in with.",
     "save": "Save",
-    "saveFailed": "We couldn't save your details. Check your internet and try again."
+    "saveFailed": "We couldn't save your details. Check your internet and try again.",
+    "business": {
+      "title": "Your details",
+      "intro": "So the Wedded team knows who runs your business. Families don't see these.",
+      "phoneHint": "So the Wedded team can reach you about your business."
+    }
   },
   "counts": {
     "vendorTypes": {

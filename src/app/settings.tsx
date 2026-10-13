@@ -9,7 +9,9 @@ import { NavScreen } from '@/components/nav';
 import { Segmented } from '@/components/segmented';
 import { Switch } from '@/components/switch';
 import { makeStyles, Palettes, Spacing, useColors, type Scheme } from '@/constants/theme';
+import { useIsVendor } from '@/data/chat';
 import { useSession } from '@/features/auth/session';
+import { usePlan } from '@/features/planner/plan';
 import { useEnablePush, usePushStatus } from '@/features/chat/push-ask';
 import { useSearchLocation } from '@/features/location/search-location';
 import { resetOnboarding } from '@/features/onboarding/onboarding-state';
@@ -35,6 +37,8 @@ export default function SettingsScreen() {
   const settings = useSettings();
   const { place, maxMiles, openLocationSheet } = useSearchLocation();
   const { status, signOut } = useSession();
+  const { isVendor } = useIsVendor();
+  const planning = !!usePlan().syncedWeddingId;
   const version = Constants.expoConfig?.version ?? '1.0.0';
 
   const pickScheme = (scheme: Scheme) => {
@@ -130,13 +134,16 @@ export default function SettingsScreen() {
         <MessageAlertsRow />
       </ListSection>
 
-      <ListSection inset header={t('settings.planning')}>
-        <ListRow
-          icon="checkbox-outline"
-          title={t('planner.title')}
-          onPress={() => router.push('/plan')}
-        />
-      </ListSection>
+      {/* Vendor accounts see this only once they're planning a wedding too */}
+      {(!isVendor || planning) && (
+        <ListSection inset header={t('settings.planning')}>
+          <ListRow
+            icon="checkbox-outline"
+            title={t('planner.title')}
+            onPress={() => router.push('/plan')}
+          />
+        </ListSection>
+      )}
 
       <ListSection inset header={t('settings.about')}>
         <ListRow
@@ -145,11 +152,13 @@ export default function SettingsScreen() {
           title={t('home.foundingWall')}
           onPress={() => router.push('/founding')}
         />
-        <ListRow
-          icon="storefront-outline"
-          title={t('home.forVendors')}
-          onPress={() => router.push('/for-vendors')}
-        />
+        {!isVendor && (
+          <ListRow
+            icon="storefront-outline"
+            title={t('home.forVendors')}
+            onPress={() => router.push('/for-vendors')}
+          />
+        )}
         <ListRow icon="information-circle-outline" title={t('settings.version')} value={version} />
       </ListSection>
 
