@@ -329,11 +329,15 @@ export function YourReels({ reels }: { reels: BusinessReel[] }) {
         </>
       ) : (
         reels.map((reel, i) => {
-          const counts = t('business.insights.reelCounts', {
-            views: compactCount(reel.views),
-            likes: compactCount(reel.likes),
-            comments: compactCount(reel.comments),
-          });
+          // "1 view · 12 likes · 2.4K comments": each part says one or many
+          const counts = (['views', 'likes', 'comments'] as const)
+            .map((kind) =>
+              t(`business.insights.reelCount.${kind}`, {
+                count: reel[kind],
+                n: compactCount(reel[kind]),
+              }),
+            )
+            .join(' · ');
           return (
             <View
               key={reel.id}

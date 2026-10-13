@@ -1576,7 +1576,10 @@
       "cantShare": "This phone can't share files from the app. Try on another phone, or on a computer at the website."
     },
     "home": {
-      "week": "This week: {{views}} people saw your page, {{asked}} asked about a date",
+      "week": {
+        "one": "This week: 1 person saw your page, {{asked}} asked about a date",
+        "other": "This week: {{count}} people saw your page, {{asked}} asked about a date"
+      },
       "hint": "Opens My business"
     },
     "insights": {
@@ -1655,9 +1658,22 @@
       "reelsTitle": "Your reels",
       "reelsEmpty": "No reels yet. Reels bring families to your page: post a short clip of your work.",
       "postReel": "Post a reel",
-      "reelCounts": "{{views}} views · {{likes}} likes · {{comments}} comments",
       "noCaption": "No caption",
-      "tagged": "A family tagged you"
+      "tagged": "A family tagged you",
+      "reelCount": {
+        "views": {
+          "one": "1 view",
+          "other": "{{n}} views"
+        },
+        "likes": {
+          "one": "1 like",
+          "other": "{{n}} likes"
+        },
+        "comments": {
+          "one": "1 comment",
+          "other": "{{n}} comments"
+        }
+      }
     },
     "checklist": {
       "title": "Make your page stronger",
