@@ -70,7 +70,7 @@
         {
           "photosPermission": "Wedded App opens your photos only when you choose a clip to post as a reel or a photo to send in a message. Nothing else in your photos is looked at or uploaded.",
           "cameraPermission": "Wedded App uses the camera only while you record a reel.",
-          "microphonePermission": "Wedded App uses the microphone only while you record a reel, so your clip keeps its music and voices."
+          "microphonePermission": "Wedded App uses the microphone only while you record a reel or a voice note, so your clip keeps its music and voices and your message can be heard."
         }
       ],
       [
@@ -81,7 +81,13 @@
           "granularPermissions": []
         }
       ],
-      "expo-sharing"
+      "expo-sharing",
+      [
+        "expo-audio",
+        {
+          "microphonePermission": "Wedded App uses the microphone only while you record a reel or a voice note, so your clip keeps its music and voices and your message can be heard."
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,

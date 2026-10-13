@@ -1,7 +1,7 @@
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { router, useLocalSearchParams } from 'expo-router';
-import { useState } from 'react';
-import { Alert, Platform, ScrollView, View } from 'react-native';
+import { useRef, useState } from 'react';
+import { AccessibilityInfo, Alert, Platform, ScrollView, type TextInput, View } from 'react-native';
 
 import { AppText } from '@/components/app-text';
 import { Button } from '@/components/button';
@@ -35,6 +35,7 @@ import {
   formatDate,
   fromDateString,
   GUEST_BANDS,
+  planDatesFor,
   suggestedMessage,
   toDateString,
   useInquiryVendor,
@@ -67,12 +68,20 @@ export default function AskScreen() {
   // the rest wait behind "Other events". Fixed at open, so chips don't jump.
   const [firstEvents] = useState<string[]>(params.event ? [params.event] : []);
   const [showAllEvents, setShowAllEvents] = useState(false);
-  const [date, setDate] = useState<string | null>(null);
+  const plan = usePlan();
+  // The date they picked themselves; until then it follows My Wedding
+  const [pickedDate, setPickedDate] = useState<string | null>(null);
+  // The family's wedding-day events (Anand Karaj, Reception…), from the data
+  const weddingDaySlugs = (events.data ?? [])
+    .filter((section) => section.phase === 'wedding_day')
+    .flatMap((section) => section.events.map((e) => e.slug));
+  const planDates = planDatesFor(eventSlugs, plan.eventDates, plan.weddingDate, weddingDaySlugs);
+  const date = pickedDate ?? planDates.start;
   const [dateUnsure, setDateUnsure] = useState(false);
   const [pickerOpen, setPickerOpen] = useState(false);
   const dateStatus = useVendorDateStatus(vendorId || null, dateUnsure ? null : date);
   // The guest count set for this event in My Wedding, if there is one
-  const plannedGuests = usePlan().guests?.[params.event ?? ''];
+  const plannedGuests = plan.guests?.[params.event ?? ''];
   const [guests, setGuests] = useState<GuestBand | null>(
     GUEST_BANDS.includes(plannedGuests as GuestBand) ? (plannedGuests as GuestBand) : null,
   );
@@ -82,6 +91,14 @@ export default function AskScreen() {
   const [phone, setPhone] = useState(profile ? formatPhone(profile.phone) : '');
   const [replyBy, setReplyBy] = useState<ReplyBy>('text');
   const [error, setError] = useState<string>();
+  // A required answer that's missing or wrong, shown at its own field
+  const [fieldError, setFieldError] = useState<{ field: Field; message: string } | null>(null);
+  const scroll = useRef<ScrollView>(null);
+  // Where each field sits in the scroll, to bring a missing one into view
+  const fieldY = useRef<Partial<Record<Field, number>>>({});
+  const placeInput = useRef<TextInput>(null);
+  const messageInput = useRef<TextInput>(null);
+  const phoneInput = useRef<TextInput>(null);
   const [duplicateAt, setDuplicateAt] = useState<string | null>(null);
   const [touched, setTouched] = useState(false);
   const [venueAnswers, setVenueAnswers] = useState<VenueAnswers>(emptyVenueAnswers);
@@ -89,6 +106,13 @@ export default function AskScreen() {
   const questionSet = questionSetFor(vendor.data?.categorySlug ?? null);
 
   const allEvents = events.data?.flatMap((section) => section.events) ?? [];
+  // Each chosen event's own day from My Wedding, by name, for the message and the note
+  const namedPlanDates = dateUnsure
+    ? []
+    : planDates.dates.flatMap(({ slug, date: day }) => {
+        const event = allEvents.find((e) => e.slug === slug);
+        return event ? [{ slug, event: event.name, date: day }] : [];
+      });
   const chosenEvents = allEvents.filter((event) => eventSlugs.includes(event.slug));
   const eventChoices = eventChips(
     allEvents,
@@ -102,6 +126,7 @@ export default function AskScreen() {
     place,
     guests,
     tour: isTour && questionSet === 'venue',
+    eventDates: namedPlanDates,
   });
   const message = ownMessage ?? suggested;
 
@@ -111,7 +136,32 @@ export default function AskScreen() {
       setter(value);
       setTouched(true);
       setError(undefined);
+      setFieldError(null);
     };
+
+  const remember = (field: Field, event: { nativeEvent: { layout: { y: number } } }) => {
+    fieldY.current[field] = event.nativeEvent.layout.y;
+  };
+
+  // Shows what's missing at its field, scrolls to it, puts the cursor there
+  // and reads it out, so Send never looks like it did nothing
+  function showMissing(field: Field, message: string) {
+    setError(undefined);
+    setFieldError({ field, message });
+    const y = fieldY.current[field];
+    if (y !== undefined)
+      scroll.current?.scrollTo({ y: Math.max(0, y - Spacing.lg), animated: true });
+    const input =
+      field === 'place'
+        ? placeInput
+        : field === 'message'
+          ? messageInput
+          : field === 'phone'
+            ? phoneInput
+            : null;
+    input?.current?.focus();
+    AccessibilityInfo.announceForAccessibility(message);
+  }
 
   function close() {
     // A page opened straight from a link on the web has nowhere to go back to
@@ -172,23 +222,24 @@ export default function AskScreen() {
 
   function send(sendAgain = false) {
     if (!guests) {
-      setError(t('inquiry.errors.guests'));
+      showMissing('guests', t('inquiry.errors.guests'));
       return;
     }
     if (!place.trim()) {
-      setError(t('inquiry.errors.place'));
+      showMissing('place', t('inquiry.errors.place'));
       return;
     }
     if (!message.trim()) {
-      setError(t('inquiry.errors.message'));
+      showMissing('message', t('inquiry.errors.message'));
       return;
     }
     const cleanPhone = phone.trim() ? normalizePhone(phone) : null;
     if (phone.trim() && !cleanPhone) {
-      setError(t('aboutYou.errors.phoneInvalid'));
+      showMissing('phone', t('aboutYou.errors.phoneInvalid'));
       return;
     }
     setError(undefined);
+    setFieldError(null);
     setDuplicateAt(null);
     const draft = {
       vendorId,
@@ -201,12 +252,17 @@ export default function AskScreen() {
       language: locale,
       name: name.trim() || undefined,
       phone: cleanPhone ?? undefined,
-      details:
-        questionSet === 'venue'
+      details: {
+        ...(questionSet === 'venue'
           ? venueDetails(venueAnswers, isTour)
           : questionSet === 'caterer'
             ? catererDetails(catererAnswers)
-            : {},
+            : {}),
+        // Each event's own day from My Wedding, so the vendor sees them all
+        ...(namedPlanDates.length > 0
+          ? { eventDates: Object.fromEntries(namedPlanDates.map((d) => [d.slug, d.date])) }
+          : {}),
+      },
       sendAgain,
     };
     requireSignIn(() =>
@@ -243,6 +299,7 @@ export default function AskScreen() {
       />
 
       <ScrollView
+        ref={scroll}
         contentContainerStyle={styles.content}
         keyboardShouldPersistTaps="handled"
         automaticallyAdjustKeyboardInsets
@@ -307,7 +364,7 @@ export default function AskScreen() {
               minimumDate={new Date()}
               onChange={(event, picked) => {
                 if (Platform.OS !== 'ios') setPickerOpen(false);
-                if (event.type === 'set' && picked) change(setDate)(toDateString(picked));
+                if (event.type === 'set' && picked) change(setPickedDate)(toDateString(picked));
               }}
             />
           )}
@@ -317,6 +374,23 @@ export default function AskScreen() {
               label={t('location.done')}
               onPress={() => setPickerOpen(false)}
             />
+          )}
+          {namedPlanDates.length >= 2 && (
+            <AppText color="text2">
+              {t('inquiry.fromPlan', {
+                dates: namedPlanDates
+                  .map((d) => `${localized(d.event, locale)}: ${formatDate(d.date)}`)
+                  .join(' · '),
+              })}
+            </AppText>
+          )}
+          {namedPlanDates.length === 1 && !pickedDate && (
+            <AppText color="text2">
+              {t('inquiry.fromPlanOne', {
+                event: localized(namedPlanDates[0].event, locale),
+                date: formatDate(namedPlanDates[0].date),
+              })}
+            </AppText>
           )}
           {!dateUnsure && date && dateStatus.data && dateStatus.data !== 'unknown' && (
             <AppText
@@ -342,28 +416,35 @@ export default function AskScreen() {
           />
         </Section>
 
-        <Section title={t('inquiry.guests')}>
-          <View style={styles.chips} accessibilityRole="radiogroup">
-            {GUEST_BANDS.map((band) => (
-              <Chip
-                key={band}
-                role="radio"
-                label={t(`inquiry.guestBands.${band}`)}
-                selected={guests === band}
-                onPress={() => change(setGuests)(band)}
-              />
-            ))}
-          </View>
-        </Section>
+        <View onLayout={(event) => remember('guests', event)}>
+          <Section title={t('inquiry.guests')}>
+            <View style={styles.chips} accessibilityRole="radiogroup">
+              {GUEST_BANDS.map((band) => (
+                <Chip
+                  key={band}
+                  role="radio"
+                  label={t(`inquiry.guestBands.${band}`)}
+                  selected={guests === band}
+                  onPress={() => change(setGuests)(band)}
+                />
+              ))}
+            </View>
+            {fieldError?.field === 'guests' && <FieldError message={fieldError.message} />}
+          </Section>
+        </View>
 
-        <TextField
-          type="city"
-          label={t('inquiry.where')}
-          hint={t('inquiry.whereHint')}
-          value={place}
-          onChangeText={change(setPlace)}
-          maxLength={120}
-        />
+        <View onLayout={(event) => remember('place', event)}>
+          <TextField
+            ref={placeInput}
+            type="city"
+            label={t('inquiry.where')}
+            hint={t('inquiry.whereHint')}
+            value={place}
+            onChangeText={change(setPlace)}
+            maxLength={120}
+            error={fieldError?.field === 'place' ? fieldError.message : undefined}
+          />
+        </View>
 
         {questionSet === 'venue' && (
           <VenueQuestions
@@ -376,9 +457,11 @@ export default function AskScreen() {
           <CatererQuestions answers={catererAnswers} onChange={change(setCatererAnswers)} />
         )}
 
-        <View style={styles.section}>
+        <View style={styles.section} onLayout={(event) => remember('message', event)}>
           <TextField
+            ref={messageInput}
             label={t('inquiry.message')}
+            error={fieldError?.field === 'message' ? fieldError.message : undefined}
             value={message}
             onChangeText={change(setOwnMessage)}
             multiline
@@ -401,12 +484,16 @@ export default function AskScreen() {
               value={name}
               onChangeText={change(setName)}
             />
-            <TextField
-              type="phone"
-              label={t('aboutYou.phone')}
-              value={phone}
-              onChangeText={change(setPhone)}
-            />
+            <View onLayout={(event) => remember('phone', event)}>
+              <TextField
+                ref={phoneInput}
+                type="phone"
+                label={t('aboutYou.phone')}
+                value={phone}
+                onChangeText={change(setPhone)}
+                error={fieldError?.field === 'phone' ? fieldError.message : undefined}
+              />
+            </View>
           </>
         ) : (
           <AppText color="text2">{t('inquiry.signInAtSend')}</AppText>
@@ -443,10 +530,11 @@ export default function AskScreen() {
             />
           </Card>
         )}
-        {error && <FieldError message={error} />}
       </ScrollView>
 
       <View style={styles.footer}>
+        {/* Sending went wrong: said right above Send, never off screen */}
+        {error && <FieldError message={error} />}
         <Button
           label={t('inquiry.send')}
           icon="send-outline"
@@ -457,6 +545,8 @@ export default function AskScreen() {
     </Screen>
   );
 }
+
+type Field = 'guests' | 'place' | 'message' | 'phone';
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   const styles = useStyles();
@@ -490,6 +580,7 @@ const useStyles = makeStyles((Colors) => ({
     gap: Spacing.sm,
   },
   footer: {
+    gap: Spacing.sm,
     paddingVertical: Spacing.md,
     borderTopWidth: 1,
     borderTopColor: Colors.border,

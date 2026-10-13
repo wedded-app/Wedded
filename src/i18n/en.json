@@ -251,7 +251,9 @@
       "booked": "Booked"
     },
     "savedGrid": "Your saved vendors",
-    "savedGridEmpty": "Vendors you save show up here. Tap the heart on any vendor."
+    "savedGridEmpty": "Vendors you save show up here. Tap the heart on any vendor.",
+    "myRequests": "My requests",
+    "myRequestsHint": "Who you asked, and whether they got back to you"
   },
   "common": {
     "comingSoon": "Coming soon",
@@ -471,7 +473,10 @@
       "and": "and",
       "wedding": "a wedding",
       "ourCity": "our city",
-      "tour": "Sat Sri Akal, we're planning {{events}} in {{place}} and would like to visit your hall. Could we come and see it at one of the times we picked? Thank you."
+      "tour": "Sat Sri Akal, we're planning {{events}} in {{place}} and would like to visit your hall. Could we come and see it at one of the times we picked? Thank you.",
+      "eventOn": "{{event}} on {{date}}",
+      "dates": "Sat Sri Akal, we're planning {{dates}} in {{place}}. Could you share your price and whether you're available? Thank you.",
+      "datesAndGuests": "Sat Sri Akal, we're planning {{dates}} in {{place}} for about {{guests}} guests. Could you share your price and whether you're available? Thank you."
     },
     "errors": {
       "guests": "Pick about how many guests (or Not sure).",
@@ -496,7 +501,9 @@
       "viewSaved": "View saved",
       "chatTitle": "Keep talking here",
       "chatBody": "Your inquiry is now a chat with {{vendor}}. Their reply shows up in Messages, and we'll email you too.",
-      "chatButton": "Continue in chat"
+      "chatButton": "Continue in chat",
+      "nextNoEmail": "Most vendors reply within 1 to 2 days by call or text.",
+      "seeRequests": "See all my requests"
     },
     "tourTitle": "Book a tour",
     "questions": {
@@ -541,7 +548,9 @@
       "booked": "Their calendar shows this date as booked. You can still ask, or pick another date.",
       "held": "Someone is holding this date. Ask soon.",
       "partly": "Part of this day is booked. Ask which part is free."
-    }
+    },
+    "fromPlan": "From My Wedding, these dates go with your request: {{dates}}",
+    "fromPlanOne": "From My Wedding: {{event}} is on {{date}}. You can change it."
   },
   "deleteAccount": {
     "title": "Delete your account?",
@@ -569,7 +578,7 @@
     "signInFirst": "Sign in to delete your account."
   },
   "myInquiries": {
-    "title": "My inquiries",
+    "title": "My requests",
     "back": "Back",
     "empty": "You haven't asked any vendors yet. Tap \"Ask about price & date\" on a vendor to start.",
     "askedOn": "Asked on {{date}}",
@@ -708,7 +717,12 @@
     "cheerAll": "Every event is booked. Congratulations!",
     "startCardTitle": "Plan your wedding",
     "startCardBody": "Your countdown, your events and what to book, shared with the family.",
-    "signInToPlan": "Sign in to start"
+    "signInToPlan": "Sign in to start",
+    "eventDateTitle": "When is the {{event}}?",
+    "eventDatePick": "Pick a date",
+    "eventDateClear": "Clear the date",
+    "eventDateNone": "No date yet",
+    "eventDateHint": "When you ask a vendor about this event, the date goes with your request."
   },
   "filters": {
     "title": "Filters",
@@ -958,7 +972,8 @@
       "quote": "Sent a quote",
       "menu": "Sent a menu",
       "booking": "Inquiry",
-      "phone": "Shared a phone number"
+      "phone": "Shared a phone number",
+      "voice": "Voice note"
     },
     "errors": {
       "rate": "You're sending very fast. Wait a minute, then send again.",
@@ -1010,6 +1025,49 @@
         "sad": "Sad",
         "pray": "Folded hands"
       }
+    },
+    "voice": {
+      "record": "Record a voice note",
+      "recordHint": "Hold to record and let go to send, or tap to start",
+      "recording": "Recording {{time}}",
+      "letGo": "Let go to send",
+      "tapSend": "Tap the arrow to send, or the bin to delete",
+      "sending": "Sending your voice note…",
+      "send": "Send voice note",
+      "cancel": "Delete this recording",
+      "tooShort": "Hold the microphone a little longer to record, or tap it once to start.",
+      "failed": "Your voice note didn't send. Check your internet, then try again.",
+      "cantRecord": "The microphone didn't start. Try again.",
+      "needAccess": "To send a voice note, allow Wedded App to use the microphone when your phone asks.",
+      "whyTitle": "Send a voice note",
+      "whyBody": "Your phone will ask to let Wedded App use the microphone. It only listens while you're recording a message.",
+      "blockedTitle": "The microphone is turned off",
+      "blockedBody": "To send a voice note, allow Wedded App to use the microphone in Settings.",
+      "play": "Play voice note, {{length}}",
+      "pause": "Pause"
+    },
+    "alerts": {
+      "title": {
+        "family": "Get a buzz when vendors reply",
+        "vendor": "Get a buzz when families message you"
+      },
+      "body": {
+        "family": "Turn on message alerts and your phone tells you the moment a vendor writes back.",
+        "vendor": "Families often book whoever replies first. Turn on message alerts so you never miss one."
+      },
+      "turnOn": "Turn on message alerts",
+      "notNow": "Not now",
+      "on": "Message alerts are on. We'll buzz you when someone writes.",
+      "deniedBody": "Message alerts are off for Wedded App. You can turn them on in your phone's Settings.",
+      "openSettings": "Open Settings",
+      "failed": "That didn't work. Check your internet, then try again.",
+      "row": "Message alerts",
+      "rowOn": "On",
+      "rowOff": "Off",
+      "rowUnavailable": "Not on this phone",
+      "rowOnHint": "To turn them off, open your phone's Settings.",
+      "rowOffHint": "Tap to get a buzz when someone writes to you.",
+      "rowDeniedHint": "Turn them on in your phone's Settings."
     }
   },
   "welcome": {
@@ -1507,7 +1565,8 @@
       "text": "Text",
       "whatsapp": "WhatsApp",
       "email": "Email",
-      "noWay": "This family deleted their account, so there's no way to reply."
+      "noWay": "This family deleted their account, so there's no way to reply.",
+      "eventDates": "Dates"
     },
     "export": {
       "title": "Export everything",
@@ -1519,6 +1578,222 @@
     "home": {
       "week": "This week: {{views}} people saw your page, {{asked}} asked about a date",
       "hint": "Opens My business"
+    },
+    "insights": {
+      "period": {
+        "7": "This week",
+        "30": "In the last 30 days",
+        "90": "In the last 3 months"
+      },
+      "headline": "{{period}}, {{seen}} and {{asked}}.",
+      "seen": {
+        "one": "1 family saw your page",
+        "other": "{{count}} families saw your page"
+      },
+      "askedDate": {
+        "one": "1 asked about a date",
+        "other": "{{count}} asked about a date"
+      },
+      "chartTitle": "People who viewed your page, day by day",
+      "chartTotal": {
+        "one": "1 view in all",
+        "other": "{{count}} views in all"
+      },
+      "chartBusiest": {
+        "one": "Your busiest day was {{date}}, with 1 view.",
+        "other": "Your busiest day was {{date}}, with {{count}} views."
+      },
+      "chartEmpty": "No one has viewed your page in this time yet.",
+      "funnelTitle": "From seen to booked",
+      "funnel": {
+        "searches": "Times you showed up in search",
+        "views": "Looked at your page",
+        "saves": "Saved you",
+        "contacts": "Called, texted or WhatsApped you",
+        "inquiries": "Asked about price and date",
+        "booked": "Booked you"
+      },
+      "ofThose": "{{percent}}% of the step before",
+      "replyTitle": "How fast you reply",
+      "replied": "You replied to {{replied}} of {{leads}} families",
+      "repliedWithin": "{{replied}}, usually within {{within}}",
+      "within": {
+        "minutes": {
+          "one": "1 minute",
+          "other": "{{count}} minutes"
+        },
+        "hours": {
+          "one": "1 hour",
+          "other": "{{count}} hours"
+        },
+        "days": {
+          "one": "1 day",
+          "other": "{{count}} days"
+        }
+      },
+      "replyNone": "No families have asked in this time yet.",
+      "replyNudge": "Families often book the first vendor who replies. Try to answer everyone, and within a day.",
+      "wantTitle": "What families want",
+      "wantEmpty": "When families ask you about dates, what they ask for shows up here.",
+      "want": {
+        "events": "Events",
+        "guests": "Guests",
+        "months": "Wedding months",
+        "places": "Where they're from"
+      },
+      "compareTitle": "How you compare",
+      "compareIntro": "Next to the typical one of {{count}} {{kind}} vendors within 50 miles.",
+      "compare": {
+        "views": "People who viewed your page",
+        "inquiries": "Families who asked",
+        "you": "You",
+        "typical": "Typical nearby",
+        "above": "You're above the typical vendor nearby.",
+        "below": "You're below the typical vendor nearby.",
+        "same": "You're right at the typical vendor nearby."
+      },
+      "reelsTitle": "Your reels",
+      "reelsEmpty": "No reels yet. Reels bring families to your page: post a short clip of your work.",
+      "postReel": "Post a reel",
+      "reelCounts": "{{views}} views · {{likes}} likes · {{comments}} comments",
+      "noCaption": "No caption",
+      "tagged": "A family tagged you"
+    },
+    "checklist": {
+      "title": "Make your page stronger",
+      "progress": "{{done}} of {{total}} done",
+      "fix": "Fix it",
+      "askTeam": "Ask the Wedded team",
+      "tellTeam": "Tell the Wedded team and we'll add it for you.",
+      "teamMessage": "Hi Wedded team, please help me add this to {{name}}'s page: {{what}}",
+      "done": "Done: {{list}}",
+      "items": {
+        "photos": {
+          "title": "6 or more photos",
+          "gain": {
+            "one": "You have 1 photo. Vendors with 6 or more photos get more saves.",
+            "other": "You have {{count}} photos. Vendors with 6 or more photos get more saves."
+          }
+        },
+        "cover": {
+          "title": "A cover photo",
+          "gain": "Your cover photo is the first thing families see in search."
+        },
+        "tagline": {
+          "title": "A tagline",
+          "gain": "One line under your name tells families what you're best at."
+        },
+        "bio": {
+          "title": "About you",
+          "gain": "Families trust vendors who say who they are and how they work."
+        },
+        "bioPa": {
+          "title": "About you in Punjabi",
+          "gain": "Many families read in Punjabi, especially parents and grandparents."
+        },
+        "price": {
+          "title": "A starting price",
+          "gain": "Families ask more often when they can see a price."
+        },
+        "contact": {
+          "title": "A phone or WhatsApp number",
+          "gain": "Most families want to call or WhatsApp before they book."
+        },
+        "instagram": {
+          "title": "Your Instagram",
+          "gain": "Families like to see more of your work."
+        },
+        "languages": {
+          "title": "The languages you speak",
+          "gain": "Families look for vendors who speak their language."
+        },
+        "menus": {
+          "title": "Your menus",
+          "gain": "Families compare menus and prices before they ask."
+        },
+        "calendar": {
+          "title": "An up-to-date calendar",
+          "gain": "Families only see you as free on their date when your calendar is fresh."
+        },
+        "reel": {
+          "title": "A reel",
+          "gain": "Reels bring families to your page."
+        }
+      }
+    },
+    "listing": {
+      "title": "Edit my listing",
+      "rowHint": "Your about, price, contact and languages",
+      "about": "About you",
+      "aboutHint": "What families read first under your name.",
+      "tagline": "One line about you (English)",
+      "taglinePa": "One line about you (ਪੰਜਾਬੀ)",
+      "bio": "About you (English)",
+      "bioPa": "About you (ਪੰਜਾਬੀ)",
+      "price": "Price",
+      "priceHint": "Families ask more often when they can see a price.",
+      "priceShow": "How to show your price",
+      "priceDisplays": {
+        "starting_at": "Starting at",
+        "range": "A range",
+        "packages": "Packages",
+        "contact": "Ask me",
+        "hidden": "Don't show"
+      },
+      "priceFrom": "Starting price in dollars",
+      "priceFromRange": "Lowest price in dollars",
+      "priceTo": "Highest price in dollars",
+      "priceUnit": "Price for each",
+      "priceNote": "A note about your price",
+      "priceNoteHint": "For example: Includes setup and cleanup",
+      "contact": "How families reach you",
+      "contactHint": "These are the Call, Text and WhatsApp buttons on your page.",
+      "callPhone": "Number to call",
+      "textPhone": "Number to text",
+      "whatsappPhone": "WhatsApp number",
+      "preferred": "How you like families to reach you",
+      "ways": {
+        "call": "Call",
+        "text": "Text",
+        "whatsapp": "WhatsApp",
+        "instagram": "Instagram",
+        "email": "Email"
+      },
+      "instagram": "Instagram",
+      "instagramHint": "Your handle, like @royalorchard",
+      "website": "Website",
+      "hours": "When you're available",
+      "hoursHint": "For example: Mon to Sat, 10 am to 7 pm",
+      "languagesTravel": "Languages and travel",
+      "languages": "Languages you speak",
+      "willTravel": "I travel to families",
+      "radius": "How far you travel",
+      "miles": "{{miles}} miles",
+      "travelNote": "A note about travel",
+      "travelNoteHint": "For example: No travel fee within 25 miles",
+      "years": "Years in business",
+      "team": "People on your team",
+      "teamNote": "To change your name, address, vendor types or photos, message the Wedded team.",
+      "teamMessage": "Hi Wedded team, please help me change something on {{name}}'s page:",
+      "save": "Save",
+      "saved": "Saved",
+      "noChanges": "No changes to save",
+      "fixAbove": "Something above needs fixing. It's marked in red.",
+      "problems": {
+        "taglineLong": "Keep this to 120 letters or fewer.",
+        "bioLong": "Keep this to 2,000 letters or fewer.",
+        "priceFrom": "Put a price in whole dollars, more than 0.",
+        "priceTo": "Put a highest price that's more than the lowest.",
+        "priceUnit": "Pick what the price is for.",
+        "phone": "That number doesn't look right. Include the area code.",
+        "languages": "Pick at least one language.",
+        "number": "Put a whole number, more than 0."
+      },
+      "serverProblems": {
+        "invalid": "This doesn't look right. Check it and try again.",
+        "notAllowed": "You can't change this listing. Ask the Wedded team.",
+        "failed": "Your changes didn't save. Check your internet, then try again."
+      }
     }
   }
 }

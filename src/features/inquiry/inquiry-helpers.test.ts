@@ -5,6 +5,7 @@ import {
   eventChips,
   formatDate,
   fromDateString,
+  planDatesFor,
   suggestedMessage,
   toDateString,
 } from './inquiry-helpers';
@@ -34,8 +35,72 @@ describe('dates', () => {
   });
 });
 
+describe('planDatesFor', () => {
+  const eventDates = { jaago: '2027-06-11', 'anand-karaj': '2027-06-12', roka: '2026-01-01' };
+
+  it("starts with the earliest of the events' own days and lists each one", () => {
+    expect(
+      planDatesFor(
+        ['anand-karaj', 'jaago'],
+        eventDates,
+        '2027-06-12',
+        ['anand-karaj'],
+        '2026-10-13',
+      ),
+    ).toEqual({
+      start: '2027-06-11',
+      dates: [
+        { slug: 'anand-karaj', date: '2027-06-12' },
+        { slug: 'jaago', date: '2027-06-11' },
+      ],
+    });
+    expect(
+      planDatesFor(['jaago', 'anand-karaj'], eventDates, '2027-06-12', [], '2026-10-13'),
+    ).toEqual({
+      start: '2027-06-11',
+      dates: [
+        { slug: 'jaago', date: '2027-06-11' },
+        { slug: 'anand-karaj', date: '2027-06-12' },
+      ],
+    });
+  });
+
+  it('never gives another event the wedding day', () => {
+    // A Roka with no date of its own starts empty, not on the wedding day
+    expect(planDatesFor(['roka'], eventDates, '2027-06-12', ['anand-karaj'], '2026-10-13')).toEqual(
+      { start: null, dates: [] },
+    );
+  });
+
+  it('uses the wedding day for wedding-day events, or when no event is picked', () => {
+    expect(
+      planDatesFor(['reception'], {}, '2027-06-12', ['anand-karaj', 'reception'], '2026-10-13'),
+    ).toEqual({ start: '2027-06-12', dates: [] });
+    expect(planDatesFor([], undefined, '2027-06-12', [], '2026-10-13').start).toBe('2027-06-12');
+    // A wedding day already past is left out
+    expect(planDatesFor([], undefined, '2025-01-01', [], '2026-10-13').start).toBeNull();
+  });
+});
+
 describe('suggestedMessage', () => {
   const events = [{ en: 'Jaago', pa: 'ਜਾਗੋ' }];
+
+  it('names each event with its own day when they ask about several', () => {
+    expect(
+      suggestedMessage(translator(en), 'en', {
+        events: [events[0], { en: 'Anand Karaj' }],
+        date: '2027-06-11',
+        place: 'Yuba City',
+        guests: '100_250',
+        eventDates: [
+          { event: events[0], date: '2027-06-11' },
+          { event: { en: 'Anand Karaj' }, date: '2027-06-12' },
+        ],
+      }),
+    ).toBe(
+      "Sat Sri Akal, we're planning Jaago on Fri, Jun 11, 2027 and Anand Karaj on Sat, Jun 12, 2027 in Yuba City for about 100 to 250 guests. Could you share your price and whether you're available? Thank you.",
+    );
+  });
 
   it('writes the full sentence when date and guests are known', () => {
     expect(

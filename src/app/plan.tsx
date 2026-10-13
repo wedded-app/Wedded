@@ -23,7 +23,7 @@ import { ProgressBar } from '@/components/progress-bar';
 import { StateView } from '@/components/state-view';
 import { makeStyles, Radius, Sizes, Spacing, Springs, useColors } from '@/constants/theme';
 import type { EventNeed, EventNeedsSection, TraditionEvent } from '@/data/reference';
-import { GUEST_BANDS } from '@/features/inquiry/inquiry-helpers';
+import { formatDate, GUEST_BANDS } from '@/features/inquiry/inquiry-helpers';
 import { CountdownCard } from '@/features/planner/countdown-card';
 import { openCounts, useWeddingSuggestions } from '@/data/wedding-suggestions';
 import { FamilyShortlist } from '@/features/planner/family-shortlist';
@@ -216,12 +216,14 @@ export default function PlanScreen() {
               bookedVendors={wedding?.bookedVendors ?? {}}
               suggested={suggested}
               guests={plan.guests?.[event.slug] ?? null}
+              date={plan.eventDates?.[event.slug] ?? null}
               canEdit={canEdit}
               open={openSlugs.includes(event.slug)}
               onToggle={() => toggleOpen(event.slug)}
               onComplete={() => eventCompleted(event.slug)}
               onToggleBooked={(category) => view.toggleBooked(event.slug, category)}
               onGuests={(band) => view.setEventGuests(event.slug, band)}
+              onDate={(date) => view.setEventDate(event.slug, date)}
             />
           ))}
         </View>
@@ -242,12 +244,14 @@ function EventPlan({
   bookedVendors,
   suggested,
   guests,
+  date,
   canEdit,
   open,
   onToggle,
   onComplete,
   onToggleBooked,
   onGuests,
+  onDate,
 }: {
   event: TraditionEvent;
   sections: EventNeedsSection[];
@@ -256,6 +260,8 @@ function EventPlan({
   /** Open suggestions per "event/category". */
   suggested: Record<string, number>;
   guests: string | null;
+  /** This event's own day, yyyy-mm-dd; it goes into requests to vendors. */
+  date: string | null;
   canEdit: boolean;
   open: boolean;
   onToggle: () => void;
@@ -263,6 +269,7 @@ function EventPlan({
   onComplete: () => void;
   onToggleBooked: (categorySlug: string) => void;
   onGuests: (band: string | null) => void;
+  onDate: (date: string | null) => void;
 }) {
   const Colors = useColors();
   const styles = useStyles();
@@ -307,7 +314,13 @@ function EventPlan({
       <Pressable
         accessibilityRole="button"
         accessibilityState={{ expanded: open }}
-        accessibilityLabel={`${name}, ${t('planner.progress', { done, total: essential.length })}`}
+        accessibilityLabel={[
+          name,
+          date ? formatDate(date) : null,
+          t('planner.progress', { done, total: essential.length }),
+        ]
+          .filter(Boolean)
+          .join(', ')}
         onPress={() => {
           selectionHaptic();
           onToggle();
@@ -324,10 +337,16 @@ function EventPlan({
         </View>
         <View style={styles.grow}>
           <BilingualName name={event.name} variant="bodyLg" weight={600} />
-          {event.timing && (
-            <AppText variant="caption" color="text2">
-              {localized(event.timing, locale)}
+          {date ? (
+            <AppText variant="label" weight={600} color="primary">
+              {formatDate(date)}
             </AppText>
+          ) : (
+            event.timing && (
+              <AppText variant="caption" color="text2">
+                {localized(event.timing, locale)}
+              </AppText>
+            )
           )}
           <View style={styles.progressRow}>
             <ProgressBar
@@ -348,6 +367,35 @@ function EventPlan({
 
       {open && (
         <Animated.View entering={Motion.enter} exiting={Motion.exit}>
+          <View style={styles.guests}>
+            <AppText variant="label" weight={600} color="text2">
+              {t('planner.eventDateTitle', { event: name })}
+            </AppText>
+            {canEdit ? (
+              <>
+                <DateField
+                  value={date}
+                  onChange={(picked) => {
+                    selectionHaptic();
+                    onDate(picked);
+                  }}
+                  placeholder={date ? formatDate(date) : t('planner.eventDatePick')}
+                />
+                {date && (
+                  <Button
+                    variant="text"
+                    label={t('planner.eventDateClear')}
+                    onPress={() => onDate(null)}
+                  />
+                )}
+              </>
+            ) : (
+              <AppText weight={600}>{date ? formatDate(date) : t('planner.eventDateNone')}</AppText>
+            )}
+            <AppText variant="caption" color="text2">
+              {t('planner.eventDateHint')}
+            </AppText>
+          </View>
           <View style={styles.guests}>
             <AppText variant="label" weight={600} color="text2">
               {t('planner.guestsTitle')}

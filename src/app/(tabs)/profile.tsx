@@ -34,6 +34,8 @@ export default function ProfileScreen() {
   const { t } = useLocale();
   const unread = useUnreadCount();
   const { isVendor } = useIsVendor();
+  const { status } = useSession();
+  const requests = useMyInquiries();
 
   return (
     <NavScreen
@@ -67,6 +69,15 @@ export default function ProfileScreen() {
           title={t('tabs.saved')}
           onPress={() => router.push('/saved')}
         />
+        {status === 'signedIn' && (
+          <ListRow
+            icon="paper-plane-outline"
+            title={t('profile.myRequests')}
+            subtitle={t('profile.myRequestsHint')}
+            value={requests.data ? String(requests.data.length) : undefined}
+            onPress={() => router.push('/my-inquiries')}
+          />
+        )}
         <ListRow
           icon="chatbubbles-outline"
           title={t('chat.title')}

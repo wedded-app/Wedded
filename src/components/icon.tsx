@@ -98,6 +98,8 @@ const SF_SYMBOLS: Partial<Record<IconName, SFSymbol>> = {
   sparkles: 'sparkles',
   'sparkles-outline': 'sparkles',
   play: 'play.fill',
+  mic: 'mic.fill',
+  'create-outline': 'square.and.pencil',
   'play-circle': 'play.circle.fill',
   'play-circle-outline': 'play.circle',
   'volume-mute': 'speaker.slash.fill',

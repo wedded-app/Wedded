@@ -15,15 +15,16 @@ import {
   useFonts,
 } from '@expo-google-fonts/mukta-mahee';
 import { QueryClientProvider } from '@tanstack/react-query';
-import { DarkTheme, DefaultTheme, Stack, ThemeProvider } from 'expo-router';
+import { DarkTheme, DefaultTheme, type Href, router, Stack, ThemeProvider } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
-import { useEffect } from 'react';
+import { useCallback, useEffect } from 'react';
 import { Platform } from 'react-native';
 
 import { AppIntro } from '@/components/app-intro';
 import { WebFrame } from '@/components/web-frame';
 import { Radius, useColors, useScheme } from '@/constants/theme';
+import { configurePushHandling, usePushOpens } from '@/data/push';
 import { queryClient } from '@/data/query-client';
 import { WeddingSync } from '@/data/wedding';
 import { SessionProvider } from '@/features/auth/session';
@@ -32,6 +33,8 @@ import { SettingsProvider } from '@/features/settings/settings';
 import { LocaleProvider } from '@/i18n/locale-context';
 
 SplashScreen.preventAutoHideAsync();
+// Message alerts show while the app is open, except for the chat on screen
+configurePushHandling();
 
 // iPhones draw Latin text in San Francisco, the system font, so Inter is only
 // needed on Android and the web (see FontFamilies in constants/theme.ts).
@@ -80,6 +83,13 @@ export default function RootLayout() {
   );
 }
 
+/** Tapping a message alert opens its chat, including the alert that started the app. */
+function PushOpens() {
+  const open = useCallback((url: string) => router.push(url as Href), []);
+  usePushOpens(open);
+  return null;
+}
+
 /** The screens, drawn in the colour scheme from Settings > Appearance. */
 function AppShell() {
   const Colors = useColors();
@@ -102,6 +112,7 @@ function AppShell() {
     <ThemeProvider value={theme}>
       <StatusBar style={scheme === 'dark' ? 'light' : 'dark'} />
       <WeddingSync />
+      <PushOpens />
       <WebFrame>
         <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: Colors.bg } }}>
           <Stack.Screen name="(tabs)" />

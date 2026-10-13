@@ -24,7 +24,7 @@ import type { Json } from '@/types/database';
 import { photoUrl } from './vendor-media';
 
 export type ChatSide = 'family' | 'vendor';
-export type MessageKind = 'text' | 'photo' | 'quote' | 'menu' | 'booking' | 'phone';
+export type MessageKind = 'text' | 'photo' | 'quote' | 'menu' | 'booking' | 'phone' | 'voice';
 
 export type Quote = {
   amount: number;
@@ -59,6 +59,8 @@ export type Message = {
   booking: Booking | null;
   /** A family's number, shown only after they tap "Share my number". */
   phone: string | null;
+  /** A voice note (C5e): its chat-media path (play it from useChatPhotoUrl()) and length. */
+  voice: { path: string; durationMs: number } | null;
   /** The earlier message this one replies to (swipe to reply), by id. */
   replyTo: string | null;
   createdAt: string;
@@ -278,6 +280,10 @@ export function toMessage(
           }
         : null,
     phone: row.kind === 'phone' && typeof d.phone === 'string' ? d.phone : null,
+    voice:
+      row.kind === 'voice' && typeof d.path === 'string' && typeof d.durationMs === 'number'
+        ? { path: d.path, durationMs: d.durationMs }
+        : null,
     replyTo: row.reply_to ?? null,
     createdAt: row.created_at,
     readAt: mine && otherReadAt && otherReadAt >= row.created_at ? otherReadAt : null,
@@ -433,7 +439,9 @@ export type NewMessage =
   | { kind: 'quote'; quote: Quote; body?: string }
   | { kind: 'menu'; menuId: string; body?: string }
   /** The family shares the number on their profile (the database fills it in). */
-  | { kind: 'phone' };
+  | { kind: 'phone' }
+  /** A recording uploaded with uploadChatVoice(), up to 5 minutes. */
+  | { kind: 'voice'; path: string; durationMs: number };
 
 export function messagePayload(message: NewMessage): {
   kind: MessageKind;
@@ -455,6 +463,12 @@ export function messagePayload(message: NewMessage): {
       return { kind: 'menu', body: message.body ?? null, data: { menuId: message.menuId } };
     case 'phone':
       return { kind: 'phone', body: null, data: {} };
+    case 'voice':
+      return {
+        kind: 'voice',
+        body: null,
+        data: { path: message.path, durationMs: Math.round(message.durationMs) },
+      };
   }
 }
 
@@ -540,6 +554,38 @@ export async function uploadChatPhoto(
 ): Promise<string> {
   const extension = contentType.split('/')[1].replace('jpeg', 'jpg');
   const path = `${conversationId}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${extension}`;
+  const { error } = await supabase.storage
+    .from('chat-media')
+    .upload(path, bytes, { contentType, upsert: false });
+  if (error) throw error;
+  return path;
+}
+
+export type VoiceContentType =
+  'audio/mp4' | 'audio/m4a' | 'audio/x-m4a' | 'audio/aac' | 'audio/mpeg' | 'audio/webm';
+
+const VOICE_EXTENSIONS: Record<VoiceContentType, string> = {
+  'audio/mp4': 'm4a',
+  'audio/m4a': 'm4a',
+  'audio/x-m4a': 'm4a',
+  'audio/aac': 'aac',
+  'audio/mpeg': 'mp3',
+  'audio/webm': 'webm',
+};
+
+/** The longest voice note the database takes: 5 minutes. */
+export const MAX_VOICE_MS = 5 * 60 * 1000;
+
+/**
+ * Upload a voice note (bytes of the recording) into the conversation's folder;
+ * send it with useSendMessage({ kind: 'voice', path, durationMs }).
+ */
+export async function uploadChatVoice(
+  conversationId: string,
+  bytes: ArrayBuffer,
+  contentType: VoiceContentType = 'audio/mp4',
+): Promise<string> {
+  const path = `${conversationId}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${VOICE_EXTENSIONS[contentType]}`;
   const { error } = await supabase.storage
     .from('chat-media')
     .upload(path, bytes, { contentType, upsert: false });

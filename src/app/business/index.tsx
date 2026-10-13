@@ -2,7 +2,7 @@ import { router } from 'expo-router';
 import { useState } from 'react';
 import { ActivityIndicator, View } from 'react-native';
 
-import { AppText } from '@/components/app-text';
+import { AppText, useFontScale } from '@/components/app-text';
 import { Button } from '@/components/button';
 import { Chip } from '@/components/chip';
 import { FieldError } from '@/components/field-error';
@@ -21,9 +21,24 @@ import {
   waitingCount,
 } from '@/data/business';
 import { useExportBusiness } from '@/data/business-export';
+import {
+  useBusinessChecklist,
+  useBusinessInsights,
+  useBusinessReels,
+} from '@/data/business-insights';
 import { useVendorMenus } from '@/data/vendor-menus';
 import { changeFrom } from '@/features/business/business-format';
 import { LeadRow, StatCard } from '@/features/business/business-parts';
+import {
+  FunnelSteps,
+  HowYouCompare,
+  PageChecklist,
+  ReplySpeed,
+  ViewsChart,
+  WhatFamiliesWant,
+  YourReels,
+} from '@/features/business/insights';
+import { headline } from '@/features/business/insights-format';
 import { chooseBusiness, useCurrentBusiness } from '@/features/business/use-current-business';
 import { useLocale } from '@/i18n/locale-context';
 
@@ -53,7 +68,9 @@ const CONTACT_STATS: (keyof BusinessStats)[] = [
  * several), whether the page is live, how it did over 7, 30 or 90 days next
  * to the period before, the families who asked (waiting ones first), then
  * menus, calendar and the page itself, and "Export everything" as a
- * spreadsheet. Opened from Profile.
+ * spreadsheet. C6b adds a headline, the views chart, seen to booked, reply
+ * speed, what families want, how they compare, their reels and a checklist
+ * for the page. Opened from Profile and Home.
  */
 export default function BusinessScreen() {
   const Colors = useColors();
@@ -61,7 +78,12 @@ export default function BusinessScreen() {
   const { t, locale } = useLocale();
   const current = useCurrentBusiness();
   const [days, setDays] = useState<StatsPeriod>(30);
+  // At large text the number cards go one per row instead of two
+  const largeText = useFontScale('display') >= 1.4;
   const stats = useBusinessStats(current.vendorId, days);
+  const insights = useBusinessInsights(current.vendorId, days);
+  const reels = useBusinessReels(current.vendorId);
+  const checklist = useBusinessChecklist(current.vendorId);
   const leads = useBusinessLeads(current.vendorId);
   const menus = useVendorMenus(current.vendorId);
   const exporting = useExportBusiness(current.vendorId);
@@ -117,6 +139,12 @@ export default function BusinessScreen() {
         </View>
       )}
 
+      {stats.data && (
+        <AppText variant="title" accessibilityRole="header">
+          {headline(days, now.views, now.inquiries, t)}
+        </AppText>
+      )}
+
       <View style={styles.block}>
         <SectionTitle>{t('business.stats.title')}</SectionTitle>
         <Segmented
@@ -135,7 +163,7 @@ export default function BusinessScreen() {
             {MAIN_STATS.map((key, index) => (
               <StatCard
                 key={key}
-                wide={index === 0}
+                wide={index === 0 || largeText}
                 value={now[key]}
                 label={t(`business.stats.${key}`)}
                 change={changeFrom(now[key], before[key])}
@@ -156,6 +184,15 @@ export default function BusinessScreen() {
           </ListSection>
         )}
       </View>
+
+      {insights.isError && <StateView state="error" onRetry={() => void insights.refetch()} />}
+      {insights.data && (
+        <>
+          <ViewsChart daily={insights.data.daily} />
+          <FunnelSteps funnel={insights.data.funnel} />
+          <ReplySpeed replies={insights.data.replies} />
+        </>
+      )}
 
       <View style={styles.block}>
         <SectionTitle>{t('business.leads.title')}</SectionTitle>
@@ -188,7 +225,25 @@ export default function BusinessScreen() {
         )}
       </View>
 
+      {insights.data && <WhatFamiliesWant asks={insights.data.asks} />}
+      {insights.data?.compare && <HowYouCompare compare={insights.data.compare} />}
+      {reels.data && <YourReels reels={reels.data} />}
+      {checklist.data && checklist.data.total > 0 && (
+        <PageChecklist
+          items={checklist.data.items}
+          doneCount={checklist.data.doneCount}
+          total={checklist.data.total}
+          businessName={business.name}
+        />
+      )}
+
       <ListSection header={t('business.yourListing')} footer={t('business.listingHint')}>
+        <ListRow
+          icon="create-outline"
+          title={t('business.listing.title')}
+          subtitle={t('business.listing.rowHint')}
+          onPress={() => router.push('/business/listing')}
+        />
         <ListRow
           icon="restaurant-outline"
           title={t('business.menus.title')}

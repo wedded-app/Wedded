@@ -14,4 +14,6 @@ export const StorageKeys = {
   onboarding: 'settings.onboarding',
   /** Reels' first-time "Swipe up for more": "done" once they've swiped. */
   reelsSwipeHint: 'reels.swipeHint',
+  /** This phone's Expo push token once registered (src/data/push.ts), to forget it on sign out. */
+  pushToken: 'push.token',
 } as const;
