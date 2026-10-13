@@ -96,6 +96,20 @@ export function AboutYouForm({
     email: emailRef,
   };
 
+  // The cursor starts in the first empty box (the name, for a new account)
+  const [firstEmpty] = useState<TextFieldName | null>(() =>
+    !draft.name.trim()
+      ? 'name'
+      : !draft.city.trim()
+        ? 'city'
+        : !draft.phone.trim()
+          ? 'phone'
+          : null,
+  );
+  const scroll = useRef<ScrollView>(null);
+  // Done on the last box: the keyboard goes and the button comes into view
+  const showSubmit = () => setTimeout(() => scroll.current?.scrollToEnd({ animated: true }), 250);
+
   const { errors, values } = validateAboutYou(draft);
   // The phone is the last box when the email is read-only or left out.
   const phoneIsLast = emailLocked || emailHidden;
@@ -121,6 +135,7 @@ export function AboutYouForm({
 
   return (
     <ScrollView
+      ref={scroll}
       style={style}
       contentContainerStyle={styles.content}
       keyboardShouldPersistTaps="handled"
@@ -142,6 +157,7 @@ export function AboutYouForm({
         returnKeyType="next"
         submitBehavior="submit"
         onSubmitEditing={() => cityRef.current?.focus()}
+        autoFocus={firstEmpty === 'name'}
       />
       <TextField
         ref={cityRef}
@@ -154,6 +170,7 @@ export function AboutYouForm({
         returnKeyType="next"
         submitBehavior="submit"
         onSubmitEditing={() => phoneRef.current?.focus()}
+        autoFocus={firstEmpty === 'city'}
       />
       <TextField
         ref={phoneRef}
@@ -166,7 +183,8 @@ export function AboutYouForm({
         maxLength={20}
         returnKeyType={phoneIsLast ? 'done' : 'next'}
         submitBehavior={phoneIsLast ? 'blurAndSubmit' : 'submit'}
-        onSubmitEditing={() => !phoneIsLast && emailRef.current?.focus()}
+        onSubmitEditing={() => (phoneIsLast ? showSubmit() : emailRef.current?.focus())}
+        autoFocus={firstEmpty === 'phone'}
       />
       {!emailHidden && (
         <TextField
@@ -181,6 +199,7 @@ export function AboutYouForm({
           maxLength={254}
           returnKeyType="done"
           submitBehavior="blurAndSubmit"
+          onSubmitEditing={showSubmit}
         />
       )}
       {!confirmedAdult && (
