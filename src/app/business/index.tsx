@@ -1,10 +1,11 @@
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { View } from 'react-native';
+import { ActivityIndicator, View } from 'react-native';
 
 import { AppText } from '@/components/app-text';
 import { Button } from '@/components/button';
 import { Chip } from '@/components/chip';
+import { FieldError } from '@/components/field-error';
 import { Icon } from '@/components/icon';
 import { ListRow, ListSection, SectionTitle } from '@/components/list';
 import { NavScreen } from '@/components/nav';
@@ -19,6 +20,7 @@ import {
   useBusinessStats,
   waitingCount,
 } from '@/data/business';
+import { useExportBusiness } from '@/data/business-export';
 import { useVendorMenus } from '@/data/vendor-menus';
 import { changeFrom } from '@/features/business/business-format';
 import { LeadRow, StatCard } from '@/features/business/business-parts';
@@ -50,7 +52,8 @@ const CONTACT_STATS: (keyof BusinessStats)[] = [
  * My business (C6): a vendor's own home. Which business (when they run
  * several), whether the page is live, how it did over 7, 30 or 90 days next
  * to the period before, the families who asked (waiting ones first), then
- * menus, calendar and the page itself. Opened from Profile.
+ * menus, calendar and the page itself, and "Export everything" as a
+ * spreadsheet. Opened from Profile.
  */
 export default function BusinessScreen() {
   const Colors = useColors();
@@ -61,6 +64,7 @@ export default function BusinessScreen() {
   const stats = useBusinessStats(current.vendorId, days);
   const leads = useBusinessLeads(current.vendorId);
   const menus = useVendorMenus(current.vendorId);
+  const exporting = useExportBusiness(current.vendorId);
   const business = current.business;
 
   if (current.isPending) {
@@ -207,6 +211,34 @@ export default function BusinessScreen() {
           />
         )}
       </ListSection>
+
+      <View style={styles.block}>
+        <ListSection>
+          <ListRow
+            icon="share-outline"
+            title={t('business.export.title')}
+            subtitle={t('business.export.hint')}
+            chevron={false}
+            onPress={exporting.isPending ? undefined : () => exporting.mutate()}
+            trailing={
+              exporting.isPending ? <ActivityIndicator color={Colors.primary} /> : undefined
+            }
+            accessibilityLabel={
+              exporting.isPending ? t('business.export.working') : t('business.export.title')
+            }
+          />
+        </ListSection>
+        {exporting.isError && (
+          <FieldError
+            message={
+              exporting.error instanceof Error &&
+              exporting.error.message.includes('sharing_unavailable')
+                ? t('business.export.cantShare')
+                : t('business.export.failed')
+            }
+          />
+        )}
+      </View>
     </NavScreen>
   );
 }
