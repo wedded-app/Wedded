@@ -1503,6 +1503,13 @@
       "whatsapp": "WhatsApp",
       "email": "Email",
       "noWay": "This family deleted their account, so there's no way to reply."
+    },
+    "export": {
+      "title": "Export everything",
+      "hint": "All your leads, numbers, booked days and menus as a spreadsheet.",
+      "working": "Making your spreadsheet…",
+      "failed": "Your spreadsheet didn't come through. Check your internet, then try again.",
+      "cantShare": "This phone can't share files from the app. Try on another phone, or on a computer at the website."
     }
   }
 }
