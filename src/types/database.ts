@@ -2037,7 +2037,19 @@ export type Database = {
     Functions: {
       accept_wedding_invite: { Args: { p_token: string }; Returns: string };
       add_reel_comment: { Args: { p_body: string; p_reel_id: string }; Returns: string };
+      business_checklist: {
+        Args: { p_vendor_id: string };
+        Returns: {
+          count: number;
+          done: boolean;
+          key: string;
+        }[];
+      };
       business_export: { Args: { p_vendor_id: string }; Returns: Json };
+      business_insights: {
+        Args: { p_from: string; p_to: string; p_vendor_id: string };
+        Returns: Json;
+      };
       business_leads: {
         Args: { p_before?: string; p_limit?: number; p_vendor_id: string };
         Returns: {
@@ -2057,6 +2069,19 @@ export type Database = {
           preferred_contact: string;
           replied: boolean;
           start_time: string;
+        }[];
+      };
+      business_reels: {
+        Args: { p_vendor_id: string };
+        Returns: {
+          caption: string;
+          comments: number;
+          created_at: string;
+          id: string;
+          likes: number;
+          own: boolean;
+          thumb_path: string;
+          views: number;
         }[];
       };
       business_stats: {
@@ -2342,6 +2367,7 @@ export type Database = {
       };
       touch_vendor_calendar: { Args: { p_vendor_id: string }; Returns: undefined };
       track_reel_view: { Args: { p_reel_id: string }; Returns: undefined };
+      track_search_appearances: { Args: { p_vendor_ids: string[] }; Returns: undefined };
       track_vendor_activity: { Args: { p_kind: string; p_vendor_id: string }; Returns: undefined };
       vendor_date_status: { Args: { p_day: string; p_vendor_id: string }; Returns: string };
       vendor_public_stats: {
