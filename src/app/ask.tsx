@@ -71,7 +71,11 @@ export default function AskScreen() {
   const plan = usePlan();
   // The date they picked themselves; until then it follows My Wedding
   const [pickedDate, setPickedDate] = useState<string | null>(null);
-  const planDates = planDatesFor(eventSlugs, plan.eventDates, plan.weddingDate);
+  // The family's wedding-day events (Anand Karaj, Reception…), from the data
+  const weddingDaySlugs = (events.data ?? [])
+    .filter((section) => section.phase === 'wedding_day')
+    .flatMap((section) => section.events.map((e) => e.slug));
+  const planDates = planDatesFor(eventSlugs, plan.eventDates, plan.weddingDate, weddingDaySlugs);
   const date = pickedDate ?? planDates.start;
   const [dateUnsure, setDateUnsure] = useState(false);
   const [pickerOpen, setPickerOpen] = useState(false);

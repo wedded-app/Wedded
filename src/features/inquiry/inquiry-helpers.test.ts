@@ -38,8 +38,25 @@ describe('dates', () => {
 describe('planDatesFor', () => {
   const eventDates = { jaago: '2027-06-11', 'anand-karaj': '2027-06-12', roka: '2026-01-01' };
 
-  it("starts with the first event's own day and lists each event's day", () => {
-    expect(planDatesFor(['jaago', 'anand-karaj'], eventDates, '2027-06-12', '2026-10-13')).toEqual({
+  it("starts with the earliest of the events' own days and lists each one", () => {
+    expect(
+      planDatesFor(
+        ['anand-karaj', 'jaago'],
+        eventDates,
+        '2027-06-12',
+        ['anand-karaj'],
+        '2026-10-13',
+      ),
+    ).toEqual({
+      start: '2027-06-11',
+      dates: [
+        { slug: 'anand-karaj', date: '2027-06-12' },
+        { slug: 'jaago', date: '2027-06-11' },
+      ],
+    });
+    expect(
+      planDatesFor(['jaago', 'anand-karaj'], eventDates, '2027-06-12', [], '2026-10-13'),
+    ).toEqual({
       start: '2027-06-11',
       dates: [
         { slug: 'jaago', date: '2027-06-11' },
@@ -48,15 +65,20 @@ describe('planDatesFor', () => {
     });
   });
 
-  it('falls back to the wedding day, and leaves out days already past', () => {
-    expect(planDatesFor(['mehndi', 'roka'], eventDates, '2027-06-12', '2026-10-13')).toEqual({
-      start: '2027-06-12',
-      dates: [],
-    });
-    expect(planDatesFor([], undefined, '2025-01-01', '2026-10-13')).toEqual({
-      start: null,
-      dates: [],
-    });
+  it('never gives another event the wedding day', () => {
+    // A Roka with no date of its own starts empty, not on the wedding day
+    expect(planDatesFor(['roka'], eventDates, '2027-06-12', ['anand-karaj'], '2026-10-13')).toEqual(
+      { start: null, dates: [] },
+    );
+  });
+
+  it('uses the wedding day for wedding-day events, or when no event is picked', () => {
+    expect(
+      planDatesFor(['reception'], {}, '2027-06-12', ['anand-karaj', 'reception'], '2026-10-13'),
+    ).toEqual({ start: '2027-06-12', dates: [] });
+    expect(planDatesFor([], undefined, '2027-06-12', [], '2026-10-13').start).toBe('2027-06-12');
+    // A wedding day already past is left out
+    expect(planDatesFor([], undefined, '2025-01-01', [], '2026-10-13').start).toBeNull();
   });
 });
 

@@ -42,19 +42,25 @@ type Translate = (key: string, options?: Record<string, string | number>) => str
 /**
  * The dates from My Wedding for the events a family is asking about: each
  * event's own day (in the order they picked), and the date to start the form
- * with, the first event's day, else the wedding day. Days already past are
- * left out.
+ * with: the earliest of those days. The wedding day is used only when they're
+ * asking about wedding-day events (or haven't picked one): a Roka is months
+ * earlier, so it never gets the wedding date. Otherwise the date starts
+ * empty for them to pick. Days already past are left out.
  */
 export function planDatesFor(
   eventSlugs: string[],
   eventDates: Record<string, string> | undefined,
   weddingDate: string | null,
+  weddingDaySlugs: string[],
   today: string = toDateString(new Date()),
 ): { start: string | null; dates: { slug: string; date: string }[] } {
   const dates = eventSlugs
     .filter((slug) => (eventDates?.[slug] ?? '') >= today)
     .map((slug) => ({ slug, date: eventDates?.[slug] as string }));
-  const start = dates[0]?.date ?? (weddingDate && weddingDate >= today ? weddingDate : null);
+  const earliest = dates.map((d) => d.date).sort()[0];
+  if (earliest) return { start: earliest, dates };
+  const onWeddingDay = eventSlugs.every((slug) => weddingDaySlugs.includes(slug));
+  const start = onWeddingDay && weddingDate && weddingDate >= today ? weddingDate : null;
   return { start, dates };
 }
 
