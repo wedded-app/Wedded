@@ -49,7 +49,7 @@ function LeadDetails({ lead }: { lead: Lead }) {
   const { t } = useLocale();
   const eventName = useEventNames();
   const who = lead.familyName ?? t('chat.aFamily');
-  const answers = leadAnswerRows(lead.details, t);
+  const answers = leadAnswerRows(lead.details, t, eventName);
   const date = lead.eventDate
     ? [formatDate(lead.eventDate), lead.startTime ? formatTime(lead.startTime.slice(0, 5)) : null]
         .filter(Boolean)

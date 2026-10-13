@@ -15,12 +15,15 @@ export function BookingCard({
   booking,
   eventNames,
   guestLabel,
+  answers = [],
 }: {
   booking: ChatBooking;
   /** booking.eventSlugs as names in the app's language. */
   eventNames: string[];
   /** booking.guestBand as words ("100 to 250"). */
   guestLabel?: string | null;
+  /** booking.details as labelled rows: each event's day, then the hall or caterer answers. */
+  answers?: { label: string; value: string }[];
 }) {
   const styles = useStyles();
   const { t } = useLocale();
@@ -33,12 +36,7 @@ export function BookingCard({
     },
     { label: t('chat.booking.guests'), value: guestLabel || notSure },
     ...(booking.location ? [{ label: t('chat.booking.where'), value: booking.location }] : []),
-    ...Object.entries(booking.details ?? {})
-      .filter(([, value]) => value !== null && value !== undefined && value !== '')
-      .map(([label, value]) => ({
-        label,
-        value: Array.isArray(value) ? value.join(', ') : String(value),
-      })),
+    ...answers,
   ];
 
   return (

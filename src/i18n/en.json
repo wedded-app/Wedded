@@ -466,7 +466,10 @@
       "and": "and",
       "wedding": "a wedding",
       "ourCity": "our city",
-      "tour": "Sat Sri Akal, we're planning {{events}} in {{place}} and would like to visit your hall. Could we come and see it at one of the times we picked? Thank you."
+      "tour": "Sat Sri Akal, we're planning {{events}} in {{place}} and would like to visit your hall. Could we come and see it at one of the times we picked? Thank you.",
+      "eventOn": "{{event}} on {{date}}",
+      "dates": "Sat Sri Akal, we're planning {{dates}} in {{place}}. Could you share your price and whether you're available? Thank you.",
+      "datesAndGuests": "Sat Sri Akal, we're planning {{dates}} in {{place}} for about {{guests}} guests. Could you share your price and whether you're available? Thank you."
     },
     "errors": {
       "guests": "Pick about how many guests (or Not sure).",
@@ -536,7 +539,9 @@
       "booked": "Their calendar shows this date as booked. You can still ask, or pick another date.",
       "held": "Someone is holding this date. Ask soon.",
       "partly": "Part of this day is booked. Ask which part is free."
-    }
+    },
+    "fromPlan": "From My Wedding, these dates go with your request: {{dates}}",
+    "fromPlanOne": "From My Wedding: {{event}} is on {{date}}. You can change it."
   },
   "deleteAccount": {
     "title": "Delete your account?",
@@ -703,7 +708,12 @@
     "cheerAll": "Every event is booked. Congratulations!",
     "startCardTitle": "Plan your wedding",
     "startCardBody": "Your countdown, your events and what to book, shared with the family.",
-    "signInToPlan": "Sign in to start"
+    "signInToPlan": "Sign in to start",
+    "eventDateTitle": "When is the {{event}}?",
+    "eventDatePick": "Pick a date",
+    "eventDateClear": "Clear the date",
+    "eventDateNone": "No date yet",
+    "eventDateHint": "When you ask a vendor about this event, the date goes with your request."
   },
   "filters": {
     "title": "Filters",
@@ -1502,7 +1512,8 @@
       "text": "Text",
       "whatsapp": "WhatsApp",
       "email": "Email",
-      "noWay": "This family deleted their account, so there's no way to reply."
+      "noWay": "This family deleted their account, so there's no way to reply.",
+      "eventDates": "Dates"
     },
     "export": {
       "title": "Export everything",

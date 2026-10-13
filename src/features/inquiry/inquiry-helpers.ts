@@ -40,6 +40,25 @@ export function formatDate(value: string): string {
 type Translate = (key: string, options?: Record<string, string | number>) => string;
 
 /**
+ * The dates from My Wedding for the events a family is asking about: each
+ * event's own day (in the order they picked), and the date to start the form
+ * with, the first event's day, else the wedding day. Days already past are
+ * left out.
+ */
+export function planDatesFor(
+  eventSlugs: string[],
+  eventDates: Record<string, string> | undefined,
+  weddingDate: string | null,
+  today: string = toDateString(new Date()),
+): { start: string | null; dates: { slug: string; date: string }[] } {
+  const dates = eventSlugs
+    .filter((slug) => (eventDates?.[slug] ?? '') >= today)
+    .map((slug) => ({ slug, date: eventDates?.[slug] as string }));
+  const start = dates[0]?.date ?? (weddingDate && weddingDate >= today ? weddingDate : null);
+  return { start, dates };
+}
+
+/**
  * The suggested message (S11 item 5), in the app's language. It's rewritten as
  * the form changes until they edit it themselves.
  */
@@ -53,6 +72,8 @@ export function suggestedMessage(
     guests: GuestBand | null;
     /** Asking to visit a venue ("Book a tour"). */
     tour?: boolean;
+    /** Each event's own day from My Wedding; with two or more, the message names each. */
+    eventDates?: { event: LocalizedText; date: string }[];
   },
 ): string {
   const joiner = t('inquiry.auto.and');
@@ -61,6 +82,19 @@ export function suggestedMessage(
       ? parts.events.map((event) => localized(event, locale)).join(` ${joiner} `)
       : t('inquiry.auto.wedding');
   const knownGuests = parts.guests && parts.guests !== 'not_sure' ? parts.guests : null;
+  // "Jaago on Fri, Jun 11 and Anand Karaj on Sat, Jun 12"
+  if (!parts.tour && parts.eventDates && parts.eventDates.length >= 2) {
+    const dates = parts.eventDates
+      .map(({ event, date }) =>
+        t('inquiry.auto.eventOn', { event: localized(event, locale), date: formatDate(date) }),
+      )
+      .join(` ${joiner} `);
+    return t(`inquiry.auto.${knownGuests ? 'datesAndGuests' : 'dates'}`, {
+      dates,
+      place: parts.place.trim() || t('inquiry.auto.ourCity'),
+      guests: knownGuests ? t(`inquiry.guestsInMessage.${knownGuests}`) : '',
+    });
+  }
   const key = parts.tour
     ? 'tour'
     : parts.date

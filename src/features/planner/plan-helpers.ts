@@ -19,6 +19,8 @@ export type WeddingPlan = {
   booked: Record<string, string[]>;
   /** Per event, about how many guests (the inquiry form's bands), so inquiries fill it in. */
   guests?: Record<string, string>;
+  /** Per event, its own day (Roka, Jaago…), yyyy-mm-dd, so inquiries fill it in. */
+  eventDates?: Record<string, string>;
   /**
    * Set when this is a copy of a plan saved to the account (Plan together):
    * the wedding it mirrors. Cleared on sign-out, so the next person on this

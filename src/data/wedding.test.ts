@@ -21,6 +21,7 @@ const wedding: AccountWedding = {
   events: ['reception', 'jaago'],
   booked: { reception: ['banquet-hall'] },
   guests: { reception: '250_500' },
+  eventDates: { reception: '2027-06-12' },
   bookedVendors: {},
 };
 
@@ -38,12 +39,18 @@ describe('toAccountWedding', () => {
           wedding_events: [
             {
               event_slug: 'reception',
+              event_date: '2027-06-12',
               guest_band: '250_500',
               wedding_bookings: [
                 { category_slug: 'dj', vendor: { slug: 'dj-sukh', name: 'DJ Sukh' } },
               ],
             },
-            { event_slug: 'jaago', guest_band: null, wedding_bookings: [] },
+            {
+              event_slug: 'jaago',
+              event_date: '2027-06-11',
+              guest_band: null,
+              wedding_bookings: [],
+            },
           ],
         },
       }),
@@ -57,6 +64,7 @@ describe('toAccountWedding', () => {
       events: ['reception', 'jaago'],
       booked: { reception: ['dj'] },
       guests: { reception: '250_500' },
+      eventDates: { reception: '2027-06-12', jaago: '2027-06-11' },
       bookedVendors: { 'reception/dj': { slug: 'dj-sukh', name: 'DJ Sukh' } },
     });
   });
@@ -78,11 +86,19 @@ describe('applyChange', () => {
     expect(applyChange(wedding, { kind: 'date', date: null }).weddingDate).toBeNull();
   });
 
-  it('removing an event removes what was booked for it and its guest count', () => {
+  it('removing an event removes what was booked for it, its guest count and its date', () => {
     const next = applyChange(wedding, { kind: 'event', slug: 'reception', on: false });
     expect(next.events).toEqual(['jaago']);
     expect(next.booked).toEqual({});
     expect(next.guests).toEqual({});
+    expect(next.eventDates).toEqual({});
+  });
+
+  it("sets and clears an event's own date", () => {
+    const set = applyChange(wedding, { kind: 'eventDate', event: 'jaago', date: '2027-06-11' });
+    expect(set.eventDates).toEqual({ reception: '2027-06-12', jaago: '2027-06-11' });
+    const cleared = applyChange(set, { kind: 'eventDate', event: 'reception', date: null });
+    expect(cleared.eventDates).toEqual({ jaago: '2027-06-11' });
   });
 
   it("sets and clears an event's guest count", () => {

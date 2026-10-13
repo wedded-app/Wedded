@@ -36,6 +36,8 @@ function load(): WeddingPlan {
       events: strings(parsed.events),
       booked: typeof parsed.booked === 'object' && parsed.booked ? parsed.booked : {},
       guests: typeof parsed.guests === 'object' && parsed.guests ? parsed.guests : {},
+      eventDates:
+        typeof parsed.eventDates === 'object' && parsed.eventDates ? parsed.eventDates : {},
       syncedWeddingId: typeof parsed.syncedWeddingId === 'string' ? parsed.syncedWeddingId : null,
     };
   } catch {
@@ -82,7 +84,8 @@ export function isEmptyPlan(plan: WeddingPlan): boolean {
     plan.traditions.length === 0 &&
     plan.events.length === 0 &&
     Object.keys(plan.booked).length === 0 &&
-    Object.keys(plan.guests ?? {}).length === 0
+    Object.keys(plan.guests ?? {}).length === 0 &&
+    Object.keys(plan.eventDates ?? {}).length === 0
   );
 }
 
