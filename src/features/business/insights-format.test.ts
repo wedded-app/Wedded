@@ -30,6 +30,14 @@ describe('insights words', () => {
   it('sends Fix it to the right place', () => {
     expect(fixTarget('calendar')).toBe('/business/calendar');
     expect(fixTarget('menus')).toBe('/business/menus');
+    expect(fixTarget('bioPa')).toEqual({
+      pathname: '/business/listing',
+      params: { section: 'about' },
+    });
+    expect(fixTarget('contact')).toEqual({
+      pathname: '/business/listing',
+      params: { section: 'contact' },
+    });
     expect(fixTarget('photos')).toBe('team');
   });
 

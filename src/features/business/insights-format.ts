@@ -1,5 +1,9 @@
+import type { Href } from 'expo-router';
+
 import type { ChecklistKey, Replies } from '@/data/business-insights';
 import { replyTime } from '@/data/business-insights';
+
+import { sectionFor } from './listing-draft';
 
 type Translate = (key: string, options?: Record<string, string | number>) => string;
 
@@ -46,10 +50,16 @@ export function monthLabel(month: string, t: Translate): string {
   return `${t(`business.calendar.months.${m}`)} ${year}`;
 }
 
-/** Where "Fix it" goes: a My business screen, or the Wedded team (no self-edit yet). */
-export function fixTarget(key: ChecklistKey): '/business/calendar' | '/business/menus' | 'team' {
+/**
+ * Where "Fix it" goes: the calendar, the menus, the listing editor at that
+ * section, or the Wedded team (photos and the cover, until vendors can add
+ * their own).
+ */
+export function fixTarget(key: ChecklistKey): Href | 'team' {
   if (key === 'calendar') return '/business/calendar';
   if (key === 'menus') return '/business/menus';
+  const section = sectionFor(key);
+  if (section) return { pathname: '/business/listing', params: { section } };
   return 'team';
 }
 
