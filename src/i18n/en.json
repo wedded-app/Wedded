@@ -246,7 +246,9 @@
       "booked": "Booked"
     },
     "savedGrid": "Your saved vendors",
-    "savedGridEmpty": "Vendors you save show up here. Tap the heart on any vendor."
+    "savedGridEmpty": "Vendors you save show up here. Tap the heart on any vendor.",
+    "myRequests": "My requests",
+    "myRequestsHint": "Who you asked, and whether they got back to you"
   },
   "common": {
     "comingSoon": "Coming soon",
@@ -494,7 +496,9 @@
       "viewSaved": "View saved",
       "chatTitle": "Keep talking here",
       "chatBody": "Your inquiry is now a chat with {{vendor}}. Their reply shows up in Messages, and we'll email you too.",
-      "chatButton": "Continue in chat"
+      "chatButton": "Continue in chat",
+      "nextNoEmail": "Most vendors reply within 1 to 2 days by call or text.",
+      "seeRequests": "See all my requests"
     },
     "tourTitle": "Book a tour",
     "questions": {
@@ -569,7 +573,7 @@
     "signInFirst": "Sign in to delete your account."
   },
   "myInquiries": {
-    "title": "My inquiries",
+    "title": "My requests",
     "back": "Back",
     "empty": "You haven't asked any vendors yet. Tap \"Ask about price & date\" on a vendor to start.",
     "askedOn": "Asked on {{date}}",
