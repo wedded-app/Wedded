@@ -108,3 +108,26 @@ describe('sending', () => {
     expect(sendErrorKind(new Error('offline'))).toBe('failed');
   });
 });
+
+describe('voice notes', () => {
+  it('reads a voice note and nothing else as one', () => {
+    const voice = toMessage(
+      { ...row, kind: 'voice', body: null, data: { path: 'c1/1.m4a', durationMs: 4200 } },
+      'family',
+      null,
+    );
+    expect(voice.voice).toEqual({ path: 'c1/1.m4a', durationMs: 4200 });
+    expect(toMessage(row, 'family', null).voice).toBeNull();
+    expect(
+      toMessage({ ...row, kind: 'voice', data: { path: 'c1/1.m4a' } }, 'family', null).voice,
+    ).toBeNull();
+  });
+
+  it('sends the path and a whole number of milliseconds', () => {
+    expect(messagePayload({ kind: 'voice', path: 'c1/1.m4a', durationMs: 4200.6 })).toEqual({
+      kind: 'voice',
+      body: null,
+      data: { path: 'c1/1.m4a', durationMs: 4201 },
+    });
+  });
+});
