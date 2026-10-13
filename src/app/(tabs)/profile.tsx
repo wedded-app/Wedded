@@ -30,6 +30,8 @@ export default function ProfileScreen() {
   const { t } = useLocale();
   const unread = useUnreadCount();
   const { isVendor } = useIsVendor();
+  const { status } = useSession();
+  const requests = useMyInquiries();
 
   return (
     <NavScreen
@@ -54,6 +56,15 @@ export default function ProfileScreen() {
             title={t('business.title')}
             subtitle={t('business.profileHint')}
             onPress={() => router.push('/business')}
+          />
+        )}
+        {status === 'signedIn' && (
+          <ListRow
+            icon="paper-plane-outline"
+            title={t('profile.myRequests')}
+            subtitle={t('profile.myRequestsHint')}
+            value={requests.data ? String(requests.data.length) : undefined}
+            onPress={() => router.push('/my-inquiries')}
           />
         )}
         <ListRow
