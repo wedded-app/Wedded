@@ -3,7 +3,6 @@ import { useState } from 'react';
 import { Pressable, RefreshControl, StyleSheet, View } from 'react-native';
 
 import { AppText } from '@/components/app-text';
-import { LanguageToggle } from '@/components/language-toggle';
 import { SectionTitle } from '@/components/list';
 import { NavScreen } from '@/components/nav';
 import { SearchButton } from '@/components/search-button';
@@ -12,6 +11,7 @@ import { Sizes, Spacing, useColors } from '@/constants/theme';
 import { useFeed } from '@/data/feed';
 import { useCategoryGroups, useHomeEvents } from '@/data/reference';
 import { useCategoryVendorCounts } from '@/data/vendors';
+import { ChatButton } from '@/features/chat/chat-button';
 import { EventCarousel } from '@/features/home/event-carousel';
 import { HomeHero } from '@/features/home/home-hero';
 import { BENTO_TILES, VendorTypeBento } from '@/features/home/vendor-type-bento';
@@ -49,7 +49,7 @@ export default function HomeScreen() {
     <NavScreen
       title={t('app.name')}
       back={false}
-      trailing={<LanguageToggle />}
+      trailing={<ChatButton />}
       refreshControl={
         <RefreshControl
           refreshing={refreshing}
