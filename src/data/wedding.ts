@@ -44,6 +44,8 @@ export type AccountWedding = {
   events: string[];
   booked: Record<string, string[]>;
   guests: Record<string, string>;
+  /** Each event's own day, yyyy-mm-dd, when they've set one. */
+  eventDates: Record<string, string>;
   /** Who they booked, keyed "event/category", when a vendor is named. */
   bookedVendors: Record<string, { slug: string; name: string }>;
 };
@@ -71,6 +73,7 @@ type MembershipRow = {
     traditions: string[] | null;
     wedding_events: {
       event_slug: string;
+      event_date: string | null;
       guest_band: string | null;
       wedding_bookings: {
         category_slug: string;
@@ -85,6 +88,7 @@ export function toAccountWedding(row: MembershipRow): AccountWedding | null {
   if (!row.wedding || !isRole(row.role)) return null;
   const booked: Record<string, string[]> = {};
   const guests: Record<string, string> = {};
+  const eventDates: Record<string, string> = {};
   const bookedVendors: Record<string, { slug: string; name: string }> = {};
   for (const event of row.wedding.wedding_events) {
     for (const booking of event.wedding_bookings) {
@@ -95,6 +99,7 @@ export function toAccountWedding(row: MembershipRow): AccountWedding | null {
     const categories = event.wedding_bookings.map((b) => b.category_slug);
     if (categories.length > 0) booked[event.event_slug] = categories;
     if (event.guest_band) guests[event.event_slug] = event.guest_band;
+    if (event.event_date) eventDates[event.event_slug] = event.event_date;
   }
   return {
     id: row.wedding.id,
@@ -106,6 +111,7 @@ export function toAccountWedding(row: MembershipRow): AccountWedding | null {
     events: row.wedding.wedding_events.map((e) => e.event_slug),
     booked,
     guests,
+    eventDates,
     bookedVendors,
   };
 }
@@ -125,6 +131,7 @@ export function toPlan(wedding: AccountWedding): WeddingPlan {
     events: wedding.events,
     booked: wedding.booked,
     guests: wedding.guests,
+    eventDates: wedding.eventDates,
     syncedWeddingId: wedding.id,
   };
 }
@@ -133,7 +140,7 @@ async function fetchMyWeddings(userId: string): Promise<AccountWedding[]> {
   const { data, error } = await supabase
     .from('wedding_members')
     .select(
-      'role, joined_at, wedding:weddings(id, title, wedding_date, traditions, wedding_events(event_slug, guest_band, wedding_bookings(category_slug, vendor:vendors(slug, name))))',
+      'role, joined_at, wedding:weddings(id, title, wedding_date, traditions, wedding_events(event_slug, event_date, guest_band, wedding_bookings(category_slug, vendor:vendors(slug, name))))',
     )
     .eq('user_id', userId)
     .order('joined_at');
@@ -187,7 +194,8 @@ export type WeddingChange =
   | { kind: 'event'; slug: string; on: boolean }
   | { kind: 'addEvents'; slugs: string[] }
   | { kind: 'booked'; event: string; category: string; on: boolean }
-  | { kind: 'guests'; event: string; band: string | null };
+  | { kind: 'guests'; event: string; band: string | null }
+  | { kind: 'eventDate'; event: string; date: string | null };
 
 /** The same change applied to the cached wedding, so the screen updates at once. */
 export function applyChange(wedding: AccountWedding, change: WeddingChange): AccountWedding {
@@ -211,11 +219,14 @@ export function applyChange(wedding: AccountWedding, change: WeddingChange): Acc
       delete booked[change.slug];
       const guests = { ...wedding.guests };
       delete guests[change.slug];
+      const eventDates = { ...wedding.eventDates };
+      delete eventDates[change.slug];
       return {
         ...wedding,
         events: wedding.events.filter((e) => e !== change.slug),
         booked,
         guests,
+        eventDates,
       };
     }
     case 'booked': {
@@ -232,6 +243,12 @@ export function applyChange(wedding: AccountWedding, change: WeddingChange): Acc
       if (change.band) guests[change.event] = change.band;
       else delete guests[change.event];
       return { ...wedding, guests };
+    }
+    case 'eventDate': {
+      const eventDates = { ...wedding.eventDates };
+      if (change.date) eventDates[change.event] = change.date;
+      else delete eventDates[change.event];
+      return { ...wedding, eventDates };
     }
   }
 }
@@ -293,6 +310,13 @@ async function saveChange(weddingId: string, change: WeddingChange): Promise<voi
         .eq('wedding_id', weddingId)
         .eq('event_slug', change.event));
       break;
+    case 'eventDate':
+      ({ error } = await supabase
+        .from('wedding_events')
+        .update({ event_date: change.date })
+        .eq('wedding_id', weddingId)
+        .eq('event_slug', change.event));
+      break;
   }
   if (error) throw error;
 }
@@ -316,6 +340,7 @@ const NO_EDITS = {
   addEvents: (_slugs: string[]) => {},
   toggleBooked: (_event: string, _category: string) => {},
   setEventGuests: (_event: string, _band: string | null) => {},
+  setEventDate: (_event: string, _date: string | null) => {},
 };
 
 /**
@@ -387,6 +412,8 @@ export function useWeddingPlan() {
         on: !(wedding.booked[event] ?? []).includes(category),
       }),
     setEventGuests: (event: string, band: string | null) => change({ kind: 'guests', event, band }),
+    setEventDate: (event: string, date: string | null) =>
+      change({ kind: 'eventDate', event, date }),
   };
 }
 

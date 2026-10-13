@@ -41,6 +41,23 @@ describe('leadAnswerRows', () => {
     ]);
   });
 
+  it("lists each event's own day first, by name", () => {
+    const names: Record<string, string> = { jaago: 'Jaago', 'anand-karaj': 'Anand Karaj' };
+    expect(
+      leadAnswerRows(
+        { eventDates: { jaago: '2027-06-11', 'anand-karaj': '2027-06-12', bad: 5 }, food: 'halal' },
+        t,
+        (slug) => names[slug] ?? slug,
+      ),
+    ).toEqual([
+      {
+        label: 'business.leads.eventDates',
+        value: 'Jaago: Fri, Jun 11, 2027\nAnand Karaj: Sat, Jun 12, 2027',
+      },
+      { label: 'food', value: 'foodHalal' },
+    ]);
+  });
+
   it('reads a caterer and leaves out what they skipped', () => {
     expect(
       leadAnswerRows({ food: 'veg_nonveg', liveStations: ['chaat', 'chai'], tasting: true }, t),
