@@ -30,6 +30,8 @@ export default function ProfileScreen() {
   const { t } = useLocale();
   const unread = useUnreadCount();
   const { isVendor } = useIsVendor();
+  const { status } = useSession();
+  const requests = useMyInquiries();
 
   return (
     <NavScreen
@@ -56,6 +58,15 @@ export default function ProfileScreen() {
             onPress={() => router.push('/business')}
           />
         )}
+        {status === 'signedIn' && (
+          <ListRow
+            icon="paper-plane-outline"
+            title={t('profile.myRequests')}
+            subtitle={t('profile.myRequestsHint')}
+            value={requests.data ? String(requests.data.length) : undefined}
+            onPress={() => router.push('/my-inquiries')}
+          />
+        )}
         <ListRow
           icon="chatbubbles-outline"
           title={t('chat.title')}
@@ -73,11 +84,13 @@ export default function ProfileScreen() {
           title={t('home.foundingWall')}
           onPress={() => router.push('/founding')}
         />
-        <ListRow
-          icon="storefront-outline"
-          title={t('home.forVendors')}
-          onPress={() => router.push('/for-vendors')}
-        />
+        {!isVendor && (
+          <ListRow
+            icon="storefront-outline"
+            title={t('home.forVendors')}
+            onPress={() => router.push('/for-vendors')}
+          />
+        )}
       </ListSection>
     </NavScreen>
   );

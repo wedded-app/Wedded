@@ -10,6 +10,7 @@ import { SheetHeader } from '@/components/sheet-header';
 import { StateView } from '@/components/state-view';
 import { TextField } from '@/components/text-field';
 import { Spacing, useColors } from '@/constants/theme';
+import { useIsVendor } from '@/data/chat';
 import { useLocale } from '@/i18n/locale-context';
 import { successHaptic } from '@/lib/haptics';
 import { formatPhone } from '@/lib/phone';
@@ -418,6 +419,8 @@ function AboutYouStep({ onDone }: { onDone: () => void }) {
   const { session, email, phone, nameHint, profile, profileSaved } = useSession();
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string>();
+  // Someone the team added to a business sees the form in a business's words
+  const { isVendor } = useIsVendor();
 
   if (!session) {
     return <StateView state="loading" />;
@@ -455,6 +458,7 @@ function AboutYouStep({ onDone }: { onDone: () => void }) {
       }}
       emailLocked
       emailHidden={!email}
+      forBusiness={isVendor}
       confirmedAdult={!!profile}
       submitLabel={profile ? t('aboutYou.save') : undefined}
       submitting={saving}

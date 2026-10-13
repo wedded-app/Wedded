@@ -47,6 +47,8 @@ export type AboutYouFormProps = {
   confirmedAdult?: boolean;
   /** Button text; defaults to "Create account". */
   submitLabel?: string;
+  /** A vendor account: the same details, asked in a business's words. */
+  forBusiness?: boolean;
   style?: StyleProp<ViewStyle>;
 };
 
@@ -70,6 +72,7 @@ export function AboutYouForm({
   emailHidden = false,
   confirmedAdult = false,
   submitLabel,
+  forBusiness = false,
   style,
 }: AboutYouFormProps) {
   const { t } = useLocale();
@@ -139,8 +142,9 @@ export function AboutYouForm({
       automaticallyAdjustKeyboardInsets
     >
       <AppText variant="title" accessibilityRole="header">
-        {t('aboutYou.title')}
+        {t(forBusiness ? 'aboutYou.business.title' : 'aboutYou.title')}
       </AppText>
+      {forBusiness && <AppText color="text2">{t('aboutYou.business.intro')}</AppText>}
 
       <TextField
         ref={nameRef}
@@ -172,7 +176,7 @@ export function AboutYouForm({
         ref={phoneRef}
         type="phone"
         label={t('aboutYou.phone')}
-        hint={t('aboutYou.phoneHint')}
+        hint={t(forBusiness ? 'aboutYou.business.phoneHint' : 'aboutYou.phoneHint')}
         value={draft.phone}
         onChangeText={setField('phone')}
         error={errorFor('phone')}

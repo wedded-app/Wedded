@@ -17,6 +17,7 @@ import { Spacing, Springs, useColors } from '@/constants/theme';
 import { useConversations } from '@/data/chat';
 import { useHomeEvents } from '@/data/reference';
 import { PushAskCard } from '@/features/chat/push-ask';
+import { useSession } from '@/features/auth/session';
 import { useInquiryVendor } from '@/features/inquiry/inquiry-helpers';
 import { localized } from '@/i18n/localized';
 import { useLocale } from '@/i18n/locale-context';
@@ -30,6 +31,8 @@ import { successHaptic } from '@/lib/haptics';
 export default function AskSentScreen() {
   const Colors = useColors();
   const { t, locale } = useLocale();
+  // Phone sign-ins have no email, so no copy goes anywhere
+  const { email } = useSession();
   const params = useLocalSearchParams<{ vendorId?: string; event?: string; queued?: string }>();
   const vendor = useInquiryVendor(params.vendorId ?? '');
   // The inquiry started (or continued) a chat with this vendor
@@ -66,7 +69,7 @@ export default function AskSentScreen() {
             : t('inquiry.sent.title', { vendor: name })}
         </AppText>
         <AppText variant="bodyLg" color="text2" style={styles.center}>
-          {t('inquiry.sent.next')}
+          {t(email ? 'inquiry.sent.next' : 'inquiry.sent.nextNoEmail')}
         </AppText>
 
         {conversation && (
@@ -125,6 +128,11 @@ export default function AskSentScreen() {
         {/* The vendor's reply comes in the app: offer a buzz when it does */}
         <PushAskCard audience="family" />
 
+        <Button
+          variant="text"
+          label={t('inquiry.sent.seeRequests')}
+          onPress={() => router.replace('/my-inquiries')}
+        />
         <Button label={t('location.done')} onPress={() => router.back()} />
       </ScrollView>
     </Screen>

@@ -246,7 +246,9 @@
       "booked": "Booked"
     },
     "savedGrid": "Your saved vendors",
-    "savedGridEmpty": "Vendors you save show up here. Tap the heart on any vendor."
+    "savedGridEmpty": "Vendors you save show up here. Tap the heart on any vendor.",
+    "myRequests": "My requests",
+    "myRequestsHint": "Who you asked, and whether they got back to you"
   },
   "common": {
     "comingSoon": "Coming soon",
@@ -279,7 +281,12 @@
     },
     "emailLockedHint": "This is the email you signed in with.",
     "save": "Save",
-    "saveFailed": "We couldn't save your details. Check your internet and try again."
+    "saveFailed": "We couldn't save your details. Check your internet and try again.",
+    "business": {
+      "title": "Your details",
+      "intro": "So the Wedded team knows who runs your business. Families don't see these.",
+      "phoneHint": "So the Wedded team can reach you about your business."
+    }
   },
   "counts": {
     "vendorTypes": {
@@ -494,7 +501,9 @@
       "viewSaved": "View saved",
       "chatTitle": "Keep talking here",
       "chatBody": "Your inquiry is now a chat with {{vendor}}. Their reply shows up in Messages, and we'll email you too.",
-      "chatButton": "Continue in chat"
+      "chatButton": "Continue in chat",
+      "nextNoEmail": "Most vendors reply within 1 to 2 days by call or text.",
+      "seeRequests": "See all my requests"
     },
     "tourTitle": "Book a tour",
     "questions": {
@@ -569,7 +578,7 @@
     "signInFirst": "Sign in to delete your account."
   },
   "myInquiries": {
-    "title": "My inquiries",
+    "title": "My requests",
     "back": "Back",
     "empty": "You haven't asked any vendors yet. Tap \"Ask about price & date\" on a vendor to start.",
     "askedOn": "Asked on {{date}}",
@@ -1567,7 +1576,10 @@
       "cantShare": "This phone can't share files from the app. Try on another phone, or on a computer at the website."
     },
     "home": {
-      "week": "This week: {{views}} people saw your page, {{asked}} asked about a date",
+      "week": {
+        "one": "This week: 1 person saw your page, {{asked}} asked about a date",
+        "other": "This week: {{count}} people saw your page, {{asked}} asked about a date"
+      },
       "hint": "Opens My business"
     },
     "insights": {
@@ -1646,9 +1658,22 @@
       "reelsTitle": "Your reels",
       "reelsEmpty": "No reels yet. Reels bring families to your page: post a short clip of your work.",
       "postReel": "Post a reel",
-      "reelCounts": "{{views}} views · {{likes}} likes · {{comments}} comments",
       "noCaption": "No caption",
-      "tagged": "A family tagged you"
+      "tagged": "A family tagged you",
+      "reelCount": {
+        "views": {
+          "one": "1 view",
+          "other": "{{n}} views"
+        },
+        "likes": {
+          "one": "1 like",
+          "other": "{{n}} likes"
+        },
+        "comments": {
+          "one": "1 comment",
+          "other": "{{n}} comments"
+        }
+      }
     },
     "checklist": {
       "title": "Make your page stronger",

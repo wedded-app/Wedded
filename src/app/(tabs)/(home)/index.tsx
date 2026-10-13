@@ -11,6 +11,7 @@ import { SearchButton } from '@/components/search-button';
 import { StateView } from '@/components/state-view';
 import { useBottomSpace } from '@/components/tab-bar';
 import { Sizes, Spacing, useColors, useScheme } from '@/constants/theme';
+import { useIsVendor } from '@/data/chat';
 import { useFeed, type FeedPost } from '@/data/feed';
 import { useCategoryGroups, useHomeEvents } from '@/data/reference';
 import { useCategoryVendorCounts } from '@/data/vendors';
@@ -55,9 +56,13 @@ export default function HomeScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const { wedding, loading, plan, events, next } = view;
   const planning = !!wedding || (loading && !!plan.syncedWeddingId);
+  // A vendor account that isn't planning a wedding gets no "Plan your wedding"
+  // cover: their My business card comes first instead
+  const { isVendor } = useIsVendor();
+  const showCover = planning || !isVendor;
 
   // The small title and the bar's backdrop come in as the cover scrolls away
-  const collapseAt = coverHeight - navTop;
+  const collapseAt = showCover ? coverHeight - navTop : 0;
   useEffect(() => scroll.setCollapseAt(collapseAt), [scroll, collapseAt]);
 
   // White clock and battery over the cover, the app's own once it's gone.
@@ -113,9 +118,9 @@ export default function HomeScreen() {
           />
         }
       >
-        <HomeCover view={view} posts={posts} />
+        {showCover && <HomeCover view={view} posts={posts} />}
 
-        <View style={styles.body}>
+        <View style={[styles.body, !showCover && { paddingTop: navTop + Spacing.lg }]}>
           {/* Vendor accounts: their business first (families never see it) */}
           <BusinessHomeCard />
           <View style={styles.find}>
