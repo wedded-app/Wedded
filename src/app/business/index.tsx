@@ -237,6 +237,12 @@ export default function BusinessScreen() {
 
       <ListSection header={t('business.yourListing')} footer={t('business.listingHint')}>
         <ListRow
+          icon="create-outline"
+          title={t('business.listing.title')}
+          subtitle={t('business.listing.rowHint')}
+          onPress={() => router.push('/business/listing')}
+        />
+        <ListRow
           icon="restaurant-outline"
           title={t('business.menus.title')}
           subtitle={t('business.menus.rowHint')}

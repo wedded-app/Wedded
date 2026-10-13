@@ -1711,6 +1711,80 @@
           "gain": "Reels bring families to your page."
         }
       }
+    },
+    "listing": {
+      "title": "Edit my listing",
+      "rowHint": "Your about, price, contact and languages",
+      "about": "About you",
+      "aboutHint": "What families read first under your name.",
+      "tagline": "One line about you (English)",
+      "taglinePa": "One line about you (ਪੰਜਾਬੀ)",
+      "bio": "About you (English)",
+      "bioPa": "About you (ਪੰਜਾਬੀ)",
+      "price": "Price",
+      "priceHint": "Families ask more often when they can see a price.",
+      "priceShow": "How to show your price",
+      "priceDisplays": {
+        "starting_at": "Starting at",
+        "range": "A range",
+        "packages": "Packages",
+        "contact": "Ask me",
+        "hidden": "Don't show"
+      },
+      "priceFrom": "Starting price in dollars",
+      "priceFromRange": "Lowest price in dollars",
+      "priceTo": "Highest price in dollars",
+      "priceUnit": "Price for each",
+      "priceNote": "A note about your price",
+      "priceNoteHint": "For example: Includes setup and cleanup",
+      "contact": "How families reach you",
+      "contactHint": "These are the Call, Text and WhatsApp buttons on your page.",
+      "callPhone": "Number to call",
+      "textPhone": "Number to text",
+      "whatsappPhone": "WhatsApp number",
+      "preferred": "How you like families to reach you",
+      "ways": {
+        "call": "Call",
+        "text": "Text",
+        "whatsapp": "WhatsApp",
+        "instagram": "Instagram",
+        "email": "Email"
+      },
+      "instagram": "Instagram",
+      "instagramHint": "Your handle, like @royalorchard",
+      "website": "Website",
+      "hours": "When you're available",
+      "hoursHint": "For example: Mon to Sat, 10 am to 7 pm",
+      "languagesTravel": "Languages and travel",
+      "languages": "Languages you speak",
+      "willTravel": "I travel to families",
+      "radius": "How far you travel",
+      "miles": "{{miles}} miles",
+      "travelNote": "A note about travel",
+      "travelNoteHint": "For example: No travel fee within 25 miles",
+      "years": "Years in business",
+      "team": "People on your team",
+      "teamNote": "To change your name, address, vendor types or photos, message the Wedded team.",
+      "teamMessage": "Hi Wedded team, please help me change something on {{name}}'s page:",
+      "save": "Save",
+      "saved": "Saved",
+      "noChanges": "No changes to save",
+      "fixAbove": "Something above needs fixing. It's marked in red.",
+      "problems": {
+        "taglineLong": "Keep this to 120 letters or fewer.",
+        "bioLong": "Keep this to 2,000 letters or fewer.",
+        "priceFrom": "Put a price in whole dollars, more than 0.",
+        "priceTo": "Put a highest price that's more than the lowest.",
+        "priceUnit": "Pick what the price is for.",
+        "phone": "That number doesn't look right. Include the area code.",
+        "languages": "Pick at least one language.",
+        "number": "Put a whole number, more than 0."
+      },
+      "serverProblems": {
+        "invalid": "This doesn't look right. Check it and try again.",
+        "notAllowed": "You can't change this listing. Ask the Wedded team.",
+        "failed": "Your changes didn't save. Check your internet, then try again."
+      }
     }
   }
 }
