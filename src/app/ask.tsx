@@ -35,6 +35,7 @@ import {
   formatDate,
   fromDateString,
   GUEST_BANDS,
+  planDatesFor,
   suggestedMessage,
   toDateString,
   useInquiryVendor,
@@ -67,12 +68,16 @@ export default function AskScreen() {
   // the rest wait behind "Other events". Fixed at open, so chips don't jump.
   const [firstEvents] = useState<string[]>(params.event ? [params.event] : []);
   const [showAllEvents, setShowAllEvents] = useState(false);
-  const [date, setDate] = useState<string | null>(null);
+  const plan = usePlan();
+  // The date they picked themselves; until then it follows My Wedding
+  const [pickedDate, setPickedDate] = useState<string | null>(null);
+  const planDates = planDatesFor(eventSlugs, plan.eventDates, plan.weddingDate);
+  const date = pickedDate ?? planDates.start;
   const [dateUnsure, setDateUnsure] = useState(false);
   const [pickerOpen, setPickerOpen] = useState(false);
   const dateStatus = useVendorDateStatus(vendorId || null, dateUnsure ? null : date);
   // The guest count set for this event in My Wedding, if there is one
-  const plannedGuests = usePlan().guests?.[params.event ?? ''];
+  const plannedGuests = plan.guests?.[params.event ?? ''];
   const [guests, setGuests] = useState<GuestBand | null>(
     GUEST_BANDS.includes(plannedGuests as GuestBand) ? (plannedGuests as GuestBand) : null,
   );
@@ -89,6 +94,13 @@ export default function AskScreen() {
   const questionSet = questionSetFor(vendor.data?.categorySlug ?? null);
 
   const allEvents = events.data?.flatMap((section) => section.events) ?? [];
+  // Each chosen event's own day from My Wedding, by name, for the message and the note
+  const namedPlanDates = dateUnsure
+    ? []
+    : planDates.dates.flatMap(({ slug, date: day }) => {
+        const event = allEvents.find((e) => e.slug === slug);
+        return event ? [{ slug, event: event.name, date: day }] : [];
+      });
   const chosenEvents = allEvents.filter((event) => eventSlugs.includes(event.slug));
   const eventChoices = eventChips(
     allEvents,
@@ -102,6 +114,7 @@ export default function AskScreen() {
     place,
     guests,
     tour: isTour && questionSet === 'venue',
+    eventDates: namedPlanDates,
   });
   const message = ownMessage ?? suggested;
 
@@ -201,12 +214,17 @@ export default function AskScreen() {
       language: locale,
       name: name.trim() || undefined,
       phone: cleanPhone ?? undefined,
-      details:
-        questionSet === 'venue'
+      details: {
+        ...(questionSet === 'venue'
           ? venueDetails(venueAnswers, isTour)
           : questionSet === 'caterer'
             ? catererDetails(catererAnswers)
-            : {},
+            : {}),
+        // Each event's own day from My Wedding, so the vendor sees them all
+        ...(namedPlanDates.length > 0
+          ? { eventDates: Object.fromEntries(namedPlanDates.map((d) => [d.slug, d.date])) }
+          : {}),
+      },
       sendAgain,
     };
     requireSignIn(() =>
@@ -307,7 +325,7 @@ export default function AskScreen() {
               minimumDate={new Date()}
               onChange={(event, picked) => {
                 if (Platform.OS !== 'ios') setPickerOpen(false);
-                if (event.type === 'set' && picked) change(setDate)(toDateString(picked));
+                if (event.type === 'set' && picked) change(setPickedDate)(toDateString(picked));
               }}
             />
           )}
@@ -317,6 +335,23 @@ export default function AskScreen() {
               label={t('location.done')}
               onPress={() => setPickerOpen(false)}
             />
+          )}
+          {namedPlanDates.length >= 2 && (
+            <AppText color="text2">
+              {t('inquiry.fromPlan', {
+                dates: namedPlanDates
+                  .map((d) => `${localized(d.event, locale)}: ${formatDate(d.date)}`)
+                  .join(' · '),
+              })}
+            </AppText>
+          )}
+          {namedPlanDates.length === 1 && !pickedDate && (
+            <AppText color="text2">
+              {t('inquiry.fromPlanOne', {
+                event: localized(namedPlanDates[0].event, locale),
+                date: formatDate(namedPlanDates[0].date),
+              })}
+            </AppText>
           )}
           {!dateUnsure && date && dateStatus.data && dateStatus.data !== 'unknown' && (
             <AppText

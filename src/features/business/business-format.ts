@@ -27,12 +27,15 @@ const FOOD: Record<string, string> = {
 };
 
 /**
- * A lead's answers to the hall or caterer questions as label and value rows,
- * in the Ask form's own words. Anything unanswered or unknown is left out.
+ * A lead's answers as label and value rows: each event's own day from the
+ * family's plan first ("Jaago: Fri, Jun 11, 2027"), then the hall or caterer
+ * questions in the Ask form's own words. Anything unanswered or unknown is
+ * left out.
  */
 export function leadAnswerRows(
   details: Record<string, unknown>,
   t: Translate,
+  eventName: (slug: string) => string = (slug) => slug,
 ): { label: string; value: string }[] {
   const q = (key: string) => t(`inquiry.questions.${key}`);
   const rows: { label: string; value: string }[] = [];
@@ -40,6 +43,12 @@ export function leadAnswerRows(
     if (value) rows.push({ label, value });
   };
 
+  if (details.eventDates && typeof details.eventDates === 'object') {
+    const dates = Object.entries(details.eventDates as Record<string, unknown>)
+      .filter((entry): entry is [string, string] => typeof entry[1] === 'string')
+      .map(([slug, date]) => `${eventName(slug)}: ${formatDate(date)}`);
+    if (dates.length > 0) add(t('business.leads.eventDates'), dates.join('\n'));
+  }
   if (details.catering === 'in_house') add(q('catering'), q('cateringInHouse'));
   if (details.catering === 'own') {
     const who = typeof details.ownCaterer === 'string' ? details.ownCaterer : '';

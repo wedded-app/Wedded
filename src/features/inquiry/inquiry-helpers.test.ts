@@ -5,6 +5,7 @@ import {
   eventChips,
   formatDate,
   fromDateString,
+  planDatesFor,
   suggestedMessage,
   toDateString,
 } from './inquiry-helpers';
@@ -34,8 +35,50 @@ describe('dates', () => {
   });
 });
 
+describe('planDatesFor', () => {
+  const eventDates = { jaago: '2027-06-11', 'anand-karaj': '2027-06-12', roka: '2026-01-01' };
+
+  it("starts with the first event's own day and lists each event's day", () => {
+    expect(planDatesFor(['jaago', 'anand-karaj'], eventDates, '2027-06-12', '2026-10-13')).toEqual({
+      start: '2027-06-11',
+      dates: [
+        { slug: 'jaago', date: '2027-06-11' },
+        { slug: 'anand-karaj', date: '2027-06-12' },
+      ],
+    });
+  });
+
+  it('falls back to the wedding day, and leaves out days already past', () => {
+    expect(planDatesFor(['mehndi', 'roka'], eventDates, '2027-06-12', '2026-10-13')).toEqual({
+      start: '2027-06-12',
+      dates: [],
+    });
+    expect(planDatesFor([], undefined, '2025-01-01', '2026-10-13')).toEqual({
+      start: null,
+      dates: [],
+    });
+  });
+});
+
 describe('suggestedMessage', () => {
   const events = [{ en: 'Jaago', pa: 'ਜਾਗੋ' }];
+
+  it('names each event with its own day when they ask about several', () => {
+    expect(
+      suggestedMessage(translator(en), 'en', {
+        events: [events[0], { en: 'Anand Karaj' }],
+        date: '2027-06-11',
+        place: 'Yuba City',
+        guests: '100_250',
+        eventDates: [
+          { event: events[0], date: '2027-06-11' },
+          { event: { en: 'Anand Karaj' }, date: '2027-06-12' },
+        ],
+      }),
+    ).toBe(
+      "Sat Sri Akal, we're planning Jaago on Fri, Jun 11, 2027 and Anand Karaj on Sat, Jun 12, 2027 in Yuba City for about 100 to 250 guests. Could you share your price and whether you're available? Thank you.",
+    );
+  });
 
   it('writes the full sentence when date and guests are known', () => {
     expect(

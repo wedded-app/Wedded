@@ -43,8 +43,9 @@ import {
   type Message,
 } from '@/data/chat';
 import { useTyping } from '@/data/chat-typing';
-import { useHomeEvents } from '@/data/reference';
 import { useVendorMenus } from '@/data/vendor-menus';
+import { leadAnswerRows } from '@/features/business/business-format';
+import { useEventNames } from '@/features/business/business-parts';
 import { messageSnippet } from '@/features/chat/chat-format';
 import { sentPhotoUri } from '@/features/chat/chat-photo';
 import { nextReaction, type ReactionCode } from '@/features/chat/reactions';
@@ -560,12 +561,9 @@ function MessageContent({
   onReply: (text: string) => void;
   onSend: (text: string) => void;
 }) {
-  const { t, locale } = useLocale();
-  const events = useHomeEvents();
-  const eventName = (slug: string) => {
-    const event = (events.data ?? []).flatMap((s) => s.events).find((e) => e.slug === slug);
-    return event ? localized(event.name, locale) : slug;
-  };
+  const { t } = useLocale();
+  // Names from every tradition: a vendor's families can be from any
+  const eventName = useEventNames();
 
   switch (message.kind) {
     case 'photo':
@@ -604,6 +602,7 @@ function MessageContent({
           guestLabel={
             message.booking.guestBand ? t(`inquiry.guestBands.${message.booking.guestBand}`) : null
           }
+          answers={leadAnswerRows(message.booking.details, t, eventName)}
         />
       ) : null;
     case 'phone':
