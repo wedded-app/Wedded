@@ -18,6 +18,8 @@ import { supabase } from '@/lib/supabase';
 import { AboutYouForm, type AboutYouValues } from './about-you-form';
 import { isValidEmail, normalizePhone, toLatinDigits } from './about-you-validation';
 import { authErrorKey } from './auth-helpers';
+import { useIsVendor } from '@/data/chat';
+
 import { useSession } from './session';
 import { SignInOptions } from './sign-in-options';
 
@@ -409,6 +411,8 @@ function AboutYouStep({ onDone }: { onDone: () => void }) {
   const { session, email, phone, nameHint, profile, profileSaved } = useSession();
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string>();
+  // Someone the team added to a business sees the form in a business's words
+  const { isVendor } = useIsVendor();
 
   if (!session) {
     return <StateView state="loading" />;
@@ -446,6 +450,7 @@ function AboutYouStep({ onDone }: { onDone: () => void }) {
       }}
       emailLocked
       emailHidden={!email}
+      forBusiness={isVendor}
       confirmedAdult={!!profile}
       submitLabel={profile ? t('aboutYou.save') : undefined}
       submitting={saving}
