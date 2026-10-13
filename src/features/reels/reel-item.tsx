@@ -28,6 +28,7 @@ import Animated, {
 import { AppText } from '@/components/app-text';
 import { Icon } from '@/components/icon';
 import { Radius, Spacing, Springs } from '@/constants/theme';
+import { trackReelView } from '@/data/business';
 import { compactCount, type Reel, reelVendors } from '@/data/reels';
 import { initials } from '@/features/planner/plan-together';
 import { useLocale } from '@/i18n/locale-context';
@@ -168,6 +169,10 @@ export function ReelItem({
   }
 
   useEffect(() => setSound(player, muted), [player, muted]);
+  // Counts for the vendor's My business numbers, once per reel per session
+  useEffect(() => {
+    if (active) trackReelView(reel.id);
+  }, [active, reel.id]);
   useEffect(
     () => playOrPause(player, active && !paused && !holding, !active),
     [active, paused, holding, player],

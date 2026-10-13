@@ -1,38 +1,195 @@
 import { router } from 'expo-router';
+import { useState } from 'react';
+import { View } from 'react-native';
 
-import { ListRow, ListSection } from '@/components/list';
+import { AppText } from '@/components/app-text';
+import { Button } from '@/components/button';
+import { Chip } from '@/components/chip';
+import { Icon } from '@/components/icon';
+import { ListRow, ListSection, SectionTitle } from '@/components/list';
 import { NavScreen } from '@/components/nav';
+import { Segmented } from '@/components/segmented';
 import { StateView } from '@/components/state-view';
+import { makeStyles, Radius, Spacing, useColors } from '@/constants/theme';
+import {
+  type BusinessStats,
+  EMPTY_STATS,
+  type StatsPeriod,
+  useBusinessLeads,
+  useBusinessStats,
+  waitingCount,
+} from '@/data/business';
 import { useVendorMenus } from '@/data/vendor-menus';
-import { useCurrentBusiness } from '@/features/business/use-current-business';
+import { changeFrom } from '@/features/business/business-format';
+import { LeadRow, StatCard } from '@/features/business/business-parts';
+import { chooseBusiness, useCurrentBusiness } from '@/features/business/use-current-business';
 import { useLocale } from '@/i18n/locale-context';
 
+const PERIODS: StatsPeriod[] = [7, 30, 90];
+
+/** The numbers on the home, biggest first, in plain words. */
+const MAIN_STATS: (keyof BusinessStats)[] = [
+  'views',
+  'contacts',
+  'inquiries',
+  'saves',
+  'reelViews',
+];
+/** How families reached out, one row each. */
+const CONTACT_STATS: (keyof BusinessStats)[] = [
+  'calls',
+  'texts',
+  'whatsapps',
+  'directions',
+  'instagram',
+  'website',
+  'shares',
+];
+
 /**
- * My business (C6): where a vendor account looks after its listing. For now
- * its menus and its calendar; how the page is doing and the families who
- * asked come next. Opened from Profile, only for vendor accounts.
+ * My business (C6): a vendor's own home. Which business (when they run
+ * several), whether the page is live, how it did over 7, 30 or 90 days next
+ * to the period before, the families who asked (waiting ones first), then
+ * menus, calendar and the page itself. Opened from Profile.
  */
 export default function BusinessScreen() {
-  const { t } = useLocale();
-  const business = useCurrentBusiness();
-  const menus = useVendorMenus(business.vendorId);
+  const Colors = useColors();
+  const styles = useStyles();
+  const { t, locale } = useLocale();
+  const current = useCurrentBusiness();
+  const [days, setDays] = useState<StatsPeriod>(30);
+  const stats = useBusinessStats(current.vendorId, days);
+  const leads = useBusinessLeads(current.vendorId);
+  const menus = useVendorMenus(current.vendorId);
+  const business = current.business;
 
-  let content;
-  if (business.isPending) {
-    content = <StateView state="loading" />;
-  } else if (!business.isVendor) {
-    content = (
-      <StateView state="empty" icon="storefront-outline" message={t('business.notVendor')} />
+  if (current.isPending) {
+    return (
+      <NavScreen title={t('business.title')}>
+        <StateView state="loading" />
+      </NavScreen>
     );
-  } else {
-    const menuCount = menus.data?.length;
-    content = (
+  }
+  if (!business) {
+    return (
+      <NavScreen title={t('business.title')}>
+        <StateView state="empty" icon="storefront-outline" message={t('business.notVendor')} />
+      </NavScreen>
+    );
+  }
+
+  const name = locale === 'pa' && business.namePa ? business.namePa : business.name;
+  const now = stats.data?.current ?? EMPTY_STATS;
+  const before = stats.data?.previous ?? EMPTY_STATS;
+  const changeWords = (key: keyof BusinessStats) => {
+    const change = changeFrom(now[key], before[key]);
+    if (!change) return null;
+    return t(`business.stats.change.${change.kind}`, { percent: change.percent, days });
+  };
+  const leadList = leads.data ?? [];
+  const waiting = waitingCount(leadList);
+  const contactRows = CONTACT_STATS.filter((key) => now[key] > 0);
+
+  return (
+    <NavScreen title={t('business.title')} subtitle={name}>
+      {current.businesses.length > 1 && (
+        <View style={styles.chips} accessibilityRole="radiogroup">
+          {current.businesses.map((b) => (
+            <Chip
+              key={b.id}
+              role="radio"
+              label={locale === 'pa' && b.namePa ? b.namePa : b.name}
+              selected={b.id === business.id}
+              onPress={() => chooseBusiness(b.id)}
+            />
+          ))}
+        </View>
+      )}
+
+      {business.status !== 'published' && (
+        <View style={styles.notice}>
+          <Icon name="eye-off-outline" size={22} color={Colors.kesari} />
+          <AppText style={styles.grow}>{t('business.notLive')}</AppText>
+        </View>
+      )}
+
+      <View style={styles.block}>
+        <SectionTitle>{t('business.stats.title')}</SectionTitle>
+        <Segmented
+          accessibilityLabel={t('business.stats.period')}
+          value={String(days)}
+          onChange={(value) => setDays(Number(value) as StatsPeriod)}
+          options={PERIODS.map((d) => ({
+            value: String(d),
+            label: t('business.stats.days', { days: d }),
+          }))}
+        />
+        {stats.isError ? (
+          <StateView state="error" onRetry={() => void stats.refetch()} />
+        ) : (
+          <View style={[styles.grid, stats.isPending && styles.loading]}>
+            {MAIN_STATS.map((key, index) => (
+              <StatCard
+                key={key}
+                wide={index === 0}
+                value={now[key]}
+                label={t(`business.stats.${key}`)}
+                change={changeFrom(now[key], before[key])}
+                changeWords={changeWords(key)}
+              />
+            ))}
+          </View>
+        )}
+        {contactRows.length > 0 && (
+          <ListSection header={t('business.stats.howTitle')}>
+            {contactRows.map((key) => (
+              <ListRow
+                key={key}
+                title={t(`business.stats.${key}`)}
+                value={now[key].toLocaleString('en-US')}
+              />
+            ))}
+          </ListSection>
+        )}
+      </View>
+
+      <View style={styles.block}>
+        <SectionTitle>{t('business.leads.title')}</SectionTitle>
+        {leads.isPending ? (
+          <StateView state="loading" />
+        ) : leads.isError ? (
+          <StateView state="error" onRetry={() => void leads.refetch()} />
+        ) : leadList.length === 0 ? (
+          <AppText color="text2">{t('business.leads.empty')}</AppText>
+        ) : (
+          <>
+            {waiting > 0 && (
+              <AppText weight={600} color="primary">
+                {t('business.leads.waitingCount', { count: waiting })}
+              </AppText>
+            )}
+            {leadList.slice(0, 3).map((lead) => (
+              <LeadRow
+                key={lead.id}
+                lead={lead}
+                onPress={() => router.push({ pathname: '/business/lead', params: { id: lead.id } })}
+              />
+            ))}
+            <Button
+              variant="secondary"
+              label={t('business.leads.seeAll', { count: leadList.length })}
+              onPress={() => router.push('/business/leads')}
+            />
+          </>
+        )}
+      </View>
+
       <ListSection header={t('business.yourListing')} footer={t('business.listingHint')}>
         <ListRow
           icon="restaurant-outline"
           title={t('business.menus.title')}
           subtitle={t('business.menus.rowHint')}
-          value={menuCount === undefined ? undefined : String(menuCount)}
+          value={menus.data ? String(menus.data.length) : undefined}
           onPress={() => router.push('/business/menus')}
         />
         <ListRow
@@ -41,9 +198,45 @@ export default function BusinessScreen() {
           subtitle={t('business.calendar.rowHint')}
           onPress={() => router.push('/business/calendar')}
         />
+        {business.status === 'published' && (
+          <ListRow
+            icon="storefront-outline"
+            title={t('business.viewPage')}
+            subtitle={t('business.viewPageHint')}
+            onPress={() => router.push({ pathname: '/v/[slug]', params: { slug: business.slug } })}
+          />
+        )}
       </ListSection>
-    );
-  }
-
-  return <NavScreen title={t('business.title')}>{content}</NavScreen>;
+    </NavScreen>
+  );
 }
+
+const useStyles = makeStyles((Colors) => ({
+  chips: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: Spacing.sm,
+  },
+  notice: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.md,
+    padding: Spacing.lg,
+    borderRadius: Radius.card,
+    backgroundColor: Colors.kesariTint,
+  },
+  grow: {
+    flex: 1,
+  },
+  block: {
+    gap: Spacing.md,
+  },
+  grid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: Spacing.sm,
+  },
+  loading: {
+    opacity: 0.5,
+  },
+}));
