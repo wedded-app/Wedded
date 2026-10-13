@@ -933,7 +933,8 @@
       "date": "Date",
       "guests": "Guests",
       "where": "Where",
-      "notSure": "Not sure yet"
+      "notSure": "Not sure yet",
+      "message": "Message"
     },
     "quickReplies": {
       "available": "Are you available on our date?",
