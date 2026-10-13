@@ -1525,6 +1525,148 @@
     "home": {
       "week": "This week: {{views}} people saw your page, {{asked}} asked about a date",
       "hint": "Opens My business"
+    },
+    "insights": {
+      "period": {
+        "7": "This week",
+        "30": "In the last 30 days",
+        "90": "In the last 3 months"
+      },
+      "headline": "{{period}}, {{seen}} and {{asked}}.",
+      "seen": {
+        "one": "1 family saw your page",
+        "other": "{{count}} families saw your page"
+      },
+      "askedDate": {
+        "one": "1 asked about a date",
+        "other": "{{count}} asked about a date"
+      },
+      "chartTitle": "People who viewed your page, day by day",
+      "chartTotal": {
+        "one": "1 view in all",
+        "other": "{{count}} views in all"
+      },
+      "chartBusiest": {
+        "one": "Your busiest day was {{date}}, with 1 view.",
+        "other": "Your busiest day was {{date}}, with {{count}} views."
+      },
+      "chartEmpty": "No one has viewed your page in this time yet.",
+      "funnelTitle": "From seen to booked",
+      "funnel": {
+        "searches": "Times you showed up in search",
+        "views": "Looked at your page",
+        "saves": "Saved you",
+        "contacts": "Called, texted or WhatsApped you",
+        "inquiries": "Asked about price and date",
+        "booked": "Booked you"
+      },
+      "ofThose": "{{percent}}% of the step before",
+      "replyTitle": "How fast you reply",
+      "replied": "You replied to {{replied}} of {{leads}} families",
+      "repliedWithin": "{{replied}}, usually within {{within}}",
+      "within": {
+        "minutes": {
+          "one": "1 minute",
+          "other": "{{count}} minutes"
+        },
+        "hours": {
+          "one": "1 hour",
+          "other": "{{count}} hours"
+        },
+        "days": {
+          "one": "1 day",
+          "other": "{{count}} days"
+        }
+      },
+      "replyNone": "No families have asked in this time yet.",
+      "replyNudge": "Families often book the first vendor who replies. Try to answer everyone, and within a day.",
+      "wantTitle": "What families want",
+      "wantEmpty": "When families ask you about dates, what they ask for shows up here.",
+      "want": {
+        "events": "Events",
+        "guests": "Guests",
+        "months": "Wedding months",
+        "places": "Where they're from"
+      },
+      "compareTitle": "How you compare",
+      "compareIntro": "Next to the typical one of {{count}} {{kind}} vendors within 50 miles.",
+      "compare": {
+        "views": "People who viewed your page",
+        "inquiries": "Families who asked",
+        "you": "You",
+        "typical": "Typical nearby",
+        "above": "You're above the typical vendor nearby.",
+        "below": "You're below the typical vendor nearby.",
+        "same": "You're right at the typical vendor nearby."
+      },
+      "reelsTitle": "Your reels",
+      "reelsEmpty": "No reels yet. Reels bring families to your page: post a short clip of your work.",
+      "postReel": "Post a reel",
+      "reelCounts": "{{views}} views · {{likes}} likes · {{comments}} comments",
+      "noCaption": "No caption",
+      "tagged": "A family tagged you"
+    },
+    "checklist": {
+      "title": "Make your page stronger",
+      "progress": "{{done}} of {{total}} done",
+      "fix": "Fix it",
+      "askTeam": "Ask the Wedded team",
+      "tellTeam": "Tell the Wedded team and we'll add it for you.",
+      "teamMessage": "Hi Wedded team, please help me add this to {{name}}'s page: {{what}}",
+      "done": "Done: {{list}}",
+      "items": {
+        "photos": {
+          "title": "6 or more photos",
+          "gain": {
+            "one": "You have 1 photo. Vendors with 6 or more photos get more saves.",
+            "other": "You have {{count}} photos. Vendors with 6 or more photos get more saves."
+          }
+        },
+        "cover": {
+          "title": "A cover photo",
+          "gain": "Your cover photo is the first thing families see in search."
+        },
+        "tagline": {
+          "title": "A tagline",
+          "gain": "One line under your name tells families what you're best at."
+        },
+        "bio": {
+          "title": "About you",
+          "gain": "Families trust vendors who say who they are and how they work."
+        },
+        "bioPa": {
+          "title": "About you in Punjabi",
+          "gain": "Many families read in Punjabi, especially parents and grandparents."
+        },
+        "price": {
+          "title": "A starting price",
+          "gain": "Families ask more often when they can see a price."
+        },
+        "contact": {
+          "title": "A phone or WhatsApp number",
+          "gain": "Most families want to call or WhatsApp before they book."
+        },
+        "instagram": {
+          "title": "Your Instagram",
+          "gain": "Families like to see more of your work."
+        },
+        "languages": {
+          "title": "The languages you speak",
+          "gain": "Families look for vendors who speak their language."
+        },
+        "menus": {
+          "title": "Your menus",
+          "gain": "Families compare menus and prices before they ask."
+        },
+        "calendar": {
+          "title": "An up-to-date calendar",
+          "gain": "Families only see you as free on their date when your calendar is fresh."
+        },
+        "reel": {
+          "title": "A reel",
+          "gain": "Reels bring families to your page."
+        }
+      }
     }
   }
 }

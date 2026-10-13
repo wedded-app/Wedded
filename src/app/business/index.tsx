@@ -21,9 +21,24 @@ import {
   waitingCount,
 } from '@/data/business';
 import { useExportBusiness } from '@/data/business-export';
+import {
+  useBusinessChecklist,
+  useBusinessInsights,
+  useBusinessReels,
+} from '@/data/business-insights';
 import { useVendorMenus } from '@/data/vendor-menus';
 import { changeFrom } from '@/features/business/business-format';
 import { LeadRow, StatCard } from '@/features/business/business-parts';
+import {
+  FunnelSteps,
+  HowYouCompare,
+  PageChecklist,
+  ReplySpeed,
+  ViewsChart,
+  WhatFamiliesWant,
+  YourReels,
+} from '@/features/business/insights';
+import { headline } from '@/features/business/insights-format';
 import { chooseBusiness, useCurrentBusiness } from '@/features/business/use-current-business';
 import { useLocale } from '@/i18n/locale-context';
 
@@ -53,7 +68,9 @@ const CONTACT_STATS: (keyof BusinessStats)[] = [
  * several), whether the page is live, how it did over 7, 30 or 90 days next
  * to the period before, the families who asked (waiting ones first), then
  * menus, calendar and the page itself, and "Export everything" as a
- * spreadsheet. Opened from Profile.
+ * spreadsheet. C6b adds a headline, the views chart, seen to booked, reply
+ * speed, what families want, how they compare, their reels and a checklist
+ * for the page. Opened from Profile and Home.
  */
 export default function BusinessScreen() {
   const Colors = useColors();
@@ -62,6 +79,9 @@ export default function BusinessScreen() {
   const current = useCurrentBusiness();
   const [days, setDays] = useState<StatsPeriod>(30);
   const stats = useBusinessStats(current.vendorId, days);
+  const insights = useBusinessInsights(current.vendorId, days);
+  const reels = useBusinessReels(current.vendorId);
+  const checklist = useBusinessChecklist(current.vendorId);
   const leads = useBusinessLeads(current.vendorId);
   const menus = useVendorMenus(current.vendorId);
   const exporting = useExportBusiness(current.vendorId);
@@ -117,6 +137,12 @@ export default function BusinessScreen() {
         </View>
       )}
 
+      {stats.data && (
+        <AppText variant="title" accessibilityRole="header">
+          {headline(days, now.views, now.inquiries, t)}
+        </AppText>
+      )}
+
       <View style={styles.block}>
         <SectionTitle>{t('business.stats.title')}</SectionTitle>
         <Segmented
@@ -157,6 +183,15 @@ export default function BusinessScreen() {
         )}
       </View>
 
+      {insights.isError && <StateView state="error" onRetry={() => void insights.refetch()} />}
+      {insights.data && (
+        <>
+          <ViewsChart daily={insights.data.daily} />
+          <FunnelSteps funnel={insights.data.funnel} />
+          <ReplySpeed replies={insights.data.replies} />
+        </>
+      )}
+
       <View style={styles.block}>
         <SectionTitle>{t('business.leads.title')}</SectionTitle>
         {leads.isPending ? (
@@ -187,6 +222,18 @@ export default function BusinessScreen() {
           </>
         )}
       </View>
+
+      {insights.data && <WhatFamiliesWant asks={insights.data.asks} />}
+      {insights.data?.compare && <HowYouCompare compare={insights.data.compare} />}
+      {reels.data && <YourReels reels={reels.data} />}
+      {checklist.data && checklist.data.total > 0 && (
+        <PageChecklist
+          items={checklist.data.items}
+          doneCount={checklist.data.doneCount}
+          total={checklist.data.total}
+          businessName={business.name}
+        />
+      )}
 
       <ListSection header={t('business.yourListing')} footer={t('business.listingHint')}>
         <ListRow

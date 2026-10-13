@@ -12,6 +12,7 @@ import { VendorCard } from '@/components/vendor-card';
 import { makeStyles, Sizes, Spacing, useColors } from '@/constants/theme';
 import { useCategories, useEvent } from '@/data/reference';
 import { useSavedVendors, useSaveVendor } from '@/data/saved';
+import { trackSearchAppearances } from '@/data/business-insights';
 import { useVendorSearch } from '@/data/search';
 import { LocationChip } from '@/features/location/location-chip';
 import { FiltersButton } from '@/features/search/filters-button';
@@ -61,6 +62,12 @@ export default function ResultsScreen() {
     limit: 100,
   });
   const [refreshing, setRefreshing] = useState(false);
+
+  // Each vendor shown counts as a search appearance for their My business
+  // numbers (once per vendor per session)
+  useEffect(() => {
+    if (vendors.data) trackSearchAppearances(vendors.data.map((vendor) => vendor.id));
+  }, [vendors.data]);
 
   // Screen readers don't notice a list that fills in or changes (after
   // "Widen to 50 mi", say), so read out how many vendors there are.

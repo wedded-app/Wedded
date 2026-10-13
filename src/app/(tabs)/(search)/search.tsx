@@ -1,5 +1,5 @@
 import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { StyleSheet, View, type TextInput } from 'react-native';
 
 import { useFontScale } from '@/components/app-text';
@@ -15,6 +15,7 @@ import { VendorCard } from '@/components/vendor-card';
 import { Spacing } from '@/constants/theme';
 import { useCategories } from '@/data/reference';
 import { useSavedVendors, useSaveVendor } from '@/data/saved';
+import { trackSearchAppearances } from '@/data/business-insights';
 import { useVendorSearch } from '@/data/search';
 import { useCategoryVendorCounts } from '@/data/vendors';
 import { useSearchLocation } from '@/features/location/search-location';
@@ -62,6 +63,13 @@ export default function SearchScreen() {
     },
     { enabled: needle !== null, keepPrevious: true },
   );
+  // Each vendor shown counts as a search appearance for their My business
+  // numbers (once per vendor per session)
+  useEffect(() => {
+    if (vendors.data && needle !== null) {
+      trackSearchAppearances(vendors.data.map((vendor) => vendor.id));
+    }
+  }, [vendors.data, needle]);
   // Two columns stop fitting once the phone's text is very large.
   const columns = useFontScale('heading') >= 1.5 ? 1 : 2;
 
