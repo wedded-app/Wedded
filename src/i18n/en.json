@@ -1783,8 +1783,8 @@
       "hoursHint": "For example: Mon to Sat, 10 am to 7 pm",
       "languagesTravel": "Languages and travel",
       "languages": "Languages you speak",
-      "willTravel": "I travel to families",
-      "radius": "How far you travel",
+      "willTravel": "I'll go farther than that, for a fee",
+      "radius": "How far do you usually travel?",
       "miles": "{{miles}} miles",
       "travelNote": "A note about travel",
       "travelNoteHint": "For example: No travel fee within 25 miles",
@@ -1810,7 +1810,12 @@
         "invalid": "This doesn't look right. Check it and try again.",
         "notAllowed": "You can't change this listing. Ask the Wedded team.",
         "failed": "Your changes didn't save. Check your internet, then try again."
-      }
+      },
+      "allNorcal": "All of Northern California",
+      "unsavedTitle": "Leave without saving?",
+      "unsavedBody": "Your changes aren't saved yet. Families won't see them.",
+      "keepEditing": "Keep editing",
+      "leave": "Leave"
     }
   }
 }
