@@ -134,7 +134,6 @@ const SF_SYMBOLS: Partial<Record<IconName, SFSymbol>> = {
   'person-outline': 'person',
   'logo-apple': 'apple.logo',
   'link-outline': 'link',
-  mic: 'mic.fill',
   'mic-outline': 'mic',
   'lock-closed-outline': 'lock',
   'card-outline': 'creditcard',
