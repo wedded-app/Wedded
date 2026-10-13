@@ -61,6 +61,13 @@ const light = {
   // iOS 26's scroll edge effect behind the nav bar: the page colour fading out.
   scrollEdge:
     'linear-gradient(to bottom, rgba(242, 242, 247, 0.97) 0%, rgba(242, 242, 247, 0.9) 72%, rgba(242, 242, 247, 0) 100%)',
+  // The same edge over a `canvas` page (the Wed thread): white fading out.
+  canvasEdge:
+    'linear-gradient(to bottom, rgba(255, 255, 255, 0.97) 0%, rgba(255, 255, 255, 0.9) 72%, rgba(255, 255, 255, 0) 100%)',
+  // The same, rising from the bottom: solid behind the Wed composer and tab
+  // bar, fading out above them, so the thread never shows between the two.
+  canvasEdgeUp:
+    'linear-gradient(to top, rgba(255, 255, 255, 1) 0%, rgba(255, 255, 255, 1) 68%, rgba(255, 255, 255, 0.9) 82%, rgba(255, 255, 255, 0) 100%)',
   onPhoto: '#FFFFFF', // text and glyphs on photos, over a scrim
   photoScrim: 'rgba(0, 0, 0, 0.45)',
   viewer: '#000000', // full-screen photo viewer background (vision S10)
@@ -134,6 +141,11 @@ const dark: Palette = {
   glassShadow: 'rgba(0, 0, 0, 0.5)',
   scrollEdge:
     'linear-gradient(to bottom, rgba(0, 0, 0, 0.95) 0%, rgba(0, 0, 0, 0.85) 72%, rgba(0, 0, 0, 0) 100%)',
+  // canvas and bg are both black in dark mode, so the edges match.
+  canvasEdge:
+    'linear-gradient(to bottom, rgba(0, 0, 0, 0.95) 0%, rgba(0, 0, 0, 0.85) 72%, rgba(0, 0, 0, 0) 100%)',
+  canvasEdgeUp:
+    'linear-gradient(to top, rgba(0, 0, 0, 1) 0%, rgba(0, 0, 0, 1) 68%, rgba(0, 0, 0, 0.85) 82%, rgba(0, 0, 0, 0) 100%)',
   onPhoto: '#FFFFFF',
   photoScrim: 'rgba(0, 0, 0, 0.5)',
   viewer: '#000000',

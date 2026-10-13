@@ -6,7 +6,7 @@ import { AppText } from '@/components/app-text';
 import { Button } from '@/components/button';
 import { GlassButton } from '@/components/glass-button';
 import { Icon } from '@/components/icon';
-import { ListRow, ListSection, SectionTitle } from '@/components/list';
+import { ListRow, ListSection } from '@/components/list';
 import { NavScreen } from '@/components/nav';
 import { StateView } from '@/components/state-view';
 import { WeddingCard } from '@/components/wedding-card';
@@ -15,7 +15,9 @@ import { useMyInquiries } from '@/data/inquiries';
 import { useIsVendor, useUnreadCount } from '@/data/chat';
 import { useSavedVendors, type SavedVendor } from '@/data/saved';
 import { useSession } from '@/features/auth/session';
+import { SectionHeader } from '@/features/home/section-header';
 import { bookedCount, usePlan } from '@/features/planner/plan';
+import { useWed, type WedState } from '@/features/wed/wed-store';
 import { localized } from '@/i18n/localized';
 import { useLocale } from '@/i18n/locale-context';
 import { formatPhone } from '@/lib/phone';
@@ -24,7 +26,9 @@ import { formatPhone } from '@/lib/phone';
  * S16 Profile, shaped like an Instagram profile: the person, three counts
  * (saved, asked, booked), two buttons, the wedding countdown and a grid of
  * the vendors they've saved. Settings sit behind the gear, as in most apps.
- * Vendor accounts also get "My business" at the top of the list.
+ * Vendor accounts also get "My business" at the top of the list. Wed (the
+ * planning helper) has its own short list: what it knows, the apps it can
+ * use and how much it does on its own.
  */
 export default function ProfileScreen() {
   const { t } = useLocale();
@@ -47,6 +51,7 @@ export default function ProfileScreen() {
       <Header />
       <WeddingCard compact />
       <SavedGrid />
+      <WedSection />
       <ListSection inset>
         {isVendor && (
           <ListRow
@@ -56,6 +61,12 @@ export default function ProfileScreen() {
             onPress={() => router.push('/business')}
           />
         )}
+        {/* Saved left the tab bar for Wed: a plain row here too, not only the count */}
+        <ListRow
+          icon="heart-outline"
+          title={t('tabs.saved')}
+          onPress={() => router.push('/saved')}
+        />
         <ListRow
           icon="chatbubbles-outline"
           title={t('chat.title')}
@@ -216,7 +227,40 @@ function Stat({ value, label, onPress }: { value: number; label: string; onPress
   );
 }
 
-/** The saved vendors as a three-column photo grid, like a profile's posts. */
+const modeOf = (s: WedState) => s.mode;
+
+/**
+ * MOCKUP: Wed's settings, one tap from Profile. Each row opens that page in
+ * the Wed tab, with the chat underneath to go back to.
+ */
+function WedSection() {
+  const mode = useWed(modeOf);
+  return (
+    <ListSection inset header="Wed">
+      <ListRow
+        icon="book-outline"
+        title="What Wed knows"
+        onPress={() => router.navigate('/wed/memory')}
+      />
+      <ListRow
+        icon="apps-outline"
+        title="Apps Wed can use"
+        onPress={() => router.navigate('/wed/apps')}
+      />
+      <ListRow
+        icon="options-outline"
+        title="How much Wed does"
+        value={mode === 'small' ? 'Do the small things' : 'Ask me first'}
+        onPress={() => router.navigate('/wed/settings')}
+      />
+    </ListSection>
+  );
+}
+
+/**
+ * The saved vendors as a three-column photo grid, like a profile's posts.
+ * See all opens Saved, which has them grouped by event.
+ */
 function SavedGrid() {
   const Colors = useColors();
   const styles = useStyles();
@@ -233,7 +277,11 @@ function SavedGrid() {
 
   return (
     <View style={styles.block}>
-      <SectionTitle>{t('profile.savedGrid')}</SectionTitle>
+      <SectionHeader
+        title={t('profile.savedGrid')}
+        link={list.length > 0 ? t('home.seeAll') : undefined}
+        onLink={() => router.navigate('/saved')}
+      />
       {list.length === 0 ? (
         <View style={styles.emptyGrid}>
           <Icon name="images-outline" size={36} color={Colors.chevron} />

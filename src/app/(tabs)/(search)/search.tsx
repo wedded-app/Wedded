@@ -21,6 +21,9 @@ import { useSearchLocation } from '@/features/location/search-location';
 import { matchCategories } from '@/features/search/match-categories';
 import { PlanCard, usePlanFromQuery } from '@/features/search/plan-card';
 import { useDebouncedValue, vendorQuery } from '@/features/search/vendor-query';
+import { AskWedButton } from '@/features/wed/ask-wed-button';
+import { openWed } from '@/features/wed/open-wed';
+import type { WedContext } from '@/features/wed/wed-store';
 import { localized } from '@/i18n/localized';
 import { useLocale } from '@/i18n/locale-context';
 
@@ -85,6 +88,9 @@ export default function SearchScreen() {
   // Still typing or still fetching: don't say "nothing matches" yet.
   const vendorsSettling = typed !== null && (needle !== typed || vendors.isFetching);
   const foundVendors = typed !== null && needle !== null ? (vendors.data ?? []) : [];
+  // Wed (mockup): look past Wedded for what they typed, on the web and Instagram.
+  const asked = query.trim();
+  const aboutSearch: WedContext = { kind: 'query', label: `“${asked}” in Search` };
   const popular = [...all]
     .filter((category) => vendorCount(category.slug) > 0)
     .sort((a, b) => vendorCount(b.slug) - vendorCount(a.slug))
@@ -106,7 +112,15 @@ export default function SearchScreen() {
           <StateView
             state="empty"
             icon="search-outline"
-            message={t('search.noMatch', { query: query.trim() })}
+            message={t('search.noMatch', { query: asked })}
+            action={{
+              label: `Ask Wed to look for “${asked}”`,
+              onPress: () =>
+                openWed({
+                  about: aboutSearch,
+                  ask: `Look for ${asked} near Yuba City, including Instagram pages`,
+                }),
+            }}
           />
         )
       ) : (
@@ -150,6 +164,18 @@ export default function SearchScreen() {
                 ))}
               </View>
             </View>
+          )}
+          {!vendorsSettling && (
+            <ListSection>
+              <View style={styles.wedRow}>
+                <AskWedButton
+                  variant="row"
+                  label="Not finding it? Ask Wed to look on the web"
+                  about={aboutSearch}
+                  ask={`Look on the web for ${asked} near Yuba City`}
+                />
+              </View>
+            </ListSection>
           )}
         </>
       );
@@ -229,5 +255,8 @@ const styles = StyleSheet.create({
   },
   tile: {
     flex: 1,
+  },
+  wedRow: {
+    paddingHorizontal: Spacing.lg,
   },
 });

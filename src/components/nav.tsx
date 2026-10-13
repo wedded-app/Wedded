@@ -17,7 +17,7 @@ import Animated, {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AppText } from '@/components/app-text';
-import { BackButton } from '@/components/back-button';
+import { BackButton, type BackFallback } from '@/components/back-button';
 import { useBottomSpace } from '@/components/tab-bar';
 import { makeStyles, Sizes, Spacing } from '@/constants/theme';
 import type { Locale } from '@/i18n';
@@ -63,6 +63,8 @@ type NavBarProps = {
   titleLang?: Locale;
   /** Shows the glass Back button (Home, with nothing to go back to). */
   back?: boolean;
+  /** Where Back goes with nothing to go back to, instead of Home. */
+  backTo?: BackFallback;
   /** Glass buttons on the right, e.g. the language switch. */
   trailing?: ReactNode;
   /** A custom control on the left instead of Back. */
@@ -74,7 +76,15 @@ type NavBarProps = {
  * once the large title scrolls under it, a soft backdrop that fades the
  * content out and the title in small type. Sits on top of the screen.
  */
-export function NavBar({ scroll, title, titleLang, back = true, trailing, leading }: NavBarProps) {
+export function NavBar({
+  scroll,
+  title,
+  titleLang,
+  back = true,
+  backTo,
+  trailing,
+  leading,
+}: NavBarProps) {
   const styles = useStyles();
   const top = useBarTop();
   // Worklets may capture only the shared values, never the whole scroll
@@ -94,7 +104,9 @@ export function NavBar({ scroll, title, titleLang, back = true, trailing, leadin
     <View style={[styles.bar, { height: top + Sizes.navBar }]}>
       <Animated.View style={[styles.backdrop, collapsed]} />
       <View style={[styles.row, { marginTop: top }]}>
-        <View style={styles.side}>{leading ?? (back ? <BackButton /> : null)}</View>
+        <View style={styles.side}>
+          {leading ?? (back ? <BackButton fallback={backTo} /> : null)}
+        </View>
         {title ? (
           <Animated.View style={[styles.titleWrap, styles.noTouch, collapsed]}>
             <AppText
@@ -173,11 +185,15 @@ export function LargeTitle({
 
 type NavScreenProps = Omit<ScrollViewProps, 'onScroll' | 'children'> & {
   title?: string | null;
+  /** A shorter title for the bar once the large one scrolls away, when the large one won't fit beside the buttons. */
+  navTitle?: string;
   titleLang?: Locale;
   subtitle?: string | null;
   subtitleLang?: Locale;
   eyebrow?: string | null;
   back?: boolean;
+  /** Where Back goes with nothing to go back to, instead of Home. */
+  backTo?: BackFallback;
   trailing?: ReactNode;
   children: ReactNode;
 };
@@ -189,11 +205,13 @@ type NavScreenProps = Omit<ScrollViewProps, 'onScroll' | 'children'> & {
  */
 export function NavScreen({
   title,
+  navTitle,
   titleLang,
   subtitle,
   subtitleLang,
   eyebrow,
   back = true,
+  backTo,
   trailing,
   children,
   contentContainerStyle,
@@ -229,7 +247,14 @@ export function NavScreen({
         ) : null}
         {children}
       </Animated.ScrollView>
-      <NavBar scroll={scroll} title={title} titleLang={titleLang} back={back} trailing={trailing} />
+      <NavBar
+        scroll={scroll}
+        title={navTitle ?? title}
+        titleLang={titleLang}
+        back={back}
+        backTo={backTo}
+        trailing={trailing}
+      />
     </View>
   );
 }

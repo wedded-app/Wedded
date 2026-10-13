@@ -9,6 +9,7 @@ import { router } from 'expo-router';
 
 import type { PriceUnit } from '@/components/vendor-card';
 import { useSession } from '@/features/auth/session';
+import { showSavedToast } from '@/features/saved/saved-toast-store';
 import { asLocalizedText, type LocalizedText } from '@/i18n/localized';
 import { supabase } from '@/lib/supabase';
 
@@ -135,6 +136,8 @@ export function useSaveVendor() {
       // 23505: already saved for that event (a double tap). Nothing to do.
       if (error && error.code !== '23505') throw error;
     },
+    // Saved has no tab, so a toast says where it went: "Saved to Jaago · See list"
+    onSuccess: (_, { eventSlug }) => showSavedToast(eventSlug),
     onSettled: refresh,
   });
 

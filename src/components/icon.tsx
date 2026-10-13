@@ -132,6 +132,23 @@ const SF_SYMBOLS: Partial<Record<IconName, SFSymbol>> = {
   'person-outline': 'person',
   'logo-apple': 'apple.logo',
   'link-outline': 'link',
+  mic: 'mic.fill',
+  'mic-outline': 'mic',
+  'lock-closed-outline': 'lock',
+  'card-outline': 'creditcard',
+  'pulse-outline': 'waveform.path.ecg',
+  // Wed (the planning helper): its menu, pages, sources and voice screen
+  'menu-outline': 'line.3.horizontal',
+  'map-outline': 'map',
+  'flag-outline': 'flag',
+  'apps-outline': 'square.grid.2x2',
+  'book-outline': 'book',
+  'mic-off-outline': 'mic.slash',
+  'stats-chart-outline': 'chart.bar',
+  'at-outline': 'at',
+  'document-text-outline': 'doc.text',
+  'hourglass-outline': 'hourglass',
+  'arrow-back': 'arrow.left',
 };
 
 export type IconProps = {

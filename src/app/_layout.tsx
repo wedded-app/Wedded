@@ -135,7 +135,14 @@ function AppShell() {
           <Stack.Screen name="reels-viewer" options={{ animation: 'fade' }} />
           <Stack.Screen name="post-reel" options={{ presentation: 'modal' }} />
           <Stack.Screen name="my-inquiries" />
+          <Stack.Screen name="saved" />
           <Stack.Screen name="settings" />
+          {/* Wed: connecting an app, and talking to Wed full screen */}
+          <Stack.Screen name="wed-connect" options={{ presentation: 'modal' }} />
+          <Stack.Screen
+            name="wed-voice"
+            options={{ presentation: 'fullScreenModal', animation: 'fade' }}
+          />
           <Stack.Screen name="plan" />
           <Stack.Screen name="plan-events" options={{ presentation: 'modal' }} />
           <Stack.Screen
