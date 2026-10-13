@@ -39,6 +39,11 @@ $$;
 create function pg_temp.today() returns date language sql as $$
   select (now() at time zone 'America/Los_Angeles')::date;
 $$;
+-- A time on today's California date, minutes after midnight there, so the
+-- test passes at any hour (even just after midnight in California)
+create function pg_temp.today_at(minutes integer) returns timestamptz language sql as $$
+  select (pg_temp.today()::timestamp at time zone 'America/Los_Angeles') + make_interval(mins => minutes);
+$$;
 
 -- Search appearances --------------------------------------------------------------------
 
@@ -91,12 +96,12 @@ insert into public.inquiries (id, user_id, vendor_id, event_slugs, event_date, g
 values
   ('de000000-0000-4000-8000-000000000001', 'ae000000-0000-4000-8000-000000000001',
    'be000000-0000-4000-8000-000000000001', array['reception', 'jaago'], '2027-06-12', '250_500', ' yuba city ',
-   'Menu for 300?', 'call', 'Harjit Kaur', '+15305550101', 'email', 'sent', now() - interval '3 hours'),
+   'Menu for 300?', 'call', 'Harjit Kaur', '+15305550101', 'email', 'sent', pg_temp.today_at(5)),
   ('de000000-0000-4000-8000-000000000002', 'ae000000-0000-4000-8000-000000000002',
    'be000000-0000-4000-8000-000000000001', array['reception'], '2027-06-19', '100_250', 'Yuba City',
-   'Do you do halal?', 'call', 'Simran Gill', '+15305550102', 'email', 'sent', now() - interval '1 hour');
+   'Do you do halal?', 'call', 'Simran Gill', '+15305550102', 'email', 'sent', pg_temp.today_at(10));
 insert into public.messages (conversation_id, sender_user_id, sender_role, kind, body, created_at)
-select c.id, 'ae000000-0000-4000-8000-00000000000e', 'vendor', 'text', 'Yes!', now() - interval '90 minutes'
+select c.id, 'ae000000-0000-4000-8000-00000000000e', 'vendor', 'text', 'Yes!', pg_temp.today_at(95)
 from public.conversations c
 where c.vendor_id = 'be000000-0000-4000-8000-000000000001'
   and c.family_user_id = 'ae000000-0000-4000-8000-000000000001';
