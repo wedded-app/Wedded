@@ -7,9 +7,10 @@ import { Button } from '@/components/button';
 import { NavScreen } from '@/components/nav';
 import { StateView } from '@/components/state-view';
 import { makeStyles, Radius, Sizes, Spacing } from '@/constants/theme';
-import { useConversations, type Conversation } from '@/data/chat';
+import { useConversations, useIsVendor, type Conversation } from '@/data/chat';
 import { useSession } from '@/features/auth/session';
 import { inboxTime, lastMessagePreview } from '@/features/chat/chat-format';
+import { PushAskCard } from '@/features/chat/push-ask';
 import { localized } from '@/i18n/localized';
 import { useLocale } from '@/i18n/locale-context';
 
@@ -22,6 +23,7 @@ export default function MessagesScreen() {
   const { t } = useLocale();
   const { status } = useSession();
   const conversations = useConversations();
+  const { isVendor } = useIsVendor();
 
   let body;
   if (status === 'loading') {
@@ -43,7 +45,13 @@ export default function MessagesScreen() {
     body = <Inbox conversations={conversations.data} />;
   }
 
-  return <NavScreen title={t('chat.title')}>{body}</NavScreen>;
+  return (
+    <NavScreen title={t('chat.title')}>
+      {/* Vendors: a buzz when a family writes, so no one waits on them */}
+      {isVendor && status === 'signedIn' && <PushAskCard audience="vendor" />}
+      {body}
+    </NavScreen>
+  );
 }
 
 function Inbox({ conversations }: { conversations: Conversation[] }) {

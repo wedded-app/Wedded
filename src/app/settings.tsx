@@ -1,6 +1,6 @@
 import Constants from 'expo-constants';
 import { router } from 'expo-router';
-import { Pressable, View } from 'react-native';
+import { Linking, Pressable, View } from 'react-native';
 
 import { AppText } from '@/components/app-text';
 import { Icon } from '@/components/icon';
@@ -10,6 +10,7 @@ import { Segmented } from '@/components/segmented';
 import { Switch } from '@/components/switch';
 import { makeStyles, Palettes, Spacing, useColors, type Scheme } from '@/constants/theme';
 import { useSession } from '@/features/auth/session';
+import { useEnablePush, usePushStatus } from '@/features/chat/push-ask';
 import { useSearchLocation } from '@/features/location/search-location';
 import { resetOnboarding } from '@/features/onboarding/onboarding-state';
 import { TEXT_SIZES, useSettings, type TextSize } from '@/features/settings/settings';
@@ -126,11 +127,7 @@ export default function SettingsScreen() {
           value={searchArea}
           onPress={openLocationSheet}
         />
-        <ListRow
-          icon="notifications-outline"
-          title={t('settings.notifications')}
-          value={t('common.comingSoon')}
-        />
+        <MessageAlertsRow />
       </ListSection>
 
       <ListSection inset header={t('settings.planning')}>
@@ -209,6 +206,49 @@ export default function SettingsScreen() {
  * A little phone drawn in one scheme's colours, like iOS Settings > Display:
  * a title bar, two rows and a tab bar, with a round check under it.
  */
+
+/**
+ * Message alerts: on, off, or not possible on this phone (the web, Expo Go
+ * on Android). Off and never asked turns them on (the phone asks); once
+ * refused, or to turn them off, it opens the phone's Settings.
+ */
+function MessageAlertsRow() {
+  const { t } = useLocale();
+  const status = usePushStatus();
+  const { enable, busy } = useEnablePush();
+  const state = status.data;
+  const value =
+    state === 'granted'
+      ? t('chat.alerts.rowOn')
+      : state === 'unavailable'
+        ? t('chat.alerts.rowUnavailable')
+        : t('chat.alerts.rowOff');
+  const onPress =
+    state === 'undetermined'
+      ? enable
+      : state === 'granted' || state === 'denied'
+        ? () => void Linking.openSettings()
+        : undefined;
+  return (
+    <ListRow
+      icon="notifications-outline"
+      title={t('chat.alerts.row')}
+      subtitle={
+        state === 'denied'
+          ? t('chat.alerts.rowDeniedHint')
+          : state === 'granted'
+            ? t('chat.alerts.rowOnHint')
+            : state === 'undetermined'
+              ? t('chat.alerts.rowOffHint')
+              : undefined
+      }
+      value={busy ? '…' : value}
+      onPress={onPress}
+      chevron={!!onPress}
+    />
+  );
+}
+
 function SchemePreview({
   scheme,
   label,
