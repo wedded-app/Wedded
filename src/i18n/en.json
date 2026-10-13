@@ -963,7 +963,8 @@
       "quote": "Sent a quote",
       "menu": "Sent a menu",
       "booking": "Inquiry",
-      "phone": "Shared a phone number"
+      "phone": "Shared a phone number",
+      "voice": "Voice note"
     },
     "errors": {
       "rate": "You're sending very fast. Wait a minute, then send again.",
@@ -1015,6 +1016,26 @@
         "sad": "Sad",
         "pray": "Folded hands"
       }
+    },
+    "voice": {
+      "record": "Record a voice note",
+      "recordHint": "Hold to record and let go to send, or tap to start",
+      "recording": "Recording {{time}}",
+      "letGo": "Let go to send",
+      "tapSend": "Tap the arrow to send, or the bin to delete",
+      "sending": "Sending your voice note…",
+      "send": "Send voice note",
+      "cancel": "Delete this recording",
+      "tooShort": "Hold the microphone a little longer to record, or tap it once to start.",
+      "failed": "Your voice note didn't send. Check your internet, then try again.",
+      "cantRecord": "The microphone didn't start. Try again.",
+      "needAccess": "To send a voice note, allow Wedded App to use the microphone when your phone asks.",
+      "whyTitle": "Send a voice note",
+      "whyBody": "Your phone will ask to let Wedded App use the microphone. It only listens while you're recording a message.",
+      "blockedTitle": "The microphone is turned off",
+      "blockedBody": "To send a voice note, allow Wedded App to use the microphone in Settings.",
+      "play": "Play voice note, {{length}}",
+      "pause": "Pause"
     }
   },
   "welcome": {
