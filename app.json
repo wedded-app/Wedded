@@ -80,7 +80,8 @@
           "savePhotosPermission": "Wedded App saves the reels you record to your Photos, so you always keep a copy.",
           "granularPermissions": []
         }
-      ]
+      ],
+      "expo-sharing"
     ],
     "experiments": {
       "typedRoutes": true,

@@ -2037,6 +2037,7 @@ export type Database = {
     Functions: {
       accept_wedding_invite: { Args: { p_token: string }; Returns: string };
       add_reel_comment: { Args: { p_body: string; p_reel_id: string }; Returns: string };
+      business_export: { Args: { p_vendor_id: string }; Returns: Json };
       business_leads: {
         Args: { p_before?: string; p_limit?: number; p_vendor_id: string };
         Returns: {
