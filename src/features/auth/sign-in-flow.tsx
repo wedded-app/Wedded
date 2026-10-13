@@ -18,6 +18,7 @@ import { supabase } from '@/lib/supabase';
 import { AboutYouForm, type AboutYouValues } from './about-you-form';
 import { isValidEmail, normalizePhone, toLatinDigits } from './about-you-validation';
 import { authErrorKey } from './auth-helpers';
+import { formatPhoneDigits, nextPhoneDigits } from './phone-entry';
 import { useSession } from './session';
 import { SignInOptions } from './sign-in-options';
 
@@ -278,7 +279,15 @@ function PhoneStep({
         label={t('signIn.phone')}
         hint={t('signIn.phoneHint')}
         value={phone}
-        onChangeText={setPhone}
+        onChangeText={(text) =>
+          // US numbers space out as they're typed, like /phone-sign-in;
+          // a number starting with + (another country) stays as typed
+          setPhone(
+            text.trim().startsWith('+')
+              ? text
+              : formatPhoneDigits(nextPhoneDigits(phone.replace(/\D/g, ''), text, '1'), '1'),
+          )
+        }
         error={error}
         maxLength={20}
         autoFocus
