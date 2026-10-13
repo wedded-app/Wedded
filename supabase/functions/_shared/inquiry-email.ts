@@ -159,6 +159,34 @@ export function detailRows(details: Record<string, unknown>): [string, string][]
   return rows;
 }
 
+/**
+ * The date of each asked-about event, from the family's plan
+ * (details.eventDates, { slug: 'yyyy-mm-dd' }), as "Jaago: Fri, Jun 11, 2027".
+ * Null when there's nothing to add beyond the one Date row.
+ */
+export function eventDatesRow(
+  eventSlugs: string[],
+  eventNames: string[],
+  details: Record<string, unknown>,
+  eventDate: string | null,
+): [string, string] | null {
+  const dates = details.eventDates;
+  if (!dates || typeof dates !== 'object' || Array.isArray(dates)) return null;
+  const known = dates as Record<string, unknown>;
+  const lines = eventSlugs.flatMap((slug, i) => {
+    const date = known[slug];
+    if (typeof date !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(date)) return [];
+    return [{ name: eventNames[i] ?? slug, date }];
+  });
+  if (lines.length === 0) return null;
+  // One event on the inquiry's own date says nothing new
+  if (lines.length === 1 && eventSlugs.length === 1 && lines[0].date === eventDate) return null;
+  return [
+    lines.length === 1 ? 'Event date' : 'Event dates',
+    lines.map((line) => `${line.name}: ${formatDate(line.date)}`).join('; '),
+  ];
+}
+
 export type InquiryEmailInput = {
   inquiryId: string;
   channel: 'email' | 'relay';
@@ -228,6 +256,9 @@ export function buildInquiryEmail(input: InquiryEmailInput): OutgoingEmail {
   const rows: [string, string][] = [
     ['Events', input.eventNames.length > 0 ? input.eventNames.join(', ') : 'Not sure yet'],
     ['Date', `${date}${time}`],
+    ...[
+      eventDatesRow(inquiry.eventSlugs, input.eventNames, inquiry.details, inquiry.eventDate),
+    ].filter((row): row is [string, string] => row !== null),
     ['Guests', guests],
     ['Where', inquiry.location],
     ...detailRows(inquiry.details),
