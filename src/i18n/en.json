@@ -1507,7 +1507,13 @@
       "freshTitle": "Is your calendar up to date?",
       "freshBody": "Families only see your days as open while your calendar is fresh. Tap this whenever you've checked it.",
       "upToDate": "My calendar is up to date",
-      "upToDateDone": "Thank you! Families will see your open days for the next 60 days."
+      "upToDateDone": "Thank you! Families will see your open days for the next 60 days.",
+      "whichPart": "Which part of the day",
+      "parts": {
+        "all_day": "Whole day",
+        "morning": "Morning",
+        "evening": "Evening"
+      }
     },
     "notLive": "Your page isn't live yet, so families can't find it. We'll tell you when it is.",
     "viewPage": "View my page",
@@ -1545,7 +1551,7 @@
         "other": "{{count}} families are waiting for your reply"
       },
       "allReplied": "You've replied to everyone. Well done!",
-      "seeAll": "See all {{count}}",
+      "seeAll": "See all {{count}} requests",
       "tour": "Wants a tour",
       "dateNotSure": "Date not sure yet",
       "guests": "{{band}} guests",
