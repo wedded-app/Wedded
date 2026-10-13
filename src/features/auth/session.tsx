@@ -11,6 +11,7 @@ import {
   type ReactNode,
 } from 'react';
 
+import { forgetThisPhone, syncPushToken } from '@/data/push';
 import { supabase } from '@/lib/supabase';
 import type { Database } from '@/types/database';
 
@@ -94,6 +95,11 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     return () => data.subscription.unsubscribe();
   }, []);
 
+  // Message alerts: keep this phone's push token on the account (never asks)
+  useEffect(() => {
+    if (userId) void syncPushToken();
+  }, [userId]);
+
   useEffect(() => {
     if (!userId) return;
     let current = true;
@@ -132,6 +138,8 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   const signOut = useCallback(async () => {
     pendingAction.current = null;
     setNameHint(null);
+    // Before the session goes, so the next person on this phone doesn't get our alerts
+    await forgetThisPhone();
     await supabase.auth.signOut();
   }, []);
 

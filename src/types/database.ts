@@ -706,6 +706,7 @@ export type Database = {
           id: string;
           inquiry_id: string | null;
           kind: string;
+          pushed_at: string | null;
           reply_to: string | null;
           sender_role: string;
           sender_user_id: string | null;
@@ -718,6 +719,7 @@ export type Database = {
           id?: string;
           inquiry_id?: string | null;
           kind?: string;
+          pushed_at?: string | null;
           reply_to?: string | null;
           sender_role: string;
           sender_user_id?: string | null;
@@ -730,6 +732,7 @@ export type Database = {
           id?: string;
           inquiry_id?: string | null;
           kind?: string;
+          pushed_at?: string | null;
           reply_to?: string | null;
           sender_role?: string;
           sender_user_id?: string | null;
@@ -785,6 +788,30 @@ export type Database = {
           id?: string;
           phone?: string;
           updated_at?: string;
+        };
+        Relationships: [];
+      };
+      push_tokens: {
+        Row: {
+          created_at: string;
+          platform: string;
+          token: string;
+          updated_at: string;
+          user_id: string;
+        };
+        Insert: {
+          created_at?: string;
+          platform: string;
+          token: string;
+          updated_at?: string;
+          user_id: string;
+        };
+        Update: {
+          created_at?: string;
+          platform?: string;
+          token?: string;
+          updated_at?: string;
+          user_id?: string;
         };
         Relationships: [];
       };
@@ -2117,6 +2144,20 @@ export type Database = {
           vendor_slug: string;
         }[];
       };
+      claim_push_messages: {
+        Args: Record<PropertyKey, never>;
+        Returns: {
+          body: string;
+          conversation_id: string;
+          data: Json;
+          event_names: string[];
+          kind: string;
+          message_id: string;
+          recipient_side: string;
+          title: string;
+          tokens: string[];
+        }[];
+      };
       create_inquiry: {
         Args: {
           p_details: Json;
@@ -2285,6 +2326,7 @@ export type Database = {
           width: number;
         }[];
       };
+      register_push_token: { Args: { p_platform: string; p_token: string }; Returns: undefined };
       remove_wedding_member: {
         Args: { p_user_id: string; p_wedding_id: string };
         Returns: undefined;
@@ -2369,6 +2411,7 @@ export type Database = {
       track_reel_view: { Args: { p_reel_id: string }; Returns: undefined };
       track_search_appearances: { Args: { p_vendor_ids: string[] }; Returns: undefined };
       track_vendor_activity: { Args: { p_kind: string; p_vendor_id: string }; Returns: undefined };
+      unregister_push_token: { Args: { p_token: string }; Returns: undefined };
       vendor_date_status: { Args: { p_day: string; p_vendor_id: string }; Returns: string };
       vendor_public_stats: {
         Args: { p_vendor_id: string };
