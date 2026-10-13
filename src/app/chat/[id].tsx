@@ -16,6 +16,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AppText } from '@/components/app-text';
 import { BackButton } from '@/components/back-button';
+import { Button } from '@/components/button';
 import { BookingCard } from '@/components/chat/booking-card';
 import { Composer } from '@/components/chat/composer';
 import { DaySeparator } from '@/components/chat/day-separator';
@@ -27,6 +28,7 @@ import { QuoteCard } from '@/components/chat/quote-card';
 import { ReplyBar, ReplyQuote } from '@/components/chat/reply-quote';
 import { SwipeToReply } from '@/components/chat/swipe-to-reply';
 import { TypingIndicator } from '@/components/chat/typing-indicator';
+import { VoiceBubble } from '@/components/chat/voice-bubble';
 import { Chip } from '@/components/chip';
 import { FieldError } from '@/components/field-error';
 import { MenuCard } from '@/components/menu-card';
@@ -53,6 +55,7 @@ import { sentPhotoUri } from '@/features/chat/chat-photo';
 import { nextReaction, type ReactionCode } from '@/features/chat/reactions';
 import { layoutThread, type ThreadItem } from '@/features/chat/thread-layout';
 import { type PhotoUpload, usePhotoSender } from '@/features/chat/use-photo-sender';
+import { useVoiceRecorder } from '@/features/chat/use-voice-recorder';
 import { useSession } from '@/features/auth/session';
 import { usd } from '@/features/vendors/profile-format';
 import { localized } from '@/i18n/localized';
@@ -87,6 +90,7 @@ export default function ChatScreen() {
   const toggleReaction = (message: Message, picked: ReactionCode) =>
     react.mutate({ messageId: message.id, reaction: nextReaction(myReaction(message), picked) });
   const photos = usePhotoSender(id, send);
+  const voice = useVoiceRecorder(id, send);
   const [draft, setDraft] = useState('');
   const [replyingTo, setReplyingTo] = useState<Message | null>(null);
   const input = useRef<TextInput>(null);
@@ -169,7 +173,7 @@ export default function ChatScreen() {
     (m) => m.senderRole === 'family' && m.kind === 'text',
   ).length;
 
-  let error: string | null = photos.notice;
+  let error: string | null = voice.notice ?? photos.notice;
   if (send.isError) error = t(`chat.errors.${sendErrorKind(send.error)}`);
 
   const title = convo
@@ -306,6 +310,20 @@ export default function ChatScreen() {
             {error && (
               <View style={styles.error}>
                 <FieldError message={error} />
+                {voice.failed && (
+                  <View style={styles.uploadActions}>
+                    <Button
+                      variant="text"
+                      label={t('chat.photos.tryAgain')}
+                      onPress={voice.retry}
+                    />
+                    <Button
+                      variant="text"
+                      label={t('chat.photos.remove')}
+                      onPress={voice.dismiss}
+                    />
+                  </View>
+                )}
               </View>
             )}
             {side === 'vendor' && convo && (
@@ -352,6 +370,19 @@ export default function ChatScreen() {
               onBlur={typing.stopped}
               onSend={() => sendText(draft)}
               onAddPhoto={convo ? sendPhoto : undefined}
+              voice={
+                convo
+                  ? {
+                      mode: voice.mode,
+                      elapsedMs: voice.elapsedMs,
+                      onHold: voice.hold,
+                      onRelease: voice.release,
+                      onTap: voice.tap,
+                      onCancel: voice.cancel,
+                      onSend: voice.sendNow,
+                    }
+                  : undefined
+              }
               sending={send.isPending}
               quickReplies={
                 side === 'family' && familyTexts < 2
@@ -584,6 +615,10 @@ function MessageContent({
   switch (message.kind) {
     case 'photo':
       return <ChatPhoto path={message.photoPath} label={t('chat.photo')} />;
+    case 'voice':
+      return message.voice ? (
+        <ChatVoice path={message.voice.path} durationMs={message.voice.durationMs} mine={mine} />
+      ) : null;
     case 'quote':
       return message.quote ? (
         <QuoteCard
@@ -636,6 +671,21 @@ function ChatPhoto({ path, label }: { path: string | null; label: string }) {
   const uri = local ?? url.data;
   if (!uri) return <View style={styles.photoWait} accessibilityLabel={label} />;
   return <PhotoBubble url={uri} label={label} />;
+}
+
+function ChatVoice({
+  path,
+  durationMs,
+  mine,
+}: {
+  path: string;
+  durationMs: number;
+  mine: boolean;
+}) {
+  // A voice note sent from this phone plays from the phone's copy
+  const local = sentPhotoUri(path);
+  const url = useChatPhotoUrl(local ? null : path);
+  return <VoiceBubble uri={local ?? url.data ?? null} durationMs={durationMs} mine={mine} />;
 }
 
 function ChatMenu({ vendorId, menuId }: { vendorId: string; menuId: string }) {

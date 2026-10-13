@@ -18,6 +18,8 @@ export function messageSnippet(
       return t('chat.preview.booking');
     case 'phone':
       return t('chat.preview.phone');
+    case 'voice':
+      return t('chat.preview.voice');
     default:
       return (message.body ?? '').replace(/\s+/g, ' ').trim();
   }
