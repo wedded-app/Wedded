@@ -1,70 +1,181 @@
-import { useRouter } from 'expo-router';
-import { useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
+import { useFocusEffect, useRouter } from 'expo-router';
+import { setStatusBarStyle } from 'expo-status-bar';
+import { useCallback, useEffect, useState } from 'react';
 import { Pressable, RefreshControl, StyleSheet, View } from 'react-native';
+import Animated, { runOnJS, useAnimatedReaction } from 'react-native-reanimated';
 
 import { AppText } from '@/components/app-text';
-import { SectionTitle } from '@/components/list';
-import { NavScreen } from '@/components/nav';
+import { NavBar, useNavScroll, useNavTop } from '@/components/nav';
 import { SearchButton } from '@/components/search-button';
 import { StateView } from '@/components/state-view';
-import { Sizes, Spacing, useColors } from '@/constants/theme';
-import { useFeed } from '@/data/feed';
+import { useBottomSpace } from '@/components/tab-bar';
+import { Sizes, Spacing, useColors, useScheme } from '@/constants/theme';
+import { useFeed, type FeedPost } from '@/data/feed';
 import { useCategoryGroups, useHomeEvents } from '@/data/reference';
 import { useCategoryVendorCounts } from '@/data/vendors';
 import { ChatButton } from '@/features/chat/chat-button';
 import { EventCarousel } from '@/features/home/event-carousel';
-import { HomeHero } from '@/features/home/home-hero';
+import { HomeCover, useCoverHeight } from '@/features/home/home-cover';
+import { NextUp } from '@/features/home/next-up';
+import { SectionHeader } from '@/features/home/section-header';
+import { VendorPhotoCards } from '@/features/home/vendor-photo-cards';
 import { BENTO_TILES, VendorTypeBento } from '@/features/home/vendor-type-bento';
+import { YourFamily } from '@/features/home/your-family';
+import { YourVendors } from '@/features/home/your-vendors';
 import { LocationChip } from '@/features/location/location-chip';
+import { findForPlan } from '@/features/planner/find-for-plan';
+import { usePlanView } from '@/features/planner/use-plan-view';
+import { localized } from '@/i18n/localized';
 import { useLocale } from '@/i18n/locale-context';
 
 /**
- * S4 Home, kept to four things so it never overwhelms: the family's wedding
- * (the countdown and the one thing to book next, on maroon silk), search,
- * "What do you need?" as a bento grid of the main kinds of vendor, and the
- * family's events as swipeable cards with their names in Gurmukhi. Real
- * weddings live in Reels and founding vendors behind a link at the bottom.
+ * S4 Home is the family's wedding, not a catalog. Edge to edge at the top,
+ * the wedding itself (countdown and a ring that fills as they book), then
+ * search, then what to do next, where things stand with each vendor, vendors
+ * free on their date, and what the family has been up to. Before there's a
+ * plan it's weddings playing with Plan your wedding, then popular vendors,
+ * the kinds of vendor and the events, so there's still plenty to look at.
  */
 export default function HomeScreen() {
   const Colors = useColors();
+  const scheme = useScheme();
+  const { t, locale } = useLocale();
+  const router = useRouter();
+  const queryClient = useQueryClient();
+  const scroll = useNavScroll();
+  const navTop = useNavTop();
+  const coverHeight = useCoverHeight();
+  const bottom = useBottomSpace();
+  const view = usePlanView();
+  const feed = useFeed();
+  const posts = feed.data ?? [];
+  const [refreshing, setRefreshing] = useState(false);
+  const { wedding, loading, plan, events, next } = view;
+  const planning = !!wedding || (loading && !!plan.syncedWeddingId);
+
+  // The small title and the bar's backdrop come in as the cover scrolls away
+  const collapseAt = coverHeight - navTop;
+  useEffect(() => scroll.setCollapseAt(collapseAt), [scroll, collapseAt]);
+
+  // White clock and battery over the cover, the app's own once it's gone.
+  // Worklets may capture only shared values, never the whole scroll object.
+  const { scrollY } = scroll;
+  const [overCover, setOverCover] = useState(true);
+  useAnimatedReaction(
+    () => scrollY.value < collapseAt,
+    (now, before) => {
+      if (now !== before) runOnJS(setOverCover)(now);
+    },
+  );
+  useFocusEffect(
+    useCallback(() => {
+      setStatusBarStyle(overCover || scheme === 'dark' ? 'light' : 'dark');
+      return () => setStatusBarStyle(scheme === 'dark' ? 'light' : 'dark');
+    }, [overCover, scheme]),
+  );
+
+  async function onRefresh() {
+    setRefreshing(true);
+    await queryClient.refetchQueries({ type: 'active' });
+    setRefreshing(false);
+  }
+
+  const eventName = (slug: string) =>
+    localized(events.find((event) => event.slug === slug)?.name ?? { en: slug }, locale);
+  const first = next[0];
+  const findFirst = () =>
+    first
+      ? findForPlan(
+          first.need.categorySlug,
+          first.need.groupSlug,
+          first.eventSlug,
+          plan.guests?.[first.eventSlug],
+        )
+      : router.navigate('/search');
+
+  return (
+    <View style={[styles.screen, { backgroundColor: Colors.bg }]}>
+      <Animated.ScrollView
+        onScroll={scroll.onScroll}
+        scrollEventThrottle={16}
+        contentInsetAdjustmentBehavior="never"
+        contentContainerStyle={{ paddingBottom: bottom }}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor={Colors.onHero}
+            colors={[Colors.primary]}
+            progressViewOffset={navTop}
+          />
+        }
+      >
+        <HomeCover view={view} posts={posts} />
+
+        <View style={styles.body}>
+          <View style={styles.find}>
+            <SearchButton
+              onPress={() => router.navigate({ pathname: '/search', params: { focus: '1' } })}
+            />
+            <LocationChip />
+          </View>
+
+          {planning ? (
+            <>
+              <NextUp view={view} />
+              <YourVendors wedding={wedding} eventName={eventName} onFind={findFirst} />
+              {first ? (
+                <VendorPhotoCards
+                  title={
+                    plan.weddingDate
+                      ? t('home.freeOnDateTitle', { type: localized(first.need.name, locale) })
+                      : t('home.nearYouTitle', { type: localized(first.need.name, locale) })
+                  }
+                  link={t('home.seeAll')}
+                  onLink={findFirst}
+                  categorySlug={first.need.categorySlug}
+                  groupSlug={first.need.groupSlug}
+                  eventSlug={first.eventSlug}
+                  date={plan.weddingDate}
+                  guestBand={plan.guests?.[first.eventSlug]}
+                />
+              ) : (
+                <VendorPhotoCards title={t('home.popularNearYou')} />
+              )}
+              {wedding && <YourFamily weddingId={wedding.id} eventName={eventName} />}
+            </>
+          ) : loading ? null : (
+            <BrowseSections posts={posts} />
+          )}
+
+          <View style={styles.footer}>
+            <FooterLink
+              label={t('home.foundingWall')}
+              onPress={() => router.push('/founding')}
+              strong
+            />
+            <FooterLink label={t('home.forVendors')} onPress={() => router.push('/for-vendors')} />
+          </View>
+        </View>
+      </Animated.ScrollView>
+
+      <NavBar scroll={scroll} title={t('app.name')} back={false} trailing={<ChatButton />} />
+    </View>
+  );
+}
+
+/** Home before there's a plan: popular vendors, the kinds of vendor, and the events. */
+function BrowseSections({ posts }: { posts: FeedPost[] }) {
   const { t } = useLocale();
   const router = useRouter();
   const groups = useCategoryGroups();
   const counts = useCategoryVendorCounts();
   const { data: sections, status, refetch } = useHomeEvents();
-  const feed = useFeed();
-  const [refreshing, setRefreshing] = useState(false);
-  const posts = feed.data ?? [];
-
-  // Pull to refresh fetches again even though events are cached for a day.
-  async function onRefresh() {
-    setRefreshing(true);
-    await Promise.all([groups.refetch(), counts.refetch(), refetch(), feed.refetch()]);
-    setRefreshing(false);
-  }
-
-  const startTyping = () => router.navigate({ pathname: '/search', params: { focus: '1' } });
 
   return (
-    <NavScreen
-      title={t('app.name')}
-      back={false}
-      trailing={<ChatButton />}
-      refreshControl={
-        <RefreshControl
-          refreshing={refreshing}
-          onRefresh={onRefresh}
-          tintColor={Colors.chevron}
-          colors={[Colors.primary]}
-        />
-      }
-    >
-      <HomeHero />
-
-      <View style={styles.find}>
-        <SearchButton onPress={startTyping} />
-        <LocationChip />
-      </View>
+    <>
+      <VendorPhotoCards title={t('home.popularNearYou')} />
 
       <View style={styles.block}>
         <SectionHeader
@@ -80,11 +191,7 @@ export default function HomeScreen() {
       </View>
 
       <View style={styles.block}>
-        <SectionHeader
-          title={t('home.planByEvent')}
-          link={t('home.myEvents')}
-          onLink={() => router.push('/plan')}
-        />
+        <SectionHeader title={t('home.planByEvent')} />
         {status === 'pending' && <StateView state="loading" />}
         {status === 'error' && <StateView state="error" onRetry={() => void refetch()} />}
         {status === 'success' && sections.length === 0 && (
@@ -92,42 +199,7 @@ export default function HomeScreen() {
         )}
         {sections && sections.length > 0 && <EventCarousel sections={sections} posts={posts} />}
       </View>
-
-      <View style={styles.footer}>
-        <FooterLink
-          label={t('home.foundingWall')}
-          onPress={() => router.push('/founding')}
-          strong
-        />
-        <FooterLink label={t('home.forVendors')} onPress={() => router.push('/for-vendors')} />
-      </View>
-    </NavScreen>
-  );
-}
-
-function SectionHeader({
-  title,
-  link,
-  onLink,
-}: {
-  title: string;
-  link: string;
-  onLink: () => void;
-}) {
-  return (
-    <View style={styles.titleRow}>
-      <SectionTitle>{title}</SectionTitle>
-      <Pressable
-        accessibilityRole="link"
-        onPress={onLink}
-        hitSlop={12}
-        style={({ pressed }) => pressed && styles.pressed}
-      >
-        <AppText weight={600} color="primary">
-          {link}
-        </AppText>
-      </Pressable>
-    </View>
+    </>
   );
 }
 
@@ -154,22 +226,22 @@ function FooterLink({
 }
 
 const styles = StyleSheet.create({
+  screen: {
+    flex: 1,
+  },
+  body: {
+    gap: Spacing.xxl,
+    paddingTop: Spacing.lg,
+    paddingHorizontal: Sizes.pageGutter,
+  },
   find: {
     gap: Spacing.md,
   },
   block: {
     gap: Spacing.md,
   },
-  titleRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: Spacing.md,
-    paddingRight: Spacing.xs,
-  },
   footer: {
     alignItems: 'center',
-    paddingTop: Spacing.sm,
   },
   footerLink: {
     minHeight: Sizes.tapTarget,

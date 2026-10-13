@@ -1,7 +1,5 @@
-import { useEventListener } from 'expo';
 import { router, useFocusEffect } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { useVideoPlayer, VideoView } from 'expo-video';
 import * as WebBrowser from 'expo-web-browser';
 import { useCallback, useState } from 'react';
 import {
@@ -31,6 +29,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AppText, useTypeStyle } from '@/components/app-text';
 import { Icon } from '@/components/icon';
 import { PressableScale } from '@/components/pressable-scale';
+import { WeddingReel } from '@/components/wedding-reel';
 import { SITE_URL_IS_PLACEHOLDER, siteLink } from '@/constants/links';
 import {
   makeStyles,
@@ -48,11 +47,6 @@ import { useLocale } from '@/i18n/locale-context';
 import { selectionHaptic } from '@/lib/haptics';
 import { Motion } from '@/lib/motion';
 
-// A 15-second loop of real weddings (a couple at the fire, mehndi, a Punjabi
-// family with flower trays, joined hands, a henna night, a bride in red, a
-// bride in Dubai) cut from Pexels clips; credits in assets/videos/README.md.
-const VIDEO = require('../../assets/videos/welcome.mp4');
-const POSTER = require('../../assets/images/welcome-poster.jpg');
 const RIBBON = require('../../assets/images/ribbon-white.png');
 
 // The lines that take turns above the buttons (`welcome.phrases.*`), the
@@ -389,70 +383,6 @@ function Legal() {
         );
       })}
     </AppText>
-  );
-}
-
-/**
- * The weddings playing behind the whole screen: muted, looping, never
- * stopping the family's music, paused while another screen is on top. The
- * first frame waits under it as a still, and the video fades in over it once
- * it's playing. With Reduce Motion it stays the still.
- */
-function WeddingReel() {
-  const reduceMotion = useReducedMotion();
-  const shown = useSharedValue(0);
-  const player = useVideoPlayer(VIDEO, (p) => {
-    p.loop = true;
-    p.muted = true;
-    p.audioMixingMode = 'mixWithOthers';
-  });
-
-  useFocusEffect(
-    useCallback(() => {
-      if (reduceMotion) return;
-      player.play();
-      return () => {
-        // Leaving the screen releases the player before this runs, and
-        // pausing a released player throws.
-        try {
-          player.pause();
-        } catch {}
-      };
-    }, [player, reduceMotion]),
-  );
-
-  const reveal = useCallback(() => {
-    if (shown.get() === 0) shown.set(withTiming(1, { duration: 600 }));
-  }, [shown]);
-  // The browser can load the first frame before anyone's listening, so
-  // playing at all counts too.
-  useEventListener(player, 'playingChange', ({ isPlaying }) => {
-    if (isPlaying) reveal();
-  });
-
-  const fade = useAnimatedStyle(() => ({ opacity: shown.value }));
-
-  return (
-    <View
-      style={StyleSheet.absoluteFill}
-      accessible={false}
-      importantForAccessibility="no-hide-descendants"
-    >
-      <Image source={POSTER} style={StyleSheet.absoluteFill} resizeMode="cover" />
-      {!reduceMotion && (
-        <Animated.View style={[StyleSheet.absoluteFill, fade]}>
-          <VideoView
-            player={player}
-            style={StyleSheet.absoluteFill}
-            contentFit="cover"
-            nativeControls={false}
-            allowsPictureInPicture={false}
-            playsInline
-            onFirstFrameRender={reveal}
-          />
-        </Animated.View>
-      )}
-    </View>
   );
 }
 

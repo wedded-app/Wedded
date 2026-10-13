@@ -55,6 +55,8 @@ export type VendorResult = {
   longitude: number;
   /** Small cover photo for VendorCard, or null when they have no photos yet. */
   photoUrl: string | null;
+  /** The cover's storage path, for a bigger size (photoUrl(coverPath, 'medium')). */
+  coverPath: string | null;
 };
 
 const PRICE_UNITS: readonly string[] = [
@@ -119,6 +121,7 @@ export async function searchVendors(params: VendorSearch): Promise<VendorResult[
       latitude: row.latitude ?? 0,
       longitude: row.longitude ?? 0,
       photoUrl: row.cover_path ? photoUrl(row.cover_path, 'small') : null,
+      coverPath: row.cover_path,
     };
   });
 }

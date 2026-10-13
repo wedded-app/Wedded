@@ -55,6 +55,38 @@ const usd = new Intl.NumberFormat('en-US', {
   maximumFractionDigits: 0,
 });
 
+type Translate = (key: string, options?: Record<string, string | number>) => string;
+type Words = { shown: string; spoken: string };
+
+/** "12 mi" (and "12 miles" for screen readers), or "Under 1 mi". */
+export function distanceWords(miles: number | null | undefined, t: Translate): Words | undefined {
+  if (miles == null) return undefined;
+  return miles < 1
+    ? { shown: t('vendorCard.underOneMile'), spoken: t('vendorCard.underOneMileSpoken') }
+    : {
+        shown: t('vendorCard.miles', { count: Math.round(miles) }),
+        spoken: t('vendorCard.milesSpoken', { count: Math.round(miles) }),
+      };
+}
+
+/** "From $450 / event", or "From $450" without a unit. */
+export function priceWords(
+  startingPrice: { amount: number; unit?: PriceUnit } | null | undefined,
+  t: Translate,
+): Words | undefined {
+  if (!startingPrice) return undefined;
+  const amount = usd.format(startingPrice.amount);
+  if (!startingPrice.unit) {
+    const text = t('vendorCard.from', { price: amount });
+    return { shown: text, spoken: text };
+  }
+  const unit = t(`vendorCard.units.${startingPrice.unit}`);
+  return {
+    shown: t('vendorCard.fromPer', { price: amount, unit }),
+    spoken: t('vendorCard.fromPerSpoken', { price: amount, unit }),
+  };
+}
+
 /**
  * A vendor in a list: 3:2 cover photo with a glass heart and glass badges on
  * it, then the name, "Dhol · Tracy, CA · 31 mi" and "From $450 / event". The
@@ -79,31 +111,8 @@ export function VendorCard({
   const { locale, t } = useLocale();
   const scale = Math.min(useFontScale('label'), 1.4);
 
-  let distance: { shown: string; spoken: string } | undefined;
-  if (distanceMiles != null) {
-    distance =
-      distanceMiles < 1
-        ? { shown: t('vendorCard.underOneMile'), spoken: t('vendorCard.underOneMileSpoken') }
-        : {
-            shown: t('vendorCard.miles', { count: Math.round(distanceMiles) }),
-            spoken: t('vendorCard.milesSpoken', { count: Math.round(distanceMiles) }),
-          };
-  }
-
-  let price: { shown: string; spoken: string } | undefined;
-  if (startingPrice) {
-    const amount = usd.format(startingPrice.amount);
-    if (startingPrice.unit) {
-      const unit = t(`vendorCard.units.${startingPrice.unit}`);
-      price = {
-        shown: t('vendorCard.fromPer', { price: amount, unit }),
-        spoken: t('vendorCard.fromPerSpoken', { price: amount, unit }),
-      };
-    } else {
-      const text = t('vendorCard.from', { price: amount });
-      price = { shown: text, spoken: text };
-    }
-  }
+  const distance = distanceWords(distanceMiles, t);
+  const price = priceWords(startingPrice, t);
 
   const vendorName = localized(name, locale);
   const categoryName = localized(category, locale);
