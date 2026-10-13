@@ -2253,6 +2253,7 @@ export type Database = {
           vendor_slug: string;
         }[];
       };
+      my_listing: { Args: { p_vendor_id: string }; Returns: Json };
       pending_reel_tags: {
         Args: { p_vendor_id: string };
         Returns: {
@@ -2412,6 +2413,7 @@ export type Database = {
       track_search_appearances: { Args: { p_vendor_ids: string[] }; Returns: undefined };
       track_vendor_activity: { Args: { p_kind: string; p_vendor_id: string }; Returns: undefined };
       unregister_push_token: { Args: { p_token: string }; Returns: undefined };
+      update_my_listing: { Args: { p_changes: Json; p_vendor_id: string }; Returns: Json };
       vendor_date_status: { Args: { p_day: string; p_vendor_id: string }; Returns: string };
       vendor_public_stats: {
         Args: { p_vendor_id: string };
