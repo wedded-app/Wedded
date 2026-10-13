@@ -1510,6 +1510,10 @@
       "working": "Making your spreadsheet…",
       "failed": "Your spreadsheet didn't come through. Check your internet, then try again.",
       "cantShare": "This phone can't share files from the app. Try on another phone, or on a computer at the website."
+    },
+    "home": {
+      "week": "This week: {{views}} people saw your page, {{asked}} asked about a date",
+      "hint": "Opens My business"
     }
   }
 }
