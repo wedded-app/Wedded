@@ -1036,6 +1036,29 @@
       "blockedBody": "To send a voice note, allow Wedded App to use the microphone in Settings.",
       "play": "Play voice note, {{length}}",
       "pause": "Pause"
+    },
+    "alerts": {
+      "title": {
+        "family": "Get a buzz when vendors reply",
+        "vendor": "Get a buzz when families message you"
+      },
+      "body": {
+        "family": "Turn on message alerts and your phone tells you the moment a vendor writes back.",
+        "vendor": "Families often book whoever replies first. Turn on message alerts so you never miss one."
+      },
+      "turnOn": "Turn on message alerts",
+      "notNow": "Not now",
+      "on": "Message alerts are on. We'll buzz you when someone writes.",
+      "deniedBody": "Message alerts are off for Wedded App. You can turn them on in your phone's Settings.",
+      "openSettings": "Open Settings",
+      "failed": "That didn't work. Check your internet, then try again.",
+      "row": "Message alerts",
+      "rowOn": "On",
+      "rowOff": "Off",
+      "rowUnavailable": "Not on this phone",
+      "rowOnHint": "To turn them off, open your phone's Settings.",
+      "rowOffHint": "Tap to get a buzz when someone writes to you.",
+      "rowDeniedHint": "Turn them on in your phone's Settings."
     }
   },
   "welcome": {

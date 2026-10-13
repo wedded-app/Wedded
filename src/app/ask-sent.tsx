@@ -16,6 +16,7 @@ import { Screen } from '@/components/screen';
 import { Spacing, Springs, useColors } from '@/constants/theme';
 import { useConversations } from '@/data/chat';
 import { useHomeEvents } from '@/data/reference';
+import { PushAskCard } from '@/features/chat/push-ask';
 import { useInquiryVendor } from '@/features/inquiry/inquiry-helpers';
 import { localized } from '@/i18n/localized';
 import { useLocale } from '@/i18n/locale-context';
@@ -120,6 +121,9 @@ export default function AskSentScreen() {
             }}
           />
         </Card>
+
+        {/* The vendor's reply comes in the app: offer a buzz when it does */}
+        <PushAskCard audience="family" />
 
         <Button label={t('location.done')} onPress={() => router.back()} />
       </ScrollView>

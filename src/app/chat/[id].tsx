@@ -1,5 +1,5 @@
-import { router, useLocalSearchParams } from 'expo-router';
-import { useEffect, useRef, useState } from 'react';
+import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   AccessibilityInfo,
   Alert,
@@ -45,10 +45,12 @@ import {
   type Message,
 } from '@/data/chat';
 import { useTyping } from '@/data/chat-typing';
+import { setOpenConversation } from '@/data/push';
 import { useVendorMenus } from '@/data/vendor-menus';
 import { leadAnswerRows } from '@/features/business/business-format';
 import { useEventNames } from '@/features/business/business-parts';
 import { messageSnippet } from '@/features/chat/chat-format';
+import { PushAskCard } from '@/features/chat/push-ask';
 import { sentPhotoUri } from '@/features/chat/chat-photo';
 import { nextReaction, type ReactionCode } from '@/features/chat/reactions';
 import { layoutThread, type ThreadItem } from '@/features/chat/thread-layout';
@@ -106,6 +108,15 @@ export default function ChatScreen() {
   const convo = thread.conversation;
   const side = convo?.side ?? 'family';
   const typing = useTyping(id, convo?.side ?? null);
+  // Alerts for this chat don't pop up while it's on screen
+  useFocusEffect(
+    useCallback(() => {
+      setOpenConversation(id);
+      return () => setOpenConversation(null);
+    }, [id]),
+  );
+  // Once a family has written, offer alerts for the reply
+  const familyWrote = side === 'family' && thread.messages.some((m) => m.senderRole === 'family');
   const { profile } = useSession();
   const sharedNumber = thread.messages.some((m) => m.kind === 'phone' && m.senderRole === 'family');
 
@@ -337,6 +348,11 @@ export default function ChatScreen() {
             {side === 'family' && convo && profile?.phone && !sharedNumber && (
               <View style={styles.tools}>
                 <Chip role="button" label={t('chat.phone.shareButton')} onPress={shareNumber} />
+              </View>
+            )}
+            {familyWrote && (
+              <View style={styles.error}>
+                <PushAskCard audience="family" />
               </View>
             )}
             {replyingTo && (
