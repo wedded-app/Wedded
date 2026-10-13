@@ -52,6 +52,7 @@ describe('messageSnippet', () => {
       'Is June 12 open?',
     );
     expect(messageSnippet({ kind: 'photo', body: null }, t)).toBe('chat.preview.photo');
+    expect(messageSnippet({ kind: 'voice', body: null }, t)).toBe('chat.preview.voice');
     expect(messageSnippet({ kind: 'booking', body: 'Price?' }, t)).toBe('chat.preview.booking');
   });
 });
