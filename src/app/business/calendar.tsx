@@ -6,9 +6,15 @@ import { Button } from '@/components/button';
 import { FieldError } from '@/components/field-error';
 import { Icon } from '@/components/icon';
 import { NavScreen } from '@/components/nav';
+import { Segmented } from '@/components/segmented';
 import { StateView } from '@/components/state-view';
 import { makeStyles, Radius, Sizes, Spacing, useColors } from '@/constants/theme';
-import { useSetDayStatus, useTouchCalendar, useVendorCalendar } from '@/data/vendor-self';
+import {
+  type DayPart,
+  useSetDayStatus,
+  useTouchCalendar,
+  useVendorCalendar,
+} from '@/data/vendor-self';
 import { dayLook, type DayLook } from '@/features/business/calendar-day';
 import { isoDay, isoMonth, monthWeeks, shiftMonth } from '@/features/business/month-grid';
 import { useCurrentBusiness } from '@/features/business/use-current-business';
@@ -40,6 +46,8 @@ export default function BusinessCalendarScreen() {
   const today = isoDay(new Date());
   const [month, setMonth] = useState(thisMonth);
   const [picked, setPicked] = useState<string | null>(null);
+  // Halls book lunch and evening separately: which part of the day to mark
+  const [part, setPart] = useState<DayPart>('all_day');
   const [error, setError] = useState<string | null>(null);
   const calendar = useVendorCalendar(business.vendorId, month);
   const setDay = useSetDayStatus(business.vendorId);
@@ -61,7 +69,7 @@ export default function BusinessCalendarScreen() {
     setPicked(null);
     setError(null);
     try {
-      await setDay.mutateAsync({ day, status });
+      await setDay.mutateAsync({ day, status, part });
       selectionHaptic();
     } catch {
       setError(t('business.calendar.saveFailed'));
@@ -146,7 +154,10 @@ export default function BusinessCalendarScreen() {
                     past={day < today}
                     today={day === today}
                     label={`${dayTitle(day)}: ${t(`business.calendar.status.${lookOf(day)}`)}`}
-                    onPress={() => setPicked(day)}
+                    onPress={() => {
+                      setPart('all_day');
+                      setPicked(day);
+                    }}
                   />
                 ) : (
                   <View key={`blank-${d}`} style={styles.cell} />
@@ -200,11 +211,17 @@ export default function BusinessCalendarScreen() {
             <AppText variant="title" accessibilityRole="header">
               {dayTitle(picked)}
             </AppText>
-            {lookOf(picked).startsWith('part') && (
-              <AppText color="text2">{t('business.calendar.partNote')}</AppText>
-            )}
+            <Segmented
+              accessibilityLabel={t('business.calendar.whichPart')}
+              value={part}
+              onChange={setPart}
+              options={(['all_day', 'morning', 'evening'] as const).map((p) => ({
+                value: p,
+                label: t(`business.calendar.parts.${p}`),
+              }))}
+            />
             {CHOICES.map(({ status, icon }) => {
-              const current = lookOf(picked) === status;
+              const current = partStatus(calendar.data?.[picked] ?? [], part) === status;
               return (
                 <Pressable
                   key={status}
@@ -234,6 +251,14 @@ export default function BusinessCalendarScreen() {
       </Modal>
     </NavScreen>
   );
+}
+
+/** A day's status for one part: its own mark, else the whole-day mark, else open. */
+function partStatus(marks: { part: DayPart; status: 'booked' | 'held' }[], part: DayPart) {
+  const own = marks.find((mark) => mark.part === part);
+  const allDay = marks.find((mark) => mark.part === 'all_day');
+  if (part === 'all_day') return allDay?.status ?? (marks.length > 0 ? null : 'open');
+  return own?.status ?? allDay?.status ?? 'open';
 }
 
 function DayCell({
