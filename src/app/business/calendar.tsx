@@ -121,7 +121,16 @@ export default function BusinessCalendarScreen() {
         <View style={styles.grid}>
           <View style={styles.week} importantForAccessibility="no-hide-descendants">
             {[0, 1, 2, 3, 4, 5, 6].map((d) => (
-              <AppText key={d} variant="label" weight={600} color="text2" style={styles.weekday}>
+              <AppText
+                key={d}
+                variant="label"
+                weight={600}
+                color="text2"
+                numberOfLines={1}
+                // The grid's columns can't grow: keep the letters inside them
+                maxFontSizeMultiplier={1.2}
+                style={[styles.weekday, styles.weekdayText]}
+              >
                 {t(`business.calendar.weekdays.${d}`)}
               </AppText>
             ))}
@@ -262,7 +271,14 @@ function DayCell({
           past && styles.disabled,
         ]}
       >
-        <AppText weight={today ? 700 : 500} color={booked ? 'onPrimary' : 'text'}>
+        {/* Fixed-size boxes: the number stays readable but never spills out
+            (the whole date is read out in full to screen readers) */}
+        <AppText
+          weight={today ? 700 : 500}
+          color={booked ? 'onPrimary' : 'text'}
+          maxFontSizeMultiplier={1.3}
+          style={styles.dayNumber}
+        >
           {String(Number(day.slice(8)))}
         </AppText>
         {look.startsWith('part') && (
@@ -329,6 +345,14 @@ const useStyles = makeStyles((Colors) => ({
   weekday: {
     flex: 1,
     textAlign: 'center',
+  },
+  weekdayText: {
+    fontSize: 13,
+    lineHeight: 20,
+  },
+  dayNumber: {
+    fontSize: 17,
+    lineHeight: 24,
   },
   cell: {
     flex: 1,

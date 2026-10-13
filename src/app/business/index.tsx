@@ -2,7 +2,7 @@ import { router } from 'expo-router';
 import { useState } from 'react';
 import { ActivityIndicator, View } from 'react-native';
 
-import { AppText } from '@/components/app-text';
+import { AppText, useFontScale } from '@/components/app-text';
 import { Button } from '@/components/button';
 import { Chip } from '@/components/chip';
 import { FieldError } from '@/components/field-error';
@@ -78,6 +78,8 @@ export default function BusinessScreen() {
   const { t, locale } = useLocale();
   const current = useCurrentBusiness();
   const [days, setDays] = useState<StatsPeriod>(30);
+  // At large text the number cards go one per row instead of two
+  const largeText = useFontScale('display') >= 1.4;
   const stats = useBusinessStats(current.vendorId, days);
   const insights = useBusinessInsights(current.vendorId, days);
   const reels = useBusinessReels(current.vendorId);
@@ -161,7 +163,7 @@ export default function BusinessScreen() {
             {MAIN_STATS.map((key, index) => (
               <StatCard
                 key={key}
-                wide={index === 0}
+                wide={index === 0 || largeText}
                 value={now[key]}
                 label={t(`business.stats.${key}`)}
                 change={changeFrom(now[key], before[key])}

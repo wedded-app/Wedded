@@ -3,7 +3,7 @@ import type { ReactNode } from 'react';
 import { router } from 'expo-router';
 import { Linking, View } from 'react-native';
 
-import { AppText } from '@/components/app-text';
+import { AppText, useFontScale } from '@/components/app-text';
 import { Button } from '@/components/button';
 import { Icon, type IconName } from '@/components/icon';
 import { SectionTitle } from '@/components/list';
@@ -110,6 +110,8 @@ export function FunnelSteps({ funnel }: { funnel: Funnel }) {
   const Colors = useColors();
   const styles = useStyles();
   const { t } = useLocale();
+  // At large text the number goes above its words, so neither gets squeezed
+  const stacked = useFontScale('title') >= 1.4;
   return (
     <Block title={t('business.insights.funnelTitle')}>
       {FUNNEL.map(({ key, icon }, i) => {
@@ -119,7 +121,7 @@ export function FunnelSteps({ funnel }: { funnel: Funnel }) {
         return (
           <View
             key={key}
-            style={[styles.step, i > 0 && styles.divided]}
+            style={[styles.step, stacked && styles.stepStacked, i > 0 && styles.divided]}
             accessible
             accessibilityLabel={[
               `${funnel[key]} ${t(`business.insights.funnel.${key}`)}`,
@@ -132,7 +134,7 @@ export function FunnelSteps({ funnel }: { funnel: Funnel }) {
             <AppText variant="title" style={styles.stepNumber}>
               {funnel[key].toLocaleString('en-US')}
             </AppText>
-            <View style={styles.grow}>
+            <View style={stacked ? styles.stackText : styles.grow}>
               <AppText weight={600}>{t(`business.insights.funnel.${key}`)}</AppText>
               {rateWords && (
                 <AppText variant="label" weight={400} color="text2">
@@ -508,6 +510,14 @@ const useStyles = makeStyles((Colors) => ({
     flexDirection: 'row',
     alignItems: 'center',
     gap: Spacing.md,
+  },
+  stackText: {
+    alignSelf: 'stretch',
+  },
+  stepStacked: {
+    flexDirection: 'column',
+    alignItems: 'flex-start',
+    gap: Spacing.xs,
   },
   stepNumber: {
     minWidth: 56,
