@@ -1,3 +1,4 @@
+import type { Ref } from 'react';
 import { ScrollView, TextInput, View } from 'react-native';
 
 import { useFontScale } from '@/components/app-text';
@@ -23,6 +24,8 @@ import { useLocale } from '@/i18n/locale-context';
 export function Composer({
   value,
   onChangeText,
+  onBlur,
+  inputRef,
   onSend,
   onAddPhoto,
   sending = false,
@@ -31,6 +34,10 @@ export function Composer({
 }: {
   value: string;
   onChangeText: (text: string) => void;
+  /** The message box lost focus (e.g. to stop "typing…"). */
+  onBlur?: () => void;
+  /** To focus the box, e.g. after choosing a message to reply to. */
+  inputRef?: Ref<TextInput>;
   onSend: () => void;
   /** Leave out to hide the photo button. */
   onAddPhoto?: () => void;
@@ -72,8 +79,10 @@ export function Composer({
           </PressableScale>
         )}
         <TextInput
+          ref={inputRef}
           value={value}
           onChangeText={onChangeText}
+          onBlur={onBlur}
           placeholder={t('chat.placeholder')}
           placeholderTextColor={Colors.text2}
           accessibilityLabel={t('chat.placeholder')}

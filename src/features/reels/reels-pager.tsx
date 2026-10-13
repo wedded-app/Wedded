@@ -26,6 +26,7 @@ import { Radius, Spacing } from '@/constants/theme';
 import { useTraditions } from '@/data/reference';
 import {
   type Reel,
+  reelVendors,
   useDeleteReel,
   useReelsFeed,
   useToggleBlock,
@@ -134,6 +135,21 @@ export function ReelsPager({
     }
   };
 
+  // One vendor: straight to Ask. Several: pick one first. Ask itself
+  // handles signing in, so watching and choosing never need an account.
+  const book = (reel: Reel) => {
+    const vendors = reelVendors(reel);
+    const event = reel.eventSlug ? { event: reel.eventSlug } : {};
+    if (vendors.length === 1) {
+      router.push({ pathname: '/ask', params: { vendorId: vendors[0].id, ...event } });
+    } else if (vendors.length > 1) {
+      router.push({
+        pathname: '/reel-book',
+        params: { vendors: vendors.map((v) => v.slug).join(','), ...event },
+      });
+    }
+  };
+
   const more = (reel: Reel) => {
     const report = () => router.push({ pathname: '/reel-report', params: { reel: reel.id } });
     const choices: { text: string; style?: 'destructive' | 'cancel'; onPress?: () => void }[] =
@@ -217,6 +233,7 @@ export function ReelsPager({
             }}
             onShare={(reel) => void share(reel)}
             onMore={more}
+            onBook={book}
           />
         )}
         pagingEnabled

@@ -53,7 +53,9 @@ jobs:
             exit 0
           fi
           supabase link --project-ref "$DEMO_PROJECT_REF" --password "$DEMO_DB_PASSWORD"
-          supabase db push --password "$DEMO_DB_PASSWORD" --yes
+          # --include-all: branches built side by side can merge a migration dated
+          # before one the demo already has
+          supabase db push --password "$DEMO_DB_PASSWORD" --include-all --yes
           supabase functions deploy --project-ref "$DEMO_PROJECT_REF" --use-api
 
       - name: Publish the app to the demo channel

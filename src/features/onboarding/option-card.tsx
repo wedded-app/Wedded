@@ -34,7 +34,7 @@ export type OptionCardProps = {
 const RADIUS = 24;
 
 /**
- * A big answer to tap in the first questions: a soft grey bubble with black
+ * A big answer to tap in the first questions: a soft tan bubble with black
  * text. Picking it turns it white with a black outline and pops a tick in.
  */
 export function OptionCard({
@@ -52,12 +52,7 @@ export function OptionCard({
   const styles = useStyles();
   const reduceMotion = useReducedMotion();
   const on = useSharedValue(selected ? 1 : 0);
-  const [off, offEdge, picked, pickedEdge] = [
-    Colors.canvasCard,
-    Colors.canvasCard,
-    Colors.canvas,
-    Colors.text,
-  ];
+  const [off, offEdge, picked, pickedEdge] = [Colors.sand, Colors.sand, Colors.canvas, Colors.text];
 
   useEffect(() => {
     on.value = reduceMotion ? (selected ? 1 : 0) : withTiming(selected ? 1 : 0, { duration: 180 });

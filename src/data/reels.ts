@@ -13,6 +13,7 @@ import {
 } from '@tanstack/react-query';
 
 import { useSession } from '@/features/auth/session';
+import type { ReelLink, ReelPlatform } from '@/features/reels/reel-link';
 import { supabase } from '@/lib/supabase';
 
 export type FeedMode = 'for_you' | 'following';
@@ -27,11 +28,12 @@ export type ReelTag = {
 
 export type Reel = {
   id: string;
-  videoPath: string;
+  /** Null for a pasted link: it plays in TikTok's or Instagram's own player. */
+  videoPath: string | null;
   thumbPath: string | null;
-  videoUrl: string;
+  videoUrl: string | null;
   thumbUrl: string | null;
-  durationS: number;
+  durationS: number | null;
   width: number | null;
   height: number | null;
   caption: string | null;
@@ -48,6 +50,12 @@ export type Reel = {
   liked: boolean;
   following: boolean;
   isMine: boolean;
+  /** Uploaded here, imported from a linked account, or a pasted link. */
+  source: 'upload' | 'import' | 'link';
+  /** Where an import or link came from, its address and who made it ("@gabrudhol"). */
+  platform: ReelPlatform | null;
+  sourceUrl: string | null;
+  creditName: string | null;
 };
 
 /** A public file in the reels bucket. */
@@ -57,9 +65,9 @@ export function reelFileUrl(path: string): string {
 
 type FeedRow = {
   id: string;
-  video_path: string;
+  video_path: string | null;
   thumb_path: string | null;
-  duration_s: number;
+  duration_s: number | null;
   width: number | null;
   height: number | null;
   caption: string | null;
@@ -76,6 +84,10 @@ type FeedRow = {
   liked: boolean;
   following: boolean;
   is_mine: boolean;
+  source?: string | null;
+  platform?: string | null;
+  source_url?: string | null;
+  credit_name?: string | null;
 };
 
 function toTags(value: unknown): ReelTag[] {
@@ -96,9 +108,9 @@ export function toReel(row: FeedRow): Reel {
     id: row.id,
     videoPath: row.video_path,
     thumbPath: row.thumb_path,
-    videoUrl: reelFileUrl(row.video_path),
+    videoUrl: row.video_path ? reelFileUrl(row.video_path) : null,
     thumbUrl: row.thumb_path ? reelFileUrl(row.thumb_path) : null,
-    durationS: Number(row.duration_s),
+    durationS: row.duration_s === null ? null : Number(row.duration_s),
     width: row.width,
     height: row.height,
     caption: row.caption,
@@ -116,7 +128,22 @@ export function toReel(row: FeedRow): Reel {
     liked: row.liked,
     following: row.following,
     isMine: row.is_mine,
+    source: row.source === 'import' || row.source === 'link' ? row.source : 'upload',
+    platform: row.platform === 'tiktok' || row.platform === 'instagram' ? row.platform : null,
+    sourceUrl: row.source_url ?? null,
+    creditName: row.credit_name ?? null,
   };
+}
+
+export type ReelVendor = { id: string; slug: string; name: string };
+
+/** The vendors a family can book from a reel: the one who posted it, then the ones tagged. */
+export function reelVendors(reel: Pick<Reel, 'vendor' | 'tags'>): ReelVendor[] {
+  const all = [
+    ...(reel.vendor ? [reel.vendor] : []),
+    ...reel.tags.map((tag) => ({ id: tag.vendorId, slug: tag.slug, name: tag.name })),
+  ];
+  return all.filter((v, i) => all.findIndex((other) => other.slug === v.slug) === i);
 }
 
 /** "2.4K", "12K", "1.2M": counts as people read them under a reel. */
@@ -138,13 +165,22 @@ export const reelKeys = {
 };
 
 type Feed =
-  { mode: FeedMode } | { mode: 'person'; userId: string } | { mode: 'vendor'; vendorId: string };
+  /** `eventSlug` shows only the reels of that event (Jaago, Mehndi…). */
+  | { mode: FeedMode; eventSlug?: string | null }
+  | { mode: 'person'; userId: string }
+  | { mode: 'vendor'; vendorId: string };
 
 /** Pages of reels, newest first; load more with fetchNextPage. */
 export function useReelsFeed(feed: Feed) {
   const { session } = useSession();
   const me = session?.user.id ?? '';
-  const target = feed.mode === 'person' ? feed.userId : feed.mode === 'vendor' ? feed.vendorId : '';
+  const eventSlug = 'eventSlug' in feed ? (feed.eventSlug ?? null) : null;
+  const target =
+    feed.mode === 'person'
+      ? feed.userId
+      : feed.mode === 'vendor'
+        ? feed.vendorId
+        : (eventSlug ?? '');
   return useInfiniteQuery({
     queryKey: reelKeys.feed(feed.mode, me, target),
     initialPageParam: null as string | null,
@@ -155,6 +191,7 @@ export function useReelsFeed(feed: Feed) {
         p_limit: PAGE,
         p_user_id: feed.mode === 'person' ? feed.userId : undefined,
         p_vendor_id: feed.mode === 'vendor' ? feed.vendorId : undefined,
+        p_event_slug: eventSlug ?? undefined,
       });
       if (error) throw error;
       return (data as FeedRow[]).map(toReel);
@@ -397,10 +434,10 @@ export function useDeleteReel() {
     mutationFn: async (reel: Reel) => {
       const { error } = await supabase.from('reels').delete().eq('id', reel.id);
       if (error) throw error;
-      // The row is gone either way; leftover files only cost storage
-      await supabase.storage
-        .from('reels')
-        .remove([reel.videoPath, ...(reel.thumbPath ? [reel.thumbPath] : [])]);
+      // The row is gone either way; leftover files only cost storage. A pasted
+      // link has no files of ours.
+      const files = [reel.videoPath, reel.thumbPath].filter((path): path is string => !!path);
+      if (files.length > 0) await supabase.storage.from('reels').remove(files);
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: reelKeys.all }),
   });
@@ -427,7 +464,15 @@ export function clipProblem(clip: {
 }
 
 export type PostError =
-  'notSignedIn' | 'consent' | 'tooMany' | 'limit' | 'vendorGone' | 'tooBig' | 'failed';
+  | 'notSignedIn'
+  | 'consent'
+  | 'tooMany'
+  | 'limit'
+  | 'vendorGone'
+  | 'tooBig'
+  | 'unsupportedLink'
+  | 'alreadyAdded'
+  | 'failed';
 
 /** Which message to show when posting fails (the database's error names). */
 export function postErrorKind(error: unknown): PostError {
@@ -437,6 +482,8 @@ export function postErrorKind(error: unknown): PostError {
   if (message.includes('too_many_tags')) return 'tooMany';
   if (message.includes('reel_limit')) return 'limit';
   if (message.includes('vendor_not_found')) return 'vendorGone';
+  if (message.includes('unsupported_link')) return 'unsupportedLink';
+  if (message.includes('already_added')) return 'alreadyAdded';
   if (/maximum allowed size|payload too large|413/i.test(message)) return 'tooBig';
   return 'failed';
 }
@@ -504,6 +551,40 @@ export function usePostReel() {
         await bucket.remove([videoPath, ...(thumbPath ? [thumbPath] : [])]);
         throw new Error(error.message);
       }
+      return data;
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: reelKeys.all }),
+  });
+}
+
+export type LinkedReelDraft = {
+  /** A post's full address (resolveReelLink). */
+  link: ReelLink;
+  caption: string;
+  eventSlug: string | null;
+  vendorIds: string[];
+  asVendorId: string | null;
+  consent: boolean;
+};
+
+/**
+ * Add a reel from a TikTok or Instagram post's address: nothing to upload,
+ * it plays in the platform's own player and credits whoever made it.
+ */
+export function usePostLinkedReel() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (draft: LinkedReelDraft): Promise<string> => {
+      const { data, error } = await supabase.rpc('create_linked_reel', {
+        p_url: draft.link.url,
+        p_caption: sqlNull(draft.caption.trim() || null),
+        p_event_slug: sqlNull(draft.eventSlug),
+        p_vendor_ids: draft.vendorIds,
+        p_vendor_id: sqlNull(draft.asVendorId),
+        p_consent: draft.consent,
+        p_credit_name: sqlNull(draft.link.handle ? `@${draft.link.handle}` : null),
+      });
+      if (error) throw new Error(error.message);
       return data;
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: reelKeys.all }),

@@ -12,8 +12,14 @@ export type PlanningFor = 'self' | 'child' | 'sibling' | 'relative' | 'friend';
 
 export type Answers = {
   planningFor: PlanningFor | null;
-  /** The kinds of wedding they picked (cultures.slug); two for a mixed family. */
-  traditions: string[];
+  /**
+   * The faiths they picked (faiths.slug); two for a mixed family. Kept only
+   * until the plan is made: the plan stores the traditions they lead to
+   * (traditionsForFaiths), never the faith itself.
+   */
+  faiths: string[];
+  /** Traditions picked on "Where are the families from?" (cultures.slug). */
+  roots: string[];
   /** They said their kind of wedding isn't listed (they'll pick events themselves). */
   otherTradition: boolean;
   weddingDate: string | null;
@@ -29,7 +35,8 @@ export type Answers = {
 
 const EMPTY: Answers = {
   planningFor: null,
-  traditions: [],
+  faiths: [],
+  roots: [],
   otherTradition: false,
   weddingDate: null,
   noDateYet: false,

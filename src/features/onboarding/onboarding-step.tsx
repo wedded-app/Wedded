@@ -21,6 +21,7 @@ import { Motion } from '@/lib/motion';
 
 import { resetAnswers } from './answers';
 import { markOnboarding } from './onboarding-state';
+import { PlanPreview } from './plan-preview';
 import { STEPS, stepNumber, type Step } from './steps';
 
 export type OnboardingStepProps = {
@@ -38,13 +39,22 @@ export type OnboardingStepProps = {
   error?: string;
   /** Shows Skip at the top right; skipping moves on without an answer. */
   onSkip?: () => void;
+  /**
+   * How far this question fills its part of the progress bar, and where the
+   * fill starts: the second question fills half when "Where are the families
+   * from?" may follow, and that question fills the rest.
+   */
+  fill?: number;
+  fillFrom?: number;
 };
 
 /**
- * One question of the first-launch setup, one per screen like Hinge: a round
- * Back (or Close on the first), a bar in three parts that fills as they go,
- * a big black question, the choices as soft grey bubbles, and a black
- * Continue pill pinned at the bottom. Always white (the layout sets light).
+ * One question of the first-launch setup, one per screen: a round Back (or
+ * Close on the first), a bar in three parts that fills in maroon as they go,
+ * the question in the serif, the choices as tan bubbles, and pinned at the
+ * bottom their plan so far (after the first question) over a black Continue
+ * pill. White and black with a little tan and maroon (Fezy, 2026-10-07);
+ * always light (the layout sets it).
  */
 export function OnboardingStep({
   step,
@@ -57,6 +67,8 @@ export function OnboardingStep({
   loading = false,
   error,
   onSkip,
+  fill = 1,
+  fillFrom = 0,
 }: OnboardingStepProps) {
   const Colors = useColors();
   const styles = useStyles();
@@ -102,6 +114,8 @@ export function OnboardingStep({
             <Segment
               key={s}
               state={index + 1 < number ? 'done' : index + 1 === number ? 'now' : 'next'}
+              fill={fill}
+              from={fillFrom}
             />
           ))}
         </View>
@@ -130,10 +144,16 @@ export function OnboardingStep({
         showsVerticalScrollIndicator={false}
       >
         <Animated.View entering={Motion.rise} style={styles.intro}>
-          <AppText variant="label" weight={600} color="text2">
+          <AppText variant="label" weight={600} color="primary">
             {t('onboarding.stepOf', { step: number, total: STEPS.length })}
           </AppText>
-          <AppText variant="display" weight={800} accessibilityRole="header" style={styles.title}>
+          <AppText
+            variant="display"
+            weight={600}
+            serif
+            accessibilityRole="header"
+            style={styles.title}
+          >
             {title}
           </AppText>
           {subtitle && (
@@ -147,6 +167,7 @@ export function OnboardingStep({
       </ScrollView>
 
       <View style={styles.footer}>
+        {!first && <PlanPreview step={step} />}
         <PillButton
           label={continueLabel ?? t('onboarding.continue')}
           disabled={!canContinue}
@@ -158,19 +179,31 @@ export function OnboardingStep({
   );
 }
 
-/** One part of the progress bar: full when done, filling in for this question. */
-function Segment({ state }: { state: 'done' | 'now' | 'next' }) {
+/**
+ * One part of the progress bar: full when done, filling in for this question
+ * (from `from` to `fill`, so a question's second half picks up where the
+ * first left off).
+ */
+function Segment({
+  state,
+  fill: to,
+  from,
+}: {
+  state: 'done' | 'now' | 'next';
+  fill: number;
+  from: number;
+}) {
   const styles = useStyles();
   const reduceMotion = useReducedMotion();
-  const fill = useSharedValue(state === 'done' ? 1 : 0);
+  const fill = useSharedValue(state === 'done' ? 1 : state === 'now' ? from : 0);
 
   useEffect(() => {
-    const target = state === 'next' ? 0 : 1;
+    const target = state === 'next' ? 0 : state === 'now' ? to : 1;
     fill.value =
       reduceMotion || state === 'done'
         ? target
         : withDelay(150, withSpring(target, Springs.smooth));
-  }, [fill, reduceMotion, state]);
+  }, [fill, reduceMotion, state, to]);
 
   const inner = useAnimatedStyle(() => ({ width: `${fill.value * 100}%` }));
 
@@ -238,7 +271,7 @@ const useStyles = makeStyles((Colors) => ({
     borderRadius: 22,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: Colors.canvasCard,
+    backgroundColor: Colors.sand,
   },
   progress: {
     flex: 1,
@@ -250,12 +283,12 @@ const useStyles = makeStyles((Colors) => ({
     height: 6,
     borderRadius: 3,
     overflow: 'hidden',
-    backgroundColor: Colors.canvasCard,
+    backgroundColor: Colors.sand,
   },
   fill: {
     height: '100%',
     borderRadius: 3,
-    backgroundColor: Colors.text,
+    backgroundColor: Colors.primaryFill,
   },
   side: {
     minWidth: 44,
@@ -274,9 +307,10 @@ const useStyles = makeStyles((Colors) => ({
     paddingHorizontal: Spacing.xs,
   },
   title: {
-    letterSpacing: -0.5,
+    letterSpacing: -0.3,
   },
   footer: {
+    gap: Spacing.sm + 2,
     paddingTop: Spacing.md,
     paddingBottom: Spacing.sm,
   },
@@ -290,6 +324,6 @@ const useStyles = makeStyles((Colors) => ({
     backgroundColor: Colors.text,
   },
   pillOff: {
-    backgroundColor: Colors.canvasCard,
+    backgroundColor: Colors.sand,
   },
 }));

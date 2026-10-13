@@ -66,6 +66,8 @@ const KIND_TEXT: Record<string, string> = {
   quote: 'sent a price quote',
   menu: 'shared a menu',
   booking: 'sent their event details',
+  // Never the number itself: they open the chat to see it
+  phone: 'shared their phone number',
 };
 
 /** The email for one claim, or null when there's nobody to send it to. */

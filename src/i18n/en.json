@@ -876,10 +876,36 @@
     "send": "Send",
     "addPhoto": "Add a photo",
     "seen": "Seen",
+    "typing": "{{name}} is typing…",
+    "reply": {
+      "action": "Reply",
+      "replyingTo": "Replying to {{name}}",
+      "cancel": "Stop replying",
+      "you": "You",
+      "unavailable": "This message isn't available",
+      "inReplyTo": "In reply to {{name}}: {{text}}",
+      "showHint": "Shows the original message",
+      "shown": "Showing the original message"
+    },
     "today": "Today",
     "yesterday": "Yesterday",
     "photo": "Photo",
     "photoFrom": "Photo from {{name}}",
+    "photos": {
+      "whyTitle": "Send a photo",
+      "whyBody": "Your phone will ask to let Wedded App see your photos. You choose which one to send. Nothing else is shared.",
+      "continue": "Continue",
+      "notNow": "Not now",
+      "needAccess": "To send a photo, allow Wedded App to see your photos when your phone asks.",
+      "blockedTitle": "Photos are turned off",
+      "blockedBody": "To send a photo, allow Wedded App to see your photos in Settings.",
+      "openSettings": "Open Settings",
+      "cantOpen": "Your photos didn't open. Try again.",
+      "sending": "Sending…",
+      "failed": "Your photo didn't send. Check your internet, then try again.",
+      "tryAgain": "Try again",
+      "remove": "Remove"
+    },
     "quote": {
       "title": "Quote",
       "for": "For {{event}}",
@@ -926,14 +952,17 @@
       "photo": "Photo",
       "quote": "Sent a quote",
       "menu": "Sent a menu",
-      "booking": "Inquiry"
+      "booking": "Inquiry",
+      "phone": "Shared a phone number"
     },
     "errors": {
       "rate": "You're sending very fast. Wait a minute, then send again.",
       "empty": "Type a message first.",
       "notAllowed": "You can't send in this conversation.",
       "invalid": "That message couldn't be sent. Check it and try again.",
-      "failed": "That didn't send. Check your internet and try again."
+      "failed": "That didn't send. Check your internet and try again.",
+      "familyFirst": "You can reply once this family writes to you.",
+      "waitForReply": "You've followed up twice. Wait for the family to reply before writing again."
     },
     "quoteForm": {
       "title": "Send a quote",
@@ -949,6 +978,33 @@
       "title": "Send a menu",
       "hint": "Tap a menu to send it as a card.",
       "none": "You have no menus yet. Text the founders to add them."
+    },
+    "phone": {
+      "shareButton": "Share my number",
+      "confirmTitle": "Share your number?",
+      "confirm": "{{number}} will show in this chat, so the vendor can call or text you.",
+      "share": "Share",
+      "cancel": "Cancel",
+      "shared": "Their number",
+      "youShared": "You shared your number",
+      "call": "Call",
+      "text": "Text",
+      "callSpoken": "Call {{number}}",
+      "textSpoken": "Text {{number}}"
+    },
+    "react": {
+      "action": "React",
+      "close": "Close reactions",
+      "takeBack": "Takes your reaction back",
+      "chip": "{{name}}, {{count}}",
+      "names": {
+        "heart": "Heart",
+        "thumbs_up": "Thumbs up",
+        "laugh": "Laughing",
+        "wow": "Surprised",
+        "sad": "Sad",
+        "pray": "Folded hands"
+      }
     }
   },
   "welcome": {
@@ -974,8 +1030,8 @@
     "continue": "Continue",
     "stepOf": "{{step}} of {{total}}",
     "who": {
-      "title": "Whose wedding are we planning?",
-      "subtitle": "Just 3 quick questions, and your plan is ready.",
+      "title": "Congratulations! Whose wedding is it?",
+      "subtitle": "3 quick questions, and we'll set up your plan: your events, what to book first and a countdown to the day.",
       "self": "My own",
       "child": "My son's or daughter's",
       "sibling": "My brother's or sister's",
@@ -985,29 +1041,64 @@
       "vendorLink": "List it free for families"
     },
     "kind": {
-      "title": "What kind of wedding is it?",
-      "subtitle": "Pick all that fit: two families can pick two.",
+      "title": "What kind of wedding will it be?",
+      "subtitle": "We'll line up the ceremonies, and the vendors who know them. Two families? Pick both.",
       "other": "Something else",
       "otherDetail": "You can pick your events in My Wedding."
     },
+    "roots": {
+      "title": "Where are the families from?",
+      "subtitle": "Every place celebrates a little differently, so we'll match your ceremonies.",
+      "elsewhere": "Somewhere else"
+    },
     "date": {
-      "title": "When is the big day?",
-      "subtitle": "We'll start your countdown. The main wedding day is enough.",
+      "title": "When's the big day?",
+      "subtitle": "We'll count down with you and show what to book first. The main day is enough.",
       "notYet": "We haven't picked a date yet",
       "notYetDetail": "You can add it any time in My Wedding.",
       "finish": "Make my plan",
       "failed": "We couldn't save your plan. Check your internet and try again."
     },
+    "plan": {
+      "label": "Your plan so far",
+      "untitled": "Your wedding plan",
+      "who": {
+        "self": "Your wedding",
+        "child": "Your son's or daughter's wedding",
+        "sibling": "Your brother's or sister's wedding",
+        "relative": "A wedding in the family",
+        "friend": "Your friend's wedding"
+      },
+      "eventsSoon": "Your events will show here",
+      "more": "+{{count}} more",
+      "dateSoon": "Your countdown will show here",
+      "noDate": "Date to come",
+      "date": {
+        "one": "{{date}} · {{count}} day to go",
+        "other": "{{date}} · {{count}} days to go"
+      },
+      "today": "{{date}} · today!"
+    },
     "ready": {
       "title": "Your plan is ready!",
-      "subtitle": {
-        "one": "We added {{count}} event to start you off. Change it any time in My Wedding.",
-        "other": "We added {{count}} events to start you off. Change them any time in My Wedding."
+      "subtitle": "Here's how we'll help from here.",
+      "events": {
+        "one": "{{count}} event, and what it needs",
+        "other": "{{count}} events, and what each one needs"
       },
-      "events": "Your events",
-      "firstUp": "First things to book",
-      "go": "Take me to my wedding",
-      "subtitleNoEvents": "Pick your events in My Wedding to see what to book."
+      "firstUp": "First up: {{need}} for the {{event}}",
+      "noEvents": "Pick your events",
+      "noEventsDetail": "In My Wedding. Then we'll show what each one needs.",
+      "vendorsNear": {
+        "one": "{{count}} vendor near {{city}}",
+        "other": "{{count}} vendors near {{city}}"
+      },
+      "vendorsNearMany": "{{count}}+ vendors near {{city}}",
+      "vendors": "Vendors who know your ceremonies",
+      "vendorsDetail": "Ask about prices and dates. It's free.",
+      "together": "Plan it together",
+      "togetherDetail": "Invite family from My Wedding. They can suggest vendors too.",
+      "go": "Take me to my wedding"
     }
   },
   "suggestions": {
@@ -1087,6 +1178,12 @@
     "more": "More",
     "vendor": "Vendor",
     "taggedVendor": "See {{name}}",
+    "bookVendor": "Book {{name}}",
+    "bookThis": "Book this vendor",
+    "bookAny": "Book a vendor",
+    "bookWhich": "Book which vendor?",
+    "bookWhichBody": "Ask about price and your date. They reply by call or text.",
+    "bookNone": "These vendors aren't listed any more.",
     "shareMessage": "A wedding reel from {{name}} on Wedded App",
     "delete": "Delete this reel",
     "report": "Report",
@@ -1095,6 +1192,10 @@
     "cancel": "Cancel",
     "following": "Following",
     "forYou": "For you",
+    "allEvents": "All",
+    "eventEmptyTitle": "No {{event}} reels yet",
+    "eventEmptyBody": "Try another event, or see every reel.",
+    "showAll": "Show all reels",
     "followingEmptyTitle": "Nobody to show yet",
     "followingEmptyBody": "Follow vendors and families on For you, and their reels show up here.",
     "goForYou": "Go to For you",
@@ -1127,7 +1228,12 @@
     "doubleTapHint": "Double tap to like. Hold to see the whole video.",
     "moreCaption": "more",
     "less": "less",
-    "swipeHint": "Swipe up for more"
+    "swipeHint": "Swipe up for more",
+    "playsFrom": "From {{platform}}",
+    "linkGone": "This post isn't available any more.",
+    "openOriginal": "Opens the original post",
+    "creditBy": "{{name}} on {{platform}}",
+    "creditFrom": "From {{platform}}"
   },
   "postReel": {
     "title": "New reel",
@@ -1180,7 +1286,24 @@
       "limit": "You've posted a lot today. Try again tomorrow.",
       "vendorGone": "A vendor you tagged isn't listed any more. Remove them, then try again.",
       "tooBig": "That clip is too big to send. Trim it shorter, then try again.",
-      "failed": "Your reel didn't post. Check your internet, then try again."
+      "failed": "Your reel didn't post. Check your internet, then try again.",
+      "unsupportedLink": "That link can't be added. Paste the link of one TikTok or Instagram reel.",
+      "alreadyAdded": "That reel is already on Wedded App."
+    },
+    "pasteLink": "Paste a TikTok or Instagram link",
+    "linkLabel": "Link to the reel",
+    "linkHint": "In TikTok or Instagram, tap Share, then Copy link, and paste it here.",
+    "useLink": "Use this link",
+    "linkChecking": "Checking the link…",
+    "linkBy": "{{name}} on {{platform}}",
+    "linkFrom": "A reel from {{platform}}",
+    "linkCredit": "It plays in the app and credits whoever made it.",
+    "changeLink": "Use a different link",
+    "linkErrors": {
+      "notALink": "That isn't a TikTok or Instagram reel link. Copy the link from the app's Share button, then paste it here.",
+      "openInApp": "Open the reel in Instagram, tap Share, then Copy link, and paste that link here.",
+      "notFound": "TikTok couldn't find that video. It may be private or deleted.",
+      "offline": "Couldn't reach TikTok. Check your internet, then try again."
     }
   },
   "report": {
@@ -1201,5 +1324,185 @@
     },
     "noteLabel": "Anything else we should know? (optional)",
     "send": "Send report"
+  },
+  "business": {
+    "title": "My business",
+    "profileHint": "Your numbers, the families who asked, menus and calendar",
+    "notVendor": "This is for vendor accounts. If you run a wedding business, ask us to add you.",
+    "yourListing": "Your page",
+    "listingHint": "Families see these on your page. Keep them up to date so they ask about the right things.",
+    "cancel": "Cancel",
+    "menus": {
+      "title": "Menus",
+      "rowHint": "What you serve and the price",
+      "empty": "No menus yet. Add one so families can see what you serve and the price.",
+      "hint": "Tap a menu to change it.",
+      "add": "Add a menu",
+      "editLabel": "Change {{name}}",
+      "newTitle": "New menu",
+      "editTitle": "Change menu",
+      "name": "Menu name",
+      "nameHint": "For example: Gold Package",
+      "namePa": "Menu name in Punjabi (if you like)",
+      "description": "About this menu",
+      "cuisine": "Cuisine",
+      "cuisineHint": "For example: Punjabi, Indo-Chinese",
+      "price": "Price in dollars",
+      "priceHint": "Whole dollars. Leave it empty to ask families to contact you.",
+      "priceFor": "Price for each",
+      "per": "Per {{unit}}",
+      "minGuests": "Fewest guests you'll take",
+      "diet": "Food",
+      "dishes": "Dishes",
+      "dishesHint": "Group dishes into parts like Starters and Mains.",
+      "sectionName": "Part name, like Starters",
+      "dish": "Dish {{number}}",
+      "removeDish": "Remove {{name}}",
+      "addDish": "Add a dish",
+      "removeSection": "Remove this part",
+      "addSection": "Add a part",
+      "save": "Save menu",
+      "saveFailed": "Your menu didn't save. Check your internet, then try again.",
+      "delete": "Delete menu",
+      "deleteTitle": "Delete this menu?",
+      "deleteConfirm": "Families won't see it on your page any more. This can't be undone.",
+      "deleteFailed": "The menu didn't delete. Check your internet, then try again.",
+      "problems": {
+        "name": "Give the menu a name.",
+        "price": "The price should be a whole number of dollars, more than 0.",
+        "minGuests": "The fewest guests should be a whole number, more than 0.",
+        "sectionTitle": "Give every part of the menu a name, like Starters.",
+        "tooLong": "Something is too long. Shorten the name, description or a dish."
+      }
+    },
+    "calendar": {
+      "title": "Calendar",
+      "rowHint": "Which days you're free",
+      "intro": "Tap a day to mark it booked or held. Families see which days you're free when they ask.",
+      "previous": "Previous month",
+      "next": "Next month",
+      "monthTitle": "{{month}} {{year}}",
+      "dayTitle": "{{weekday}}, {{month}} {{day}}",
+      "months": {
+        "1": "January",
+        "2": "February",
+        "3": "March",
+        "4": "April",
+        "5": "May",
+        "6": "June",
+        "7": "July",
+        "8": "August",
+        "9": "September",
+        "10": "October",
+        "11": "November",
+        "12": "December"
+      },
+      "days": {
+        "0": "Sunday",
+        "1": "Monday",
+        "2": "Tuesday",
+        "3": "Wednesday",
+        "4": "Thursday",
+        "5": "Friday",
+        "6": "Saturday"
+      },
+      "weekdays": {
+        "0": "S",
+        "1": "M",
+        "2": "T",
+        "3": "W",
+        "4": "T",
+        "5": "F",
+        "6": "S"
+      },
+      "status": {
+        "open": "open",
+        "booked": "booked",
+        "held": "held",
+        "partBooked": "part of the day booked",
+        "partHeld": "part of the day held"
+      },
+      "legend": {
+        "open": "Open",
+        "booked": "Booked",
+        "held": "Held",
+        "partBooked": "Part of the day"
+      },
+      "choice": {
+        "open": "Open",
+        "booked": "Booked",
+        "held": "Held"
+      },
+      "choiceHint": {
+        "open": "Families can ask about this day.",
+        "booked": "You're taken for the whole day.",
+        "held": "Someone is deciding. You're not free yet."
+      },
+      "partNote": "Part of this day is marked. Picking one of these sets the whole day.",
+      "saveFailed": "That didn't save. Check your internet, then try again.",
+      "freshTitle": "Is your calendar up to date?",
+      "freshBody": "Families only see your days as open while your calendar is fresh. Tap this whenever you've checked it.",
+      "upToDate": "My calendar is up to date",
+      "upToDateDone": "Thank you! Families will see your open days for the next 60 days."
+    },
+    "notLive": "Your page isn't live yet, so families can't find it. We'll tell you when it is.",
+    "viewPage": "View my page",
+    "viewPageHint": "See it the way families do",
+    "stats": {
+      "title": "How your page is doing",
+      "period": "Show the last",
+      "days": "{{days}} days",
+      "views": "People who viewed your page",
+      "contacts": "Times families reached out",
+      "inquiries": "Families who asked about price and date",
+      "saves": "Families who saved you",
+      "reelViews": "Views of your reels",
+      "howTitle": "How families reached out",
+      "calls": "Called you",
+      "texts": "Texted you",
+      "whatsapps": "WhatsApped you",
+      "directions": "Asked for directions",
+      "instagram": "Opened your Instagram",
+      "website": "Opened your website",
+      "shares": "Shared your page",
+      "change": {
+        "up": "Up {{percent}}% from the {{days}} days before",
+        "down": "Down {{percent}}% from the {{days}} days before",
+        "same": "Same as the {{days}} days before"
+      }
+    },
+    "leads": {
+      "title": "Families who asked",
+      "one": "Request",
+      "empty": "No one has asked yet. When a family asks about price and date, they show up here.",
+      "waiting": "Waiting for your reply",
+      "waitingCount": {
+        "one": "1 family is waiting for your reply",
+        "other": "{{count}} families are waiting for your reply"
+      },
+      "allReplied": "You've replied to everyone. Well done!",
+      "seeAll": "See all {{count}}",
+      "tour": "Wants a tour",
+      "dateNotSure": "Date not sure yet",
+      "guests": "{{band}} guests",
+      "notFound": "We couldn't find this request. It may be more than 100 requests ago.",
+      "asked": "Asked on {{date}}",
+      "askedTour": "Asked for a tour on {{date}}",
+      "events": "Events",
+      "date": "Date",
+      "guestsTitle": "Guests",
+      "where": "Where",
+      "replyBy": "They'd like you to",
+      "message": "Their message",
+      "answers": "Their answers",
+      "reply": "Reply",
+      "youReplied": "You've replied in the app.",
+      "openChat": "Reply in the app",
+      "call": "Call",
+      "text": "Text",
+      "whatsapp": "WhatsApp",
+      "email": "Email",
+      "noWay": "This family deleted their account, so there's no way to reply."
+    }
   }
 }

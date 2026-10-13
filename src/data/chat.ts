@@ -10,6 +10,13 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect } from 'react';
 
 import { useSession } from '@/features/auth/session';
+import {
+  applyReaction,
+  type ReactionCode,
+  type ReactionRow,
+  type ReactionSummary,
+  summarizeReactions,
+} from '@/features/chat/reactions';
 import type { LocalizedText } from '@/i18n/localized';
 import { supabase } from '@/lib/supabase';
 import type { Json } from '@/types/database';
@@ -17,7 +24,7 @@ import type { Json } from '@/types/database';
 import { photoUrl } from './vendor-media';
 
 export type ChatSide = 'family' | 'vendor';
-export type MessageKind = 'text' | 'photo' | 'quote' | 'menu' | 'booking';
+export type MessageKind = 'text' | 'photo' | 'quote' | 'menu' | 'booking' | 'phone';
 
 export type Quote = {
   amount: number;
@@ -50,9 +57,15 @@ export type Message = {
   quote: Quote | null;
   menuId: string | null;
   booking: Booking | null;
+  /** A family's number, shown only after they tap "Share my number". */
+  phone: string | null;
+  /** The earlier message this one replies to (swipe to reply), by id. */
+  replyTo: string | null;
   createdAt: string;
   /** When the other side had read it (for "Seen"); only on my own messages. */
   readAt: string | null;
+  /** Emoji reactions under it, each once with its count (C5c). */
+  reactions: ReactionSummary[];
   /** Sent from this phone and not confirmed yet. */
   pending?: boolean;
 };
@@ -74,6 +87,7 @@ export const chatKeys = {
   all: ['chat'] as const,
   conversations: (userId: string) => [...chatKeys.all, 'conversations', userId] as const,
   messages: (conversationId: string) => [...chatKeys.all, 'messages', conversationId] as const,
+  reactions: (conversationId: string) => [...chatKeys.all, 'reactions', conversationId] as const,
   vendor: (userId: string) => [...chatKeys.all, 'vendor-of', userId] as const,
 };
 
@@ -216,6 +230,7 @@ type MessageRow = {
   kind: string;
   body: string | null;
   data: Record<string, unknown>;
+  reply_to?: string | null;
   created_at: string;
 };
 
@@ -262,15 +277,29 @@ export function toMessage(
                 : {},
           }
         : null,
+    phone: row.kind === 'phone' && typeof d.phone === 'string' ? d.phone : null,
+    replyTo: row.reply_to ?? null,
     createdAt: row.created_at,
     readAt: mine && otherReadAt && otherReadAt >= row.created_at ? otherReadAt : null,
+    reactions: [],
   };
+}
+
+async function fetchReactions(conversationId: string): Promise<ReactionRow[]> {
+  const { data, error } = await supabase
+    .from('message_reactions')
+    .select('message_id, user_id, reaction')
+    .eq('conversation_id', conversationId);
+  if (error) throw error;
+  return data;
 }
 
 async function fetchMessages(conversationId: string): Promise<MessageRow[]> {
   const { data, error } = await supabase
     .from('messages')
-    .select('id, conversation_id, sender_user_id, sender_role, kind, body, data, created_at')
+    .select(
+      'id, conversation_id, sender_user_id, sender_role, kind, body, data, reply_to, created_at',
+    )
     .eq('conversation_id', conversationId)
     .order('created_at')
     .limit(500);
@@ -289,9 +318,17 @@ export function useConversation(conversationId: string) {
   const convo = conversations.data?.find((c) => c.id === conversationId) ?? null;
   const key = chatKeys.messages(conversationId);
 
+  const { session } = useSession();
+  const me = session?.user.id ?? null;
+
   const messages = useQuery({
     queryKey: key,
     queryFn: () => fetchMessages(conversationId),
+    enabled: conversationId.length > 0,
+  });
+  const reactions = useQuery({
+    queryKey: chatKeys.reactions(conversationId),
+    queryFn: () => fetchReactions(conversationId),
     enabled: conversationId.length > 0,
   });
 
@@ -322,26 +359,81 @@ export function useConversation(conversationId: string) {
           markRead();
         },
       )
+      // Reactions from either side, as they're added, changed or taken back
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'message_reactions',
+          filter: `conversation_id=eq.${conversationId}`,
+        },
+        () => void queryClient.invalidateQueries({ queryKey: chatKeys.reactions(conversationId) }),
+      )
       .subscribe();
     return () => {
       void supabase.removeChannel(channel);
     };
   }, [conversationId, queryClient]);
 
+  const byMessage = summarizeReactions(reactions.data ?? [], me);
   return {
     ...messages,
     conversation: convo,
-    messages: (messages.data ?? []).map((row) =>
-      toMessage(row, convo?.side ?? null, convo?.otherReadAt ?? null),
-    ),
+    messages: (messages.data ?? []).map((row) => ({
+      ...toMessage(row, convo?.side ?? null, convo?.otherReadAt ?? null),
+      reactions: byMessage.get(row.id) ?? [],
+    })),
   };
+}
+
+/**
+ * React to a message (or take your reaction back with null). Shows at once on
+ * this phone, and is undone if it doesn't save.
+ */
+export function useReactToMessage(conversationId: string) {
+  const queryClient = useQueryClient();
+  const { session } = useSession();
+  const key = chatKeys.reactions(conversationId);
+  return useMutation({
+    mutationFn: async ({
+      messageId,
+      reaction,
+    }: {
+      messageId: string;
+      reaction: ReactionCode | null;
+    }) => {
+      const { error } = await supabase.rpc('react_to_message', {
+        p_message_id: messageId,
+        // The API's types can't say "null"; null takes the reaction back
+        p_reaction: reaction as string,
+      });
+      if (error) throw new Error(error.message);
+    },
+    onMutate: async ({ messageId, reaction }) => {
+      const me = session?.user.id;
+      if (!me) return { previous: undefined };
+      await queryClient.cancelQueries({ queryKey: key });
+      const previous = queryClient.getQueryData<ReactionRow[]>(key);
+      queryClient.setQueryData<ReactionRow[]>(key, (rows) =>
+        applyReaction(rows ?? [], messageId, me, reaction),
+      );
+      return { previous };
+    },
+    onError: (_error, _vars, context) => {
+      if (context?.previous) queryClient.setQueryData(key, context.previous);
+    },
+    onSettled: () => queryClient.invalidateQueries({ queryKey: key }),
+  });
 }
 
 export type NewMessage =
   | { kind: 'text'; body: string }
   | { kind: 'photo'; path: string; width?: number; height?: number; body?: string }
   | { kind: 'quote'; quote: Quote; body?: string }
-  | { kind: 'menu'; menuId: string; body?: string };
+  | { kind: 'menu'; menuId: string; body?: string }
+  /** The family shares the number on their profile (the database fills it in). */
+  | { kind: 'phone' };
 
 export function messagePayload(message: NewMessage): {
   kind: MessageKind;
@@ -361,8 +453,13 @@ export function messagePayload(message: NewMessage): {
       return { kind: 'quote', body: message.body ?? null, data: { ...message.quote } };
     case 'menu':
       return { kind: 'menu', body: message.body ?? null, data: { menuId: message.menuId } };
+    case 'phone':
+      return { kind: 'phone', body: null, data: {} };
   }
 }
+
+/** A message to send, optionally as a reply to an earlier one (swipe to reply). */
+export type Outgoing = NewMessage & { replyTo?: string | null };
 
 /** Send a message; it shows at once and is confirmed (or removed on failure). */
 export function useSendMessage(conversationId: string) {
@@ -370,7 +467,7 @@ export function useSendMessage(conversationId: string) {
   const { session } = useSession();
   const key = chatKeys.messages(conversationId);
   return useMutation({
-    mutationFn: async (message: NewMessage) => {
+    mutationFn: async (message: Outgoing) => {
       const { kind, body, data } = messagePayload(message);
       const { data: id, error } = await supabase.rpc('send_message', {
         p_conversation_id: conversationId,
@@ -378,6 +475,7 @@ export function useSendMessage(conversationId: string) {
         p_body: body ?? undefined,
         // Only JSON values go in (numbers, strings, undefined dropped)
         p_data: JSON.parse(JSON.stringify(data)) as Json,
+        p_reply_to: message.replyTo ?? undefined,
       });
       if (error) throw new Error(error.message);
       return id;
@@ -398,6 +496,7 @@ export function useSendMessage(conversationId: string) {
         kind,
         body,
         data,
+        reply_to: message.replyTo ?? null,
         created_at: new Date().toISOString(),
       };
       queryClient.setQueryData<MessageRow[]>(key, (list) => [...(list ?? []), temp]);
@@ -416,9 +515,12 @@ export function useSendMessage(conversationId: string) {
 /** Which message to show when sending fails (the database's error names). */
 export function sendErrorKind(
   error: unknown,
-): 'rate' | 'empty' | 'notAllowed' | 'invalid' | 'failed' {
+): 'rate' | 'empty' | 'notAllowed' | 'familyFirst' | 'waitForReply' | 'invalid' | 'failed' {
   const message = error instanceof Error ? error.message : String(error ?? '');
   if (message.includes('message_rate')) return 'rate';
+  // The no-spam rules (C2): vendors only reply, and follow up at most twice
+  if (message.includes('family_first')) return 'familyFirst';
+  if (message.includes('wait_for_reply')) return 'waitForReply';
   if (message.includes('empty_message')) return 'empty';
   if (message.includes('not_allowed')) return 'notAllowed';
   if (message.includes('invalid_')) return 'invalid';

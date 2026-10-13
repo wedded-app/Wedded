@@ -27,6 +27,7 @@ const SF_SYMBOLS: Partial<Record<IconName, SFSymbol>> = {
   'chevron-back': 'chevron.left',
   'chevron-down': 'chevron.down',
   close: 'xmark',
+  'arrow-undo': 'arrowshape.turn.up.left',
   'close-circle': 'xmark.circle.fill',
   'help-circle': 'questionmark.circle.fill',
   'help-circle-outline': 'questionmark.circle',
@@ -56,6 +57,7 @@ const SF_SYMBOLS: Partial<Record<IconName, SFSymbol>> = {
   'git-compare-outline': 'arrow.left.arrow.right',
   'person-add-outline': 'person.badge.plus',
   'options-outline': 'slider.horizontal.3',
+  storefront: 'storefront.fill',
   'storefront-outline': 'storefront',
   call: 'phone.fill',
   'call-outline': 'phone',
@@ -129,6 +131,7 @@ const SF_SYMBOLS: Partial<Record<IconName, SFSymbol>> = {
   'pencil-outline': 'pencil',
   'person-outline': 'person',
   'logo-apple': 'apple.logo',
+  'link-outline': 'link',
 };
 
 export type IconProps = {

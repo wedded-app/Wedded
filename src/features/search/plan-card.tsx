@@ -12,6 +12,7 @@ import { useBackgrounds, useFaiths, useTraditions } from '@/data/reference';
 import { useSession } from '@/features/auth/session';
 import { formatDate } from '@/features/inquiry/inquiry-helpers';
 import { resetAnswers, setAnswers } from '@/features/onboarding/answers';
+import { answersForTraditions } from '@/features/onboarding/faith';
 import { localized } from '@/i18n/localized';
 import { useLocale } from '@/i18n/locale-context';
 import { selectionHaptic } from '@/lib/haptics';
@@ -101,7 +102,7 @@ export function PlanCard({ hint }: { hint: PlanHint }) {
     requireSignIn(() => {
       resetAnswers();
       setAnswers({
-        traditions: kinds.map((tradition) => tradition.slug),
+        ...answersForTraditions(kinds),
         extraEvents: hint.events,
         guestBand: hint.guestBand,
         citySlug: hint.city?.slug ?? null,

@@ -55,6 +55,14 @@ describe('toMessage', () => {
   });
 });
 
+describe('replies', () => {
+  it('reads which message a reply quotes, and none when it is not a reply', () => {
+    expect(toMessage({ ...row, reply_to: 'm-1' }, null, null).replyTo).toBe('m-1');
+    expect(toMessage(row, null, null).replyTo).toBeNull();
+    expect(toMessage({ ...row, reply_to: null }, null, null).replyTo).toBeNull();
+  });
+});
+
 describe('toConversation', () => {
   it('turns an inbox row into the shape the screens use', () => {
     const convo = toConversation({

@@ -1,33 +1,49 @@
 import { useFocusEffect, useRouter } from 'expo-router';
 import { setStatusBarStyle } from 'expo-status-bar';
-import { useCallback, useState } from 'react';
-import { Pressable, StyleSheet, useWindowDimensions, View } from 'react-native';
+import { useCallback, useMemo, useState } from 'react';
+import { Pressable, ScrollView, StyleSheet, useWindowDimensions, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AppText } from '@/components/app-text';
 import { Icon } from '@/components/icon';
 import { Radius, Spacing, useScheme } from '@/constants/theme';
+import { useHomeEvents } from '@/data/reference';
 import type { FeedMode } from '@/data/reels';
 import { useSession } from '@/features/auth/session';
 import { REEL_DIM, REEL_INK } from '@/features/reels/reel-item';
 import { ReelsPager } from '@/features/reels/reels-pager';
+import { localized } from '@/i18n/localized';
 import { useLocale } from '@/i18n/locale-context';
 import { selectionHaptic } from '@/lib/haptics';
 
 /**
  * Reels (the Discover tab; DECISIONS.md 2026-10-05): wedding clips from
  * families and vendors, one per screen, swipe up for the next. Following
- * shows the people and vendors you follow; For you shows everything. The
- * vendors tagged in each clip are one tap away.
+ * shows the people and vendors you follow; For you shows everything. Chips
+ * under them narrow either feed to one of the family's main events (Jaago,
+ * Mehndi…), from the database. The vendors in each clip are one tap away.
  */
 export default function ReelsScreen() {
-  const { t } = useLocale();
+  const { t, locale } = useLocale();
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { height } = useWindowDimensions();
   const { status, requireSignIn } = useSession();
   const [mode, setMode] = useState<FeedMode>('for_you');
+  const [eventSlug, setEventSlug] = useState<string | null>(null);
   const scheme = useScheme();
+  const homeEvents = useHomeEvents();
+
+  // The family's main events in ceremony order, as on Home
+  const events = useMemo(
+    () =>
+      (homeEvents.data ?? [])
+        .flatMap((section) => section.events)
+        .filter((event) => event.isCore)
+        .map((event) => ({ slug: event.slug, name: localized(event.name, locale) })),
+    [homeEvents.data, locale],
+  );
+  const eventName = events.find((event) => event.slug === eventSlug)?.name;
 
   // White clock and battery over the videos; back to the app's on the way out
   useFocusEffect(
@@ -41,6 +57,12 @@ export default function ReelsScreen() {
     if (next === mode) return;
     selectionHaptic();
     setMode(next);
+  };
+
+  const filter = (next: string | null) => {
+    if (next === eventSlug) return;
+    selectionHaptic();
+    setEventSlug(next);
   };
 
   const emptyFollowing =
@@ -61,6 +83,15 @@ export default function ReelsScreen() {
         onAction={() => requireSignIn()}
       />
     );
+  const emptyEvent = (
+    <Empty
+      icon="film-outline"
+      title={t('reels.eventEmptyTitle', { event: eventName ?? '' })}
+      body={t('reels.eventEmptyBody')}
+      action={t('reels.showAll')}
+      onAction={() => setEventSlug(null)}
+    />
+  );
   const emptyForYou = (
     <Empty
       icon="film-outline"
@@ -74,11 +105,19 @@ export default function ReelsScreen() {
   return (
     <View style={styles.screen}>
       <ReelsPager
-        key={mode}
-        feed={{ mode }}
+        key={`${mode}:${eventSlug ?? ''}`}
+        feed={{ mode, eventSlug }}
         height={height}
         swipeHint
-        empty={mode === 'following' ? emptyFollowing : emptyForYou}
+        empty={
+          mode === 'following' && status !== 'signedIn'
+            ? emptyFollowing
+            : eventSlug
+              ? emptyEvent
+              : mode === 'following'
+                ? emptyFollowing
+                : emptyForYou
+        }
       />
 
       <View style={[styles.top, { paddingTop: insets.top + Spacing.xs }]} pointerEvents="box-none">
@@ -117,6 +156,42 @@ export default function ReelsScreen() {
             </Pressable>
           ))}
         </View>
+        {events.length > 0 && (
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            style={styles.chipsRow}
+            contentContainerStyle={styles.chips}
+          >
+            {[{ slug: null, name: t('reels.allEvents') }, ...events].map((event) => {
+              const selected = event.slug === eventSlug;
+              return (
+                <Pressable
+                  key={event.slug ?? 'all'}
+                  accessibilityRole="button"
+                  accessibilityState={{ selected }}
+                  onPress={() => filter(event.slug)}
+                  // Slim over the video; its touch area is 48 tall
+                  hitSlop={{ top: 6, bottom: 6 }}
+                  style={({ pressed }) => [
+                    styles.chip,
+                    selected && styles.chipOn,
+                    pressed && styles.pressed,
+                  ]}
+                >
+                  <AppText
+                    variant="label"
+                    weight={selected ? 700 : 600}
+                    numberOfLines={1}
+                    style={selected ? styles.chipTextOn : styles.tabText}
+                  >
+                    {event.name}
+                  </AppText>
+                </Pressable>
+              );
+            })}
+          </ScrollView>
+        )}
       </View>
     </View>
   );
@@ -207,6 +282,33 @@ const styles = StyleSheet.create({
   },
   hidden: {
     opacity: 0,
+  },
+  chipsRow: {
+    alignSelf: 'stretch',
+    flexGrow: 0,
+    marginTop: Spacing.sm,
+  },
+  chips: {
+    gap: Spacing.xs,
+    paddingHorizontal: Spacing.lg,
+    paddingVertical: 6,
+  },
+  chip: {
+    minHeight: 36,
+    paddingHorizontal: Spacing.md,
+    borderRadius: Radius.chip,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(0,0,0,0.35)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.35)',
+  },
+  chipOn: {
+    backgroundColor: REEL_INK,
+    borderColor: REEL_INK,
+  },
+  chipTextOn: {
+    color: '#000000',
   },
   empty: {
     alignItems: 'center',

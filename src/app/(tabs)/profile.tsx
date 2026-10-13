@@ -12,7 +12,7 @@ import { StateView } from '@/components/state-view';
 import { WeddingCard } from '@/components/wedding-card';
 import { makeStyles, Radius, Spacing, useColors } from '@/constants/theme';
 import { useMyInquiries } from '@/data/inquiries';
-import { useUnreadCount } from '@/data/chat';
+import { useIsVendor, useUnreadCount } from '@/data/chat';
 import { useSavedVendors, type SavedVendor } from '@/data/saved';
 import { useSession } from '@/features/auth/session';
 import { bookedCount, usePlan } from '@/features/planner/plan';
@@ -24,10 +24,12 @@ import { formatPhone } from '@/lib/phone';
  * S16 Profile, shaped like an Instagram profile: the person, three counts
  * (saved, asked, booked), two buttons, the wedding countdown and a grid of
  * the vendors they've saved. Settings sit behind the gear, as in most apps.
+ * Vendor accounts also get "My business" at the top of the list.
  */
 export default function ProfileScreen() {
   const { t } = useLocale();
   const unread = useUnreadCount();
+  const { isVendor } = useIsVendor();
 
   return (
     <NavScreen
@@ -46,6 +48,14 @@ export default function ProfileScreen() {
       <WeddingCard compact />
       <SavedGrid />
       <ListSection inset>
+        {isVendor && (
+          <ListRow
+            icon="storefront"
+            title={t('business.title')}
+            subtitle={t('business.profileHint')}
+            onPress={() => router.push('/business')}
+          />
+        )}
         <ListRow
           icon="chatbubbles-outline"
           title={t('chat.title')}

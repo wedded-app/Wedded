@@ -79,6 +79,9 @@ const light = {
   // white), with grey cards on it instead of the usual grey page and white rows.
   canvas: '#FFFFFF',
   canvasCard: '#F2F2F7',
+  // A warm tan for the first questions: their answer bubbles, the plan that
+  // fills in as they answer, the progress track. text2 on it is 4.6:1.
+  sand: '#F6F0E8',
   // AmbientGlow behind the phone sign-in screens: soft blush, champagne and
   // rose lights drifting on the white page. Fills only, never under small text.
   glowBlush: 'rgba(236, 160, 178, 0.55)',
@@ -145,6 +148,7 @@ const dark: Palette = {
   heroTrack: 'rgba(255, 255, 255, 0.24)',
   canvas: '#000000',
   canvasCard: '#1C1C1E',
+  sand: '#2A2520',
   glowBlush: 'rgba(184, 53, 78, 0.35)',
   glowGold: 'rgba(240, 160, 75, 0.22)',
   glowRose: 'rgba(150, 70, 130, 0.28)',

@@ -5,6 +5,7 @@ import { type VideoPlayer, useVideoPlayer, VideoView } from 'expo-video';
 import { useEffect, useRef, useState } from 'react';
 import {
   type GestureResponderEvent,
+  Linking,
   Platform,
   Pressable,
   StyleSheet,
@@ -27,10 +28,13 @@ import Animated, {
 import { AppText } from '@/components/app-text';
 import { Icon } from '@/components/icon';
 import { Radius, Spacing, Springs } from '@/constants/theme';
-import { compactCount, type Reel } from '@/data/reels';
+import { trackReelView } from '@/data/business';
+import { compactCount, type Reel, reelVendors } from '@/data/reels';
 import { initials } from '@/features/planner/plan-together';
 import { useLocale } from '@/i18n/locale-context';
 import { saveHaptic } from '@/lib/haptics';
+
+import { ReelEmbed } from './reel-embed';
 
 // Reels play over video in both light and dark mode, so the text and icons on
 // them are always white with a soft shadow, like TikTok's and Instagram's.
@@ -38,6 +42,8 @@ export const REEL_INK = '#FFFFFF';
 export const REEL_DIM = 'rgba(255,255,255,0.78)';
 const PILL = 'rgba(255,255,255,0.18)';
 const LIKED = '#FF3B5C';
+// The app's maroon, so Book reads as the one thing to do on a reel
+const BOOK = 'rgba(138,28,51,0.95)';
 
 const DOUBLE_TAP_MS = 300;
 // After a double tap, every quick tap adds another heart (TikTok's combo)
@@ -82,6 +88,8 @@ export type ReelActions = {
   onComments: (reel: Reel) => void;
   onShare: (reel: Reel) => void;
   onMore: (reel: Reel) => void;
+  /** Book this vendor: the Ask screen, or a picker when the reel shows several. */
+  onBook: (reel: Reel) => void;
 };
 
 /**
@@ -91,8 +99,11 @@ export type ReelActions = {
  * tapped (keep tapping for more); holding pauses and hides everything so the
  * video shows whole. The rail on the right has the poster (with follow),
  * like, comments, share, sound and more; at the bottom are who posted it,
- * the caption (two lines, then "more"), the event and the vendors tagged in
- * it, each opening that vendor's page. Wide clips show whole, not cropped.
+ * the caption (two lines, then "more"), the event, the vendors in it (the
+ * one who posted it, then the ones tagged), each opening that vendor's page,
+ * and Book this vendor. Wide clips show whole, not cropped. A pasted TikTok or
+ * Instagram reel plays in the platform's own player instead (its own taps and
+ * sound), credited to whoever made it, with a link to the original post.
  */
 export function ReelItem({
   reel,
@@ -158,6 +169,10 @@ export function ReelItem({
   }
 
   useEffect(() => setSound(player, muted), [player, muted]);
+  // Counts for the vendor's My business numbers, once per reel per session
+  useEffect(() => {
+    if (active) trackReelView(reel.id);
+  }, [active, reel.id]);
   useEffect(
     () => playOrPause(player, active && !paused && !holding, !active),
     [active, paused, holding, player],
@@ -224,7 +239,9 @@ export function ReelItem({
     chrome.set(withTiming(on ? 0 : 1, { duration: 180 }));
   };
 
+  const isLink = reel.source === 'link';
   const poster = reel.vendor?.name ?? reel.authorName ?? t('reels.someone');
+  const vendors = reelVendors(reel);
   // Wide clips show whole with bars, as TikTok does; upright ones fill the screen
   const fit = reel.width && reel.height && reel.width > reel.height ? 'contain' : 'cover';
   const openPoster = () =>
@@ -234,54 +251,62 @@ export function ReelItem({
 
   return (
     <View style={[styles.page, { height }]}>
-      <Pressable
-        onPress={onVideoPress}
-        onLongPress={() => hold(true)}
-        onPressOut={() => {
-          if (holding) hold(false);
-        }}
-        delayLongPress={300}
-        accessibilityRole="button"
-        accessibilityLabel={paused ? t('reels.play') : t('reels.pause')}
-        accessibilityHint={t('reels.doubleTapHint')}
-        style={StyleSheet.absoluteFill}
-      >
-        <VideoView
-          player={player}
+      {isLink ? (
+        <ReelEmbed reel={reel} active={active} />
+      ) : (
+        <Pressable
+          onPress={onVideoPress}
+          onLongPress={() => hold(true)}
+          onPressOut={() => {
+            if (holding) hold(false);
+          }}
+          delayLongPress={300}
+          accessibilityRole="button"
+          accessibilityLabel={paused ? t('reels.play') : t('reels.pause')}
+          accessibilityHint={t('reels.doubleTapHint')}
           style={StyleSheet.absoluteFill}
-          contentFit={fit}
-          nativeControls={false}
-          allowsPictureInPicture={false}
-          surfaceType="textureView"
-        />
-        {/* The thumbnail until the first frame is ready */}
-        {!ready && reel.thumbUrl && (
-          <Image source={{ uri: reel.thumbUrl }} contentFit={fit} style={StyleSheet.absoluteFill} />
-        )}
-        {paused && !holding && (
-          <View style={styles.center} pointerEvents="none">
-            <Icon name="play" size={72} color={REEL_DIM} />
-          </View>
-        )}
-        {hearts.map((h) => (
-          <View
-            key={h.id}
-            pointerEvents="none"
-            style={[
-              styles.heart,
-              {
-                left: h.x - HEART_SIZE / 2,
-                top: h.y - HEART_SIZE / 2,
-                transform: [{ rotate: `${h.tilt}deg` }],
-              },
-            ]}
-          >
-            <Animated.View entering={heartPop}>
-              <Icon name="heart" size={HEART_SIZE} color={LIKED} />
-            </Animated.View>
-          </View>
-        ))}
-      </Pressable>
+        >
+          <VideoView
+            player={player}
+            style={StyleSheet.absoluteFill}
+            contentFit={fit}
+            nativeControls={false}
+            allowsPictureInPicture={false}
+            surfaceType="textureView"
+          />
+          {/* The thumbnail until the first frame is ready */}
+          {!ready && reel.thumbUrl && (
+            <Image
+              source={{ uri: reel.thumbUrl }}
+              contentFit={fit}
+              style={StyleSheet.absoluteFill}
+            />
+          )}
+          {paused && !holding && (
+            <View style={styles.center} pointerEvents="none">
+              <Icon name="play" size={72} color={REEL_DIM} />
+            </View>
+          )}
+          {hearts.map((h) => (
+            <View
+              key={h.id}
+              pointerEvents="none"
+              style={[
+                styles.heart,
+                {
+                  left: h.x - HEART_SIZE / 2,
+                  top: h.y - HEART_SIZE / 2,
+                  transform: [{ rotate: `${h.tilt}deg` }],
+                },
+              ]}
+            >
+              <Animated.View entering={heartPop}>
+                <Icon name="heart" size={HEART_SIZE} color={LIKED} />
+              </Animated.View>
+            </View>
+          ))}
+        </Pressable>
+      )}
 
       <Animated.View pointerEvents="none" style={[styles.topShade, topShade, chromeStyle]} />
       <Animated.View
@@ -345,12 +370,14 @@ export function ReelItem({
           spoken={t('reels.share')}
           onPress={() => actions.onShare(reel)}
         />
-        <RailButton
-          icon={muted ? 'volume-mute' : 'volume-high'}
-          label={muted ? t('reels.soundOff') : t('reels.soundOn')}
-          spoken={muted ? t('reels.turnSoundOn') : t('reels.turnSoundOff')}
-          onPress={onToggleMute}
-        />
+        {!isLink && (
+          <RailButton
+            icon={muted ? 'volume-mute' : 'volume-high'}
+            label={muted ? t('reels.soundOff') : t('reels.soundOn')}
+            spoken={muted ? t('reels.turnSoundOn') : t('reels.turnSoundOff')}
+            onPress={onToggleMute}
+          />
+        )}
         <RailButton
           icon="ellipsis-horizontal"
           label=""
@@ -375,6 +402,26 @@ export function ReelItem({
             </View>
           )}
         </Pressable>
+        {reel.sourceUrl && reel.platform && (
+          <Pressable
+            accessibilityRole="link"
+            accessibilityHint={t('reels.openOriginal')}
+            onPress={() => void Linking.openURL(reel.sourceUrl!)}
+            hitSlop={{ top: 8, bottom: 8 }}
+            style={({ pressed }) => [styles.credit, pressed && styles.pressed]}
+          >
+            <Icon
+              name={reel.platform === 'instagram' ? 'logo-instagram' : 'logo-tiktok'}
+              size={14}
+              color={REEL_DIM}
+            />
+            <AppText variant="label" weight={600} numberOfLines={1} style={styles.creditText}>
+              {reel.creditName
+                ? t('reels.creditBy', { name: reel.creditName, platform: platformName(reel) })
+                : t('reels.creditFrom', { platform: platformName(reel) })}
+            </AppText>
+          </Pressable>
+        )}
         {reel.caption && (
           <Pressable
             onPress={() => setExpanded((e) => !e)}
@@ -410,36 +457,64 @@ export function ReelItem({
             </AppText>
           </View>
         )}
-        {reel.tags.length > 0 && (
+        {vendors.length > 0 && (
           <View style={styles.tags}>
-            {reel.tags.map((tag) => (
+            {vendors.map((vendor) => (
               <Pressable
-                key={tag.vendorId}
+                key={vendor.slug}
                 accessibilityRole="link"
-                accessibilityLabel={t('reels.taggedVendor', { name: tag.name })}
-                onPress={() => router.push({ pathname: '/v/[slug]', params: { slug: tag.slug } })}
+                accessibilityLabel={t('reels.taggedVendor', { name: vendor.name })}
+                onPress={() =>
+                  router.push({ pathname: '/v/[slug]', params: { slug: vendor.slug } })
+                }
+                // The chip is slim over the video; its touch area is 48 tall
+                hitSlop={{ top: 6, bottom: 6 }}
                 style={({ pressed }) => [styles.tag, pressed && styles.pressed]}
               >
                 <Icon name="storefront-outline" size={14} color={REEL_INK} />
                 <AppText variant="label" weight={600} numberOfLines={1} style={styles.ink}>
-                  {tag.name}
+                  {vendor.name}
                 </AppText>
                 <Icon name="chevron-forward" size={12} color={REEL_DIM} />
               </Pressable>
             ))}
           </View>
         )}
+        {vendors.length > 0 && (
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={
+              vendors.length === 1
+                ? t('reels.bookVendor', { name: vendors[0].name })
+                : t('reels.bookAny')
+            }
+            onPress={() => actions.onBook(reel)}
+            style={({ pressed }) => [styles.book, pressed && styles.pressed]}
+          >
+            <Icon name="calendar-outline" size={20} color={REEL_INK} />
+            <AppText weight={700} numberOfLines={1} style={styles.bookText}>
+              {vendors.length === 1 ? t('reels.bookThis') : t('reels.bookAny')}
+            </AppText>
+          </Pressable>
+        )}
       </Animated.View>
 
       {/* How far into the clip, along the bottom like TikTok's */}
-      <Animated.View
-        pointerEvents="none"
-        style={[styles.track, { bottom: bottomSpace }, chromeStyle]}
-      >
-        <Animated.View style={[styles.progress, progressStyle]} />
-      </Animated.View>
+      {!isLink && (
+        <Animated.View
+          pointerEvents="none"
+          style={[styles.track, { bottom: bottomSpace }, chromeStyle]}
+        >
+          <Animated.View style={[styles.progress, progressStyle]} />
+        </Animated.View>
+      )}
     </View>
   );
+}
+
+/** The platform's own name, the same in every language. */
+function platformName(reel: Reel): string {
+  return reel.platform === 'instagram' ? 'Instagram' : 'TikTok';
 }
 
 function RailButton({
@@ -532,6 +607,18 @@ const styles = StyleSheet.create({
     height: 2,
     backgroundColor: REEL_INK,
   },
+  credit: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.xs,
+    alignSelf: 'flex-start',
+  },
+  creditText: {
+    color: REEL_DIM,
+    textShadowColor: 'rgba(0,0,0,0.45)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 3,
+  },
   ink: {
     color: REEL_INK,
     textShadowColor: 'rgba(0,0,0,0.45)',
@@ -620,5 +707,21 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.md,
     borderRadius: Radius.chip,
     backgroundColor: PILL,
+  },
+  book: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    alignSelf: 'flex-start',
+    gap: Spacing.sm,
+    minHeight: 48,
+    maxWidth: '100%',
+    paddingHorizontal: Spacing.lg,
+    marginTop: Spacing.xs,
+    borderRadius: Radius.chip,
+    backgroundColor: BOOK,
+  },
+  bookText: {
+    color: REEL_INK,
   },
 });

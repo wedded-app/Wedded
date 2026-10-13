@@ -30,10 +30,17 @@ import { TextField } from '@/components/text-field';
 import { Radius, Spacing, useColors } from '@/constants/theme';
 import { useIsVendor } from '@/data/chat';
 import { useHomeEvents } from '@/data/reference';
-import { clipProblem, postErrorKind, REEL_MAX_SECONDS, usePostReel } from '@/data/reels';
+import {
+  clipProblem,
+  postErrorKind,
+  REEL_MAX_SECONDS,
+  usePostLinkedReel,
+  usePostReel,
+} from '@/data/reels';
 import { useVendorSearch } from '@/data/search';
 import { useSession } from '@/features/auth/session';
 import { askMediaAccess, type MediaSource } from '@/features/reels/media-access';
+import { type ReelLink, reelLinkErrorKind, resolveReelLink } from '@/features/reels/reel-link';
 import { useDebouncedValue, vendorQuery } from '@/features/search/vendor-query';
 import { localized } from '@/i18n/localized';
 import { useLocale } from '@/i18n/locale-context';
@@ -59,7 +66,9 @@ const CAMERA_MAX_SECONDS = 30;
  * Post a reel (a sheet, signed in). First a clip: chosen from the camera roll
  * (the phone trims anything over a minute and makes it small enough to send)
  * or recorded here, which also keeps it in Photos. Each asks for access only
- * when tapped, after saying why; after a no, it offers Settings. Then a
+ * when tapped, after saying why; after a no, it offers Settings. Or a pasted
+ * TikTok or Instagram link (B5): nothing uploads, it plays in the platform's
+ * own player and credits whoever made it. Then a
  * caption, the event, the vendors who made the day (searched by name), who
  * it's posted as (vendors), and that everyone in it is okay with it.
  */
@@ -70,7 +79,12 @@ export default function PostReelScreen() {
   const events = useHomeEvents();
   const { vendorIds } = useIsVendor();
   const post = usePostReel();
+  const postLinked = usePostLinkedReel();
   const [clip, setClip] = useState<Clip | null>(null);
+  const [link, setLink] = useState<ReelLink | null>(null);
+  const [pasting, setPasting] = useState(false);
+  const [linkText, setLinkText] = useState('');
+  const [checking, setChecking] = useState(false);
   const [caption, setCaption] = useState('');
   const [eventSlug, setEventSlug] = useState<string | null>(null);
   const [tags, setTags] = useState<{ id: string; name: string }[]>([]);
@@ -86,6 +100,7 @@ export default function PostReelScreen() {
   const search = useRef<TextInput>(null);
   const tagsY = useRef(0);
   const busy = stage !== 'idle';
+  const chosen = clip !== null || link !== null;
 
   // Searching for a vendor brings the section to the top, so the matches show
   // above the keyboard. After the keyboard is up, since iOS scrolls on its own
@@ -133,7 +148,7 @@ export default function PostReelScreen() {
 
   function close() {
     if (busy) return;
-    if (!clip) {
+    if (!chosen) {
       leave();
       return;
     }
@@ -206,14 +221,51 @@ export default function PostReelScreen() {
     }
   }
 
+  // A pasted link: the full post address, asking TikTok for short links
+  async function takeLink() {
+    if (checking) return;
+    setError(undefined);
+    setChecking(true);
+    try {
+      const found = await resolveReelLink(linkText);
+      selectionHaptic();
+      setLink(found);
+      setPasting(false);
+    } catch (e) {
+      setError(t(`postReel.linkErrors.${reelLinkErrorKind(e)}`));
+    } finally {
+      setChecking(false);
+    }
+  }
+
   function tryPost() {
-    if (!clip || busy) return;
+    if (!chosen || busy) return;
     if (!consent) {
       setConsentMissing(true);
       return;
     }
     // Signed out (a shared link), Post signs in first, then posts
-    requireSignIn(() => void send(clip));
+    requireSignIn(() => void (link ? sendLink(link) : clip && send(clip)));
+  }
+
+  async function sendLink(pasted: ReelLink) {
+    setError(undefined);
+    setStage('posting');
+    try {
+      await postLinked.mutateAsync({
+        link: pasted,
+        caption,
+        eventSlug,
+        vendorIds: tags.map((v) => v.id),
+        asVendorId: asVendor,
+        consent,
+      });
+      successHaptic();
+      leave();
+    } catch (e) {
+      setError(t(`postReel.errors.${postErrorKind(e)}`));
+      setStage('idle');
+    }
   }
 
   async function send(picked: Clip) {
@@ -261,7 +313,7 @@ export default function PostReelScreen() {
   return (
     <Screen edges={['top', 'bottom']}>
       {/* No swiping the sheet away halfway through an upload */}
-      <Stack.Screen options={{ gestureEnabled: !busy && !clip }} />
+      <Stack.Screen options={{ gestureEnabled: !busy && !chosen }} />
       <SheetHeader onClose={close} title={t('postReel.title')} />
       <ScrollView
         ref={scroller}
@@ -269,7 +321,7 @@ export default function PostReelScreen() {
         keyboardShouldPersistTaps="handled"
         automaticallyAdjustKeyboardInsets
       >
-        {!clip ? (
+        {!chosen ? (
           <>
             <AppText variant="heading" weight={700}>
               {t('postReel.heading')}
@@ -296,7 +348,55 @@ export default function PostReelScreen() {
                   </AppText>
                 </Pressable>
               ))}
+              <Pressable
+                accessibilityRole="button"
+                accessibilityState={{ expanded: pasting }}
+                onPress={() => {
+                  setError(undefined);
+                  setPasting((open) => !open);
+                }}
+                style={({ pressed }) => [
+                  styles.picker,
+                  { backgroundColor: Colors.surface },
+                  pasting && { borderColor: Colors.primary, borderWidth: 2 },
+                  pressed && styles.pressed,
+                ]}
+              >
+                <Icon name="link-outline" size={36} color={Colors.primary} />
+                <AppText weight={600} style={styles.centerText}>
+                  {t('postReel.pasteLink')}
+                </AppText>
+              </Pressable>
             </View>
+            {pasting && (
+              <View style={styles.group}>
+                <TextField
+                  label={t('postReel.linkLabel')}
+                  placeholder="https://www.tiktok.com/@…"
+                  value={linkText}
+                  onChangeText={(text) => {
+                    setLinkText(text);
+                    setError(undefined);
+                  }}
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                  keyboardType="url"
+                  returnKeyType="go"
+                  onSubmitEditing={() => void takeLink()}
+                  autoFocus
+                />
+                <AppText variant="label" weight={400} color="text2">
+                  {t('postReel.linkHint')}
+                </AppText>
+                <Button
+                  icon="checkmark-circle"
+                  label={checking ? t('postReel.linkChecking') : t('postReel.useLink')}
+                  loading={checking}
+                  disabled={linkText.trim().length === 0}
+                  onPress={() => void takeLink()}
+                />
+              </View>
+            )}
             <AppText color="text2">{t('postReel.privacy')}</AppText>
             <AppText variant="label" weight={400} color="text2">
               {t('postReel.limits', { seconds: REEL_MAX_SECONDS })}
@@ -325,40 +425,74 @@ export default function PostReelScreen() {
           </>
         ) : (
           <>
-            <View style={styles.previewRow}>
-              <View style={styles.preview}>
-                <VideoView
-                  player={player}
-                  style={StyleSheet.absoluteFill}
-                  contentFit="cover"
-                  nativeControls={false}
+            {link ? (
+              <View style={[styles.linkPreview, { backgroundColor: Colors.surface }]}>
+                <Icon
+                  name={link.platform === 'instagram' ? 'logo-instagram' : 'logo-tiktok'}
+                  size={36}
+                  color={Colors.text}
                 />
-              </View>
-              <View style={[styles.grow, styles.previewText]}>
-                <AppText weight={600}>{t('postReel.chosen')}</AppText>
-                {clip.durationMs ? (
-                  <AppText variant="label" weight={400} color="text2">
-                    {t('postReel.seconds', {
-                      seconds: Math.max(1, Math.round(clip.durationMs / 1000)),
-                    })}
+                <View style={[styles.grow, styles.previewText]}>
+                  <AppText weight={600}>
+                    {link.handle
+                      ? t('postReel.linkBy', {
+                          name: `@${link.handle}`,
+                          platform: link.platform === 'instagram' ? 'Instagram' : 'TikTok',
+                        })
+                      : t('postReel.linkFrom', {
+                          platform: link.platform === 'instagram' ? 'Instagram' : 'TikTok',
+                        })}
                   </AppText>
-                ) : null}
-                {clip.savedToPhotos && (
-                  <View style={styles.saved}>
-                    <Icon name="checkmark-circle" size={18} color={Colors.success} />
-                    <AppText variant="label" weight={400} color="text2">
-                      {t('postReel.savedToPhotos')}
-                    </AppText>
-                  </View>
-                )}
-                <Button
-                  variant="text"
-                  label={t('postReel.change')}
-                  disabled={busy}
-                  onPress={() => setClip(null)}
-                />
+                  <AppText variant="label" weight={400} color="text2">
+                    {t('postReel.linkCredit')}
+                  </AppText>
+                  <Button
+                    variant="text"
+                    label={t('postReel.changeLink')}
+                    disabled={busy}
+                    onPress={() => {
+                      setLink(null);
+                      setPasting(true);
+                    }}
+                  />
+                </View>
               </View>
-            </View>
+            ) : clip ? (
+              <View style={styles.previewRow}>
+                <View style={styles.preview}>
+                  <VideoView
+                    player={player}
+                    style={StyleSheet.absoluteFill}
+                    contentFit="cover"
+                    nativeControls={false}
+                  />
+                </View>
+                <View style={[styles.grow, styles.previewText]}>
+                  <AppText weight={600}>{t('postReel.chosen')}</AppText>
+                  {clip.durationMs ? (
+                    <AppText variant="label" weight={400} color="text2">
+                      {t('postReel.seconds', {
+                        seconds: Math.max(1, Math.round(clip.durationMs / 1000)),
+                      })}
+                    </AppText>
+                  ) : null}
+                  {clip.savedToPhotos && (
+                    <View style={styles.saved}>
+                      <Icon name="checkmark-circle" size={18} color={Colors.success} />
+                      <AppText variant="label" weight={400} color="text2">
+                        {t('postReel.savedToPhotos')}
+                      </AppText>
+                    </View>
+                  )}
+                  <Button
+                    variant="text"
+                    label={t('postReel.change')}
+                    disabled={busy}
+                    onPress={() => setClip(null)}
+                  />
+                </View>
+              </View>
+            ) : null}
 
             <TextField
               label={t('postReel.caption')}
@@ -523,6 +657,14 @@ export default function PostReelScreen() {
 }
 
 const styles = StyleSheet.create({
+  linkPreview: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.lg,
+    padding: Spacing.lg,
+    borderRadius: Radius.card,
+    borderCurve: 'continuous',
+  },
   content: {
     gap: Spacing.lg,
     paddingTop: Spacing.sm,

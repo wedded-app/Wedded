@@ -6,11 +6,13 @@ import { useSearchLocation } from '@/features/location/search-location';
 import { EMPTY_PLAN, startingEvents } from '@/features/planner/plan';
 
 import { getAnswers } from './answers';
+import { traditionsForFaiths } from './faith';
 import { markOnboarding } from './onboarding-state';
 
 /**
  * Turns the first questions into the family's plan, saved to their account:
- * the kinds of wedding they picked, those traditions' main events (changed
+ * the traditions their faith and roots lead to (never the faith itself),
+ * those traditions' main events (changed
  * any time in My Wedding) and the date. An account that already has a
  * wedding (one started with nothing in it) is filled in instead. With no
  * search area picked yet, vendors are searched near the city they gave in
@@ -27,7 +29,7 @@ export function useFinishOnboarding() {
 
   const finish = async () => {
     const answers = getAnswers();
-    const picked = (traditions.data ?? []).filter((t) => answers.traditions.includes(t.slug));
+    const picked = traditionsForFaiths(answers.faiths, answers.roots, traditions.data ?? []);
     const slugs = picked.map((t) => t.slug);
     // Events named in a search ("mehndi and jaago") join the main events
     const known = new Set((traditions.data ?? []).flatMap((t) => t.events.map((e) => e.slug)));

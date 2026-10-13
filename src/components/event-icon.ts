@@ -20,6 +20,7 @@ const EVENT_ICONS: Partial<Record<string, IconName>> = {
   'anand-karaj': 'infinite-outline',
   pheras: 'infinite-outline',
   nikah: 'infinite-outline',
+  'church-wedding': 'infinite-outline',
   langar: 'restaurant-outline',
   'viah-di-roti': 'restaurant-outline',
   walima: 'restaurant-outline',

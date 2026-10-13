@@ -579,6 +579,124 @@ export type Database = {
           },
         ];
       };
+      linked_account_tokens: {
+        Row: {
+          access_token: string;
+          account_id: string;
+          expires_at: string | null;
+          refresh_token: string | null;
+          scopes: string[];
+          updated_at: string;
+        };
+        Insert: {
+          access_token: string;
+          account_id: string;
+          expires_at?: string | null;
+          refresh_token?: string | null;
+          scopes?: string[];
+          updated_at?: string;
+        };
+        Update: {
+          access_token?: string;
+          account_id?: string;
+          expires_at?: string | null;
+          refresh_token?: string | null;
+          scopes?: string[];
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'linked_account_tokens_account_id_fkey';
+            columns: ['account_id'];
+            isOneToOne: true;
+            referencedRelation: 'linked_accounts';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      linked_accounts: {
+        Row: {
+          external_id: string;
+          handle: string | null;
+          id: string;
+          last_synced_at: string | null;
+          linked_at: string;
+          platform: string;
+          status: string;
+          user_id: string;
+          vendor_id: string | null;
+        };
+        Insert: {
+          external_id: string;
+          handle?: string | null;
+          id?: string;
+          last_synced_at?: string | null;
+          linked_at?: string;
+          platform: string;
+          status?: string;
+          user_id: string;
+          vendor_id?: string | null;
+        };
+        Update: {
+          external_id?: string;
+          handle?: string | null;
+          id?: string;
+          last_synced_at?: string | null;
+          linked_at?: string;
+          platform?: string;
+          status?: string;
+          user_id?: string;
+          vendor_id?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'linked_accounts_vendor_id_fkey';
+            columns: ['vendor_id'];
+            isOneToOne: false;
+            referencedRelation: 'vendors';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      message_reactions: {
+        Row: {
+          conversation_id: string;
+          created_at: string;
+          message_id: string;
+          reaction: string;
+          user_id: string;
+        };
+        Insert: {
+          conversation_id: string;
+          created_at?: string;
+          message_id: string;
+          reaction: string;
+          user_id: string;
+        };
+        Update: {
+          conversation_id?: string;
+          created_at?: string;
+          message_id?: string;
+          reaction?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'message_reactions_conversation_id_fkey';
+            columns: ['conversation_id'];
+            isOneToOne: false;
+            referencedRelation: 'conversations';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'message_reactions_message_id_fkey';
+            columns: ['message_id'];
+            isOneToOne: false;
+            referencedRelation: 'messages';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
       messages: {
         Row: {
           body: string | null;
@@ -588,6 +706,7 @@ export type Database = {
           id: string;
           inquiry_id: string | null;
           kind: string;
+          reply_to: string | null;
           sender_role: string;
           sender_user_id: string | null;
         };
@@ -599,6 +718,7 @@ export type Database = {
           id?: string;
           inquiry_id?: string | null;
           kind?: string;
+          reply_to?: string | null;
           sender_role: string;
           sender_user_id?: string | null;
         };
@@ -610,6 +730,7 @@ export type Database = {
           id?: string;
           inquiry_id?: string | null;
           kind?: string;
+          reply_to?: string | null;
           sender_role?: string;
           sender_user_id?: string | null;
         };
@@ -627,6 +748,13 @@ export type Database = {
             isOneToOne: false;
             referencedRelation: 'inquiries';
             referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'messages_reply_to_fkey';
+            columns: ['conversation_id', 'reply_to'];
+            isOneToOne: false;
+            referencedRelation: 'messages';
+            referencedColumns: ['conversation_id', 'id'];
           },
         ];
       };
@@ -811,47 +939,91 @@ export type Database = {
           },
         ];
       };
+      reel_views_daily: {
+        Row: {
+          count: number;
+          day: string;
+          reel_id: string;
+        };
+        Insert: {
+          count?: number;
+          day: string;
+          reel_id: string;
+        };
+        Update: {
+          count?: number;
+          day?: string;
+          reel_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'reel_views_daily_reel_id_fkey';
+            columns: ['reel_id'];
+            isOneToOne: false;
+            referencedRelation: 'reels';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
       reels: {
         Row: {
           author_id: string;
           caption: string | null;
           created_at: string;
-          duration_s: number;
+          credit_name: string | null;
+          duration_s: number | null;
           event_slug: string | null;
           height: number | null;
           id: string;
+          linked_account_id: string | null;
+          platform: string | null;
+          source: string;
+          source_id: string | null;
+          source_url: string | null;
           status: string;
           thumb_path: string | null;
           vendor_id: string | null;
-          video_path: string;
+          video_path: string | null;
           width: number | null;
         };
         Insert: {
           author_id: string;
           caption?: string | null;
           created_at?: string;
-          duration_s: number;
+          credit_name?: string | null;
+          duration_s?: number | null;
           event_slug?: string | null;
           height?: number | null;
           id?: string;
+          linked_account_id?: string | null;
+          platform?: string | null;
+          source?: string;
+          source_id?: string | null;
+          source_url?: string | null;
           status?: string;
           thumb_path?: string | null;
           vendor_id?: string | null;
-          video_path: string;
+          video_path?: string | null;
           width?: number | null;
         };
         Update: {
           author_id?: string;
           caption?: string | null;
           created_at?: string;
-          duration_s?: number;
+          credit_name?: string | null;
+          duration_s?: number | null;
           event_slug?: string | null;
           height?: number | null;
           id?: string;
+          linked_account_id?: string | null;
+          platform?: string | null;
+          source?: string;
+          source_id?: string | null;
+          source_url?: string | null;
           status?: string;
           thumb_path?: string | null;
           vendor_id?: string | null;
-          video_path?: string;
+          video_path?: string | null;
           width?: number | null;
         };
         Relationships: [
@@ -861,6 +1033,13 @@ export type Database = {
             isOneToOne: false;
             referencedRelation: 'events';
             referencedColumns: ['slug'];
+          },
+          {
+            foreignKeyName: 'reels_linked_account_id_fkey';
+            columns: ['linked_account_id'];
+            isOneToOne: false;
+            referencedRelation: 'linked_accounts';
+            referencedColumns: ['id'];
           },
           {
             foreignKeyName: 'reels_vendor_id_fkey';
@@ -1858,6 +2037,44 @@ export type Database = {
     Functions: {
       accept_wedding_invite: { Args: { p_token: string }; Returns: string };
       add_reel_comment: { Args: { p_body: string; p_reel_id: string }; Returns: string };
+      business_leads: {
+        Args: { p_before?: string; p_limit?: number; p_vendor_id: string };
+        Returns: {
+          conversation_id: string;
+          created_at: string;
+          details: Json;
+          email: string;
+          event_date: string;
+          event_slugs: string[];
+          family_name: string;
+          guest_band: string;
+          id: string;
+          is_tour: boolean;
+          location: string;
+          message: string;
+          phone: string;
+          preferred_contact: string;
+          replied: boolean;
+          start_time: string;
+        }[];
+      };
+      business_stats: {
+        Args: { p_from: string; p_to: string; p_vendor_id: string };
+        Returns: {
+          calls: number;
+          contacts: number;
+          directions: number;
+          inquiries: number;
+          instagram: number;
+          reel_views: number;
+          saves: number;
+          shares: number;
+          texts: number;
+          views: number;
+          website: number;
+          whatsapps: number;
+        }[];
+      };
       claim_chat_notifications: {
         Args: { p_quiet_minutes?: number };
         Returns: {
@@ -1894,6 +2111,18 @@ export type Database = {
         };
         Returns: Json;
       };
+      create_linked_reel: {
+        Args: {
+          p_caption?: string;
+          p_consent?: boolean;
+          p_credit_name?: string;
+          p_event_slug?: string;
+          p_url: string;
+          p_vendor_id?: string;
+          p_vendor_ids?: string[];
+        };
+        Returns: string;
+      };
       create_reel: {
         Args: {
           p_caption: string;
@@ -1927,6 +2156,17 @@ export type Database = {
       hide_reel_comment: { Args: { p_comment_id: string }; Returns: undefined };
       inquiry_emails_left_today: { Args: Record<PropertyKey, never>; Returns: number };
       mark_conversation_read: { Args: { p_conversation_id: string }; Returns: undefined };
+      my_businesses: {
+        Args: Record<PropertyKey, never>;
+        Returns: {
+          id: string;
+          name: string;
+          name_pa: string;
+          role: string;
+          slug: string;
+          status: string;
+        }[];
+      };
       my_conversations: {
         Args: Record<PropertyKey, never>;
         Returns: {
@@ -1956,6 +2196,7 @@ export type Database = {
           thumb_path: string;
         }[];
       };
+      react_to_message: { Args: { p_message_id: string; p_reaction?: string }; Returns: undefined };
       react_to_vendor: {
         Args: { p_reaction: string; p_vendor_id: string; p_wedding_id: string };
         Returns: undefined;
@@ -1985,6 +2226,7 @@ export type Database = {
       reels_feed: {
         Args: {
           p_before?: string;
+          p_event_slug?: string;
           p_limit?: number;
           p_mode?: string;
           p_user_id?: string;
@@ -1996,6 +2238,7 @@ export type Database = {
           caption: string;
           comment_count: number;
           created_at: string;
+          credit_name: string;
           duration_s: number;
           event_slug: string;
           following: boolean;
@@ -2004,6 +2247,9 @@ export type Database = {
           is_mine: boolean;
           like_count: number;
           liked: boolean;
+          platform: string;
+          source: string;
+          source_url: string;
           tags: Json;
           thumb_path: string;
           vendor_id: string;
@@ -2069,7 +2315,13 @@ export type Database = {
         }[];
       };
       send_message: {
-        Args: { p_body?: string; p_conversation_id: string; p_data?: Json; p_kind?: string };
+        Args: {
+          p_body?: string;
+          p_conversation_id: string;
+          p_data?: Json;
+          p_kind?: string;
+          p_reply_to?: string;
+        };
         Returns: string;
       };
       set_wedding_member_role: {
@@ -2088,6 +2340,7 @@ export type Database = {
         Returns: string;
       };
       touch_vendor_calendar: { Args: { p_vendor_id: string }; Returns: undefined };
+      track_reel_view: { Args: { p_reel_id: string }; Returns: undefined };
       track_vendor_activity: { Args: { p_kind: string; p_vendor_id: string }; Returns: undefined };
       vendor_date_status: { Args: { p_day: string; p_vendor_id: string }; Returns: string };
       vendor_public_stats: {

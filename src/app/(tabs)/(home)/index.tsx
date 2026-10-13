@@ -6,7 +6,6 @@ import { Pressable, RefreshControl, StyleSheet, View } from 'react-native';
 import Animated, { runOnJS, useAnimatedReaction } from 'react-native-reanimated';
 
 import { AppText } from '@/components/app-text';
-import { LanguageToggle } from '@/components/language-toggle';
 import { NavBar, useNavScroll, useNavTop } from '@/components/nav';
 import { SearchButton } from '@/components/search-button';
 import { StateView } from '@/components/state-view';
@@ -15,6 +14,7 @@ import { Sizes, Spacing, useColors, useScheme } from '@/constants/theme';
 import { useFeed, type FeedPost } from '@/data/feed';
 import { useCategoryGroups, useHomeEvents } from '@/data/reference';
 import { useCategoryVendorCounts } from '@/data/vendors';
+import { ChatButton } from '@/features/chat/chat-button';
 import { EventCarousel } from '@/features/home/event-carousel';
 import { HomeCover, useCoverHeight } from '@/features/home/home-cover';
 import { NextUp } from '@/features/home/next-up';
@@ -160,7 +160,7 @@ export default function HomeScreen() {
         </View>
       </Animated.ScrollView>
 
-      <NavBar scroll={scroll} title={t('app.name')} back={false} trailing={<LanguageToggle />} />
+      <NavBar scroll={scroll} title={t('app.name')} back={false} trailing={<ChatButton />} />
     </View>
   );
 }

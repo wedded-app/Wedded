@@ -5,7 +5,7 @@
 begin;
 create extension if not exists pgtap with schema extensions;
 
-select plan(25);
+select plan(26);
 
 -- Security ----------------------------------------------------------------
 
@@ -49,8 +49,8 @@ select is(
 
 select is(
   (select count(*)::int from public.cultures),
-  5,
-  'Five traditions: Punjabi Sikh, Punjabi Hindu, Pakistani, Muslim and Arab'
+  6,
+  'Six traditions: Punjabi Sikh, Punjabi Hindu, Pakistani, Muslim, Arab and Christian'
 );
 
 select results_eq(
@@ -69,6 +69,16 @@ select is(
   (select count(*)::int from public.cultures where background_slug is null and faith_slug is null),
   0,
   'Every tradition belongs to a background, a faith or both, so the first questions can find it'
+);
+
+select is(
+  (
+    select count(*)::int
+    from public.faiths f
+    where not exists (select 1 from public.cultures c where c.faith_slug = f.slug)
+  ),
+  0,
+  'Every faith has a tradition, so each faith in the first questions leads to events'
 );
 
 select results_eq(
@@ -195,7 +205,7 @@ set local role anon;
 
 select is(
   (select count(*)::int from public.events),
-  24,
+  25,
   'Logged-out users can read events'
 );
 
