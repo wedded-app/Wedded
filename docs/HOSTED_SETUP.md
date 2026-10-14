@@ -146,6 +146,30 @@ For deposits through Wedded (#209). Free in test mode: no card, and no LLC until
 3. **Claude:** in Stripe, **Developers → Webhooks → Add endpoint**, `https://ujkshrptgmbtstrjcyfy.supabase.co/functions/v1/stripe-webhook`, listening to **Events on Connected accounts**: `payment_intent.succeeded`, `payment_intent.payment_failed`, `charge.refunded`, `account.updated`. Then `supabase secrets set STRIPE_WEBHOOK_SECRET=whsec_… --project-ref ujkshrptgmbtstrjcyfy`.
 4. **Check:** a test vendor taps Get paid through Wedded and finishes Stripe's test setup, asks a test family for $500, and the family pays with the test card 4242 4242 4242 4242 (any future date and CVC). Both see "Deposit paid".
 
+## 12. Wedded Pro billing (test mode, #220)
+
+This is a platform subscription to Wedded, separate from vendors' Connect deposits. The existing `STRIPE_SECRET_KEY` must start with `sk_test_`; live keys are refused. No publishable key is needed by the hosted Checkout backend. Keep every secret server-side, never `EXPO_PUBLIC_*` or in git. The blank server template is `supabase/functions/.env.example`.
+
+1. After founder prerequisite #210, create a **test-mode** Wedded Pro product and a recurring **$50.00 USD, every month** price (one licensed unit). Save its `price_…` ID as `STRIPE_PRO_PRICE_ID`. The function rejects a wrong amount, currency, interval, or live price.
+2. Set `STRIPE_PRO_RETURN_URL` to the fixed HTTPS page on the Wedded website that tells vendors to return to their account. It must have no query, fragment or credentials. For local web testing, HTTP localhost/127.0.0.1 is allowed. Checkout adds `?pro=success` or `?pro=canceled`; the portal returns to this page. These query values never grant access; call refresh and read `useProStatus`.
+3. Configure Stripe's **test-mode customer portal**: payment method updates and cancel at period end. Do not offer price/quantity changes to this single-price plan. Configure the default portal before testing the portal action.
+4. Apply the two Pro billing migrations and deploy `pro-billing` and `pro-webhook` when authorized. `pro-webhook` has `verify_jwt=false` and verifies `Stripe-Signature` against the raw body. Authenticated `pro-billing` keeps JWT verification and independently verifies the user and vendor membership.
+5. Create a **platform/account webhook**, not a Connect webhook, to `/functions/v1/pro-webhook` for `checkout.session.completed`, `customer.subscription.created`, `customer.subscription.updated`, `customer.subscription.deleted`, `invoice.paid`, `invoice.payment_failed`. Its separate signing secret is `STRIPE_PRO_WEBHOOK_SECRET`; do not reuse `STRIPE_WEBHOOK_SECRET` for deposits.
+6. Store `STRIPE_SECRET_KEY`, `STRIPE_PRO_PRICE_ID`, `STRIPE_PRO_RETURN_URL`, and `STRIPE_PRO_WEBHOOK_SECRET` in Supabase secrets through the existing private setup process. For local functions, use a gitignored env file. Missing settings return `503 not_set_up`; no fake Pro status is granted.
+
+**Tab 2 contract:** `useProBilling(vendorId)` returns a mutation taking `'checkout' | 'portal' | 'refresh'`, with result `{ url?: string, status: 'pro' | 'free' }`. Open Checkout/portal URLs in the website, then call refresh on return. Continue reading the richer account details through `useProStatus(vendorId)` from `requests.ts`. `proBillingProblem(error)` maps `notSetUp`, `notAllowed`, `signIn`, `alreadySubscribed`, `noCustomer`, `offline`, or `failed`. An existing active, trialing, past-due, unpaid, paused or incomplete subscription returns `alreadySubscribed` instead of creating another; use portal to manage it.
+
+**End-to-end checklist (still pending founder configuration):**
+
+- A member of a test vendor opens Checkout; a stranger receives 403.
+- Pay with Stripe's test card; a verified webhook updates `vendor_subscriptions`, and refresh reports Pro. Returning to `?pro=success` without payment does not.
+- Open two Checkout requests concurrently: they share one session. Repeat the webhook: access stays consistent. Deliver an old event after canceling: current Stripe state wins.
+- Open the customer portal, change the payment method and cancel at period end. Access remains until Stripe marks the subscription canceled; then refresh reports free.
+- Verify failed renewal has three days of grace, then free; paused/unpaid/incomplete do not grant access.
+- Resubscribe after cancellation: a fresh Checkout attempt is used.
+
+Reference: [Stripe Checkout sessions](https://docs.stripe.com/api/checkout/sessions/create), [customer portal](https://docs.stripe.com/api/customer_portal/sessions/create), [subscription listing](https://docs.stripe.com/api/subscriptions/list), and [webhook verification and ordering](https://docs.stripe.com/webhooks).
+
 ## Founders' tools on the hosted database
 
 With `SUPABASE_URL` and `SUPABASE_SECRET_KEY` set in your shell as in step 7, these work on the hosted project too (leave off `--local`):

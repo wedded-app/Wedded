@@ -53,5 +53,8 @@ select ok(not private.is_pro('b2200000-0000-4000-8000-000000000001'),'Canceled s
 set local role authenticated;
 select is((select stripe_customer_id from public.vendor_subscriptions where vendor_id='b2200000-0000-4000-8000-000000000001'),'cus_Test','Vendor members can read their billing status');
 reset role;
+set local role service_role;
+select isnt((select attempt_id from public.claim_pro_checkout('b2200000-0000-4000-8000-000000000001')),(select attempt_id from attempt),'A new subscription ends the earlier checkout attempt');
+reset role;
 select * from finish();
 rollback;
