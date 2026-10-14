@@ -22,6 +22,7 @@ import { AppText, useTypeStyle } from '@/components/app-text';
 import { Glass } from '@/components/glass';
 import { Icon, type IconName } from '@/components/icon';
 import { makeStyles, Radius, Sizes, Spacing, Springs, useColors } from '@/constants/theme';
+import { GlowRim } from '@/components/glow-rim';
 import { selectionHaptic } from '@/lib/haptics';
 import { Motion } from '@/lib/motion';
 
@@ -149,28 +150,30 @@ export function WedComposer({
               </Glass>
             </View>
           ) : null}
-          <Glass interactive style={styles.capsule}>
-            {listening ? (
-              <Dictation
-                onCancel={() => setListening(false)}
-                onDone={() => {
-                  setListening(false);
-                  wed.send(TRANSCRIPT, { spoken: true });
-                }}
-              />
-            ) : (
-              <Typing
-                draft={draft}
-                menuOpen={menuOpen}
-                onAdd={() => setMenuOpen((open) => !open)}
-                onMic={() => {
-                  setMenuOpen(false);
-                  selectionHaptic();
-                  setListening(true);
-                }}
-              />
-            )}
-          </Glass>
+          <GlowRim radius={28}>
+            <View style={styles.capsule}>
+              {listening ? (
+                <Dictation
+                  onCancel={() => setListening(false)}
+                  onDone={() => {
+                    setListening(false);
+                    wed.send(TRANSCRIPT, { spoken: true });
+                  }}
+                />
+              ) : (
+                <Typing
+                  draft={draft}
+                  menuOpen={menuOpen}
+                  onAdd={() => setMenuOpen((open) => !open)}
+                  onMic={() => {
+                    setMenuOpen(false);
+                    selectionHaptic();
+                    setListening(true);
+                  }}
+                />
+              )}
+            </View>
+          </GlowRim>
         </View>
       </Animated.View>
     </>

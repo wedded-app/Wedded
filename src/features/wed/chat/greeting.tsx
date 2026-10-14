@@ -9,7 +9,7 @@ import { daysUntil, usePlan } from '@/features/planner/plan';
 
 import { daysToGo, FAMILY, greetingWords, STARTERS, WEDDING } from '../mock';
 import { useWed, wed, type WedState } from '../wed-store';
-import { WedMark } from '../wed-mark';
+import { WedOrb } from '../wed-orb';
 
 // The cards waiting for the family's yes, newest first (for the owner only)
 const waitingTitles = (s: WedState) =>
@@ -47,7 +47,7 @@ export function Greeting({ minHeight, inset = 0 }: { minHeight?: number; inset?:
 
   return (
     <View style={[styles.greeting, minHeight ? { minHeight, paddingTop: inset } : styles.between]}>
-      <WedMark size={40} />
+      <WedOrb size={84} />
       <View style={styles.words}>
         <AppText
           variant="title"
@@ -75,7 +75,7 @@ export function Greeting({ minHeight, inset = 0 }: { minHeight?: number; inset?:
           onPress={() => router.push('/wed/updates')}
           style={({ pressed }) => [styles.waiting, pressed && styles.pressed]}
         >
-          <WedMark size={20} />
+          <View style={styles.dot} />
           <AppText weight={600} style={styles.grow}>
             {okWords}
           </AppText>
@@ -164,7 +164,17 @@ const useStyles = makeStyles((Colors) => ({
     paddingVertical: Spacing.md,
     borderRadius: Radius.card,
     borderCurve: 'continuous',
-    backgroundColor: Colors.canvasCard,
+    backgroundColor: Colors.surface,
+    borderWidth: 1,
+    borderColor: Colors.goldLine,
+    boxShadow: Colors.cardShadow,
+  },
+  // A gold dot: something waits for you
+  dot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: Colors.gold,
   },
   row: {
     minHeight: Sizes.row,

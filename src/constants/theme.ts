@@ -103,6 +103,8 @@ const light = {
   goldLine: 'rgba(176, 138, 78, 0.4)',
   cardShadow: '0px 12px 32px rgba(74, 44, 20, 0.07), 0px 1px 2px rgba(74, 44, 20, 0.06)',
   buttonSheen: 'linear-gradient(180deg, #9E2840 0%, #7A1729 100%)',
+  // The halo around Wed's glowing rim
+  glowShadow: '0px 0px 24px rgba(196, 80, 110, 0.28)',
   // Celebrations (PetalBurst): rose petals and gold dust.
   petalRose: '#E58FA6',
   petalBlush: '#F6C9D3',
@@ -188,6 +190,7 @@ const dark: Palette = {
   goldLine: 'rgba(212, 176, 122, 0.35)',
   cardShadow: '0px 12px 32px rgba(0, 0, 0, 0.45)',
   buttonSheen: 'linear-gradient(180deg, #C4425B 0%, #A12C43 100%)',
+  glowShadow: '0px 0px 24px rgba(220, 90, 120, 0.35)',
   petalRose: '#E58FA6',
   petalBlush: '#F2B8C6',
   petalMaroon: '#D0506C',
