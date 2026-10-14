@@ -31,6 +31,7 @@ import { useMyVendorPhotos } from '@/data/vendor-photos-self';
 import { changeFrom } from '@/features/business/business-format';
 import { LeadRow, StatCard } from '@/features/business/business-parts';
 import { GetPaid } from '@/features/business/get-paid';
+import { FamiliesLookingEntry } from '@/features/requests/families-looking-entry';
 import {
   FunnelSteps,
   HowYouCompare,
@@ -278,6 +279,8 @@ export default function BusinessScreen() {
           />
         )}
       </ListSection>
+
+      <FamiliesLookingEntry vendorId={business.id} />
 
       <GetPaid vendorId={business.id} />
 

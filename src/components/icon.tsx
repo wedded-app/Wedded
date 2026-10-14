@@ -134,6 +134,8 @@ const SF_SYMBOLS: Partial<Record<IconName, SFSymbol>> = {
   'infinite-outline': 'infinity',
   'star-outline': 'star',
   'arrow-back': 'arrow.left',
+  'cash-outline': 'banknote',
+  'megaphone-outline': 'megaphone',
   'arrow-forward': 'arrow.right',
   'pencil-outline': 'pencil',
   'person-outline': 'person',

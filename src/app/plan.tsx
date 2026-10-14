@@ -426,6 +426,21 @@ function EventPlan({
               />
             </Pressable>
           )}
+          {canEdit && (
+            <Pressable
+              accessibilityRole="button"
+              accessibilityHint={t('requests.post.hint')}
+              onPress={() =>
+                router.push({ pathname: '/request-new', params: { event: event.slug } })
+              }
+              style={({ pressed }) => [styles.more, pressed && styles.headPressed]}
+            >
+              <Icon name="megaphone-outline" size={17} color={Colors.primary} />
+              <AppText weight={600} color="primary">
+                {t('requests.post.fromPlan')}
+              </AppText>
+            </Pressable>
+          )}
         </Animated.View>
       )}
     </Animated.View>
