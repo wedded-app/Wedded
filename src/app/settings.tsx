@@ -3,11 +3,13 @@ import { router } from 'expo-router';
 import { Linking, Pressable, View } from 'react-native';
 
 import { AppText } from '@/components/app-text';
-import { Icon } from '@/components/icon';
+import { Icon, type IconName } from '@/components/icon';
+import { type LegalPage, openLegalPage } from '@/components/legal-line';
 import { ListRow, ListSection } from '@/components/list';
 import { NavScreen } from '@/components/nav';
 import { Segmented } from '@/components/segmented';
 import { Switch } from '@/components/switch';
+import { SITE_URL_IS_PLACEHOLDER } from '@/constants/links';
 import { makeStyles, Palettes, Spacing, useColors, type Scheme } from '@/constants/theme';
 import { useIsVendor } from '@/data/chat';
 import { useSession } from '@/features/auth/session';
@@ -20,6 +22,12 @@ import type { Locale } from '@/i18n';
 import { useLocale } from '@/i18n/locale-context';
 import { selectionHaptic } from '@/lib/haptics';
 
+const LEGAL_PAGES: { page: LegalPage; icon: IconName }[] = [
+  { page: 'terms', icon: 'reader-outline' },
+  { page: 'privacy', icon: 'lock-closed-outline' },
+  { page: 'refunds', icon: 'arrow-undo-outline' },
+];
+
 const LANGUAGES: { locale: Locale; labelKey: string }[] = [
   { locale: 'en', labelKey: 'profile.english' },
   { locale: 'pa', labelKey: 'profile.punjabi' },
@@ -28,7 +36,7 @@ const LANGUAGES: { locale: Locale; labelKey: string }[] = [
 /**
  * Settings (vision S16), laid out like the iPhone's own: appearance with
  * light and dark previews, text size, language, haptics, where to search,
- * then about and account. Everything is saved on this phone.
+ * then about, the legal pages and licences, and account. Everything is saved on this phone.
  */
 export default function SettingsScreen() {
   const Colors = useColors();
@@ -160,6 +168,28 @@ export default function SettingsScreen() {
           />
         )}
         <ListRow icon="information-circle-outline" title={t('settings.version')} value={version} />
+      </ListSection>
+
+      <ListSection
+        inset
+        header={t('settings.legal')}
+        footer={SITE_URL_IS_PLACEHOLDER ? t('settings.legalSoon') : undefined}
+      >
+        {LEGAL_PAGES.map((page) => (
+          <ListRow
+            key={page.page}
+            icon={page.icon}
+            title={t(`settings.legalPages.${page.page}`)}
+            // Until the website is up there's nothing to open yet.
+            value={SITE_URL_IS_PLACEHOLDER ? t('settings.soon') : undefined}
+            onPress={SITE_URL_IS_PLACEHOLDER ? undefined : () => openLegalPage(page.page)}
+          />
+        ))}
+        <ListRow
+          icon="document-text-outline"
+          title={t('licences.title')}
+          onPress={() => router.push('/licences')}
+        />
       </ListSection>
 
       {status === 'signedIn' ? (
