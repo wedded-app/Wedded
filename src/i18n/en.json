@@ -975,7 +975,8 @@
       "booking": "Inquiry",
       "phone": "Shared a phone number",
       "voice": "Voice note",
-      "deposit": "Deposit request"
+      "deposit": "Deposit request",
+      "proposal": "Proposal"
     },
     "errors": {
       "rate": "You're sending very fast. Wait a minute, then send again.",
@@ -1968,5 +1969,232 @@
         }
       }
     }
+  },
+  "requests": {
+    "headline": "{{category}} for the {{event}}",
+    "miles": {
+      "one": "1 mile away",
+      "other": "{{count}} miles away"
+    },
+    "gone": "This request isn't here anymore.",
+    "ago": {
+      "now": "now",
+      "minutes": "{{count}}m",
+      "hours": "{{count}}h",
+      "days": "{{count}}d",
+      "weeks": "{{count}}w"
+    },
+    "budget": {
+      "upTo": "Up to {{amount}}",
+      "perGuest": "{{budget}} a guest",
+      "bands": {
+        "under_500": "Under $500",
+        "500_1000": "$500–1,000",
+        "1000_2500": "$1,000–2,500",
+        "2500_5000": "$2,500–5,000",
+        "5000_plus": "$5,000+",
+        "pp_under_25": "Under $25 a guest",
+        "pp_25_50": "$25–50 a guest",
+        "pp_50_80": "$50–80 a guest",
+        "pp_80_plus": "$80+ a guest"
+      }
+    },
+    "status": {
+      "open": "Open",
+      "booked": "Booked",
+      "closed": "Closed",
+      "expired": "Expired"
+    },
+    "units": {
+      "event": "for the event",
+      "person": "a person",
+      "plate": "a plate",
+      "hour": "an hour",
+      "day": "a day"
+    },
+    "unitShort": {
+      "event": "Event",
+      "person": "Person",
+      "plate": "Plate",
+      "hour": "Hour",
+      "day": "Day"
+    },
+    "home": {
+      "title": "Let vendors come to you",
+      "body": "Post what you need. Vendors send you their prices."
+    },
+    "post": {
+      "title": "Post a request",
+      "body": "Tell vendors what you need. They send you a price, and you choose.",
+      "hint": "Opens a form to post a request to vendors",
+      "fromPlan": "Post a request for this event",
+      "preview": "HOW VENDORS SEE IT",
+      "previewLabel": "How vendors will see your request",
+      "pickType": "Pick what you need",
+      "you": "You",
+      "yourTown": "your town",
+      "event": "Which event?",
+      "type": "What do you need?",
+      "typeError": "Pick what you need",
+      "budget": "Your budget (optional)",
+      "note": "Anything else? (optional)",
+      "noteHint": "Like: two dhol players for an hour, from 9 pm",
+      "privacy": "Vendors see “{{name}}” and {{city}}. Never your phone number or email, until you choose one.",
+      "send": "Post request",
+      "town": "Your town",
+      "townMatch": "Vendors near {{city}} will see it",
+      "townError": "Type your town, like Yuba City",
+      "needsPlan": "Start your wedding plan first, so vendors know your date and events."
+    },
+    "mine": {
+      "title": "Posted requests",
+      "subtitle": "What you asked vendors for, and their prices.",
+      "rowHint": "Vendors send you prices",
+      "empty": "Post what you need, like a DJ for the reception, and vendors send you their prices.",
+      "proposals": {
+        "zero": "No proposals yet",
+        "one": "1 proposal",
+        "other": "{{count}} proposals"
+      }
+    },
+    "inbox": {
+      "subtitle": "Compare prices, then choose one.",
+      "posted": "Posted! Vendors near you can see it now.",
+      "proposals": {
+        "zero": "Proposals",
+        "one": "1 proposal",
+        "other": "{{count}} proposals"
+      },
+      "none": "No proposals yet. Vendors usually reply within a day; we'll let you know.",
+      "lowest": "Lowest price",
+      "founding": "Founding vendor",
+      "bookedBy": {
+        "one": "Booked by 1 family",
+        "other": "Booked by {{count}} families"
+      },
+      "replied": "Replied to {{replied}} of {{asked}} families",
+      "withReel": "Sent a reel",
+      "withMenu": "Sent a menu",
+      "openVendor": "{{vendor}}, opens their page",
+      "accept": "Choose",
+      "decline": "No thanks",
+      "notYet": "Not yet",
+      "acceptTitle": "Choose this vendor?",
+      "acceptBody": "We'll start a chat with {{vendor}} about their {{price}} price. Nothing is booked until you both agree.",
+      "chosen": "You chose them",
+      "declined": "You said no thanks",
+      "close": "Close this request",
+      "closeTitle": "Close this request?",
+      "closeBody": "Vendors won't see it anymore or send new proposals.",
+      "closeYes": "Close it",
+      "acceptBodyNoPrice": "We'll start a chat with {{vendor}}. Nothing is booked until you both agree.",
+      "priceInChat": "Price in chat",
+      "freeOnDate": "Free on your date",
+      "openChat": "Open chat"
+    },
+    "problems": {
+      "failed": "Something went wrong. Try again.",
+      "notAllowed": "You can't do that here.",
+      "proOnly": "Families looking is part of Wedded Pro.",
+      "alreadyOpen": "You already have an open request for this. Look in Posted requests.",
+      "tooManyOpen": "You have a lot of open requests. Close one first.",
+      "rate": "That's a lot for one day. Try again tomorrow.",
+      "datePassed": "That date has passed. Pick a date that's coming up.",
+      "invalid": "Something in it isn't right. Check it and try again.",
+      "notOpen": "This request isn't open anymore.",
+      "alreadySent": "You've already sent a proposal for this.",
+      "proposalsFull": "This family has all the proposals they can take.",
+      "alreadyAnswered": "You've already answered this proposal.",
+      "offline": "You're offline. Check your connection and try again."
+    },
+    "chat": {
+      "title": "Proposal",
+      "chosenVendor": "They chose your proposal",
+      "chosenFamily": "You chose this proposal"
+    }
+  },
+  "looking": {
+    "title": "Families looking",
+    "subtitle": "Families near you who need what you do.",
+    "rowHint": "Send families your price",
+    "reach": "How far",
+    "miles": {
+      "one": "1 mi",
+      "other": "{{count}} mi"
+    },
+    "anywhere": "Anywhere",
+    "empty": "No families are looking near you right now. New requests show up here.",
+    "free": "You're free that day",
+    "booked": "You're booked that day",
+    "first": "Be the first to reply",
+    "proposals": {
+      "one": "1 proposal so far",
+      "other": "{{count}} proposals so far"
+    },
+    "propose": "Send a proposal",
+    "sent": "Proposal sent",
+    "teaser": {
+      "eyebrow": "WEDDED PRO",
+      "loading": "Families are looking for vendors near you",
+      "category": {
+        "one": "1 family near you needs a {{category}}",
+        "other": "{{count}} families near you need a {{category}}"
+      },
+      "total": {
+        "one": "1 family near you is looking",
+        "other": "{{count}} families near you are looking"
+      },
+      "body": "See what they need, their date and budget, and send them your price.",
+      "goPro": "See Wedded Pro"
+    },
+    "more": "Show more",
+    "full": "This family has all the proposals they can take"
+  },
+  "propose": {
+    "title": "Send a proposal",
+    "price": "Your price in dollars",
+    "priceError": "Enter a price from $1 to $25,000",
+    "per": "Price per",
+    "note": "Your note",
+    "noteHint": "What you'd bring, and why you're a good fit",
+    "noteError": "Write a little more, so they know what you're offering",
+    "menu": "Attach a menu (optional)",
+    "once": "You can send one proposal per request. If they choose you, a chat opens.",
+    "send": "Send proposal"
+  },
+  "pro": {
+    "badge": "Pro",
+    "title": "Wedded Pro",
+    "subtitle": "Families come to you.",
+    "name": "Wedded Pro",
+    "price": "$50",
+    "perMonth": "a month",
+    "cancelAnytime": "Cancel anytime.",
+    "perks": {
+      "looking": {
+        "title": "See families looking",
+        "body": "Requests from families near you, with their date, guests and budget."
+      },
+      "proposals": {
+        "title": "Send your price",
+        "body": "One proposal per request, with a note and your menu."
+      },
+      "calendar": {
+        "title": "Know if you're free",
+        "body": "Each request says if your calendar is open that day."
+      },
+      "badge": {
+        "title": "A Pro mark",
+        "body": "Families see you're serious about their wedding."
+      }
+    },
+    "subscribe": "Subscribe on the Wedded website",
+    "youreOn": "You're on Wedded Pro",
+    "onWebsite": "You pay on the Wedded website, not in the app.",
+    "soon": "Subscribing opens on the Wedded website soon.",
+    "free": "Your listing, inquiries, chat and reels stay free, with or without Pro.",
+    "pastDue": "Your card didn't go through. Update it on the Wedded website.",
+    "renews": "Renews {{date}}",
+    "ends": "Ends {{date}}"
   }
 }
