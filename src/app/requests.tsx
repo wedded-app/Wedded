@@ -77,6 +77,7 @@ function PostedRequests() {
               headline={words.category(r.categorySlug)}
               date={r.eventDate}
               facts={words.facts(r)}
+              sealed={status === 'open'}
               footer={
                 <View style={styles.footer}>
                   <View style={[styles.count, fresh && styles.countFresh]}>

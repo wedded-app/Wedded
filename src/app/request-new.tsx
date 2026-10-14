@@ -1,6 +1,7 @@
+import { Image } from 'expo-image';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
-import { Pressable, ScrollView, View } from 'react-native';
+import { Platform, Pressable, ScrollView, StyleSheet, View, type ViewStyle } from 'react-native';
 import Animated, { FadeInDown, FadeInRight } from 'react-native-reanimated';
 
 import { AppText } from '@/components/app-text';
@@ -13,9 +14,12 @@ import { TextField } from '@/components/text-field';
 import { makeStyles, Radius, Spacing, useColors, SchemeContext } from '@/constants/theme';
 import { matchCities, useCities } from '@/data/places';
 import { useCategories } from '@/data/reference';
+import { useVendorSearch } from '@/data/search';
+import { photoUrl } from '@/data/vendor-media';
 import { useCategoryVendorCounts } from '@/data/vendors';
 import { requestProblem, usePostRequest } from '@/data/requests';
 import { useSession } from '@/features/auth/session';
+import { useSearchLocation } from '@/features/location/search-location';
 import { StartPlanCard } from '@/features/planner/start-plan-card';
 import { usePlanView } from '@/features/planner/use-plan-view';
 import { GlassCard, GlowButton, NightScreen } from '@/features/requests/night';
@@ -28,6 +32,9 @@ import { useLocale } from '@/i18n/locale-context';
 import { selectionHaptic, successHaptic } from '@/lib/haptics';
 
 type Step = 0 | 1 | 2;
+
+/** Every sample vendor's id starts with this (supabase/seed.sql). */
+const SAMPLE_ID = '00000000-0000-4000-8000-';
 
 /**
  * Ask vendors (#219), in three steps on the night page: what you need (big
@@ -51,11 +58,27 @@ function AskVendors() {
   const { t, locale } = useLocale();
   const params = useLocalSearchParams<{ event?: string; category?: string }>();
   const { profile } = useSession();
+  const { place: searchPlace } = useSearchLocation();
   const view = usePlanView();
   const words = useRequestWords();
   const categories = useCategories();
   const cities = useCities();
   const vendorCounts = useCategoryVendorCounts();
+  // One real photo per vendor type, from the vendors near them, for the tiles
+  const nearby = useVendorSearch({
+    latitude: searchPlace?.latitude,
+    longitude: searchPlace?.longitude,
+    maxMiles: null,
+    limit: 100,
+  });
+  const covers: Record<string, string> = {};
+  for (const v of nearby.data ?? []) {
+    // Sample vendors (seed.sql ids) have placeholder art, not real photos
+    if (v.id.startsWith(SAMPLE_ID)) continue;
+    if (v.categorySlug && v.coverPath && !covers[v.categorySlug]) {
+      covers[v.categorySlug] = photoUrl(v.coverPath, 'medium');
+    }
+  }
   const post = usePostRequest(view.wedding?.id ?? '');
 
   const [step, setStep] = useState<Step>(params.category ? 1 : 0);
@@ -216,19 +239,34 @@ function AskVendors() {
                       }}
                       style={[styles.tile, picked && styles.tilePicked]}
                     >
-                      <View style={styles.tileIcon}>
-                        <Icon name={groupIcon(need.groupSlug)} size={26} color={Colors.champagne} />
-                      </View>
-                      <AppText weight={700} numberOfLines={3}>
-                        {localized(need.name, locale)}
-                      </AppText>
-                      {(vendorCounts.data?.[need.categorySlug] ?? 0) > 0 && (
-                        <AppText variant="label" weight={500} color="text2">
-                          {t('requests.post.vendorCount', {
-                            count: vendorCounts.data?.[need.categorySlug] ?? 0,
-                          })}
-                        </AppText>
+                      {covers[need.categorySlug] ? (
+                        <>
+                          <Image
+                            source={{ uri: covers[need.categorySlug] }}
+                            style={StyleSheet.absoluteFill}
+                            contentFit="cover"
+                            transition={250}
+                            accessible={false}
+                          />
+                          <View style={[StyleSheet.absoluteFill, styles.tileScrim]} />
+                        </>
+                      ) : (
+                        <View style={styles.tileIcon}>
+                          <Icon name={groupIcon(need.groupSlug)} size={30} color={Colors.onHero} />
+                        </View>
                       )}
+                      <View style={styles.tileWords}>
+                        <AppText weight={700} color="onHero" numberOfLines={3}>
+                          {localized(need.name, locale)}
+                        </AppText>
+                        {(vendorCounts.data?.[need.categorySlug] ?? 0) > 0 && (
+                          <AppText variant="label" weight={600} color="onHero2">
+                            {t('requests.post.vendorCount', {
+                              count: vendorCounts.data?.[need.categorySlug] ?? 0,
+                            })}
+                          </AppText>
+                        )}
+                      </View>
                     </PressableScale>
                   </Animated.View>
                 );
@@ -380,6 +418,11 @@ function IconCircle({
   );
 }
 
+const gradient = (css: string) =>
+  (Platform.OS === 'web'
+    ? { backgroundImage: css }
+    : { experimental_backgroundImage: css }) as unknown as ViewStyle;
+
 const useStyles = makeStyles((Colors) => ({
   fill: {
     flex: 1,
@@ -430,9 +473,11 @@ const useStyles = makeStyles((Colors) => ({
     flexBasis: 150,
   },
   tile: {
-    minHeight: 120,
+    minHeight: 150,
+    justifyContent: 'space-between',
     gap: Spacing.md,
     padding: Spacing.lg,
+    overflow: 'hidden',
     borderRadius: Radius.card,
     borderCurve: 'continuous',
     backgroundColor: Colors.nightCard,
@@ -443,13 +488,23 @@ const useStyles = makeStyles((Colors) => ({
     borderColor: Colors.champagne,
     boxShadow: Colors.roseGlow,
   },
+  tileScrim: {
+    ...gradient(
+      'linear-gradient(to top, rgba(10,2,6,0.92) 0%, rgba(10,2,6,0.35) 55%, rgba(10,2,6,0.1) 100%)',
+    ),
+  },
+  tileWords: {
+    marginTop: 'auto',
+    gap: 2,
+  },
   tileIcon: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+    width: 60,
+    height: 60,
+    borderRadius: 30,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: Colors.nightCardStrong,
+    ...gradient('linear-gradient(135deg, #D4506F 0%, #8A1C30 55%, #C9A063 100%)'),
+    boxShadow: '0px 8px 24px rgba(214, 70, 110, 0.35)',
   },
   stack: {
     gap: Spacing.md,

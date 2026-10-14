@@ -1,3 +1,4 @@
+import { Image } from 'expo-image';
 import { useEffect, useState, type ReactNode } from 'react';
 import { Platform, View, type ViewStyle } from 'react-native';
 import Animated, {
@@ -32,6 +33,7 @@ export function RequestInvite({
   facts,
   note,
   footer,
+  sealed = false,
 }: {
   eventName?: string | null;
   headline: string;
@@ -39,6 +41,8 @@ export function RequestInvite({
   facts: PostFacts;
   note?: string | null;
   footer?: ReactNode;
+  /** A wax seal in the corner: the request is out with vendors. */
+  sealed?: boolean;
 }) {
   const styles = useStyles();
   const { t } = useLocale();
@@ -48,15 +52,16 @@ export function RequestInvite({
   return (
     <View style={styles.card}>
       <GoldBand />
+      {sealed && <WaxSeal />}
       <View style={styles.row}>
         {date ? <DateTile date={date} size="lg" /> : null}
-        <View style={styles.words}>
+        <View style={[styles.words, sealed && styles.roomForSeal]}>
           {eventName ? (
             <AppText variant="label" weight={700} color="champagne">
               {eventName.toUpperCase()}
             </AppText>
           ) : null}
-          <AppText variant="title" serif weight={600}>
+          <AppText variant={headline.length > 11 ? 'section' : 'title'} serif weight={600}>
             {headline}
           </AppText>
           {days !== null && days >= 0 ? (
@@ -73,6 +78,20 @@ export function RequestInvite({
         </AppText>
       ) : null}
       {footer}
+    </View>
+  );
+}
+
+const RIBBON = require('../../../assets/images/ribbon-white.png');
+
+/** A maroon wax seal with the Wedded ribbon pressed into it, tilted a little. */
+function WaxSeal() {
+  const styles = useStyles();
+  return (
+    <View style={styles.seal} accessible={false}>
+      <View style={styles.sealRim}>
+        <Image source={RIBBON} style={styles.sealMark} contentFit="contain" accessible={false} />
+      </View>
     </View>
   );
 }
@@ -129,6 +148,34 @@ const useStyles = makeStyles((Colors) => ({
     ...gold(
       `linear-gradient(90deg, rgba(233,201,139,0) 0%, ${Colors.champagne} 50%, rgba(233,201,139,0) 100%)`,
     ),
+  },
+  seal: {
+    position: 'absolute',
+    top: 14,
+    right: 14,
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+    padding: 4,
+    transform: [{ rotate: '-12deg' }],
+    ...gold('radial-gradient(circle at 35% 30%, #C8405E 0%, #8A1C30 55%, #5A0F1E 100%)'),
+    boxShadow: '0px 6px 14px rgba(0, 0, 0, 0.45)',
+  },
+  sealRim: {
+    flex: 1,
+    borderRadius: 22,
+    borderWidth: 1.5,
+    borderColor: 'rgba(255, 220, 200, 0.35)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  sealMark: {
+    width: 26,
+    height: 22,
+    opacity: 0.8,
+  },
+  roomForSeal: {
+    paddingRight: 40,
   },
   glint: {
     position: 'absolute',
