@@ -44,6 +44,15 @@ Deno.test('other kinds say what was sent, never a phone number', () => {
     'deposit paid',
   );
   expectEqual(
+    pushBody({
+      ...claim,
+      kind: 'proposal',
+      data: { proposalId: 'p', requestId: 'r', update: 'accepted' },
+    }),
+    '🤝 Accepted your proposal',
+    'proposal accepted',
+  );
+  expectEqual(
     pushBody({ ...claim, kind: 'phone', body: null, data: { phone: '+15305550101' } }),
     'Shared their phone number',
     'phone',

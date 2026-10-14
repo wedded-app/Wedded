@@ -55,6 +55,10 @@ export function pushBody(claim: Pick<PushClaim, 'kind' | 'body' | 'data' | 'even
       if (update === 'refunded') return 'Deposit refunded';
       return '💳 Asked for a deposit';
     }
+    case 'proposal':
+      return claim.data.update === 'accepted'
+        ? '🤝 Accepted your proposal'
+        : `📝 Proposal: ${shorten(claim.body ?? '', 100)}`;
     case 'quote':
       return 'Sent you a price quote';
     case 'menu':
