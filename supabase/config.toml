@@ -439,6 +439,14 @@ deno_version = 2
 MAILPIT_URL = "http://supabase_inbucket_wedding-app:8025"
 FOUNDERS_EMAIL = "founders@example.com"
 
+# Deposits (#209): Stripe calls stripe-webhook and sends vendors back to
+# stripe-return without a Supabase login; Stripe's signature is the check.
+[functions.stripe-webhook]
+verify_jwt = false
+
+[functions.stripe-return]
+verify_jwt = false
+
 [analytics]
 enabled = true
 port = 54327
