@@ -1,6 +1,6 @@
 import { router } from 'expo-router';
 import { View } from 'react-native';
-import Animated, { FadeInDown } from 'react-native-reanimated';
+import Animated from 'react-native-reanimated';
 
 import { AppText } from '@/components/app-text';
 import { Icon } from '@/components/icon';
@@ -14,6 +14,7 @@ import { RequestInvite } from '@/features/requests/request-invite';
 import { useRequestWords } from '@/features/requests/use-request-words';
 import { localized } from '@/i18n/localized';
 import { useLocale } from '@/i18n/locale-context';
+import { Motion } from '@/lib/motion';
 
 /**
  * Posted requests (#219): everything the family asked vendors for, each as
@@ -61,7 +62,7 @@ function PostedRequests() {
       const event = view.chosen.find((e) => e.slug === r.eventSlug);
       const fresh = status === 'open' && r.proposalCount > 0;
       return (
-        <Animated.View key={r.id} entering={FadeInDown.delay(i * 70).duration(360)}>
+        <Animated.View key={r.id} entering={Motion.stagger(i)}>
           <PressableScale
             accessibilityRole="button"
             accessibilityLabel={[

@@ -1,7 +1,7 @@
 import { router } from 'expo-router';
 import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
-import Animated, { FadeInDown } from 'react-native-reanimated';
+import Animated from 'react-native-reanimated';
 
 import { AppText } from '@/components/app-text';
 import { Icon, type IconName } from '@/components/icon';
@@ -22,6 +22,7 @@ import { useRequestWords } from '@/features/requests/use-request-words';
 import { localized } from '@/i18n/localized';
 import { useLocale } from '@/i18n/locale-context';
 import { useCountUp } from '@/lib/use-count-up';
+import { Motion } from '@/lib/motion';
 
 type Reach = '25' | '50' | 'any';
 
@@ -80,10 +81,7 @@ function FamiliesLooking() {
     content = (
       <View>
         {cards.map((card, index) => (
-          <Animated.View
-            key={card.id}
-            entering={FadeInDown.delay(Math.min(index, 6) * 70).duration(360)}
-          >
+          <Animated.View key={card.id} entering={Motion.stagger(Math.min(index, 6))}>
             {index > 0 && <View style={styles.hairline} />}
             <Post card={card} />
           </Animated.View>

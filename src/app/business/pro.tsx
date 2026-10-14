@@ -1,6 +1,6 @@
 import * as WebBrowser from 'expo-web-browser';
 import { View } from 'react-native';
-import Animated, { FadeInDown } from 'react-native-reanimated';
+import Animated from 'react-native-reanimated';
 
 import { AppText } from '@/components/app-text';
 import { Icon, type IconName } from '@/components/icon';
@@ -12,6 +12,7 @@ import { useCurrentBusiness } from '@/features/business/use-current-business';
 import { formatDate } from '@/features/inquiry/inquiry-helpers';
 import { GlassCard, GlowButton, NightScreen } from '@/features/requests/night';
 import { useLocale } from '@/i18n/locale-context';
+import { Motion } from '@/lib/motion';
 
 const PERKS: { icon: IconName; key: string }[] = [
   { icon: 'megaphone-outline', key: 'looking' },
@@ -114,18 +115,14 @@ function Pro() {
 
       <View style={styles.perks}>
         {PERKS.map((perk, i) => (
-          <Animated.View key={perk.key} entering={FadeInDown.delay(120 + i * 90).duration(380)}>
-            <GlassCard style={styles.perk}>
-              <View style={styles.orb}>
-                <Icon name={perk.icon} size={24} color={Colors.champagne} />
-              </View>
-              <View style={styles.grow}>
-                <AppText variant="heading" weight={700}>
-                  {t(`pro.perks.${perk.key}.title`)}
-                </AppText>
-                <AppText color="text2">{t(`pro.perks.${perk.key}.body`)}</AppText>
-              </View>
-            </GlassCard>
+          <Animated.View key={perk.key} entering={Motion.stagger(i)} style={styles.perk}>
+            <Icon name={perk.icon} size={26} color={Colors.champagne} />
+            <View style={styles.grow}>
+              <AppText variant="heading" weight={700}>
+                {t(`pro.perks.${perk.key}.title`)}
+              </AppText>
+              <AppText color="text2">{t(`pro.perks.${perk.key}.body`)}</AppText>
+            </View>
           </Animated.View>
         ))}
       </View>
@@ -164,21 +161,14 @@ const useStyles = makeStyles((Colors) => ({
     alignItems: 'center',
   },
   perks: {
-    gap: Spacing.md,
+    // A plain list, not a stack of cards: the price and the button are the
+    // only things that need a frame.
+    gap: Spacing.xl,
+    paddingVertical: Spacing.sm,
   },
   perk: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-  },
-  orb: {
-    width: 52,
-    height: 52,
-    borderRadius: 26,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: Colors.nightCardStrong,
-    borderWidth: 1,
-    borderColor: Colors.nightLine,
-    boxShadow: '0px 0px 22px rgba(233, 201, 139, 0.22)',
+    gap: Spacing.lg,
   },
 }));

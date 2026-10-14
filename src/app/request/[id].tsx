@@ -10,7 +10,7 @@ import {
   useWindowDimensions,
   type ViewStyle,
 } from 'react-native';
-import Animated, { FadeInDown } from 'react-native-reanimated';
+import Animated from 'react-native-reanimated';
 
 import { AppText } from '@/components/app-text';
 import { Button } from '@/components/button';
@@ -46,6 +46,7 @@ import { useRequestWords } from '@/features/requests/use-request-words';
 import { localized } from '@/i18n/localized';
 import { useLocale } from '@/i18n/locale-context';
 import { successHaptic } from '@/lib/haptics';
+import { Motion } from '@/lib/motion';
 
 const dollars = (cents: number) =>
   (cents / 100).toLocaleString('en-US', {
@@ -211,11 +212,7 @@ function Request() {
               scrollEventThrottle={64}
             >
               {sorted.map((p, i) => (
-                <Animated.View
-                  key={p.id}
-                  entering={FadeInDown.delay(i * 80).duration(380)}
-                  style={{ width: cardWidth }}
-                >
+                <Animated.View key={p.id} entering={Motion.stagger(i)} style={{ width: cardWidth }}>
                   <ProposalCard
                     proposal={p}
                     eventDate={request.eventDate}
