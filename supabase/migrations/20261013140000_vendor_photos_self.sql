@@ -32,9 +32,27 @@ create policy "A vendor's people delete its photos" on storage.objects
   for delete to authenticated
   using (bucket_id = 'vendor-media' and private.can_write_vendor_photo(name));
 
-create policy "A vendor's people see its photos, drafts too" on public.vendor_media
+-- One read rule per role (two permissive ones would both run on every read):
+-- everyone sees published vendors' photos, and a vendor's people also see
+-- their own while the listing is a draft.
+drop policy "Photos of published vendors are readable by everyone" on public.vendor_media;
+
+create policy "Photos of published vendors are readable by everyone" on public.vendor_media
+  for select to anon
+  using (exists (
+    select 1 from public.vendors v
+    where v.id = vendor_media.vendor_id and v.status = 'published'
+  ));
+
+create policy "Published vendors' photos, and a vendor's own drafts" on public.vendor_media
   for select to authenticated
-  using ((select private.is_vendor_member(vendor_id)));
+  using (
+    exists (
+      select 1 from public.vendors v
+      where v.id = vendor_media.vendor_id and v.status = 'published'
+    )
+    or (select private.is_vendor_member(vendor_id))
+  );
 
 -- Saving ----------------------------------------------------------------------------------
 
