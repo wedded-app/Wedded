@@ -19,6 +19,7 @@ import { groupIcon } from '@/components/group-icon';
 import { Icon } from '@/components/icon';
 import { SectionTitle } from '@/components/list';
 import { NavScreen } from '@/components/nav';
+import { PetalBurst } from '@/components/petal-burst';
 import { ProgressBar } from '@/components/progress-bar';
 import { StateView } from '@/components/state-view';
 import { makeStyles, Radius, Sizes, Spacing, Springs, useColors } from '@/constants/theme';
@@ -76,6 +77,7 @@ export default function PlanScreen() {
   // Booking an event's last essential: say so, fold it away and open the
   // next event with something left, so there's always a clear next step.
   const [cheer, setCheer] = useState<{ done: string; next: string | null } | null>(null);
+  const [burst, setBurst] = useState(0);
   useEffect(() => {
     if (!cheer) return;
     const timer = setTimeout(() => setCheer(null), 5000);
@@ -91,6 +93,7 @@ export default function PlanScreen() {
         ),
     );
     successHaptic();
+    setBurst((n) => n + 1);
     setCheer({
       done: done ? localized(done.name, locale) : '',
       next: next ? localized(next.name, locale) : null,
@@ -99,140 +102,143 @@ export default function PlanScreen() {
   }
 
   return (
-    <NavScreen
-      title={t('planner.title')}
-      subtitle={t('planner.subtitle')}
-      trailing={
-        // Wed (mockup): the plan's next step, asked in the chat. Never sends.
-        <AskWedButton
-          variant="round"
-          a11y="Ask Wed"
-          about={{ kind: 'plan', label: 'My Wedding' }}
-          ask="What should we book next?"
-        />
-      }
-    >
-      {/* A plan belongs to an account: signed out, or not started yet, offer to start one. */}
-      {!wedding && !view.loading && (
-        <Animated.View entering={Motion.rise}>
-          <StartPlanCard />
-        </Animated.View>
-      )}
-      {!wedding && view.loading && <StateView state="loading" />}
+    <>
+      <NavScreen
+        title={t('planner.title')}
+        subtitle={t('planner.subtitle')}
+        trailing={
+          // Wed (mockup): the plan's next step, asked in the chat. Never sends.
+          <AskWedButton
+            variant="round"
+            a11y="Ask Wed"
+            about={{ kind: 'plan', label: 'My Wedding' }}
+            ask="What should we book next?"
+          />
+        }
+      >
+        {/* A plan belongs to an account: signed out, or not started yet, offer to start one. */}
+        {!wedding && !view.loading && (
+          <Animated.View entering={Motion.rise}>
+            <StartPlanCard />
+          </Animated.View>
+        )}
+        {!wedding && view.loading && <StateView state="loading" />}
 
-      {wedding && (
-        <View style={styles.hero}>
-          <CountdownCard plan={plan} progress={progress} eventsCount={chosen.length} />
-          {canEdit && (
-            <DateField
-              value={plan.weddingDate}
-              onChange={(date) => {
-                successHaptic();
-                view.setWeddingDate(date);
-              }}
-              placeholder={plan.weddingDate ? t('planner.changeDate') : t('planner.pickDate')}
-            />
-          )}
-        </View>
-      )}
-
-      {saveFailed && (
-        <AppText color="error" style={styles.pad}>
-          {t('planTogether.saveFailed')}
-        </AppText>
-      )}
-      {wedding && view.isPending && <StateView state="loading" />}
-      {view.isError && <StateView state="error" onRetry={() => void view.refetch()} />}
-
-      {wedding && !view.isPending && !view.isError && chosen.length === 0 && canEdit && (
-        <Animated.View entering={Motion.rise} style={styles.start}>
-          <View style={styles.startIcon}>
-            <Icon name="sparkles-outline" size={28} color={Colors.primary} />
+        {wedding && (
+          <View style={styles.hero}>
+            <CountdownCard plan={plan} progress={progress} eventsCount={chosen.length} />
+            {canEdit && (
+              <DateField
+                value={plan.weddingDate}
+                onChange={(date) => {
+                  successHaptic();
+                  view.setWeddingDate(date);
+                }}
+                placeholder={plan.weddingDate ? t('planner.changeDate') : t('planner.pickDate')}
+              />
+            )}
           </View>
-          <AppText variant="heading" weight={700}>
-            {t('planner.startTitle')}
+        )}
+
+        {saveFailed && (
+          <AppText color="error" style={styles.pad}>
+            {t('planTogether.saveFailed')}
           </AppText>
-          <AppText color="text2">{t('planner.startBody')}</AppText>
-          <Button label={t('planner.chooseEvents')} icon="add" onPress={openPicker} />
-        </Animated.View>
-      )}
+        )}
+        {wedding && view.isPending && <StateView state="loading" />}
+        {view.isError && <StateView state="error" onRetry={() => void view.refetch()} />}
 
-      {chosen.length > 0 && (
-        <View style={styles.block}>
-          <View style={styles.heading}>
-            <View style={styles.titleRow}>
-              <SectionTitle>{t('planner.checklistTitle')}</SectionTitle>
-              {canEdit && (
-                <Pressable
-                  accessibilityRole="button"
-                  hitSlop={12}
-                  onPress={openPicker}
-                  style={({ pressed }) => pressed && styles.pressed}
-                >
-                  <AppText weight={600} color="primary">
-                    {t('planner.editEvents')}
-                  </AppText>
-                </Pressable>
-              )}
+        {wedding && !view.isPending && !view.isError && chosen.length === 0 && canEdit && (
+          <Animated.View entering={Motion.rise} style={styles.start}>
+            <View style={styles.startIcon}>
+              <Icon name="sparkles-outline" size={28} color={Colors.primary} />
             </View>
-            <AppText variant="label" weight={400} color="text2" style={styles.pad}>
-              {[
-                ...active.map((tradition) => localized(tradition.name, locale)),
-                t('planner.eventsCount', { count: chosen.length }),
-              ].join(' · ')}
+            <AppText variant="heading" weight={700}>
+              {t('planner.startTitle')}
             </AppText>
-          </View>
-          {cheer && (
-            <Animated.View
-              entering={Motion.rise}
-              exiting={Motion.exit}
-              layout={Motion.layout}
-              style={styles.cheer}
-              accessibilityLiveRegion="polite"
-            >
-              <View style={styles.cheerIcon}>
-                <Icon name="checkmark" size={20} color={Colors.onPrimary} weight="bold" />
-              </View>
-              <View style={styles.grow}>
-                <AppText weight={700}>
-                  {cheer.next
-                    ? t('planner.cheerDone', { event: cheer.done })
-                    : t('planner.cheerAll')}
-                </AppText>
-                {cheer.next && (
-                  <AppText variant="label" weight={400} color="text2">
-                    {t('planner.cheerNext', { event: cheer.next })}
-                  </AppText>
+            <AppText color="text2">{t('planner.startBody')}</AppText>
+            <Button label={t('planner.chooseEvents')} icon="add" onPress={openPicker} />
+          </Animated.View>
+        )}
+
+        {chosen.length > 0 && (
+          <View style={styles.block}>
+            <View style={styles.heading}>
+              <View style={styles.titleRow}>
+                <SectionTitle>{t('planner.checklistTitle')}</SectionTitle>
+                {canEdit && (
+                  <Pressable
+                    accessibilityRole="button"
+                    hitSlop={12}
+                    onPress={openPicker}
+                    style={({ pressed }) => pressed && styles.pressed}
+                  >
+                    <AppText weight={600} color="primary">
+                      {t('planner.editEvents')}
+                    </AppText>
+                  </Pressable>
                 )}
               </View>
-            </Animated.View>
-          )}
-          {chosen.map((event) => (
-            <EventPlan
-              key={event.slug}
-              event={event}
-              sections={needsByEvent[event.slug] ?? []}
-              booked={plan.booked[event.slug] ?? []}
-              bookedVendors={wedding?.bookedVendors ?? {}}
-              suggested={suggested}
-              guests={plan.guests?.[event.slug] ?? null}
-              date={plan.eventDates?.[event.slug] ?? null}
-              canEdit={canEdit}
-              open={openSlugs.includes(event.slug)}
-              onToggle={() => toggleOpen(event.slug)}
-              onComplete={() => eventCompleted(event.slug)}
-              onToggleBooked={(category) => view.toggleBooked(event.slug, category)}
-              onGuests={(band) => view.setEventGuests(event.slug, band)}
-              onDate={(date) => view.setEventDate(event.slug, date)}
-            />
-          ))}
-        </View>
-      )}
+              <AppText variant="label" weight={400} color="text2" style={styles.pad}>
+                {[
+                  ...active.map((tradition) => localized(tradition.name, locale)),
+                  t('planner.eventsCount', { count: chosen.length }),
+                ].join(' · ')}
+              </AppText>
+            </View>
+            {cheer && (
+              <Animated.View
+                entering={Motion.rise}
+                exiting={Motion.exit}
+                layout={Motion.layout}
+                style={styles.cheer}
+                accessibilityLiveRegion="polite"
+              >
+                <View style={styles.cheerIcon}>
+                  <Icon name="checkmark" size={20} color={Colors.onPrimary} weight="bold" />
+                </View>
+                <View style={styles.grow}>
+                  <AppText weight={700}>
+                    {cheer.next
+                      ? t('planner.cheerDone', { event: cheer.done })
+                      : t('planner.cheerAll')}
+                  </AppText>
+                  {cheer.next && (
+                    <AppText variant="label" weight={400} color="text2">
+                      {t('planner.cheerNext', { event: cheer.next })}
+                    </AppText>
+                  )}
+                </View>
+              </Animated.View>
+            )}
+            {chosen.map((event) => (
+              <EventPlan
+                key={event.slug}
+                event={event}
+                sections={needsByEvent[event.slug] ?? []}
+                booked={plan.booked[event.slug] ?? []}
+                bookedVendors={wedding?.bookedVendors ?? {}}
+                suggested={suggested}
+                guests={plan.guests?.[event.slug] ?? null}
+                date={plan.eventDates?.[event.slug] ?? null}
+                canEdit={canEdit}
+                open={openSlugs.includes(event.slug)}
+                onToggle={() => toggleOpen(event.slug)}
+                onComplete={() => eventCompleted(event.slug)}
+                onToggleBooked={(category) => view.toggleBooked(event.slug, category)}
+                onGuests={(band) => view.setEventGuests(event.slug, band)}
+                onDate={(date) => view.setEventDate(event.slug, date)}
+              />
+            ))}
+          </View>
+        )}
 
-      {wedding && <Suggestions wedding={wedding} events={chosen} />}
-      {wedding && <PlanTogether wedding={wedding} />}
-      {wedding && <FamilyShortlist weddingId={wedding.id} />}
-    </NavScreen>
+        {wedding && <Suggestions wedding={wedding} events={chosen} />}
+        {wedding && <PlanTogether wedding={wedding} />}
+        {wedding && <FamilyShortlist weddingId={wedding.id} />}
+      </NavScreen>
+      <PetalBurst play={burst} />
+    </>
   );
 }
 

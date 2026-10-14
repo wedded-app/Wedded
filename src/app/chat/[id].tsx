@@ -654,6 +654,7 @@ function MessageContent({
             message.booking.guestBand ? t(`inquiry.guestBands.${message.booking.guestBand}`) : null
           }
           answers={leadAnswerRows(message.booking.details, t, eventName)}
+          message={message.body}
         />
       ) : null;
     case 'phone':

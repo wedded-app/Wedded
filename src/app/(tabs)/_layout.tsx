@@ -1,4 +1,5 @@
 import { Redirect, router, Tabs } from 'expo-router';
+import { useState } from 'react';
 import { View } from 'react-native';
 
 import {
@@ -9,6 +10,7 @@ import {
 } from '@/components/tab-bar';
 import { Sizes, Spacing, useColors } from '@/constants/theme';
 import { useUnreadCount } from '@/data/chat';
+import { useSession } from '@/features/auth/session';
 import { useOnboardingGate } from '@/features/onboarding/gate';
 import { SavedToastHost } from '@/features/saved/saved-toast';
 import { useWedNavigation } from '@/features/wed/open-wed';
@@ -54,6 +56,16 @@ export default function TabsLayout() {
   const { t } = useLocale();
   const offset = useTabBarOffset();
   const unread = useUnreadCount();
+  // Signing out, or someone else signing in, starts every tab fresh, so the
+  // next person never lands on the last one's pages. A first sign-in (often
+  // mid-action, like Save) keeps them where they were.
+  const userId = useSession().session?.user.id ?? null;
+  const [seenUser, setSeenUser] = useState(userId);
+  const [generation, setGeneration] = useState(0);
+  if (seenUser !== userId) {
+    setSeenUser(userId);
+    if (seenUser !== null) setGeneration((g) => g + 1);
+  }
   const waiting = useWed(waitingCount);
   // Only someone who can say yes gets a count to clear
   const canApprove = useWed((s) => s.role === 'owner');
@@ -76,6 +88,7 @@ export default function TabsLayout() {
   return (
     <TabBarSpaceProvider value={Sizes.tabBar + offset + Spacing.sm}>
       <Tabs
+        key={generation}
         tabBar={(props) => <GlassTabBar {...props} tabs={tabs} />}
         screenOptions={{
           headerShown: false,

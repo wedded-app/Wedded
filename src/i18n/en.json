@@ -286,7 +286,12 @@
     },
     "emailLockedHint": "This is the email you signed in with.",
     "save": "Save",
-    "saveFailed": "We couldn't save your details. Check your internet and try again."
+    "saveFailed": "We couldn't save your details. Check your internet and try again.",
+    "business": {
+      "title": "Your details",
+      "intro": "So the Wedded team knows who runs your business. Families don't see these.",
+      "phoneHint": "So the Wedded team can reach you about your business."
+    }
   },
   "counts": {
     "vendorTypes": {
@@ -942,7 +947,8 @@
       "date": "Date",
       "guests": "Guests",
       "where": "Where",
-      "notSure": "Not sure yet"
+      "notSure": "Not sure yet",
+      "message": "Message"
     },
     "quickReplies": {
       "available": "Are you available on our date?",
@@ -1506,7 +1512,13 @@
       "freshTitle": "Is your calendar up to date?",
       "freshBody": "Families only see your days as open while your calendar is fresh. Tap this whenever you've checked it.",
       "upToDate": "My calendar is up to date",
-      "upToDateDone": "Thank you! Families will see your open days for the next 60 days."
+      "upToDateDone": "Thank you! Families will see your open days for the next 60 days.",
+      "whichPart": "Which part of the day",
+      "parts": {
+        "all_day": "Whole day",
+        "morning": "Morning",
+        "evening": "Evening"
+      }
     },
     "notLive": "Your page isn't live yet, so families can't find it. We'll tell you when it is.",
     "viewPage": "View my page",
@@ -1544,7 +1556,7 @@
         "other": "{{count}} families are waiting for your reply"
       },
       "allReplied": "You've replied to everyone. Well done!",
-      "seeAll": "See all {{count}}",
+      "seeAll": "See all {{count}} requests",
       "tour": "Wants a tour",
       "dateNotSure": "Date not sure yet",
       "guests": "{{band}} guests",
@@ -1576,7 +1588,10 @@
       "cantShare": "This phone can't share files from the app. Try on another phone, or on a computer at the website."
     },
     "home": {
-      "week": "This week: {{views}} people saw your page, {{asked}} asked about a date",
+      "week": {
+        "one": "This week: 1 person saw your page, {{asked}} asked about a date",
+        "other": "This week: {{count}} people saw your page, {{asked}} asked about a date"
+      },
       "hint": "Opens My business"
     },
     "insights": {
@@ -1655,9 +1670,22 @@
       "reelsTitle": "Your reels",
       "reelsEmpty": "No reels yet. Reels bring families to your page: post a short clip of your work.",
       "postReel": "Post a reel",
-      "reelCounts": "{{views}} views · {{likes}} likes · {{comments}} comments",
       "noCaption": "No caption",
-      "tagged": "A family tagged you"
+      "tagged": "A family tagged you",
+      "reelCount": {
+        "views": {
+          "one": "1 view",
+          "other": "{{n}} views"
+        },
+        "likes": {
+          "one": "1 like",
+          "other": "{{n}} likes"
+        },
+        "comments": {
+          "one": "1 comment",
+          "other": "{{n}} comments"
+        }
+      }
     },
     "checklist": {
       "title": "Make your page stronger",
@@ -1766,8 +1794,8 @@
       "hoursHint": "For example: Mon to Sat, 10 am to 7 pm",
       "languagesTravel": "Languages and travel",
       "languages": "Languages you speak",
-      "willTravel": "I travel to families",
-      "radius": "How far you travel",
+      "willTravel": "I'll go farther than that, for a fee",
+      "radius": "How far do you usually travel?",
       "miles": "{{miles}} miles",
       "travelNote": "A note about travel",
       "travelNoteHint": "For example: No travel fee within 25 miles",
@@ -1793,7 +1821,12 @@
         "invalid": "This doesn't look right. Check it and try again.",
         "notAllowed": "You can't change this listing. Ask the Wedded team.",
         "failed": "Your changes didn't save. Check your internet, then try again."
-      }
+      },
+      "allNorcal": "All of Northern California",
+      "unsavedTitle": "Leave without saving?",
+      "unsavedBody": "Your changes aren't saved yet. Families won't see them.",
+      "keepEditing": "Keep editing",
+      "leave": "Leave"
     }
   }
 }

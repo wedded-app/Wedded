@@ -10,6 +10,7 @@ import { SheetHeader } from '@/components/sheet-header';
 import { StateView } from '@/components/state-view';
 import { TextField } from '@/components/text-field';
 import { Spacing, useColors } from '@/constants/theme';
+import { useIsVendor } from '@/data/chat';
 import { useLocale } from '@/i18n/locale-context';
 import { successHaptic } from '@/lib/haptics';
 import { formatPhone } from '@/lib/phone';
@@ -18,6 +19,7 @@ import { supabase } from '@/lib/supabase';
 import { AboutYouForm, type AboutYouValues } from './about-you-form';
 import { isValidEmail, normalizePhone, toLatinDigits } from './about-you-validation';
 import { authErrorKey } from './auth-helpers';
+import { formatPhoneDigits, nextPhoneDigits } from './phone-entry';
 import { useSession } from './session';
 import { SignInOptions } from './sign-in-options';
 
@@ -278,7 +280,15 @@ function PhoneStep({
         label={t('signIn.phone')}
         hint={t('signIn.phoneHint')}
         value={phone}
-        onChangeText={setPhone}
+        onChangeText={(text) =>
+          // US numbers space out as they're typed, like /phone-sign-in;
+          // a number starting with + (another country) stays as typed
+          setPhone(
+            text.trim().startsWith('+')
+              ? text
+              : formatPhoneDigits(nextPhoneDigits(phone.replace(/\D/g, ''), text, '1'), '1'),
+          )
+        }
         error={error}
         maxLength={20}
         autoFocus
@@ -409,6 +419,8 @@ function AboutYouStep({ onDone }: { onDone: () => void }) {
   const { session, email, phone, nameHint, profile, profileSaved } = useSession();
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string>();
+  // Someone the team added to a business sees the form in a business's words
+  const { isVendor } = useIsVendor();
 
   if (!session) {
     return <StateView state="loading" />;
@@ -446,6 +458,7 @@ function AboutYouStep({ onDone }: { onDone: () => void }) {
       }}
       emailLocked
       emailHidden={!email}
+      forBusiness={isVendor}
       confirmedAdult={!!profile}
       submitLabel={profile ? t('aboutYou.save') : undefined}
       submitting={saving}

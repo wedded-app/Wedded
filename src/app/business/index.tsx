@@ -216,11 +216,13 @@ export default function BusinessScreen() {
                 onPress={() => router.push({ pathname: '/business/lead', params: { id: lead.id } })}
               />
             ))}
-            <Button
-              variant="secondary"
-              label={t('business.leads.seeAll', { count: leadList.length })}
-              onPress={() => router.push('/business/leads')}
-            />
+            {leadList.length > 3 && (
+              <Button
+                variant="secondary"
+                label={t('business.leads.seeAll', { count: leadList.length })}
+                onPress={() => router.push('/business/leads')}
+              />
+            )}
           </>
         )}
       </View>

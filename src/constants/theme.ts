@@ -20,21 +20,21 @@ import {
  */
 
 const light = {
-  bg: '#F2F2F7', // iOS systemGroupedBackground: the page behind grouped rows and cards
+  bg: '#F6F2EC', // warm ivory, like good paper: the page behind rows and cards
   surface: '#FFFFFF', // secondarySystemGroupedBackground: rows, cards, sheets
-  surface2: '#F2F2F7', // a panel inside a card
-  text: '#000000', // label, 21:1
-  // secondaryLabel as iOS draws it with Increase Contrast on: Apple's default
-  // (#8A8A8E) is 3.4:1, too faint for elders. 5.1:1 on white, 4.6:1 on bg.
-  text2: '#6C6C70',
+  surface2: '#F6F2EC', // a panel inside a card
+  text: '#1C1714', // warm ink, 17:1
+  // Secondary text, a warm grey: 5.9:1 on white, 5.3:1 on bg (Apple's
+  // default #8A8A8E is 3.4:1, too faint for elders).
+  text2: '#6B635C',
   textDisabled: '#AEAEB2',
   chevron: '#8E8E93', // systemGray: disclosure chevrons and row glyphs (3.3:1, non-text)
-  separator: '#C6C6C8', // opaqueSeparator: hairlines between grouped rows
-  border: '#E5E5EA', // systemGray5: decorative edges
+  separator: '#DDD5CB', // hairlines between grouped rows, warm
+  border: '#ECE5DC', // decorative edges
   borderInput: '#8E8E93', // 3.3:1 on white, text field outlines (non-text needs 3:1)
-  fill: 'rgba(118, 118, 128, 0.12)', // tertiarySystemFill: search field, chips, segmented track
-  fillPressed: 'rgba(118, 118, 128, 0.24)',
-  rowPressed: '#E5E5EA', // a grouped row's highlight while held
+  fill: 'rgba(120, 96, 72, 0.10)', // search field, chips, segmented track
+  fillPressed: 'rgba(120, 96, 72, 0.2)',
+  rowPressed: '#EFE8DF', // a grouped row's highlight while held
   primary: '#8A1C30', // maroon, the tint for text and icons: links, active tab. 9.2:1
   primaryFill: '#8A1C30', // behind white text: filled buttons, selected chips. White on it 9.2:1
   primaryFillPressed: '#6E1526',
@@ -49,7 +49,7 @@ const light = {
   error: '#D70015', // systemRed with Increase Contrast, 5.1:1 (the default #FF3B30 is 3.6:1)
   errorFill: '#D70015', // behind white text: 5.4:1
   errorFillPressed: '#A50010',
-  skeleton: '#E5E5EA',
+  skeleton: '#ECE5DC',
   scrim: 'rgba(0, 0, 0, 0.4)',
   onPrimary: '#FFFFFF',
   // Glass where the real material isn't available (Android, older iOS, the
@@ -60,7 +60,7 @@ const light = {
   glassShadow: 'rgba(0, 0, 0, 0.12)',
   // iOS 26's scroll edge effect behind the nav bar: the page colour fading out.
   scrollEdge:
-    'linear-gradient(to bottom, rgba(242, 242, 247, 0.97) 0%, rgba(242, 242, 247, 0.9) 72%, rgba(242, 242, 247, 0) 100%)',
+    'linear-gradient(to bottom, rgba(246, 242, 236, 0.97) 0%, rgba(246, 242, 236, 0.9) 72%, rgba(246, 242, 236, 0) 100%)',
   // The same edge over a `canvas` page (the Wed thread): white fading out.
   canvasEdge:
     'linear-gradient(to bottom, rgba(255, 255, 255, 0.97) 0%, rgba(255, 255, 255, 0.9) 72%, rgba(255, 255, 255, 0) 100%)',
@@ -96,6 +96,25 @@ const light = {
   glowRose: 'rgba(196, 120, 160, 0.32)',
   // Text fields floating on the glow: white, a little see-through.
   canvasField: 'rgba(255, 255, 255, 0.82)',
+  // The richer look (2026-10-13): champagne gold for hairlines and small
+  // marks (never text), a soft warm shadow under cards, and a sheen on the
+  // main button.
+  gold: '#B08A4E',
+  goldLine: 'rgba(176, 138, 78, 0.4)',
+  cardShadow: '0px 12px 32px rgba(74, 44, 20, 0.07), 0px 1px 2px rgba(74, 44, 20, 0.06)',
+  buttonSheen: 'linear-gradient(180deg, #9E2840 0%, #7A1729 100%)',
+  // Celebrations (PetalBurst): rose petals and gold dust.
+  petalRose: '#E58FA6',
+  petalBlush: '#F6C9D3',
+  petalMaroon: '#A3243F',
+  petalGold: '#E2B25C',
+  // Liquid light moving inside the countdown card; the deep one keeps the
+  // white text at least as readable as on the plain gradient.
+  heroLiquidPink: 'rgba(255, 150, 180, 0.30)',
+  heroLiquidGold: 'rgba(250, 196, 120, 0.26)',
+  heroLiquidDeep: 'rgba(60, 4, 20, 0.45)',
+  // The holographic shine that sweeps over the Founding vendor badge.
+  holo: 'linear-gradient(105deg, rgba(255,255,255,0) 20%, rgba(255,170,200,0.55) 36%, rgba(255,226,150,0.6) 46%, rgba(170,240,220,0.55) 56%, rgba(190,170,255,0.55) 66%, rgba(255,255,255,0) 80%)',
 };
 
 export type Palette = Record<keyof typeof light, string>;
@@ -103,19 +122,19 @@ export type ColorToken = keyof Palette;
 
 /** iOS dark mode: true black page, raised grey surfaces, a lighter tint. */
 const dark: Palette = {
-  bg: '#000000',
-  surface: '#1C1C1E',
-  surface2: '#2C2C2E',
-  text: '#FFFFFF',
-  text2: '#A1A1A6', // 6.6:1 on surface, 8.2:1 on bg
+  bg: '#0D0B0A', // warm black
+  surface: '#1C1917',
+  surface2: '#2A2622',
+  text: '#F7F2EA',
+  text2: '#ABA39A', // 7:1 on surface, 7.9:1 on bg
   textDisabled: '#636366',
   chevron: '#6E6E73', // 3.4:1, non-text
-  separator: '#38383A',
-  border: '#2C2C2E',
+  separator: '#3A3530',
+  border: '#2A2622',
   borderInput: '#6E6E73', // 3.4:1
-  fill: 'rgba(118, 118, 128, 0.24)',
-  fillPressed: 'rgba(118, 118, 128, 0.36)',
-  rowPressed: '#2C2C2E',
+  fill: 'rgba(160, 140, 120, 0.2)',
+  fillPressed: 'rgba(160, 140, 120, 0.32)',
+  rowPressed: '#2A2622',
   // Maroon is too dark to read on black, so text and icons use a lighter rose
   // (6.1:1 on surface) and filled buttons a deeper one (white on it 5.7:1).
   primary: '#F2718A',
@@ -132,7 +151,7 @@ const dark: Palette = {
   error: '#FF6961', // 6:1
   errorFill: '#C4302B', // white on it 5.5:1
   errorFillPressed: '#A32520',
-  skeleton: '#2C2C2E',
+  skeleton: '#2A2622',
   scrim: 'rgba(0, 0, 0, 0.6)',
   onPrimary: '#FFFFFF',
   glassFallback: 'rgba(44, 44, 46, 0.94)',
@@ -140,7 +159,7 @@ const dark: Palette = {
   glassEdge: 'rgba(255, 255, 255, 0.12)',
   glassShadow: 'rgba(0, 0, 0, 0.5)',
   scrollEdge:
-    'linear-gradient(to bottom, rgba(0, 0, 0, 0.95) 0%, rgba(0, 0, 0, 0.85) 72%, rgba(0, 0, 0, 0) 100%)',
+    'linear-gradient(to bottom, rgba(13, 11, 10, 0.95) 0%, rgba(13, 11, 10, 0.85) 72%, rgba(13, 11, 10, 0) 100%)',
   // canvas and bg are both black in dark mode, so the edges match.
   canvasEdge:
     'linear-gradient(to bottom, rgba(0, 0, 0, 0.95) 0%, rgba(0, 0, 0, 0.85) 72%, rgba(0, 0, 0, 0) 100%)',
@@ -165,6 +184,18 @@ const dark: Palette = {
   glowGold: 'rgba(240, 160, 75, 0.22)',
   glowRose: 'rgba(150, 70, 130, 0.28)',
   canvasField: 'rgba(44, 44, 46, 0.82)',
+  gold: '#D4B07A',
+  goldLine: 'rgba(212, 176, 122, 0.35)',
+  cardShadow: '0px 12px 32px rgba(0, 0, 0, 0.45)',
+  buttonSheen: 'linear-gradient(180deg, #C4425B 0%, #A12C43 100%)',
+  petalRose: '#E58FA6',
+  petalBlush: '#F2B8C6',
+  petalMaroon: '#D0506C',
+  petalGold: '#E8BC6A',
+  heroLiquidPink: 'rgba(255, 130, 165, 0.24)',
+  heroLiquidGold: 'rgba(240, 170, 90, 0.2)',
+  heroLiquidDeep: 'rgba(30, 0, 10, 0.5)',
+  holo: 'linear-gradient(105deg, rgba(255,255,255,0) 20%, rgba(255,140,180,0.35) 36%, rgba(255,210,120,0.4) 46%, rgba(120,220,200,0.35) 56%, rgba(160,140,255,0.35) 66%, rgba(255,255,255,0) 80%)',
 };
 
 export type Scheme = 'light' | 'dark';
@@ -292,6 +323,13 @@ export const Typography = {
 
 export type TypographyVariant = keyof typeof Typography;
 export type FontWeight = 400 | 500 | 600 | 700 | 800;
+
+/** Variants drawn in Fraunces in English: titles read like a wedding card. */
+export const SERIF_VARIANTS: ReadonlySet<TypographyVariant> = new Set([
+  'display',
+  'title',
+  'section',
+]);
 
 export const GURMUKHI_SIZE_MULTIPLIER = 1.08;
 

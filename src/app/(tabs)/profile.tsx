@@ -95,11 +95,13 @@ export default function ProfileScreen() {
           title={t('home.foundingWall')}
           onPress={() => router.push('/founding')}
         />
-        <ListRow
-          icon="storefront-outline"
-          title={t('home.forVendors')}
-          onPress={() => router.push('/for-vendors')}
-        />
+        {!isVendor && (
+          <ListRow
+            icon="storefront-outline"
+            title={t('home.forVendors')}
+            onPress={() => router.push('/for-vendors')}
+          />
+        )}
       </ListSection>
     </NavScreen>
   );

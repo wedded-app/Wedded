@@ -30,7 +30,7 @@ export function BusinessHomeCard() {
   const week = stats.data?.current;
   const waiting = waitingCount(leads.data ?? []);
   const weekLine = week
-    ? t('business.home.week', { views: week.views, asked: week.inquiries })
+    ? t('business.home.week', { count: week.views, asked: week.inquiries })
     : null;
 
   return (
