@@ -27,6 +27,7 @@ import {
   useBusinessReels,
 } from '@/data/business-insights';
 import { useVendorMenus } from '@/data/vendor-menus';
+import { useMyVendorPhotos } from '@/data/vendor-photos-self';
 import { changeFrom } from '@/features/business/business-format';
 import { LeadRow, StatCard } from '@/features/business/business-parts';
 import {
@@ -86,6 +87,7 @@ export default function BusinessScreen() {
   const checklist = useBusinessChecklist(current.vendorId);
   const leads = useBusinessLeads(current.vendorId);
   const menus = useVendorMenus(current.vendorId);
+  const photos = useMyVendorPhotos(current.vendorId);
   const exporting = useExportBusiness(current.vendorId);
   const business = current.business;
 
@@ -245,6 +247,13 @@ export default function BusinessScreen() {
           title={t('business.listing.title')}
           subtitle={t('business.listing.rowHint')}
           onPress={() => router.push('/business/listing')}
+        />
+        <ListRow
+          icon="images-outline"
+          title={t('business.photos.title')}
+          subtitle={t('business.photos.rowHint')}
+          value={photos.data ? String(photos.data.length) : undefined}
+          onPress={() => router.push('/business/photos')}
         />
         <ListRow
           icon="restaurant-outline"

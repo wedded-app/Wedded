@@ -1822,6 +1822,53 @@
       "unsavedBody": "Your changes aren't saved yet. Families won't see them.",
       "keepEditing": "Keep editing",
       "leave": "Leave"
+    },
+    "photos": {
+      "title": "Photos",
+      "subtitle": "What families see first. The cover leads your page.",
+      "rowHint": "Add photos, pick the cover and the order",
+      "add": "Add photos",
+      "adding": "Adding {{done}} of {{total}}…",
+      "count": "{{count}} of {{max}} photos",
+      "full": "You have {{max}} photos, the most a page can have. Remove one to add another.",
+      "added": {
+        "one": "Added 1 photo",
+        "other": "Added {{count}} photos"
+      },
+      "empty": "No photos yet. Families book vendors they can see: add your best work.",
+      "blocked": "Wedded App can't see your photos. Turn on Photos for Wedded App in Settings.",
+      "openSettings": "Open Settings",
+      "noEvent": "Not for one event",
+      "cover": "Cover",
+      "isCover": "This is your cover photo",
+      "makeCover": "Make this the cover",
+      "tileLabel": "Photo {{number}} of {{total}}",
+      "tileHint": "Opens the photo to make it the cover, move it or remove it",
+      "position": "Photo {{number}} of {{total}} on your page",
+      "earlier": "Move earlier",
+      "later": "Move later",
+      "whichEvent": "Which event is it from?",
+      "whichEventHint": "Families planning that event see it first.",
+      "remove": "Remove photo",
+      "removeTitle": "Remove this photo?",
+      "removeConfirm": "It comes off your page for good.",
+      "keep": "Keep it",
+      "gone": "This photo isn't on your page anymore.",
+      "problems": {
+        "tooMany": "A page can have {{max}} photos. Remove some to add more.",
+        "rate": "That's a lot of photos for one day. Add the rest tomorrow.",
+        "notAllowed": "Only the people who run this business can change its photos.",
+        "tooBig": {
+          "one": "1 photo was too big to add.",
+          "other": "{{count}} photos were too big to add."
+        },
+        "invalidEvent": "That event can't be used. Pick another.",
+        "offline": "You're offline. Check your connection and try again.",
+        "failed": {
+          "one": "1 photo didn't go through. Try again.",
+          "other": "{{count}} photos didn't go through. Try again."
+        }
+      }
     }
   }
 }
