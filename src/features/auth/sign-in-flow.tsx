@@ -5,6 +5,7 @@ import { AccessibilityInfo, ScrollView, StyleSheet } from 'react-native';
 import { AppText } from '@/components/app-text';
 import { Button } from '@/components/button';
 import { GlassButton } from '@/components/glass-button';
+import { LegalLine } from '@/components/legal-line';
 import { Screen } from '@/components/screen';
 import { SheetHeader } from '@/components/sheet-header';
 import { StateView } from '@/components/state-view';
@@ -166,6 +167,7 @@ function ChooseStep({ onChoose }: { onChoose: (method: SignInMethod) => void }) 
         {t('signIn.why')}
       </AppText>
       <SignInOptions onChoose={onChoose} />
+      <LegalLine sentence="signIn.legal" />
     </ScrollView>
   );
 }
