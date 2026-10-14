@@ -24,7 +24,8 @@ import type { Json } from '@/types/database';
 import { photoUrl } from './vendor-media';
 
 export type ChatSide = 'family' | 'vendor';
-export type MessageKind = 'text' | 'photo' | 'quote' | 'menu' | 'booking' | 'phone' | 'voice';
+export type MessageKind =
+  'text' | 'photo' | 'quote' | 'menu' | 'booking' | 'phone' | 'voice' | 'deposit';
 
 export type Quote = {
   amount: number;
@@ -61,6 +62,11 @@ export type Message = {
   phone: string | null;
   /** A voice note (C5e): its chat-media path (play it from useChatPhotoUrl()) and length. */
   voice: { path: string; durationMs: number } | null;
+  /**
+   * A deposit (#209): the vendor's request, or the system's "paid" / "refunded"
+   * update to it. Find it with useDeposits() by depositId.
+   */
+  deposit: { depositId: string; update: 'paid' | 'refunded' | null } | null;
   /** The earlier message this one replies to (swipe to reply), by id. */
   replyTo: string | null;
   createdAt: string;
@@ -283,6 +289,13 @@ export function toMessage(
     voice:
       row.kind === 'voice' && typeof d.path === 'string' && typeof d.durationMs === 'number'
         ? { path: d.path, durationMs: d.durationMs }
+        : null,
+    deposit:
+      row.kind === 'deposit' && typeof d.depositId === 'string'
+        ? {
+            depositId: d.depositId,
+            update: d.update === 'paid' || d.update === 'refunded' ? d.update : null,
+          }
         : null,
     replyTo: row.reply_to ?? null,
     createdAt: row.created_at,

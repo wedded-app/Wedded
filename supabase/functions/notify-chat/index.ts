@@ -69,6 +69,7 @@ const KIND_TEXT: Record<string, string> = {
   // Never the number itself: they open the chat to see it
   phone: 'shared their phone number',
   voice: 'sent a voice note',
+  deposit: 'asked for a deposit',
 };
 
 /** The email for one claim, or null when there's nobody to send it to. */

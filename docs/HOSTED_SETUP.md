@@ -136,6 +136,15 @@ Every text costs money, and US carriers have rules for business texting. Needs t
 5. **Authentication → Rate Limits**: "SMS messages sent per hour" is for the whole project (30 by default). Raise it as families sign up; each number can already only ask once a minute. If bots show up, turn on the CAPTCHA option there.
 6. **Test numbers** (same page as step 4): add `15305550100=123456`. Apple's App Review needs a way to sign in; give them that number and code in App Store Connect's review notes. It never sends a text.
 
+## 11. Deposits through Stripe (test mode, free)
+
+For deposits through Wedded (#209). Free in test mode: no card, and no LLC until live payments.
+
+1. **You:** sign up at dashboard.stripe.com/register and stay in **Test mode**. Under **Settings → Connect**, choose that vendors get their own Stripe accounts (Standard). Send Claude the **Publishable key** (`pk_test_…`) and **Secret key** (`sk_test_…`) privately.
+2. **Claude:** `supabase secrets set STRIPE_PUBLISHABLE_KEY=pk_test_… STRIPE_SECRET_KEY=sk_test_… --project-ref ujkshrptgmbtstrjcyfy`.
+3. **Claude:** in Stripe, **Developers → Webhooks → Add endpoint**, `https://ujkshrptgmbtstrjcyfy.supabase.co/functions/v1/stripe-webhook`, listening to **Events on Connected accounts**: `payment_intent.succeeded`, `payment_intent.payment_failed`, `charge.refunded`, `account.updated`. Then `supabase secrets set STRIPE_WEBHOOK_SECRET=whsec_… --project-ref ujkshrptgmbtstrjcyfy`.
+4. **Check:** a test vendor taps Get paid through Wedded and finishes Stripe's test setup, asks a test family for $500, and the family pays with the test card 4242 4242 4242 4242 (any future date and CVC). Both see "Deposit paid".
+
 ## Founders' tools on the hosted database
 
 With `SUPABASE_URL` and `SUPABASE_SECRET_KEY` set in your shell as in step 7, these work on the hosted project too (leave off `--local`):

@@ -34,6 +34,16 @@ Deno.test('other kinds say what was sent, never a phone number', () => {
   );
   expectEqual(pushBody({ ...claim, kind: 'voice', body: null }), '🎤 Voice note', 'voice');
   expectEqual(
+    pushBody({ ...claim, kind: 'deposit', body: null, data: { depositId: 'd1' } }),
+    '💳 Asked for a deposit',
+    'deposit request',
+  );
+  expectEqual(
+    pushBody({ ...claim, kind: 'deposit', body: null, data: { depositId: 'd1', update: 'paid' } }),
+    '✅ Deposit paid',
+    'deposit paid',
+  );
+  expectEqual(
     pushBody({ ...claim, kind: 'phone', body: null, data: { phone: '+15305550101' } }),
     'Shared their phone number',
     'phone',
