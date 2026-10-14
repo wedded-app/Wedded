@@ -30,6 +30,7 @@ import { useVendorMenus } from '@/data/vendor-menus';
 import { useMyVendorPhotos } from '@/data/vendor-photos-self';
 import { changeFrom } from '@/features/business/business-format';
 import { LeadRow, StatCard } from '@/features/business/business-parts';
+import { GetPaid } from '@/features/business/get-paid';
 import {
   FunnelSteps,
   HowYouCompare,
@@ -277,6 +278,8 @@ export default function BusinessScreen() {
           />
         )}
       </ListSection>
+
+      <GetPaid vendorId={business.id} />
 
       <View style={styles.block}>
         <ListSection>
