@@ -1162,6 +1162,90 @@ export type Database = {
           },
         ];
       };
+      request_proposals: {
+        Row: {
+          answered_at: string | null;
+          conversation_id: string | null;
+          created_at: string;
+          id: string;
+          menu_id: string | null;
+          note: string;
+          price_cents: number | null;
+          price_unit: string | null;
+          reel_id: string | null;
+          request_id: string;
+          sent_by: string | null;
+          status: string;
+          vendor_id: string;
+        };
+        Insert: {
+          answered_at?: string | null;
+          conversation_id?: string | null;
+          created_at?: string;
+          id?: string;
+          menu_id?: string | null;
+          note: string;
+          price_cents?: number | null;
+          price_unit?: string | null;
+          reel_id?: string | null;
+          request_id: string;
+          sent_by?: string | null;
+          status?: string;
+          vendor_id: string;
+        };
+        Update: {
+          answered_at?: string | null;
+          conversation_id?: string | null;
+          created_at?: string;
+          id?: string;
+          menu_id?: string | null;
+          note?: string;
+          price_cents?: number | null;
+          price_unit?: string | null;
+          reel_id?: string | null;
+          request_id?: string;
+          sent_by?: string | null;
+          status?: string;
+          vendor_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'request_proposals_conversation_id_fkey';
+            columns: ['conversation_id'];
+            isOneToOne: false;
+            referencedRelation: 'conversations';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'request_proposals_menu_id_fkey';
+            columns: ['menu_id'];
+            isOneToOne: false;
+            referencedRelation: 'vendor_menus';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'request_proposals_reel_id_fkey';
+            columns: ['reel_id'];
+            isOneToOne: false;
+            referencedRelation: 'reels';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'request_proposals_request_id_fkey';
+            columns: ['request_id'];
+            isOneToOne: false;
+            referencedRelation: 'wedding_requests';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'request_proposals_vendor_id_fkey';
+            columns: ['vendor_id'];
+            isOneToOne: false;
+            referencedRelation: 'vendors';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
       saved_vendors: {
         Row: {
           created_at: string;
@@ -1689,6 +1773,53 @@ export type Database = {
           },
         ];
       };
+      vendor_subscriptions: {
+        Row: {
+          cancel_at_period_end: boolean;
+          created_at: string;
+          current_period_end: string | null;
+          livemode: boolean;
+          plan: string;
+          status: string;
+          stripe_customer_id: string | null;
+          stripe_subscription_id: string | null;
+          updated_at: string;
+          vendor_id: string;
+        };
+        Insert: {
+          cancel_at_period_end?: boolean;
+          created_at?: string;
+          current_period_end?: string | null;
+          livemode?: boolean;
+          plan?: string;
+          status: string;
+          stripe_customer_id?: string | null;
+          stripe_subscription_id?: string | null;
+          updated_at?: string;
+          vendor_id: string;
+        };
+        Update: {
+          cancel_at_period_end?: boolean;
+          created_at?: string;
+          current_period_end?: string | null;
+          livemode?: boolean;
+          plan?: string;
+          status?: string;
+          stripe_customer_id?: string | null;
+          stripe_subscription_id?: string | null;
+          updated_at?: string;
+          vendor_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'vendor_subscriptions_vendor_id_fkey';
+            columns: ['vendor_id'];
+            isOneToOne: true;
+            referencedRelation: 'vendors';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
       vendor_unavailable_days: {
         Row: {
           created_at: string;
@@ -2062,6 +2193,95 @@ export type Database = {
           },
         ];
       };
+      wedding_requests: {
+        Row: {
+          budget_max_cents: number | null;
+          budget_min_cents: number | null;
+          category_slug: string;
+          city_slug: string;
+          closed_at: string | null;
+          created_at: string;
+          created_by: string | null;
+          event_date: string | null;
+          event_slug: string | null;
+          expires_at: string;
+          guest_band: string | null;
+          id: string;
+          note: string;
+          proposal_count: number;
+          status: string;
+          updated_at: string;
+          wedding_id: string;
+        };
+        Insert: {
+          budget_max_cents?: number | null;
+          budget_min_cents?: number | null;
+          category_slug: string;
+          city_slug: string;
+          closed_at?: string | null;
+          created_at?: string;
+          created_by?: string | null;
+          event_date?: string | null;
+          event_slug?: string | null;
+          expires_at: string;
+          guest_band?: string | null;
+          id?: string;
+          note: string;
+          proposal_count?: number;
+          status?: string;
+          updated_at?: string;
+          wedding_id: string;
+        };
+        Update: {
+          budget_max_cents?: number | null;
+          budget_min_cents?: number | null;
+          category_slug?: string;
+          city_slug?: string;
+          closed_at?: string | null;
+          created_at?: string;
+          created_by?: string | null;
+          event_date?: string | null;
+          event_slug?: string | null;
+          expires_at?: string;
+          guest_band?: string | null;
+          id?: string;
+          note?: string;
+          proposal_count?: number;
+          status?: string;
+          updated_at?: string;
+          wedding_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'wedding_requests_category_slug_fkey';
+            columns: ['category_slug'];
+            isOneToOne: false;
+            referencedRelation: 'categories';
+            referencedColumns: ['slug'];
+          },
+          {
+            foreignKeyName: 'wedding_requests_city_slug_fkey';
+            columns: ['city_slug'];
+            isOneToOne: false;
+            referencedRelation: 'cities';
+            referencedColumns: ['slug'];
+          },
+          {
+            foreignKeyName: 'wedding_requests_event_slug_fkey';
+            columns: ['event_slug'];
+            isOneToOne: false;
+            referencedRelation: 'events';
+            referencedColumns: ['slug'];
+          },
+          {
+            foreignKeyName: 'wedding_requests_wedding_id_fkey';
+            columns: ['wedding_id'];
+            isOneToOne: false;
+            referencedRelation: 'weddings';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
       wedding_suggestions: {
         Row: {
           category_slug: string;
@@ -2197,6 +2417,7 @@ export type Database = {
         };
         Returns: string;
       };
+      answer_proposal: { Args: { p_accept: boolean; p_proposal_id: string }; Returns: string };
       attach_payment_intent: {
         Args: { p_deposit_id: string; p_payment_intent_id: string };
         Returns: undefined;
@@ -2296,6 +2517,7 @@ export type Database = {
           tokens: string[];
         }[];
       };
+      close_request: { Args: { p_booked?: boolean; p_request_id: string }; Returns: undefined };
       create_inquiry: {
         Args: {
           p_details: Json;
@@ -2370,6 +2592,45 @@ export type Database = {
           vendor_name: string;
         }[];
       };
+      families_looking: {
+        Args: {
+          p_before?: string;
+          p_category_slug?: string;
+          p_from?: string;
+          p_limit?: number;
+          p_max_miles?: number;
+          p_to?: string;
+          p_vendor_id: string;
+        };
+        Returns: {
+          already_proposed: boolean;
+          budget_max_cents: number;
+          budget_min_cents: number;
+          category_name: Json;
+          category_slug: string;
+          city: string;
+          created_at: string;
+          date_status: string;
+          event_date: string;
+          event_name: Json;
+          event_slug: string;
+          family_name: string;
+          guest_band: string;
+          id: string;
+          miles: number;
+          note: string;
+          proposal_count: number;
+          proposals_full: boolean;
+        }[];
+      };
+      families_looking_summary: {
+        Args: { p_vendor_id: string };
+        Returns: {
+          category_name: Json;
+          category_slug: string;
+          open_requests: number;
+        }[];
+      };
       hide_reel_comment: { Args: { p_comment_id: string }; Returns: undefined };
       inquiry_emails_left_today: { Args: Record<PropertyKey, never>; Returns: number };
       mark_conversation_read: { Args: { p_conversation_id: string }; Returns: undefined };
@@ -2413,6 +2674,20 @@ export type Database = {
           reel_id: string;
           thumb_path: string;
         }[];
+      };
+      post_request: {
+        Args: {
+          p_budget_max_cents?: number;
+          p_budget_min_cents?: number;
+          p_category_slug: string;
+          p_city_slug: string;
+          p_event_date?: string;
+          p_event_slug?: string;
+          p_guest_band?: string;
+          p_note: string;
+          p_wedding_id: string;
+        };
+        Returns: string;
       };
       react_to_message: { Args: { p_message_id: string; p_reaction?: string }; Returns: undefined };
       react_to_vendor: {
@@ -2511,6 +2786,27 @@ export type Database = {
         };
         Returns: string;
       };
+      request_proposals_for: {
+        Args: { p_request_id: string };
+        Returns: {
+          conversation_id: string;
+          cover_path: string;
+          created_at: string;
+          founding_number: number;
+          id: string;
+          menu_id: string;
+          note: string;
+          price_cents: number;
+          price_unit: string;
+          reel_id: string;
+          status: string;
+          vendor_city: string;
+          vendor_id: string;
+          vendor_name: string;
+          vendor_name_pa: string;
+          vendor_slug: string;
+        }[];
+      };
       resolve_suggestion: {
         Args: { p_accept: boolean; p_suggestion_id: string };
         Returns: undefined;
@@ -2569,6 +2865,18 @@ export type Database = {
           p_data?: Json;
           p_kind?: string;
           p_reply_to?: string;
+        };
+        Returns: string;
+      };
+      send_proposal: {
+        Args: {
+          p_menu_id?: string;
+          p_note: string;
+          p_price_cents?: number;
+          p_price_unit?: string;
+          p_reel_id?: string;
+          p_request_id: string;
+          p_vendor_id: string;
         };
         Returns: string;
       };
@@ -2668,6 +2976,7 @@ export type Database = {
           vendor_id: string;
         }[];
       };
+      withdraw_proposal: { Args: { p_proposal_id: string }; Returns: undefined };
       withdraw_suggestion: { Args: { p_suggestion_id: string }; Returns: undefined };
     };
     Enums: {

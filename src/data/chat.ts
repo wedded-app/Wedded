@@ -25,7 +25,7 @@ import { photoUrl } from './vendor-media';
 
 export type ChatSide = 'family' | 'vendor';
 export type MessageKind =
-  'text' | 'photo' | 'quote' | 'menu' | 'booking' | 'phone' | 'voice' | 'deposit';
+  'text' | 'photo' | 'quote' | 'menu' | 'booking' | 'phone' | 'voice' | 'deposit' | 'proposal';
 
 export type Quote = {
   amount: number;
@@ -67,6 +67,11 @@ export type Message = {
    * update to it. Find it with useDeposits() by depositId.
    */
   deposit: { depositId: string; update: 'paid' | 'refunded' | null } | null;
+  /**
+   * A proposal from Families looking (#218): the vendor's proposal as sent, or
+   * the family's "accepted" line (update 'accepted'). Its note is the body.
+   */
+  proposal: { proposalId: string; requestId: string; update: 'accepted' | null } | null;
   /** The earlier message this one replies to (swipe to reply), by id. */
   replyTo: string | null;
   createdAt: string;
@@ -295,6 +300,14 @@ export function toMessage(
         ? {
             depositId: d.depositId,
             update: d.update === 'paid' || d.update === 'refunded' ? d.update : null,
+          }
+        : null,
+    proposal:
+      row.kind === 'proposal' && typeof d.proposalId === 'string' && typeof d.requestId === 'string'
+        ? {
+            proposalId: d.proposalId,
+            requestId: d.requestId,
+            update: d.update === 'accepted' ? 'accepted' : null,
           }
         : null,
     replyTo: row.reply_to ?? null,

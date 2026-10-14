@@ -70,6 +70,7 @@ const KIND_TEXT: Record<string, string> = {
   phone: 'shared their phone number',
   voice: 'sent a voice note',
   deposit: 'asked for a deposit',
+  proposal: 'answered your request',
 };
 
 /** The email for one claim, or null when there's nobody to send it to. */

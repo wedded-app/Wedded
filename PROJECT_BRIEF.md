@@ -27,7 +27,7 @@ Each task's issue has the owner as its assignee, a tab label (`tab-1`, `tab-2` o
 
 **Product principles** (from the build plan; every task follows them):
 
-- Vendors never pay to be listed. Listings, leads, chat and reels are free.
+- Vendors never pay to be listed. Listings, the inquiries families send, chat and reels are free. Wedded Pro ($50 a month, sold on the website) lets a vendor reach out first: Families looking and proposals (2026-10-14, #217).
 - Money comes from ads that are always labeled: a vendor can boost a reel or take one "Sponsored" spot in search.
 - Wed AI is the headline: an AI planner that lives in the family's group chat and gets things done inside the plan.
 - Reels keep families coming back, and every reel is one tap from booking the vendor in it.
