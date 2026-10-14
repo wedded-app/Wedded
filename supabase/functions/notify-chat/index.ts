@@ -13,6 +13,7 @@
 //   403 { error: 'forbidden' }
 
 import { createClient } from '@supabase/supabase-js';
+import { isServiceRequest, quietMinutes } from '../_shared/request-security.ts';
 
 import { normalizeEmail, optedOut, withFooter } from '../_shared/email-links.ts';
 import { type OutgoingEmail, sendEmail } from '../_shared/inquiry-email.ts';
@@ -35,15 +36,6 @@ function json(body: unknown, status: number): Response {
     status,
     headers: { 'Content-Type': 'application/json' },
   });
-}
-
-function roleOf(token: string): string | undefined {
-  try {
-    const payload = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
-    return JSON.parse(atob(payload.padEnd(Math.ceil(payload.length / 4) * 4, '='))).role;
-  } catch {
-    return undefined;
-  }
 }
 
 function escapeHtml(text: string): string {
@@ -170,12 +162,19 @@ ${
 }
 
 Deno.serve(async (request) => {
-  const token = request.headers.get('Authorization')?.replace(/^Bearer\s+/i, '') ?? '';
-  if (token !== SERVICE_KEY && roleOf(token) !== 'service_role') {
+  if (request.method !== 'POST') return json({ error: 'method_not_allowed' }, 405);
+  if (!isServiceRequest(request, SERVICE_KEY)) {
     return json({ error: 'forbidden' }, 403);
   }
-  const body = await request.json().catch(() => ({}));
-  const quiet = typeof body?.quietMinutes === 'number' ? body.quietMinutes : 3;
+  const raw = await request.text();
+  let body: unknown = {};
+  try {
+    body = raw.trim() ? JSON.parse(raw) : {};
+  } catch {
+    return json({ error: 'invalid' }, 400);
+  }
+  const quiet = quietMinutes(body);
+  if (quiet === null) return json({ error: 'invalid' }, 400);
 
   const admin = createClient(SUPABASE_URL, SERVICE_KEY, {
     auth: { persistSession: false, autoRefreshToken: false },
