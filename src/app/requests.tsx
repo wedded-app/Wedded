@@ -66,9 +66,12 @@ function PostedRequests() {
             accessibilityRole="button"
             accessibilityLabel={[
               words.headline(r),
+              words.facts(r).date,
               t(`requests.status.${status}`),
               t('requests.mine.proposals', { count: r.proposalCount }),
-            ].join(', ')}
+            ]
+              .filter(Boolean)
+              .join(', ')}
             onPress={() => router.push({ pathname: '/request/[id]', params: { id: r.id } })}
             pressedScale={0.98}
           >

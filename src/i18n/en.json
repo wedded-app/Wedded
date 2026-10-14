@@ -2213,7 +2213,7 @@
     "name": "Wedded Pro",
     "price": "$50",
     "perMonth": "a month",
-    "cancelAnytime": "Cancel anytime.",
+    "cancelAnytime": "Renews every month. Cancel anytime.",
     "perks": {
       "looking": {
         "title": "See families looking",
@@ -2240,6 +2240,9 @@
     "pastDue": "Your card didn't go through. Update it on the Wedded website.",
     "renews": "Renews {{date}}",
     "ends": "Ends {{date}}",
-    "eyebrow": "WEDDED PRO"
+    "eyebrow": "WEDDED PRO",
+    "manage": "Manage or cancel Pro",
+    "updateCard": "Update your card",
+    "manageOnWebsite": "You change your card or cancel on the Wedded website."
   }
 }

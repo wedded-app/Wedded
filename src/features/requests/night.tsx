@@ -18,6 +18,7 @@ import { BackButton } from '@/components/back-button';
 import { Icon, type IconName } from '@/components/icon';
 import { PressableScale } from '@/components/pressable-scale';
 import { makeStyles, Radius, Sizes, Spacing, SchemeContext, useColors } from '@/constants/theme';
+import { formatDate } from '@/features/inquiry/inquiry-helpers';
 
 import { initials } from './requests-format';
 
@@ -75,7 +76,7 @@ function NightBody({
       <ScrollView
         contentContainerStyle={[
           styles.content,
-          { paddingTop: insets.top + Spacing.sm, paddingBottom: footer ? 140 : insets.bottom + 48 },
+          { paddingTop: insets.top + Spacing.sm, paddingBottom: footer ? 180 : insets.bottom + 48 },
         ]}
         keyboardShouldPersistTaps="handled"
         automaticallyAdjustKeyboardInsets
@@ -185,7 +186,11 @@ export function DateTile({ date, size = 'md' }: { date: string; size?: 'md' | 'l
   const weekday = new Intl.DateTimeFormat('en-US', { weekday: 'short' }).format(d);
   const big = size === 'lg';
   return (
-    <View style={[styles.dateTile, big && styles.dateTileLg]} accessible={false}>
+    <View
+      style={[styles.dateTile, big && styles.dateTileLg]}
+      accessible
+      accessibilityLabel={formatDate(date)}
+    >
       <AppText variant="caption" weight={700} color="champagne" maxFontSizeMultiplier={1.3}>
         {month}
       </AppText>
@@ -282,10 +287,11 @@ const useStyles = makeStyles((Colors) => ({
     left: 0,
     right: 0,
     bottom: 0,
-    paddingTop: Spacing.lg,
+    paddingTop: Spacing.xxl,
     paddingHorizontal: Sizes.pageGutter,
+    // Solid behind the button and its note, then a short fade to the page.
     ...image(
-      'linear-gradient(to top, rgba(18,6,10,1) 0%, rgba(18,6,10,0.92) 70%, rgba(18,6,10,0) 100%)',
+      'linear-gradient(to top, rgba(18,6,10,1) 0%, rgba(18,6,10,1) 62%, rgba(18,6,10,0) 100%)',
     ),
   },
   glass: {
@@ -314,7 +320,8 @@ const useStyles = makeStyles((Colors) => ({
     boxShadow: Colors.roseGlow,
   },
   buttonGlass: {
-    backgroundColor: Colors.nightCardStrong,
+    // Solid, so text scrolling under the pinned footer never shows through.
+    backgroundColor: Colors.nightRaised,
     borderWidth: 1,
     borderColor: Colors.nightLine,
   },

@@ -25,7 +25,7 @@ const PERKS: { icon: IconName; key: string }[] = [
  * serif, $50 a month large in gold, what you get as glowing rows, and
  * Subscribe, which opens the website (Pro is sold there, not in the app).
  * Pro vendors see when it renews or ends, or a gentle note when the card
- * failed. Listings, inquiries, chat and reels stay free either way.
+ * failed, and Manage or cancel, one tap like Subscribe. Listings, inquiries, chat and reels stay free either way.
  */
 export default function ProScreen() {
   return (
@@ -52,7 +52,7 @@ function Pro() {
   const isPro = pro.data?.plan === 'pro';
   const renews = pro.data?.renewsOn ? formatDate(pro.data.renewsOn.slice(0, 10)) : null;
 
-  const subscribe = () => {
+  const openWebsite = () => {
     if (!business) return;
     void WebBrowser.openBrowserAsync(siteLink(`/pro?vendor=${business.slug}`));
   };
@@ -62,26 +62,38 @@ function Pro() {
       eyebrow={t('pro.eyebrow')}
       title={t('pro.subtitle')}
       footer={
-        isPro ? undefined : (
-          <View style={styles.footer}>
-            <GlowButton icon="sparkles" label={t('pro.subscribe')} onPress={subscribe} />
-            <AppText variant="label" weight={400} color="text2" style={styles.center}>
-              {SITE_URL_IS_PLACEHOLDER ? t('pro.soon') : t('pro.onWebsite')}
-            </AppText>
-          </View>
-        )
+        <View style={styles.footer}>
+          {isPro ? (
+            // Leaving is as easy as joining: the same one tap, the same website.
+            <GlowButton
+              glass={!pro.data?.pastDue}
+              icon={pro.data?.pastDue ? 'card-outline' : 'settings-outline'}
+              label={t(pro.data?.pastDue ? 'pro.updateCard' : 'pro.manage')}
+              onPress={openWebsite}
+            />
+          ) : (
+            <GlowButton icon="sparkles" label={t('pro.subscribe')} onPress={openWebsite} />
+          )}
+          <AppText variant="label" weight={400} color="text2" style={styles.center}>
+            {isPro
+              ? t('pro.manageOnWebsite')
+              : SITE_URL_IS_PLACEHOLDER
+                ? t('pro.soon')
+                : t('pro.onWebsite')}
+          </AppText>
+        </View>
       }
     >
-      <View style={styles.price}>
-        <AppText serif weight={600} style={styles.amount} maxFontSizeMultiplier={1.3}>
-          {t('pro.price')}
-        </AppText>
-        <View>
-          <AppText variant="bodyLg" weight={600}>
+      <View>
+        <View style={styles.price}>
+          <AppText serif weight={600} style={styles.amount} maxFontSizeMultiplier={1.3}>
+            {t('pro.price')}
+          </AppText>
+          <AppText variant="title" weight={600}>
             {t('pro.perMonth')}
           </AppText>
-          <AppText color="text2">{t('pro.cancelAnytime')}</AppText>
         </View>
+        <AppText color="text2">{t('pro.cancelAnytime')}</AppText>
       </View>
 
       {isPro && (
@@ -137,9 +149,9 @@ const useStyles = makeStyles((Colors) => ({
   },
   price: {
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'baseline',
     flexWrap: 'wrap',
-    gap: Spacing.lg,
+    columnGap: Spacing.md,
   },
   amount: {
     fontSize: 88,

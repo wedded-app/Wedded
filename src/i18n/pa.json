@@ -2213,7 +2213,7 @@
     "name": "Wedded Pro",
     "price": "$50",
     "perMonth": "ਪ੍ਰਤੀ ਮਹੀਨਾ",
-    "cancelAnytime": "ਕਦੇ ਵੀ ਬੰਦ ਕਰੋ।",
+    "cancelAnytime": "ਹਰ ਮਹੀਨੇ ਨਵਿਆਇਆ ਜਾਂਦਾ ਹੈ। ਕਦੇ ਵੀ ਬੰਦ ਕਰੋ।",
     "perks": {
       "looking": {
         "title": "ਲੱਭ ਰਹੇ ਪਰਿਵਾਰ ਦੇਖੋ",
@@ -2240,6 +2240,9 @@
     "pastDue": "ਤੁਹਾਡਾ ਕਾਰਡ ਨਹੀਂ ਚੱਲਿਆ। Wedded ਵੈੱਬਸਾਈਟ 'ਤੇ ਬਦਲੋ।",
     "renews": "{{date}} ਨੂੰ ਨਵਿਆਇਆ ਜਾਵੇਗਾ",
     "ends": "{{date}} ਨੂੰ ਖ਼ਤਮ",
-    "eyebrow": "WEDDED PRO"
+    "eyebrow": "WEDDED PRO",
+    "manage": "Pro ਬਦਲੋ ਜਾਂ ਬੰਦ ਕਰੋ",
+    "updateCard": "ਆਪਣਾ ਕਾਰਡ ਬਦਲੋ",
+    "manageOnWebsite": "ਤੁਸੀਂ ਆਪਣਾ ਕਾਰਡ Wedded ਵੈੱਬਸਾਈਟ 'ਤੇ ਬਦਲਦੇ ਜਾਂ ਬੰਦ ਕਰਦੇ ਹੋ।"
   }
 }

@@ -100,6 +100,7 @@ const light = {
   night: '#12060A',
   nightCard: 'rgba(255, 255, 255, 0.06)',
   nightCardStrong: 'rgba(255, 255, 255, 0.1)',
+  nightRaised: '#2A1F22', // nightCardStrong over night, but opaque
   nightLine: 'rgba(255, 255, 255, 0.12)',
   champagne: '#E9C98B',
   roseGlow: '0px 10px 34px rgba(214, 70, 110, 0.45)',
@@ -175,6 +176,7 @@ const dark: Palette = {
   night: '#12060A',
   nightCard: 'rgba(255, 255, 255, 0.06)',
   nightCardStrong: 'rgba(255, 255, 255, 0.1)',
+  nightRaised: '#2A1F22', // nightCardStrong over night, but opaque
   nightLine: 'rgba(255, 255, 255, 0.12)',
   champagne: '#E9C98B',
   roseGlow: '0px 10px 34px rgba(214, 70, 110, 0.45)',
