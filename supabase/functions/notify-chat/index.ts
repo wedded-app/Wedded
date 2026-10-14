@@ -6,11 +6,15 @@
 // account yet get the family's message with an invitation to claim their free
 // listing; founders get a copy of those so they can follow up by phone.
 //
+// Each address gets its own email with its own "Stop these emails" link
+// (email-links.ts); addresses in email_opt_outs are skipped.
+//
 //   200 { sent, failed }
 //   403 { error: 'forbidden' }
 
 import { createClient } from '@supabase/supabase-js';
 
+import { normalizeEmail, optedOut, withFooter } from '../_shared/email-links.ts';
 import { type OutgoingEmail, sendEmail } from '../_shared/inquiry-email.ts';
 
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL') ?? '';
@@ -72,6 +76,13 @@ const KIND_TEXT: Record<string, string> = {
   deposit: 'asked for a deposit',
   proposal: 'answered your request',
 };
+
+/** Why this person gets the email, for the footer. */
+export function chatEmailReason(claim: Claim): string {
+  return claim.notify_side === 'vendor'
+    ? `You get this because a family wrote to ${claim.vendor_name} on Wedded App.`
+    : `You get this because ${claim.vendor_name} replied to you on Wedded App.`;
+}
 
 /** The email for one claim, or null when there's nobody to send it to. */
 export function buildChatEmail(claim: Claim): OutgoingEmail | null {
@@ -183,11 +194,21 @@ Deno.serve(async (request) => {
     const email = buildChatEmail(claim);
     if (!email) continue;
     try {
-      await sendEmail(
-        email,
-        `chat-${claim.conversation_id}-${claim.notify_side}-${claim.notified_at}`,
-      );
-      sent += 1;
+      const stopped = await optedOut(admin, email.to);
+      const addresses = email.to.filter((address) => !stopped.has(normalizeEmail(address)));
+      for (const [i, address] of addresses.entries()) {
+        // The founders' blind copy goes once, with the first
+        const one = await withFooter(
+          { ...email, to: [address], bcc: i === 0 ? email.bcc : [] },
+          address,
+          chatEmailReason(claim),
+        );
+        await sendEmail(
+          one,
+          `chat-${claim.conversation_id}-${claim.notify_side}-${claim.notified_at}-${i}`,
+        );
+        sent += 1;
+      }
     } catch (e) {
       failed += 1;
       console.error('chat notification failed', claim.conversation_id, e);
