@@ -1,8 +1,46 @@
-// stripe-return: where Stripe's setup pages send a vendor back to (#209). A
-// small page saying to go back to the Wedded app, which checks the account
-// again when it comes to the front. No login (verify_jwt = false).
+// stripe-return: where Stripe's setup pages send a vendor back to (#209), and
+// Wedded Pro's Checkout and billing pages (#220, ?pro=success|canceled) until
+// the website has its own. A small page saying to go back to the Wedded app,
+// which checks again when it comes to the front. It never grants anything.
+// No login (verify_jwt = false).
 
-const PAGE = (again: boolean) =>
+type Words = { title: string; body: string };
+
+const WORDS: Record<'connected' | 'again' | 'proSuccess' | 'proCanceled' | 'proBilling', Words> = {
+  connected: {
+    title: "You're all set",
+    body:
+      'Close this page and go back to the Wedded app. My business will show when families can pay you.',
+  },
+  again: {
+    title: 'Almost there',
+    body: 'That link ran out. Go back to the Wedded app and tap Get paid through Wedded again.',
+  },
+  proSuccess: {
+    title: 'Welcome to Wedded Pro',
+    body:
+      'Thank you! Go back to the Wedded app to see the families looking for you. It can take a minute to show.',
+  },
+  proCanceled: {
+    title: 'No charge made',
+    body: 'Nothing was paid. Go back to the Wedded app whenever you are ready.',
+  },
+  proBilling: {
+    title: 'All saved',
+    body: 'Go back to the Wedded app. Your Wedded Pro plan shows there.',
+  },
+};
+
+function wordsFor(params: URLSearchParams): Words {
+  const pro = params.get('pro');
+  if (pro === 'success') return WORDS.proSuccess;
+  if (pro === 'canceled') return WORDS.proCanceled;
+  if (pro === 'billing') return WORDS.proBilling;
+  if (params.get('again') === '1') return WORDS.again;
+  return WORDS.connected;
+}
+
+const PAGE = (words: Words) =>
   `<!doctype html>
 <html lang="en">
 <head>
@@ -19,19 +57,14 @@ const PAGE = (again: boolean) =>
 </head>
 <body>
 <main>
-  <h1>${again ? 'Almost there' : "You're all set"}</h1>
-  <p>${
-    again
-      ? 'That link ran out. Go back to the Wedded app and tap Get paid through Wedded again.'
-      : 'Close this page and go back to the Wedded app. My business will show when families can pay you.'
-  }</p>
+  <h1>${words.title}</h1>
+  <p>${words.body}</p>
 </main>
 </body>
 </html>`;
 
 Deno.serve((request) => {
-  const again = new URL(request.url).searchParams.get('again') === '1';
-  return new Response(PAGE(again), {
+  return new Response(PAGE(wordsFor(new URL(request.url).searchParams)), {
     headers: { 'Content-Type': 'text/html; charset=utf-8' },
   });
 });

@@ -158,6 +158,12 @@ Deno.test('settings refuse live keys and unsafe return URLs', () => {
     ...overrides,
   }[key]);
   equal(proSettings(env({}))?.priceId, 'price_Pro');
+  equal(
+    proSettings(env({ STRIPE_PRO_RETURN_URL: undefined, SUPABASE_URL: 'https://demo.supabase.co' }))
+      ?.returnUrl,
+    'https://demo.supabase.co/functions/v1/stripe-return',
+  );
+  equal(proSettings(env({ STRIPE_PRO_RETURN_URL: undefined })), null);
   for (
     const overrides of [
       { STRIPE_SECRET_KEY: 'sk_live_mock' },

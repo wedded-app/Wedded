@@ -13,7 +13,10 @@ export type ProSettings = {
 export function proSettings(env = (key: string) => Deno.env.get(key)): ProSettings | null {
   const secretKey = env('STRIPE_SECRET_KEY')?.trim();
   const priceId = env('STRIPE_PRO_PRICE_ID')?.trim();
-  const returnUrl = env('STRIPE_PRO_RETURN_URL')?.trim();
+  // Until the website has its page (#148), the demo's own stripe-return page
+  const supabaseUrl = env('SUPABASE_URL')?.trim();
+  const returnUrl = env('STRIPE_PRO_RETURN_URL')?.trim() ||
+    (supabaseUrl ? `${supabaseUrl}/functions/v1/stripe-return` : undefined);
   if (!secretKey?.startsWith('sk_test_') || !priceId?.startsWith('price_') || !returnUrl) {
     return null;
   }

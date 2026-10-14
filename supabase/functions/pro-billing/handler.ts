@@ -71,7 +71,7 @@ export function billingHandler(
       if (body.action === 'portal') {
         const portal = await stripe.billingPortal.sessions.create({
           customer,
-          return_url: settings.returnUrl,
+          return_url: `${settings.returnUrl}?pro=billing`,
         });
         return json({ url: portal.url, status: result.status });
       }
