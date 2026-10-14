@@ -218,6 +218,7 @@ const useStyles = makeStyles((Colors) => ({
     borderCurve: 'continuous',
     backgroundColor: Colors.surface,
     overflow: 'hidden',
+    boxShadow: Colors.cardShadow,
   },
   separator: {
     height: StyleSheet.hairlineWidth,

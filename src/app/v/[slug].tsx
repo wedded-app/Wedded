@@ -28,6 +28,7 @@ import { Card } from '@/components/card';
 import { Glass } from '@/components/glass';
 import { GlassButton } from '@/components/glass-button';
 import { groupIcon } from '@/components/group-icon';
+import { HoloShine } from '@/components/holo-shine';
 import { Icon, type IconName } from '@/components/icon';
 import { IconLine } from '@/components/icon-line';
 import { ListRow, ListSection, SectionTitle } from '@/components/list';
@@ -467,12 +468,12 @@ export default function VendorProfileScreen() {
 
         <View style={styles.titleBlock} onLayout={(layout) => onTitleLayout(layout, heroBand)}>
           {v.foundingNumber != null && (
-            <View style={styles.founding}>
+            <HoloShine style={styles.founding}>
               <Icon name="ribbon-outline" size={17} color={Colors.kesari} weight="semibold" />
               <AppText variant="label" weight={600} color="kesari">
                 {t('vendor.foundingNumber', { number: v.foundingNumber })}
               </AppText>
-            </View>
+            </HoloShine>
           )}
           <AppText variant="title" lang={primary.lang} accessibilityRole="header">
             {primary.text}
@@ -849,7 +850,13 @@ const useStyles = makeStyles((Colors) => ({
   founding: {
     flexDirection: 'row',
     alignItems: 'center',
+    alignSelf: 'flex-start',
     gap: Spacing.xs,
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.xs + 2,
+    borderRadius: Radius.chip,
+    borderCurve: 'continuous',
+    backgroundColor: Colors.kesariTint,
   },
   actions: {
     flexDirection: 'row',

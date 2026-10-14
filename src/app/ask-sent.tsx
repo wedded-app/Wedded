@@ -12,6 +12,7 @@ import { AppText } from '@/components/app-text';
 import { Button } from '@/components/button';
 import { Card } from '@/components/card';
 import { Icon } from '@/components/icon';
+import { PetalBurst } from '@/components/petal-burst';
 import { Screen } from '@/components/screen';
 import { Spacing, Springs, useColors } from '@/constants/theme';
 import { useConversations } from '@/data/chat';
@@ -135,6 +136,7 @@ export default function AskSentScreen() {
         />
         <Button label={t('location.done')} onPress={() => router.back()} />
       </ScrollView>
+      <PetalBurst play={1} origin={0.18} />
     </Screen>
   );
 }

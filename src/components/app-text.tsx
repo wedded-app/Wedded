@@ -6,6 +6,7 @@ import {
   type FontWeight,
   GURMUKHI_SIZE_MULTIPLIER,
   serifFamily,
+  SERIF_VARIANTS,
   Typography,
   type TypographyVariant,
   useColors,
@@ -21,7 +22,8 @@ export type AppTextProps = TextProps & {
   /** Force a script; by default the app language decides, and any string that
    * contains Gurmukhi is rendered in the Gurmukhi font regardless. */
   lang?: Locale;
-  /** Fraunces (serifFamily) for a big display line, in English only. */
+  /** Fraunces (serifFamily) in English. Titles (display, title, section) use
+   * it by default; pass false for a plain one. */
   serif?: boolean;
 };
 
@@ -43,7 +45,7 @@ export function useTypeStyle({
   variant = 'body',
   weight,
   lang,
-  serif = false,
+  serif,
   text = '',
 }: TypeStyleOptions) {
   const { locale } = useLocale();
@@ -55,7 +57,7 @@ export function useTypeStyle({
 
   return {
     script,
-    ...(serif && script === 'en'
+    ...((serif ?? SERIF_VARIANTS.has(variant)) && script === 'en'
       ? { fontFamily: serifFamily(fontWeight) }
       : fontStyle(script, fontWeight)),
     fontSize,

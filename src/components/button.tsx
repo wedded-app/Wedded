@@ -1,5 +1,6 @@
 import {
   ActivityIndicator,
+  Platform,
   Pressable,
   type PressableProps,
   type StyleProp,
@@ -101,6 +102,11 @@ const useStyles = makeStyles((Colors) => ({
   },
   primary: {
     backgroundColor: Colors.primaryFill,
+    // A soft sheen from top to bottom, like satin ribbon
+    ...(Platform.OS === 'web'
+      ? { backgroundImage: Colors.buttonSheen }
+      : { experimental_backgroundImage: Colors.buttonSheen }),
+    boxShadow: '0px 6px 16px rgba(122, 23, 41, 0.28)',
   },
   secondary: {
     backgroundColor: Colors.primaryTint,
@@ -123,6 +129,9 @@ const useStyles = makeStyles((Colors) => ({
 const usePressedStyles = makeStyles((Colors) => ({
   primary: {
     backgroundColor: Colors.primaryFillPressed,
+    ...(Platform.OS === 'web'
+      ? { backgroundImage: 'none' }
+      : { experimental_backgroundImage: 'none' }),
   },
   secondary: {
     backgroundColor: Colors.fillPressed,

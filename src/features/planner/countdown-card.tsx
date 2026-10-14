@@ -2,6 +2,7 @@ import { Platform, View, type ViewStyle } from 'react-native';
 
 import { AppText } from '@/components/app-text';
 import { Icon } from '@/components/icon';
+import { LiquidGlow } from '@/components/liquid-glow';
 import { PressableScale } from '@/components/pressable-scale';
 import { ProgressBar } from '@/components/progress-bar';
 import { makeStyles, Radius, Spacing, useColors, type Palette } from '@/constants/theme';
@@ -50,6 +51,7 @@ export function CountdownCard({
 
   const content = (
     <>
+      <LiquidGlow />
       <Icon name="sparkles" size={120} color={Colors.onHero} style={styles.glow} />
       <View style={styles.eyebrowRow}>
         <AppText variant="label" weight={600} color="onHero2">

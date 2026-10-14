@@ -4,6 +4,7 @@ import Animated from 'react-native-reanimated';
 
 import { AppText } from '@/components/app-text';
 import { Icon, type IconName } from '@/components/icon';
+import { PetalBurst } from '@/components/petal-burst';
 import { Screen } from '@/components/screen';
 import { makeStyles, Sizes, Spacing, useColors } from '@/constants/theme';
 import { useVendorSearch } from '@/data/search';
@@ -113,6 +114,7 @@ export default function ReadyScreen() {
           }}
         />
       </View>
+      <PetalBurst play={1} origin={0.2} />
     </Screen>
   );
 }
