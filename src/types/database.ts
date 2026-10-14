@@ -2481,6 +2481,7 @@ export type Database = {
           width: number;
         }[];
       };
+      refuse_password_sign_in: { Args: { event: Json }; Returns: Json };
       register_push_token: { Args: { p_platform: string; p_token: string }; Returns: undefined };
       remove_vendor_photo: { Args: { p_media_id: string }; Returns: string };
       remove_wedding_member: {

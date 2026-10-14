@@ -31,6 +31,7 @@ In the dashboard, **Authentication**:
 1. **Emails → Templates**: paste the contents of `supabase/templates/sign-in-code.html` into both **Magic link** and **Confirm signup**. Subject: `Your sign-in code`. This is what makes the email a 6-digit code instead of a link.
 2. **Sign In / Providers → Email**: email provider on, **Confirm email** off, **Email OTP length** 6.
 3. **URL Configuration**: nothing needed yet (we don't use links).
+4. **Auth Hooks → Add hook → Customize Access Token**: Postgres, schema `public`, function `refuse_password_sign_in` (from the migrations). It refuses every password sign-in. The app never uses passwords, but with **Confirm email** off, anyone calling Supabase's sign-up directly could otherwise claim a family's email or phone with a password, with no code, and keep a back door into their account.
 
 Supabase's built-in email only sends to members of the Supabase organization and only a few an hour. That's fine while only the two founders sign in. **Before the hall owner or anyone else signs in**, set **Emails → SMTP settings** to Resend (host `smtp.resend.com`, port `465`, user `resend`, password: a Resend API key). That needs the verified domain (Phase 5).
 
