@@ -2471,6 +2471,7 @@ export type Database = {
           width: number;
         }[];
       };
+      refuse_password_sign_in: { Args: { event: Json }; Returns: Json };
       register_push_token: { Args: { p_platform: string; p_token: string }; Returns: undefined };
       remove_wedding_member: {
         Args: { p_user_id: string; p_wedding_id: string };
