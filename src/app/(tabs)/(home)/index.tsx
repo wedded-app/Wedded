@@ -20,6 +20,7 @@ import { ChatButton } from '@/features/chat/chat-button';
 import { EventCarousel } from '@/features/home/event-carousel';
 import { HomeCover, useCoverHeight } from '@/features/home/home-cover';
 import { NextUp } from '@/features/home/next-up';
+import { PostRequestCard } from '@/features/requests/post-request-card';
 import { SectionHeader } from '@/features/home/section-header';
 import { VendorPhotoCards } from '@/features/home/vendor-photo-cards';
 import { BENTO_TILES, VendorTypeBento } from '@/features/home/vendor-type-bento';
@@ -133,6 +134,7 @@ export default function HomeScreen() {
           {planning ? (
             <>
               <NextUp view={view} />
+              <PostRequestCard />
               <YourVendors wedding={wedding} eventName={eventName} onFind={findFirst} />
               {first ? (
                 <VendorPhotoCards

@@ -67,6 +67,14 @@ export default function ProfileScreen() {
             onPress={() => router.push('/my-inquiries')}
           />
         )}
+        {status === 'signedIn' && !isVendor && (
+          <ListRow
+            icon="megaphone-outline"
+            title={t('requests.mine.title')}
+            subtitle={t('requests.mine.rowHint')}
+            onPress={() => router.push('/requests')}
+          />
+        )}
         <ListRow
           icon="chatbubbles-outline"
           title={t('chat.title')}

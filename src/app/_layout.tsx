@@ -132,6 +132,8 @@ function AppShell() {
           <Stack.Screen name="chat-quote" options={{ presentation: 'modal' }} />
           <Stack.Screen name="chat-menu" options={{ presentation: 'modal' }} />
           <Stack.Screen name="chat-deposit" options={{ presentation: 'modal' }} />
+          <Stack.Screen name="request-new" options={{ presentation: 'modal' }} />
+          <Stack.Screen name="business/propose" options={{ presentation: 'modal' }} />
           <Stack.Screen name="business/photo" options={{ presentation: 'modal' }} />
           {/* Half height over the reel, which keeps playing above it */}
           <Stack.Screen
