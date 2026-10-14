@@ -974,7 +974,8 @@
       "menu": "Sent a menu",
       "booking": "Inquiry",
       "phone": "Shared a phone number",
-      "voice": "Voice note"
+      "voice": "Voice note",
+      "deposit": "Deposit request"
     },
     "errors": {
       "rate": "You're sending very fast. Wait a minute, then send again.",
@@ -1069,6 +1070,76 @@
       "rowOnHint": "To turn them off, open your phone's Settings.",
       "rowOffHint": "Tap to get a buzz when someone writes to you.",
       "rowDeniedHint": "Turn them on in your phone's Settings."
+    },
+    "deposit": {
+      "title": "Deposit request",
+      "request": "Request a deposit",
+      "pay": "Pay {{amount}}",
+      "paying": "Paying…",
+      "secure": "Paid securely by card through Stripe. Wedded never sees your card number.",
+      "cancel": "Cancel request",
+      "keep": "Keep it",
+      "cancelTitle": "Cancel this request?",
+      "cancelConfirm": "The family won't be able to pay the {{amount}} deposit anymore.",
+      "confirmTitle": "Pay the deposit?",
+      "confirm": "Pay {{amount}} to {{vendor}}?",
+      "confirmYes": "Pay {{amount}}",
+      "notNow": "Not now",
+      "comingSoon": "Paying in the app is coming soon. For now, settle the deposit with the vendor directly.",
+      "paidLine": "Deposit paid · {{amount}}",
+      "refundedLine": "Deposit refunded · {{amount}}",
+      "status": {
+        "requested": {
+          "family": "Waiting for you to pay",
+          "vendor": "Waiting for the family to pay"
+        },
+        "processing": {
+          "family": "Payment going through…",
+          "vendor": "The family is paying…"
+        },
+        "paid": {
+          "family": "Paid",
+          "vendor": "Paid"
+        },
+        "failed": {
+          "family": "The payment didn't go through. Try again.",
+          "vendor": "The family's payment didn't go through"
+        },
+        "canceled": {
+          "family": "The vendor canceled this request",
+          "vendor": "You canceled this request"
+        },
+        "refunded": {
+          "family": "Refunded to your card",
+          "vendor": "Refunded"
+        }
+      },
+      "problems": {
+        "notSetUp": "Paying in the app is coming soon.",
+        "notReady": "This vendor can't take card payments yet.",
+        "familyFirst": "You can ask for a deposit once the family has written to you.",
+        "invalidAmount": "Enter an amount from $1 to $25,000.",
+        "tooMany": "This chat already has several open requests. Cancel one first.",
+        "rate": "That's a lot of requests for today. Try again tomorrow.",
+        "notPayable": "This deposit can't be paid or changed anymore.",
+        "notAllowed": "You can't do that in this chat.",
+        "offline": "You're offline. Check your connection and try again.",
+        "failed": "Something went wrong. Try again.",
+        "cardFailed": "The card didn't go through. Try again or use another card.",
+        "useApp": "Open Wedded App on your phone to pay."
+      }
+    },
+    "depositForm": {
+      "title": "Request a deposit",
+      "body": "The family pays by card in this chat, and the money goes to your Stripe account.",
+      "amount": "Amount in dollars",
+      "amountHint": "From $1 to $25,000",
+      "amountError": "Enter an amount from $1 to $25,000, like 500",
+      "event": "Which event is it for?",
+      "note": "Note (optional)",
+      "noteHint": "Like: this holds Saturday, June 12. The rest is due a week before.",
+      "send": "Send request",
+      "sendAmount": "Ask for {{amount}}"
     }
   },
   "welcome": {
@@ -1822,6 +1893,33 @@
       "unsavedBody": "Your changes aren't saved yet. Families won't see them.",
       "keepEditing": "Keep editing",
       "leave": "Leave"
+    },
+    "getPaid": {
+      "footer": "Families pay deposits by card in chat. Stripe handles the cards and pays you.",
+      "none": {
+        "title": "Get paid through Wedded",
+        "hint": "Take deposits by card in chat. Set up a free Stripe account."
+      },
+      "pending": {
+        "title": "Finish setting up payments",
+        "hint": "Stripe needs a few more details."
+      },
+      "ready": {
+        "title": "Payments are on",
+        "hint": "You can request deposits in chat."
+      },
+      "problems": {
+        "notSetUp": "Payments through Wedded are coming soon. We'll let you know when they're ready.",
+        "notReady": "Stripe needs a few more details. Try again.",
+        "familyFirst": "Something went wrong. Try again.",
+        "invalidAmount": "Something went wrong. Try again.",
+        "tooMany": "Something went wrong. Try again.",
+        "rate": "Too many tries. Wait a few minutes and try again.",
+        "notPayable": "Something went wrong. Try again.",
+        "notAllowed": "Only the people who run this business can set up payments.",
+        "offline": "You're offline. Check your connection and try again.",
+        "failed": "Something went wrong. Try again."
+      }
     }
   }
 }
