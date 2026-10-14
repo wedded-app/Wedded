@@ -376,7 +376,7 @@ begin
     r.proposal_count,
     r.proposal_count >= 10,
     exists (select 1 from public.request_proposals rp where rp.request_id = r.id and rp.vendor_id = p_vendor_id),
-    case when r.event_date is null then 'unknown' else private.vendor_date_status(p_vendor_id, r.event_date) end,
+    case when r.event_date is null then 'unknown' else public.vendor_date_status(p_vendor_id, r.event_date) end,
     r.created_at
   from private.fitting_requests(p_vendor_id, p_max_miles) f
   join public.wedding_requests r on r.id = f.request_id
@@ -697,7 +697,7 @@ as $$
 declare
   r public.wedding_requests;
 begin
-  select * into r from public.wedding_requests where id = p_request_id;
+  select * into r from public.wedding_requests wr where wr.id = p_request_id;
   if r.id is null or not exists (
     select 1 from public.wedding_members m where m.wedding_id = r.wedding_id and m.user_id = (select auth.uid())
   ) then
@@ -707,7 +707,7 @@ begin
   select rp.id, v.id, v.slug, v.name, v.name_pa, v.city,
     (select vm.storage_path from public.vendor_media vm
      where vm.vendor_id = v.id order by vm.is_cover desc, vm.sort_order limit 1),
-    v.founding_number, rp.price_cents, rp.price_unit, rp.note, rp.menu_id, rp.reel_id,
+    v.founding_number::integer, rp.price_cents, rp.price_unit, rp.note, rp.menu_id, rp.reel_id,
     rp.status, rp.conversation_id, rp.created_at
   from public.request_proposals rp
   join public.vendors v on v.id = rp.vendor_id
