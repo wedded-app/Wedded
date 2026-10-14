@@ -444,6 +444,21 @@ export type Database = {
           },
         ];
       };
+      email_opt_outs: {
+        Row: {
+          created_at: string;
+          email: string;
+        };
+        Insert: {
+          created_at?: string;
+          email: string;
+        };
+        Update: {
+          created_at?: string;
+          email?: string;
+        };
+        Relationships: [];
+      };
       event_categories: {
         Row: {
           category_slug: string;
