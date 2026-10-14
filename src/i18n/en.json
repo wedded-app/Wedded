@@ -975,7 +975,8 @@
       "booking": "Inquiry",
       "phone": "Shared a phone number",
       "voice": "Voice note",
-      "deposit": "Deposit request"
+      "deposit": "Deposit request",
+      "proposal": "Proposal"
     },
     "errors": {
       "rate": "You're sending very fast. Wait a minute, then send again.",
@@ -2001,19 +2002,22 @@
     "status": {
       "open": "Open",
       "booked": "Booked",
-      "closed": "Closed"
+      "closed": "Closed",
+      "expired": "Expired"
     },
     "units": {
       "event": "for the event",
       "person": "a person",
       "plate": "a plate",
-      "hour": "an hour"
+      "hour": "an hour",
+      "day": "a day"
     },
     "unitShort": {
       "event": "Event",
       "person": "Person",
       "plate": "Plate",
-      "hour": "Hour"
+      "hour": "Hour",
+      "day": "Day"
     },
     "home": {
       "title": "Let vendors come to you",
@@ -2036,7 +2040,11 @@
       "note": "Anything else? (optional)",
       "noteHint": "Like: two dhol players for an hour, from 9 pm",
       "privacy": "Vendors see “{{name}}” and {{city}}. Never your phone number or email, until you choose one.",
-      "send": "Post request"
+      "send": "Post request",
+      "town": "Your town",
+      "townMatch": "Vendors near {{city}} will see it",
+      "townError": "Type your town, like Yuba City",
+      "needsPlan": "Start your wedding plan first, so vendors know your date and events."
     },
     "mine": {
       "title": "Posted requests",
@@ -2078,10 +2086,31 @@
       "close": "Close this request",
       "closeTitle": "Close this request?",
       "closeBody": "Vendors won't see it anymore or send new proposals.",
-      "closeYes": "Close it"
+      "closeYes": "Close it",
+      "acceptBodyNoPrice": "We'll start a chat with {{vendor}}. Nothing is booked until you both agree.",
+      "priceInChat": "Price in chat",
+      "freeOnDate": "Free on your date",
+      "openChat": "Open chat"
     },
     "problems": {
-      "failed": "Something went wrong. Try again."
+      "failed": "Something went wrong. Try again.",
+      "notAllowed": "You can't do that here.",
+      "proOnly": "Families looking is part of Wedded Pro.",
+      "alreadyOpen": "You already have an open request for this. Look in Posted requests.",
+      "tooManyOpen": "You have a lot of open requests. Close one first.",
+      "rate": "That's a lot for one day. Try again tomorrow.",
+      "datePassed": "That date has passed. Pick a date that's coming up.",
+      "invalid": "Something in it isn't right. Check it and try again.",
+      "notOpen": "This request isn't open anymore.",
+      "alreadySent": "You've already sent a proposal for this.",
+      "proposalsFull": "This family has all the proposals they can take.",
+      "alreadyAnswered": "You've already answered this proposal.",
+      "offline": "You're offline. Check your connection and try again."
+    },
+    "chat": {
+      "title": "Proposal",
+      "chosenVendor": "They chose your proposal",
+      "chosenFamily": "You chose this proposal"
     }
   },
   "looking": {
@@ -2117,7 +2146,9 @@
       },
       "body": "See what they need, their date and budget, and send them your price.",
       "goPro": "See Wedded Pro"
-    }
+    },
+    "more": "Show more",
+    "full": "This family has all the proposals they can take"
   },
   "propose": {
     "title": "Send a proposal",
@@ -2161,6 +2192,9 @@
     "youreOn": "You're on Wedded Pro",
     "onWebsite": "You pay on the Wedded website, not in the app.",
     "soon": "Subscribing opens on the Wedded website soon.",
-    "free": "Your listing, inquiries, chat and reels stay free, with or without Pro."
+    "free": "Your listing, inquiries, chat and reels stay free, with or without Pro.",
+    "pastDue": "Your card didn't go through. Update it on the Wedded website.",
+    "renews": "Renews {{date}}",
+    "ends": "Ends {{date}}"
   }
 }

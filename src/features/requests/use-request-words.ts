@@ -1,7 +1,6 @@
 import { useMemo } from 'react';
 
 import { useCategories } from '@/data/reference';
-import type { GuestBand } from '@/data/inquiries';
 import { useEventNames } from '@/features/business/business-parts';
 import { formatDate } from '@/features/inquiry/inquiry-helpers';
 import { localized } from '@/i18n/localized';
@@ -14,7 +13,7 @@ type RequestLike = {
   categorySlug: string;
   eventSlug: string | null;
   eventDate: string | null;
-  guestBand: GuestBand | null;
+  guestBand: string | null;
   budgetMinCents: number | null;
   budgetMaxCents: number | null;
 };

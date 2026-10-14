@@ -8,8 +8,9 @@ import { NavScreen } from '@/components/nav';
 import { StateView } from '@/components/state-view';
 import { makeStyles, Radius, Spacing, useColors } from '@/constants/theme';
 import { SITE_URL_IS_PLACEHOLDER, siteLink } from '@/constants/links';
+import { useProStatus } from '@/data/requests';
 import { useCurrentBusiness } from '@/features/business/use-current-business';
-import { useMockTogglePro, useProStatus } from '@/features/requests/requests-source';
+import { formatDate } from '@/features/inquiry/inquiry-helpers';
 import { useLocale } from '@/i18n/locale-context';
 
 const PERKS: { icon: IconName; key: string }[] = [
@@ -30,11 +31,11 @@ export default function ProScreen() {
   const { t } = useLocale();
   const { business, vendorId, isPending } = useCurrentBusiness();
   const pro = useProStatus(vendorId);
-  const toggle = useMockTogglePro();
   const image = `linear-gradient(160deg, ${Colors.heroFrom} 0%, ${Colors.heroTo} 100%)`;
 
   if (isPending || pro.isPending) return <StateView state="loading" />;
-  const isPro = pro.data === 'pro';
+  const isPro = pro.data?.plan === 'pro';
+  const renews = pro.data?.renewsOn ? formatDate(pro.data.renewsOn.slice(0, 10)) : null;
 
   const subscribe = () => {
     if (!business) return;
@@ -83,9 +84,18 @@ export default function ProScreen() {
       {isPro ? (
         <View style={styles.on}>
           <Icon name="checkmark-circle" size={24} color={Colors.success} />
-          <AppText weight={700} color="success" style={styles.grow}>
-            {t('pro.youreOn')}
-          </AppText>
+          <View style={styles.grow}>
+            <AppText weight={700} color="success">
+              {t('pro.youreOn')}
+            </AppText>
+            {pro.data?.pastDue ? (
+              <AppText color="error">{t('pro.pastDue')}</AppText>
+            ) : renews ? (
+              <AppText color="text2">
+                {t(pro.data?.cancelAtPeriodEnd ? 'pro.ends' : 'pro.renews', { date: renews })}
+              </AppText>
+            ) : null}
+          </View>
         </View>
       ) : (
         <Button label={t('pro.subscribe')} onPress={subscribe} />
@@ -96,12 +106,6 @@ export default function ProScreen() {
       <AppText variant="label" weight={400} color="text2">
         {t('pro.free')}
       </AppText>
-      {/* Mock only, while the screens run on sample data */}
-      <Button
-        variant="text"
-        label={isPro ? 'Preview: turn Pro off' : 'Preview: turn Pro on'}
-        onPress={toggle}
-      />
     </NavScreen>
   );
 }

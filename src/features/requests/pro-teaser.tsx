@@ -7,8 +7,8 @@ import { Icon } from '@/components/icon';
 import { makeStyles, Radius, Spacing, useColors } from '@/constants/theme';
 import { useLocale } from '@/i18n/locale-context';
 
-import { useFamiliesLookingSummary } from './requests-source';
-import { useRequestWords } from './use-request-words';
+import { useFamiliesLookingSummary } from '@/data/requests';
+import { localized } from '@/i18n/localized';
 
 /**
  * For vendors not on Wedded Pro (#221): how many families near them are
@@ -18,18 +18,19 @@ import { useRequestWords } from './use-request-words';
 export function ProTeaser({ vendorId, compact = false }: { vendorId: string; compact?: boolean }) {
   const Colors = useColors();
   const styles = useStyles();
-  const { t } = useLocale();
-  const words = useRequestWords();
+  const { t, locale } = useLocale();
   const summary = useFamiliesLookingSummary(vendorId);
   const s = summary.data;
   const image = `linear-gradient(135deg, ${Colors.heroFrom} 0%, ${Colors.heroTo} 100%)`;
 
+  // The vendor type with the most families looking
+  const top = [...(s?.byCategory ?? [])].sort((a, b) => b.count - a.count)[0];
   const headline = !s
     ? t('looking.teaser.loading')
-    : s.categorySlug && s.categoryCount > 0
+    : top && top.count > 0 && s.byCategory.length === 1
       ? t('looking.teaser.category', {
-          count: s.categoryCount,
-          category: words.category(s.categorySlug),
+          count: top.count,
+          category: localized(top.categoryName, locale),
         })
       : t('looking.teaser.total', { count: s.total });
 

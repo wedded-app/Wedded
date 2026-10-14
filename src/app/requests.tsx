@@ -8,9 +8,9 @@ import { NavScreen } from '@/components/nav';
 import { PressableScale } from '@/components/pressable-scale';
 import { StateView } from '@/components/state-view';
 import { makeStyles, Radius, Spacing, useColors } from '@/constants/theme';
+import { useMyRequests } from '@/data/requests';
 import { usePlanView } from '@/features/planner/use-plan-view';
 import { StatusPill } from '@/features/requests/request-parts';
-import { useMyRequests } from '@/features/requests/requests-source';
 import { useRequestWords } from '@/features/requests/use-request-words';
 import { useLocale } from '@/i18n/locale-context';
 
@@ -24,16 +24,16 @@ export default function MyRequestsScreen() {
   const styles = useStyles();
   const { t } = useLocale();
   const view = usePlanView();
-  const requests = useMyRequests(view.wedding?.id ?? null);
+  const requests = useMyRequests(view.wedding?.id ?? '');
   const words = useRequestWords();
   const postNew = () => router.push('/request-new');
 
   let content;
-  if (requests.isPending) {
+  if (view.loading || (view.wedding && requests.isPending)) {
     content = <StateView state="loading" />;
   } else if (requests.isError) {
     content = <StateView state="error" onRetry={() => void requests.refetch()} />;
-  } else if (requests.data.length === 0) {
+  } else if ((requests.data ?? []).length === 0) {
     content = (
       <StateView
         state="empty"
@@ -43,26 +43,25 @@ export default function MyRequestsScreen() {
       />
     );
   } else {
-    content = requests.data.map((r) => {
+    content = (requests.data ?? []).map((r) => {
       const facts = words.facts(r);
-      const fresh = r.status === 'open' && r.proposalCount > 0;
+      const status = r.status === 'open' && r.expired ? 'expired' : r.status;
+      const fresh = status === 'open' && r.proposalCount > 0;
       return (
         <PressableScale
           key={r.id}
           accessibilityRole="button"
           accessibilityLabel={[
             words.headline(r),
-            t(`requests.status.${r.status}`),
+            t(`requests.status.${status}`),
             t('requests.mine.proposals', { count: r.proposalCount }),
           ].join(', ')}
           onPress={() => router.push({ pathname: '/request/[id]', params: { id: r.id } })}
           style={styles.card}
         >
           <View style={styles.top}>
-            <StatusPill
-              tone={r.status === 'open' ? 'open' : r.status === 'booked' ? 'done' : 'quiet'}
-            >
-              {t(`requests.status.${r.status}`)}
+            <StatusPill tone={status === 'open' ? 'open' : status === 'booked' ? 'done' : 'quiet'}>
+              {t(`requests.status.${status}`)}
             </StatusPill>
             <AppText variant="label" weight={400} color="text2">
               {words.ago(r.createdAt)}

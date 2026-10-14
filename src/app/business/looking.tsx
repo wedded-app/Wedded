@@ -9,13 +9,14 @@ import { NavScreen } from '@/components/nav';
 import { Segmented } from '@/components/segmented';
 import { StateView } from '@/components/state-view';
 import { makeStyles, Spacing, useColors } from '@/constants/theme';
-import { useCurrentBusiness } from '@/features/business/use-current-business';
-import { LookingPost, ProBadge } from '@/features/requests/request-parts';
 import {
   type LookingCard,
+  requestProblem,
   useFamiliesLooking,
   useProStatus,
-} from '@/features/requests/requests-source';
+} from '@/data/requests';
+import { useCurrentBusiness } from '@/features/business/use-current-business';
+import { LookingPost, ProBadge } from '@/features/requests/request-parts';
 import { ProTeaser } from '@/features/requests/pro-teaser';
 import { useRequestWords } from '@/features/requests/use-request-words';
 import { useLocale } from '@/i18n/locale-context';
@@ -34,25 +35,27 @@ export default function FamiliesLookingScreen() {
   const { vendorId, isPending } = useCurrentBusiness();
   const pro = useProStatus(vendorId);
   const [reach, setReach] = useState<Reach>('50');
-  const feed = useFamiliesLooking(vendorId, { maxMiles: reach === 'any' ? null : Number(reach) });
+  const feed = useFamiliesLooking(vendorId, { maxMiles: reach === 'any' ? 500 : Number(reach) });
+  const cards = feed.data?.pages.flat() ?? [];
+  const isPro = pro.data?.plan === 'pro';
   const words = useRequestWords();
 
   let content;
   if (isPending || pro.isPending) {
     content = <StateView state="loading" />;
-  } else if (pro.data !== 'pro') {
+  } else if (!isPro || (feed.isError && requestProblem(feed.error) === 'proOnly')) {
     content = <ProTeaser vendorId={vendorId} />;
   } else if (feed.isPending) {
     content = <StateView state="loading" />;
   } else if (feed.isError) {
     content = <StateView state="error" onRetry={() => void feed.refetch()} />;
-  } else if (feed.data.length === 0) {
+  } else if (cards.length === 0) {
     content = <StateView state="empty" icon="megaphone-outline" message={t('looking.empty')} />;
   } else {
     content = (
       <View>
-        {feed.data.map((card, index) => (
-          <View key={card.requestId}>
+        {cards.map((card, index) => (
+          <View key={card.id}>
             {index > 0 && <View style={styles.hairline} />}
             <LookingPost
               familyName={card.familyName}
@@ -65,13 +68,21 @@ export default function FamiliesLookingScreen() {
             />
           </View>
         ))}
+        {feed.hasNextPage && (
+          <Button
+            variant="secondary"
+            label={t('looking.more')}
+            loading={feed.isFetchingNextPage}
+            onPress={() => void feed.fetchNextPage()}
+          />
+        )}
       </View>
     );
   }
 
   return (
     <NavScreen title={t('looking.title')} subtitle={t('looking.subtitle')}>
-      {pro.data === 'pro' && (
+      {isPro && (
         <View style={styles.filters}>
           <ProBadge />
           <Segmented<Reach>
@@ -126,12 +137,14 @@ function PostFooter({ card }: { card: LookingCard }) {
             {t('looking.sent')}
           </AppText>
         </View>
+      ) : card.proposalsFull ? (
+        <AppText color="text2">{t('looking.full')}</AppText>
       ) : (
         <Button
           icon="paper-plane-outline"
           label={t('looking.propose')}
           onPress={() =>
-            router.push({ pathname: '/business/propose', params: { request: card.requestId } })
+            router.push({ pathname: '/business/propose', params: { request: card.id } })
           }
         />
       )}

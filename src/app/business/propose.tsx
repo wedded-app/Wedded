@@ -1,3 +1,4 @@
+import { useQueryClient, type InfiniteData } from '@tanstack/react-query';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import { ScrollView, View } from 'react-native';
@@ -13,15 +14,21 @@ import { StateView } from '@/components/state-view';
 import { TextField } from '@/components/text-field';
 import { makeStyles, Radius, Spacing } from '@/constants/theme';
 import { dollarsToCents } from '@/data/deposits';
+import {
+  type LookingCard,
+  type ProposalUnit,
+  requestKeys,
+  requestProblem,
+  useSendProposal,
+} from '@/data/requests';
 import { useVendorMenus } from '@/data/vendor-menus';
 import { useCurrentBusiness } from '@/features/business/use-current-business';
 import { LookingPost } from '@/features/requests/request-parts';
-import { lookingCard, type PriceUnit, useSendProposal } from '@/features/requests/requests-source';
 import { useRequestWords } from '@/features/requests/use-request-words';
 import { localized } from '@/i18n/localized';
 import { useLocale } from '@/i18n/locale-context';
 
-const UNITS: PriceUnit[] = ['event', 'person', 'plate', 'hour'];
+const UNITS: ProposalUnit[] = ['event', 'person', 'plate', 'hour'];
 
 /**
  * A vendor's one proposal to a family's request (#221): the request at the
@@ -37,13 +44,20 @@ export default function ProposeSheet() {
   const words = useRequestWords();
   const menus = useVendorMenus(vendorId);
   const send = useSendProposal(vendorId);
-  const card = lookingCard(request);
+  const queryClient = useQueryClient();
+  // The card the vendor tapped, from the feed already on the phone
+  const card = queryClient
+    .getQueriesData<InfiniteData<LookingCard[]>>({
+      queryKey: [...requestKeys.all, 'looking', vendorId],
+    })
+    .flatMap(([, data]) => data?.pages.flat() ?? [])
+    .find((c) => c.id === request);
 
   const perGuest = card
     ? words.group(card.categorySlug) === 'food' || words.group(card.categorySlug) === 'venues'
     : false;
   const [price, setPrice] = useState('');
-  const [unit, setUnit] = useState<PriceUnit>(perGuest ? 'person' : 'event');
+  const [unit, setUnit] = useState<ProposalUnit>(perGuest ? 'person' : 'event');
   const [note, setNote] = useState('');
   const [menu, setMenu] = useState<string | null>(null);
   const [attempted, setAttempted] = useState(false);
@@ -58,7 +72,7 @@ export default function ProposeSheet() {
     setAttempted(true);
     if (cents === null || !noteOk) return;
     send.mutate(
-      { requestId: request, priceCents: cents, unit, note: note.trim(), menuId: menu },
+      { requestId: request, priceCents: cents, priceUnit: unit, note: note.trim(), menuId: menu },
       { onSuccess: () => router.back() },
     );
   };
@@ -96,7 +110,7 @@ export default function ProposeSheet() {
           <AppText variant="label" weight={600}>
             {t('propose.per')}
           </AppText>
-          <Segmented<PriceUnit>
+          <Segmented<ProposalUnit>
             accessibilityLabel={t('propose.per')}
             value={unit}
             onChange={setUnit}
@@ -134,7 +148,9 @@ export default function ProposeSheet() {
         <AppText variant="label" weight={400} color="text2">
           {t('propose.once')}
         </AppText>
-        {send.isError && <FieldError message={t('requests.problems.failed')} />}
+        {send.isError && (
+          <FieldError message={t(`requests.problems.${requestProblem(send.error)}`)} />
+        )}
         <Button
           icon="paper-plane-outline"
           label={t('propose.send')}

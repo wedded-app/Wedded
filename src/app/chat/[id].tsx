@@ -52,6 +52,7 @@ import { leadAnswerRows } from '@/features/business/business-format';
 import { useEventNames } from '@/features/business/business-parts';
 import { messageSnippet } from '@/features/chat/chat-format';
 import { ChatDeposit, DepositsProvider, useChatDeposits } from '@/features/chat/chat-deposits';
+import { ChatProposal } from '@/features/requests/chat-proposal';
 import { PushAskCard } from '@/features/chat/push-ask';
 import { sentPhotoUri } from '@/features/chat/chat-photo';
 import { nextReaction, type ReactionCode } from '@/features/chat/reactions';
@@ -548,7 +549,8 @@ function ThreadRow({
     message.kind === 'menu' ||
     message.kind === 'booking' ||
     message.kind === 'phone' ||
-    message.kind === 'deposit';
+    message.kind === 'deposit' ||
+    message.kind === 'proposal';
   const quotedName = quoted ? authorOf(quoted) : '';
   const quotedText = quoted ? messageSnippet(quoted, t) : t('chat.reply.unavailable');
   return (
@@ -676,6 +678,8 @@ function MessageContent({
       return message.phone ? <PhoneCard phone={message.phone} mine={mine} /> : null;
     case 'deposit':
       return <ChatDeposit message={message} />;
+    case 'proposal':
+      return <ChatProposal message={message} conversation={conversation} />;
     default:
       return <TextBubble text={message.body ?? ''} mine={mine} first={first} last={last} />;
   }

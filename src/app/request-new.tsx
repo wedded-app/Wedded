@@ -11,13 +11,14 @@ import { Screen } from '@/components/screen';
 import { SheetHeader } from '@/components/sheet-header';
 import { TextField } from '@/components/text-field';
 import { makeStyles, Radius, Spacing, useColors } from '@/constants/theme';
-import type { GuestBand } from '@/data/inquiries';
+import { matchCities, useCities } from '@/data/places';
 import { useCategories } from '@/data/reference';
+import { requestProblem, usePostRequest } from '@/data/requests';
 import { useSession } from '@/features/auth/session';
+import { StartPlanCard } from '@/features/planner/start-plan-card';
 import { usePlanView } from '@/features/planner/use-plan-view';
 import { LookingPost } from '@/features/requests/request-parts';
 import { budgetBands, shortName } from '@/features/requests/requests-format';
-import { usePostRequest } from '@/features/requests/requests-source';
 import { useRequestWords } from '@/features/requests/use-request-words';
 import { localized } from '@/i18n/localized';
 import { useLocale } from '@/i18n/locale-context';
@@ -37,13 +38,15 @@ export default function PostRequestSheet() {
   const { profile } = useSession();
   const view = usePlanView();
   const words = useRequestWords();
-  const post = usePostRequest(view.wedding?.id ?? null);
+  const post = usePostRequest(view.wedding?.id ?? '');
+  const cities = useCities();
 
   const [event, setEvent] = useState<string | null>(params.event ?? view.chosen[0]?.slug ?? null);
   const [category, setCategory] = useState<string | null>(params.category ?? null);
   const [budget, setBudget] = useState<string | null>(null);
   const [note, setNote] = useState('');
   const [attempted, setAttempted] = useState(false);
+  const [town, setTown] = useState(profile?.city ?? '');
 
   // What the chosen event needs: essentials first
   const categories = useCategories();
@@ -57,8 +60,10 @@ export default function PostRequestSheet() {
   const bands = budgetBands(group);
   const band = bands.find((b) => b.key === budget) ?? null;
   const date = (event && view.plan.eventDates?.[event]) || view.plan.weddingDate || null;
-  const guestBand = ((event && view.plan.guests?.[event]) || null) as GuestBand | null;
-  const city = profile?.city ?? '';
+  const guestBand = (event && view.plan.guests?.[event]) || null;
+  // The town as one of our cities, so vendors' distances work
+  const place = matchCities(cities.data ?? [], town, 1)[0] ?? null;
+  const city = place?.name ?? '';
   const name = shortName(profile?.full_name) || t('requests.post.you');
 
   const draft = {
@@ -72,15 +77,30 @@ export default function PostRequestSheet() {
 
   const submit = () => {
     setAttempted(true);
-    if (!category) return;
+    if (!category || !place) return;
     post.mutate(
-      { ...draft, categorySlug: category, note: note.trim(), city },
+      { ...draft, categorySlug: category, note: note.trim(), citySlug: place.slug },
       {
         onSuccess: (id) =>
-          router.replace({ pathname: '/request/[id]', params: { id, posted: '1' } }),
+          router.replace({ pathname: '/request/[id]', params: { id: String(id), posted: '1' } }),
       },
     );
   };
+
+  if (!view.wedding && !view.loading) {
+    return (
+      <Screen edges={['top', 'bottom']}>
+        <SheetHeader onClose={() => router.canGoBack() && router.back()} />
+        <View style={styles.content}>
+          <AppText variant="title" accessibilityRole="header">
+            {t('requests.post.title')}
+          </AppText>
+          <AppText color="text2">{t('requests.post.needsPlan')}</AppText>
+          <StartPlanCard />
+        </View>
+      </Screen>
+    );
+  }
 
   return (
     <Screen edges={['top', 'bottom']}>
@@ -169,6 +189,15 @@ export default function PostRequestSheet() {
         )}
 
         <TextField
+          label={t('requests.post.town')}
+          value={town}
+          onChangeText={setTown}
+          hint={place ? t('requests.post.townMatch', { city: place.name }) : undefined}
+          error={attempted && !place ? t('requests.post.townError') : undefined}
+          autoComplete="off"
+        />
+
+        <TextField
           label={t('requests.post.note')}
           hint={t('requests.post.noteHint')}
           value={note}
@@ -184,7 +213,9 @@ export default function PostRequestSheet() {
           </AppText>
         </View>
 
-        {post.isError && <FieldError message={t('requests.problems.failed')} />}
+        {post.isError && (
+          <FieldError message={t(`requests.problems.${requestProblem(post.error)}`)} />
+        )}
         <Button label={t('requests.post.send')} loading={post.isPending} onPress={submit} />
       </ScrollView>
     </Screen>

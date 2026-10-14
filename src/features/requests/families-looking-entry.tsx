@@ -1,10 +1,10 @@
 import { router } from 'expo-router';
 
 import { ListRow, ListSection } from '@/components/list';
+import { useFamiliesLookingSummary, useProStatus } from '@/data/requests';
 import { useLocale } from '@/i18n/locale-context';
 
 import { ProTeaser } from './pro-teaser';
-import { useFamiliesLookingSummary, useProStatus } from './requests-source';
 
 /**
  * On My business (#221): Pro vendors get a row into Families looking with
@@ -15,7 +15,7 @@ export function FamiliesLookingEntry({ vendorId }: { vendorId: string }) {
   const pro = useProStatus(vendorId);
   const summary = useFamiliesLookingSummary(vendorId);
   if (pro.isPending) return null;
-  if (pro.data !== 'pro') return <ProTeaser vendorId={vendorId} compact />;
+  if (pro.data?.plan !== 'pro') return <ProTeaser vendorId={vendorId} compact />;
   return (
     <ListSection>
       <ListRow
