@@ -133,6 +133,7 @@ const SF_SYMBOLS: Partial<Record<IconName, SFSymbol>> = {
   'people-circle-outline': 'person.2.circle',
   'infinite-outline': 'infinity',
   'star-outline': 'star',
+  'arrow-back': 'arrow.left',
   'arrow-forward': 'arrow.right',
   'pencil-outline': 'pencil',
   'person-outline': 'person',

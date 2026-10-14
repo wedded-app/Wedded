@@ -51,11 +51,11 @@ export function monthLabel(month: string, t: Translate): string {
 }
 
 /**
- * Where "Fix it" goes: the calendar, the menus, the listing editor at that
- * section, or the Wedded team (photos and the cover, until vendors can add
- * their own).
+ * Where "Fix it" goes: the photos, the calendar, the menus, the listing
+ * editor at that section, or the Wedded team for anything else.
  */
 export function fixTarget(key: ChecklistKey): Href | 'team' {
+  if (key === 'photos' || key === 'cover') return '/business/photos';
   if (key === 'calendar') return '/business/calendar';
   if (key === 'menus') return '/business/menus';
   const section = sectionFor(key);

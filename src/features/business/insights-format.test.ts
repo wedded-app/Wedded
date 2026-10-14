@@ -38,7 +38,8 @@ describe('insights words', () => {
       pathname: '/business/listing',
       params: { section: 'contact' },
     });
-    expect(fixTarget('photos')).toBe('team');
+    expect(fixTarget('photos')).toBe('/business/photos');
+    expect(fixTarget('cover')).toBe('/business/photos');
   });
 
   it('scales bars to the biggest value', () => {
