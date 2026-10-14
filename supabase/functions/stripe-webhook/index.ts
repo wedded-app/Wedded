@@ -7,6 +7,8 @@
 //   200 { received: true } · 400 bad_signature · 503 not_set_up
 
 import { createClient } from '@supabase/supabase-js';
+import { limitedBody } from '../_shared/body.ts';
+
 import Stripe from 'stripe';
 
 import { readStripeEvent, stripeClient, stripeSettings } from '../_shared/stripe.ts';
@@ -28,7 +30,8 @@ Deno.serve(async (request) => {
   if (!settings?.webhookSecret) return json({ error: 'not_set_up' }, 503);
 
   const signature = request.headers.get('Stripe-Signature') ?? '';
-  const payload = await request.text();
+  const payload = await limitedBody(request, 1048576);
+  if (payload === null) return json({ error: 'body_too_large' }, 413);
   const stripe = stripeClient(settings.secretKey);
   let event: Stripe.Event;
   try {
