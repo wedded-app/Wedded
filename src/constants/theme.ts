@@ -89,6 +89,21 @@ const light = {
   glowRose: 'rgba(196, 120, 160, 0.32)',
   // Text fields floating on the glow: white, a little see-through.
   canvasField: 'rgba(255, 255, 255, 0.82)',
+  // Celebrations (PetalBurst): rose petals and gold dust.
+  petalRose: '#E58FA6',
+  petalBlush: '#F6C9D3',
+  petalMaroon: '#A3243F',
+  petalGold: '#E2B25C',
+  // The "wedding night" screens (Requests, Wedded Pro): plum black like the
+  // promo video, glass cards, champagne gold and a rose glow. The same in
+  // light and dark; those screens always draw in dark.
+  night: '#12060A',
+  nightCard: 'rgba(255, 255, 255, 0.06)',
+  nightCardStrong: 'rgba(255, 255, 255, 0.1)',
+  nightLine: 'rgba(255, 255, 255, 0.12)',
+  champagne: '#E9C98B',
+  roseGlow: '0px 10px 34px rgba(214, 70, 110, 0.45)',
+  nightButton: 'linear-gradient(135deg, #C8385C 0%, #8A1C30 100%)',
 };
 
 export type Palette = Record<keyof typeof light, string>;
@@ -153,6 +168,17 @@ const dark: Palette = {
   glowGold: 'rgba(240, 160, 75, 0.22)',
   glowRose: 'rgba(150, 70, 130, 0.28)',
   canvasField: 'rgba(44, 44, 46, 0.82)',
+  petalRose: '#E58FA6',
+  petalBlush: '#F6C9D3',
+  petalMaroon: '#A3243F',
+  petalGold: '#E2B25C',
+  night: '#12060A',
+  nightCard: 'rgba(255, 255, 255, 0.06)',
+  nightCardStrong: 'rgba(255, 255, 255, 0.1)',
+  nightLine: 'rgba(255, 255, 255, 0.12)',
+  champagne: '#E9C98B',
+  roseGlow: '0px 10px 34px rgba(214, 70, 110, 0.45)',
+  nightButton: 'linear-gradient(135deg, #C8385C 0%, #8A1C30 100%)',
 };
 
 export type Scheme = 'light' | 'dark';

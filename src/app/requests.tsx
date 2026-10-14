@@ -1,136 +1,148 @@
 import { router } from 'expo-router';
 import { View } from 'react-native';
+import Animated, { FadeInDown } from 'react-native-reanimated';
 
 import { AppText } from '@/components/app-text';
-import { Button } from '@/components/button';
 import { Icon } from '@/components/icon';
-import { NavScreen } from '@/components/nav';
 import { PressableScale } from '@/components/pressable-scale';
 import { StateView } from '@/components/state-view';
-import { makeStyles, Radius, Spacing, useColors } from '@/constants/theme';
+import { makeStyles, SchemeContext, Spacing, useColors } from '@/constants/theme';
 import { useMyRequests } from '@/data/requests';
 import { usePlanView } from '@/features/planner/use-plan-view';
-import { StatusPill } from '@/features/requests/request-parts';
+import { GlassCard, GlowButton, NightScreen } from '@/features/requests/night';
+import { RequestInvite } from '@/features/requests/request-invite';
 import { useRequestWords } from '@/features/requests/use-request-words';
+import { localized } from '@/i18n/localized';
 import { useLocale } from '@/i18n/locale-context';
 
 /**
- * My requests (#219): everything the family has asked vendors for, newest
- * first, each with how many proposals came in. "Post a request" starts a new
- * one. /requests
+ * Posted requests (#219): everything the family asked vendors for, each as
+ * an invitation card with how many proposals came in. "Ask vendors" starts a
+ * new one. /requests
  */
-export default function MyRequestsScreen() {
+export default function PostedRequestsScreen() {
+  return (
+    <SchemeContext.Provider value="dark">
+      <PostedRequests />
+    </SchemeContext.Provider>
+  );
+}
+
+function PostedRequests() {
   const Colors = useColors();
   const styles = useStyles();
-  const { t } = useLocale();
+  const { t, locale } = useLocale();
   const view = usePlanView();
   const requests = useMyRequests(view.wedding?.id ?? '');
   const words = useRequestWords();
-  const postNew = () => router.push('/request-new');
+  const ask = () => router.push('/request-new');
+  const list = requests.data ?? [];
 
   let content;
   if (view.loading || (view.wedding && requests.isPending)) {
     content = <StateView state="loading" />;
   } else if (requests.isError) {
     content = <StateView state="error" onRetry={() => void requests.refetch()} />;
-  } else if ((requests.data ?? []).length === 0) {
+  } else if (list.length === 0) {
     content = (
-      <StateView
-        state="empty"
-        icon="megaphone-outline"
-        message={t('requests.mine.empty')}
-        action={{ label: t('requests.post.title'), onPress: postNew }}
-      />
+      <GlassCard style={styles.empty}>
+        <Icon name="megaphone-outline" size={34} color={Colors.champagne} />
+        <AppText variant="heading" serif weight={600} style={styles.center}>
+          {t('requests.mine.emptyTitle')}
+        </AppText>
+        <AppText color="text2" style={styles.center}>
+          {t('requests.mine.empty')}
+        </AppText>
+      </GlassCard>
     );
   } else {
-    content = (requests.data ?? []).map((r) => {
-      const facts = words.facts(r);
+    content = list.map((r, i) => {
       const status = r.status === 'open' && r.expired ? 'expired' : r.status;
+      const event = view.chosen.find((e) => e.slug === r.eventSlug);
       const fresh = status === 'open' && r.proposalCount > 0;
       return (
-        <PressableScale
-          key={r.id}
-          accessibilityRole="button"
-          accessibilityLabel={[
-            words.headline(r),
-            t(`requests.status.${status}`),
-            t('requests.mine.proposals', { count: r.proposalCount }),
-          ].join(', ')}
-          onPress={() => router.push({ pathname: '/request/[id]', params: { id: r.id } })}
-          style={styles.card}
-        >
-          <View style={styles.top}>
-            <StatusPill tone={status === 'open' ? 'open' : status === 'booked' ? 'done' : 'quiet'}>
-              {t(`requests.status.${status}`)}
-            </StatusPill>
-            <AppText variant="label" weight={400} color="text2">
-              {words.ago(r.createdAt)}
-            </AppText>
-          </View>
-          <AppText variant="bodyLg" weight={600}>
-            {words.headline(r)}
-          </AppText>
-          <AppText color="text2">{[facts.date, facts.budget].filter(Boolean).join(' · ')}</AppText>
-          <View style={styles.count}>
-            <View style={[styles.badge, fresh && styles.badgeFresh]}>
-              <AppText
-                weight={700}
-                color={fresh ? 'onPrimary' : 'text2'}
-                maxFontSizeMultiplier={1.4}
-              >
-                {String(r.proposalCount)}
-              </AppText>
-            </View>
-            <AppText weight={600} style={styles.grow}>
-              {t('requests.mine.proposals', { count: r.proposalCount })}
-            </AppText>
-            <Icon name="chevron-forward" size={17} color={Colors.chevron} weight="semibold" />
-          </View>
-        </PressableScale>
+        <Animated.View key={r.id} entering={FadeInDown.delay(i * 70).duration(360)}>
+          <PressableScale
+            accessibilityRole="button"
+            accessibilityLabel={[
+              words.headline(r),
+              t(`requests.status.${status}`),
+              t('requests.mine.proposals', { count: r.proposalCount }),
+            ].join(', ')}
+            onPress={() => router.push({ pathname: '/request/[id]', params: { id: r.id } })}
+            pressedScale={0.98}
+          >
+            <RequestInvite
+              eventName={event ? localized(event.name, locale) : null}
+              headline={words.category(r.categorySlug)}
+              date={r.eventDate}
+              facts={words.facts(r)}
+              footer={
+                <View style={styles.footer}>
+                  <View style={[styles.count, fresh && styles.countFresh]}>
+                    <AppText
+                      weight={700}
+                      color={fresh ? 'onHero' : 'text2'}
+                      maxFontSizeMultiplier={1.4}
+                    >
+                      {String(r.proposalCount)}
+                    </AppText>
+                  </View>
+                  <AppText weight={600} style={styles.grow}>
+                    {status === 'open'
+                      ? t('requests.mine.proposals', { count: r.proposalCount })
+                      : t(`requests.status.${status}`)}
+                  </AppText>
+                  <AppText variant="label" weight={400} color="text2">
+                    {words.ago(r.createdAt)}
+                  </AppText>
+                  <Icon name="chevron-forward" size={17} color={Colors.text2} weight="semibold" />
+                </View>
+              }
+            />
+          </PressableScale>
+        </Animated.View>
       );
     });
   }
 
   return (
-    <NavScreen title={t('requests.mine.title')} subtitle={t('requests.mine.subtitle')}>
+    <NightScreen
+      eyebrow={t('requests.mine.eyebrow')}
+      title={t('requests.mine.title')}
+      subtitle={t('requests.mine.subtitle')}
+      footer={<GlowButton icon="add" label={t('requests.post.title')} onPress={ask} />}
+    >
       {content}
-      {requests.data && requests.data.length > 0 && (
-        <Button icon="add" label={t('requests.post.title')} onPress={postNew} />
-      )}
-    </NavScreen>
+    </NightScreen>
   );
 }
 
 const useStyles = makeStyles((Colors) => ({
-  card: {
-    gap: Spacing.sm,
-    padding: Spacing.lg,
-    borderRadius: Radius.card,
-    borderCurve: 'continuous',
-    backgroundColor: Colors.surface,
+  empty: {
+    alignItems: 'center',
+    paddingVertical: Spacing.xxl,
   },
-  top: {
+  center: {
+    textAlign: 'center',
+  },
+  footer: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
+    gap: Spacing.sm,
   },
   count: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.sm,
-    marginTop: Spacing.xs,
-  },
-  badge: {
-    minWidth: 32,
-    height: 32,
+    minWidth: 34,
+    height: 34,
     paddingHorizontal: Spacing.sm,
-    borderRadius: 16,
+    borderRadius: 17,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: Colors.fill,
+    backgroundColor: Colors.nightCardStrong,
   },
-  badgeFresh: {
+  countFresh: {
     backgroundColor: Colors.primaryFill,
+    boxShadow: Colors.roseGlow,
   },
   grow: {
     flex: 1,

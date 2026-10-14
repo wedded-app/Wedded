@@ -49,7 +49,12 @@ export function useRequestWords() {
         guests:
           r.guestBand && r.guestBand !== 'not_sure' ? t(`inquiry.guestBands.${r.guestBand}`) : null,
         budget: budgetWords(r.budgetMinCents, r.budgetMaxCents, t, group(r.categorySlug)),
-        distance: miles != null ? t('requests.miles', { count: Math.round(miles) }) : null,
+        distance:
+          miles == null
+            ? null
+            : miles < 1
+              ? t('requests.nearby')
+              : t('requests.miles', { count: Math.round(miles) }),
       }),
       ago: (iso: string) => timeAgo(iso, t),
     };

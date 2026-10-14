@@ -15,7 +15,7 @@ export function FamiliesLookingEntry({ vendorId }: { vendorId: string }) {
   const pro = useProStatus(vendorId);
   const summary = useFamiliesLookingSummary(vendorId);
   if (pro.isPending) return null;
-  if (pro.data?.plan !== 'pro') return <ProTeaser vendorId={vendorId} compact />;
+  if (pro.data?.plan !== 'pro') return <ProTeaser vendorId={vendorId} />;
   return (
     <ListSection>
       <ListRow
