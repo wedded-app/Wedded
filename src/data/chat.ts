@@ -1,3 +1,4 @@
+import { assertUploadFits } from './upload-limits';
 /**
  * Chat between families and vendors (the chat migration). One conversation
  * per family and vendor; every inquiry adds its booking details to it. Both
@@ -578,6 +579,7 @@ export async function uploadChatPhoto(
   bytes: ArrayBuffer,
   contentType: 'image/jpeg' | 'image/png' | 'image/webp' | 'image/heic' = 'image/jpeg',
 ): Promise<string> {
+  assertUploadFits('chat-media', bytes, contentType);
   const extension = contentType.split('/')[1].replace('jpeg', 'jpg');
   const path = `${conversationId}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${extension}`;
   const { error } = await supabase.storage
@@ -611,6 +613,7 @@ export async function uploadChatVoice(
   bytes: ArrayBuffer,
   contentType: VoiceContentType = 'audio/mp4',
 ): Promise<string> {
+  assertUploadFits('chat-media', bytes, contentType);
   const path = `${conversationId}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${VOICE_EXTENSIONS[contentType]}`;
   const { error } = await supabase.storage
     .from('chat-media')
