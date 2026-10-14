@@ -1,5 +1,14 @@
-import type { ReactNode } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { Platform, View, type ViewStyle } from 'react-native';
+import Animated, {
+  Easing,
+  useAnimatedStyle,
+  useReducedMotion,
+  useSharedValue,
+  withDelay,
+  withRepeat,
+  withTiming,
+} from 'react-native-reanimated';
 
 import { AppText } from '@/components/app-text';
 import { makeStyles, Radius, Spacing } from '@/constants/theme';
@@ -38,7 +47,7 @@ export function RequestInvite({
 
   return (
     <View style={styles.card}>
-      <View style={styles.band} />
+      <GoldBand />
       <View style={styles.row}>
         {date ? <DateTile date={date} size="lg" /> : null}
         <View style={styles.words}>
@@ -68,6 +77,31 @@ export function RequestInvite({
   );
 }
 
+/** The gold line across the top, with a brighter glint that sweeps along it now and then. */
+function GoldBand() {
+  const styles = useStyles();
+  const reduceMotion = useReducedMotion();
+  const [width, setWidth] = useState(0);
+  const sweep = useSharedValue(0);
+  useEffect(() => {
+    if (reduceMotion || width === 0) return;
+    sweep.set(
+      withRepeat(
+        withDelay(1200, withTiming(1, { duration: 1600, easing: Easing.inOut(Easing.cubic) })),
+        -1,
+      ),
+    );
+  }, [reduceMotion, sweep, width]);
+  const glint = useAnimatedStyle(() => ({
+    transform: [{ translateX: -120 + sweep.value * (width + 240) }],
+  }));
+  return (
+    <View style={styles.band} onLayout={(e) => setWidth(e.nativeEvent.layout.width)}>
+      {!reduceMotion && width > 0 && <Animated.View style={[styles.glint, glint]} />}
+    </View>
+  );
+}
+
 const gold = (css: string) =>
   (Platform.OS === 'web'
     ? { backgroundImage: css }
@@ -91,8 +125,18 @@ const useStyles = makeStyles((Colors) => ({
     left: 0,
     right: 0,
     height: 4,
+    overflow: 'hidden',
     ...gold(
       `linear-gradient(90deg, rgba(233,201,139,0) 0%, ${Colors.champagne} 50%, rgba(233,201,139,0) 100%)`,
+    ),
+  },
+  glint: {
+    position: 'absolute',
+    top: 0,
+    bottom: 0,
+    width: 120,
+    ...gold(
+      'linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,246,220,0.95) 50%, rgba(255,255,255,0) 100%)',
     ),
   },
   row: {

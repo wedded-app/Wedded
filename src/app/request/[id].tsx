@@ -15,7 +15,6 @@ import Animated, { FadeInDown } from 'react-native-reanimated';
 import { AppText } from '@/components/app-text';
 import { Button } from '@/components/button';
 import { Icon, type IconName } from '@/components/icon';
-import { PetalBurst } from '@/components/petal-burst';
 import { PressableScale } from '@/components/pressable-scale';
 import { StateView } from '@/components/state-view';
 import {
@@ -37,9 +36,12 @@ import {
   useRequestProposals,
 } from '@/data/requests';
 import { useVendorPublicStats } from '@/data/vendor-stats';
+import { useSession } from '@/features/auth/session';
 import { usePlanView } from '@/features/planner/use-plan-view';
 import { FaceStack, GlassCard, GlowButton, NightScreen } from '@/features/requests/night';
+import { MatchMoment } from '@/features/requests/moments';
 import { RequestInvite } from '@/features/requests/request-invite';
+import { shortName } from '@/features/requests/requests-format';
 import { useRequestWords } from '@/features/requests/use-request-words';
 import { localized } from '@/i18n/localized';
 import { useLocale } from '@/i18n/locale-context';
@@ -68,7 +70,8 @@ function ask(title: string, body: string, yes: string, no: string, onYes: () => 
  * One request and its proposals (#219), on the night page: the request as an
  * invitation with the faces of the vendors who answered, then the proposals
  * as a deck of tall cards to swipe through (the chosen one first, then the
- * lowest price). Choose bursts petals and opens the chat. /request/{id}
+ * lowest price). Choose plays the match moment, then opens the chat.
+ * /request/{id}
  */
 export default function RequestScreen() {
   return (
@@ -91,7 +94,8 @@ function Request() {
   const answer = useAnswerProposal(id);
   const close = useCloseRequest(weddingId);
   const words = useRequestWords();
-  const [burst, setBurst] = useState(0);
+  const [match, setMatch] = useState<{ name: string; photo: string | null } | null>(null);
+  const { profile } = useSession();
   const [page, setPage] = useState(0);
   const request = requests.data?.find((r) => r.id === id);
 
@@ -137,13 +141,13 @@ function Request() {
           {
             onSuccess: ({ conversationId }) => {
               successHaptic();
-              setBurst((n) => n + 1);
-              if (conversationId) {
-                setTimeout(
-                  () => router.push({ pathname: '/chat/[id]', params: { id: conversationId } }),
-                  1200,
-                );
-              }
+              setMatch({ name: vendorName, photo: p.vendor.photoUrl });
+              setTimeout(() => {
+                setMatch(null);
+                if (conversationId) {
+                  router.push({ pathname: '/chat/[id]', params: { id: conversationId } });
+                }
+              }, 2600);
             },
           },
         ),
@@ -254,7 +258,15 @@ function Request() {
           />
         )}
       </NightScreen>
-      <PetalBurst play={burst} />
+      {match && (
+        <MatchMoment
+          familyName={shortName(profile?.full_name) || t('requests.post.you')}
+          vendorName={match.name}
+          vendorPhoto={match.photo}
+          title={t('requests.match.title', { vendor: match.name })}
+          body={t('requests.match.body')}
+        />
+      )}
     </View>
   );
 }

@@ -8,17 +8,18 @@ import { Chip } from '@/components/chip';
 import { FieldError } from '@/components/field-error';
 import { groupIcon } from '@/components/group-icon';
 import { Icon } from '@/components/icon';
-import { PetalBurst } from '@/components/petal-burst';
 import { PressableScale } from '@/components/pressable-scale';
 import { TextField } from '@/components/text-field';
 import { makeStyles, Radius, Spacing, useColors, SchemeContext } from '@/constants/theme';
 import { matchCities, useCities } from '@/data/places';
 import { useCategories } from '@/data/reference';
+import { useCategoryVendorCounts } from '@/data/vendors';
 import { requestProblem, usePostRequest } from '@/data/requests';
 import { useSession } from '@/features/auth/session';
 import { StartPlanCard } from '@/features/planner/start-plan-card';
 import { usePlanView } from '@/features/planner/use-plan-view';
 import { GlassCard, GlowButton, NightScreen } from '@/features/requests/night';
+import { SentMoment } from '@/features/requests/moments';
 import { RequestInvite } from '@/features/requests/request-invite';
 import { budgetBands, shortName } from '@/features/requests/requests-format';
 import { useRequestWords } from '@/features/requests/use-request-words';
@@ -32,7 +33,7 @@ type Step = 0 | 1 | 2;
  * Ask vendors (#219), in three steps on the night page: what you need (big
  * tiles for the event's vendor types), your budget and town, then a note
  * with the request shown as vendors will see it. The plan fills in the date
- * and guests. Sending bursts petals and opens the request. Vendors see the
+ * and guests. Sending plays the sent moment, then opens the request. Vendors see the
  * short name and town only, never a phone number or email.
  * /request-new?event=&category=
  */
@@ -54,6 +55,7 @@ function AskVendors() {
   const words = useRequestWords();
   const categories = useCategories();
   const cities = useCities();
+  const vendorCounts = useCategoryVendorCounts();
   const post = usePostRequest(view.wedding?.id ?? '');
 
   const [step, setStep] = useState<Step>(params.category ? 1 : 0);
@@ -64,7 +66,7 @@ function AskVendors() {
   const [budget, setBudget] = useState<string | null>(null);
   const [town, setTown] = useState(profile?.city ?? '');
   const [note, setNote] = useState('');
-  const [burst, setBurst] = useState(0);
+  const [sent, setSent] = useState(false);
 
   const eventNeeds = (event ? (view.needsByEvent[event] ?? []) : []).flatMap((s) => s.needs);
   // No plan for this event yet: every vendor type, A to Z
@@ -115,14 +117,14 @@ function AskVendors() {
       {
         onSuccess: (id) => {
           successHaptic();
-          setBurst((n) => n + 1);
+          setSent(true);
           setTimeout(
             () =>
               router.replace({
                 pathname: '/request/[id]',
                 params: { id: String(id), posted: '1' },
               }),
-            1100,
+            2400,
           );
         },
       },
@@ -220,6 +222,13 @@ function AskVendors() {
                       <AppText weight={700} numberOfLines={3}>
                         {localized(need.name, locale)}
                       </AppText>
+                      {(vendorCounts.data?.[need.categorySlug] ?? 0) > 0 && (
+                        <AppText variant="label" weight={500} color="text2">
+                          {t('requests.post.vendorCount', {
+                            count: vendorCounts.data?.[need.categorySlug] ?? 0,
+                          })}
+                        </AppText>
+                      )}
                     </PressableScale>
                   </Animated.View>
                 );
@@ -317,7 +326,15 @@ function AskVendors() {
           </Animated.View>
         )}
       </NightScreen>
-      <PetalBurst play={burst} />
+      {sent && (
+        <SentMoment
+          title={t('requests.sent.title')}
+          body={t('requests.sent.body', {
+            category: category ? words.category(category) : '',
+            city: place?.name ?? '',
+          })}
+        />
+      )}
     </View>
   );
 }
