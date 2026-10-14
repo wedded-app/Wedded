@@ -56,7 +56,7 @@ select throws_ok(
 create temp table first_photo as
   select public.add_vendor_photo('b1400000-0000-4000-8000-000000000001', 'f1400000-0000-4000-8000-000000000001', 1600, 1200, 'reception') as id;
 select results_eq(
-  $$ select storage_path, is_cover, sort_order, event_slug from public.vendor_media $$,
+  $$ select storage_path, is_cover, sort_order, event_slug from public.vendor_media where vendor_id = 'b1400000-0000-4000-8000-000000000001' $$,
   $$ values ('b1400000-0000-4000-8000-000000000001/f1400000-0000-4000-8000-000000000001', true, 0::smallint, 'reception') $$,
   'The first photo is saved as the cover, and the vendor sees it while still a draft'
 );
@@ -72,7 +72,7 @@ create temp table more_photos as
   select public.add_vendor_photo('b1400000-0000-4000-8000-000000000001', 'f1400000-0000-4000-8000-000000000002', 1200, 1600) as second_id,
          public.add_vendor_photo('b1400000-0000-4000-8000-000000000001', 'f1400000-0000-4000-8000-000000000003', 1600, 1600) as third_id;
 select results_eq(
-  $$ select count(*)::int, count(*) filter (where is_cover)::int, max(sort_order)::int from public.vendor_media $$,
+  $$ select count(*)::int, count(*) filter (where is_cover)::int, max(sort_order)::int from public.vendor_media where vendor_id = 'b1400000-0000-4000-8000-000000000001' $$,
   $$ values (3, 1, 2) $$,
   'Later photos go to the end, still one cover'
 );
@@ -84,7 +84,7 @@ select lives_ok(
   'They pick another cover'
 );
 select is(
-  (select id from public.vendor_media where is_cover),
+  (select id from public.vendor_media where is_cover and vendor_id = 'b1400000-0000-4000-8000-000000000001'),
   (select third_id from more_photos),
   'Only that one is the cover'
 );
@@ -94,7 +94,7 @@ select lives_ok(
   'They put the photos in order'
 );
 select results_eq(
-  $$ select id from public.vendor_media order by sort_order $$,
+  $$ select id from public.vendor_media where vendor_id = 'b1400000-0000-4000-8000-000000000001' order by sort_order $$,
   $$ values ((select third_id from more_photos)), ((select id from first_photo)), ((select second_id from more_photos)) $$,
   'The ones named first, the rest after'
 );
@@ -111,7 +111,7 @@ select is(
   'Removing gives back the folder for the app to delete'
 );
 select is(
-  (select id from public.vendor_media where is_cover),
+  (select id from public.vendor_media where is_cover and vendor_id = 'b1400000-0000-4000-8000-000000000001'),
   (select id from first_photo),
   'Removing the cover makes the next photo the cover'
 );

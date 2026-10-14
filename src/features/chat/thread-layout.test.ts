@@ -16,6 +16,7 @@ const message = (id: string, role: 'family' | 'vendor', at: string, readAt: stri
     phone: null,
     voice: null,
     deposit: null,
+    proposal: null,
     replyTo: null,
     reactions: [],
     createdAt: at,
