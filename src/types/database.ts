@@ -2187,6 +2187,16 @@ export type Database = {
     Functions: {
       accept_wedding_invite: { Args: { p_token: string }; Returns: string };
       add_reel_comment: { Args: { p_body: string; p_reel_id: string }; Returns: string };
+      add_vendor_photo: {
+        Args: {
+          p_event_slug?: string;
+          p_height: number;
+          p_photo_id: string;
+          p_vendor_id: string;
+          p_width: number;
+        };
+        Returns: string;
+      };
       attach_payment_intent: {
         Args: { p_deposit_id: string; p_payment_intent_id: string };
         Returns: undefined;
@@ -2472,8 +2482,13 @@ export type Database = {
         }[];
       };
       register_push_token: { Args: { p_platform: string; p_token: string }; Returns: undefined };
+      remove_vendor_photo: { Args: { p_media_id: string }; Returns: string };
       remove_wedding_member: {
         Args: { p_user_id: string; p_wedding_id: string };
+        Returns: undefined;
+      };
+      reorder_vendor_photos: {
+        Args: { p_media_ids: string[]; p_vendor_id: string };
         Returns: undefined;
       };
       report_reel_content: {
@@ -2556,6 +2571,7 @@ export type Database = {
         };
         Returns: string;
       };
+      set_vendor_cover: { Args: { p_media_id: string }; Returns: undefined };
       set_wedding_member_role: {
         Args: { p_role: string; p_user_id: string; p_wedding_id: string };
         Returns: undefined;
@@ -2571,6 +2587,7 @@ export type Database = {
         };
         Returns: string;
       };
+      tag_vendor_photo: { Args: { p_event_slug?: string; p_media_id: string }; Returns: undefined };
       touch_vendor_calendar: { Args: { p_vendor_id: string }; Returns: undefined };
       track_reel_view: { Args: { p_reel_id: string }; Returns: undefined };
       track_search_appearances: { Args: { p_vendor_ids: string[] }; Returns: undefined };

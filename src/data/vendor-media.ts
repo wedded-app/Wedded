@@ -42,7 +42,7 @@ export type VenuePhoto = VendorPhoto & {
   vendor: { slug: string; name: LocalizedText };
 };
 
-type PhotoRow = {
+export type PhotoRow = {
   id: string;
   storage_path: string;
   width: number;
@@ -54,7 +54,7 @@ type PhotoRow = {
   credit: { name: string } | null;
 };
 
-function toPhoto(row: PhotoRow): VendorPhoto {
+export function toPhoto(row: PhotoRow): VendorPhoto {
   return {
     id: row.id,
     width: row.width,
@@ -71,7 +71,7 @@ function toPhoto(row: PhotoRow): VendorPhoto {
   };
 }
 
-const PHOTO_COLUMNS =
+export const PHOTO_COLUMNS =
   'id, storage_path, width, height, blurhash, is_cover, event_slug, credit_text, credit:vendors!vendor_media_credit_vendor_id_fkey(name)';
 
 async function fetchVendorPhotos(vendorId: string): Promise<VendorPhoto[]> {
