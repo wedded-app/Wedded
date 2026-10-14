@@ -104,3 +104,30 @@ The [FTC email guide](https://www.ftc.gov/business-guidance/resources/can-spam-a
 ## Tab 2 integration
 
 Policy source paths: `docs/PRIVACY_DRAFT.md`, `docs/TERMS_DRAFT.md`, `docs/REFUND_DRAFT.md`. Suggested public routes are `/privacy`, `/terms`, `/refunds`; these routes are not implemented by Tab 1. Keep the “draft for a lawyer” notice until founders approve final text. Link the policies from sign-up, forms, payments and the website footer as appropriate. Cookie explanations and embedded-provider behavior need review before final copy.
+
+
+## Policy drafts for counsel — draft for a lawyer
+
+These are working drafts, not approved launch policies. The full drafts below are the source for Tab 2's policy pages; identity/contact placeholders and retention/request procedures must be settled before publication.
+
+### Privacy policy — draft for a lawyer
+
+Wedded collects account/contact details, wedding plans, messages and media, vendor business details, payment references, push tokens and operational/security logs to provide sign-in, planning, introductions, conversations, payments and abuse prevention. Requested content reaches selected vendors, conversation participants or invited planning members; public listings and reels reach public viewers. Supabase, Stripe, Resend, Expo/Apple/Google, hosting and social embed providers process the relevant data described in the inventory above.
+
+We do not sell personal data or share it for cross-context behavioral advertising. California residents may request to see/receive their data, know its sources/purposes/recipients, correct it, or delete it subject to legal exceptions, and may have opt-out and sensitive-information rights without unlawful discrimination. App account deletion exists; founders must provide a monitored privacy contact and implement a verified access/export and provider-deletion process. Counsel must confirm CCPA applicability and retention rules. See the complete [Privacy draft](PRIVACY_DRAFT.md), including the California category/purpose/recipient table and request procedure.
+
+### Terms — draft for a lawyer
+
+Adults 18+ can use Wedded to plan weddings and contact vendors. Accounts and listings must be truthful; users must have rights to submitted content and must not spam, impersonate, harass or bypass access controls. Families and vendors contract directly; Wedded introductions do not guarantee availability or service quality. Stripe processes payments. Founders and counsel must finalize the limited content licence, support, suspension/appeal process and lawful liability/dispute terms. See the full [Terms draft](TERMS_DRAFT.md).
+
+### Refund policy — draft for a lawyer
+
+Wedded Pro can be canceled at any time; cancellation stops the next renewal and access lasts until the paid period ends. No partial-period refunds are provided except where law requires them. Deposits are transactions between family and vendor: cancellation/refund conditions must be agreed with the vendor, and refunds are processed through that vendor. Mandatory consumer and payment-provider rights remain available. See the full [Refund draft](REFUND_DRAFT.md).
+
+### Verified source and licence
+
+Checked `General-Legal/legal-templates` at commit `6d6805425eabd41bed86fc1e2ec51612760f716c`: its README and LICENSE release the templates under CC0 1.0. Adaptations use its U.S. Privacy Policy, Cookie Notice and Terms of Use structures, with General Legal's requested credit retained in the complete drafts. There is no standalone refund template in the checked repository; the refund provisions are Wedded-specific. No optional arbitration clause was copied into Wedded's draft. [Source repository](https://github.com/General-Legal/legal-templates).
+
+### Tracking and future analytics
+
+No first-party analytics or ad tracking is enabled today, so no tracking-consent banner is planned for the current product. Verify third-party embed behavior and launch jurisdictions before publishing a blanket no-tracking claim. If analytics are added, use a cookieless configuration (for example PostHog), default it off, and load/enable it only behind an explicit consent toggle with a way to withdraw consent. Re-audit data flows and policies before enabling it.
