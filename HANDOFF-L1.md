@@ -23,4 +23,7 @@ Continue in `/Users/gurkiratbagri/Projects/wedding-app-tab1`, branch `feature/em
 
 - Demo: once Kirat signs in on the demo with Apple and plans his wedding, run from `wedding-app-samples` (on origin/main) with the demo URL and service key: `npm run requests:samples -- --pro=dhol-di-awaaz --family=<his email>`, and add him to `vendor_members` for dhol-di-awaaz (`npm run vendors:invite`).
 - PR #224 (Pro billing) stays draft until the Stripe test keys (#210) and the checklist in HANDOFF-R3.md.
-- Tool installs from his videos wait for his OK: design skills `npx skills add pbakaus/impeccable`, `Leonxlnx/taste-skill`, `emilkowalski/skills`; token savers `rtk-ai/rtk`, `Graphify-Labs/graphify`, `DietrichGebert/ponytail`. Skip OmniRoute (routes code to other AI providers).
+- Tool installs: **Kirat approved on 2026-10-14** (do this first, before step 1). For each repo, read its README install section and the files it adds before running anything; install for Claude Code at the user level (not committed to this repo), and for Codex too where the repo supports it. Then check Claude Code still starts and list what was installed for Kirat.
+  - Design skills: `npx skills add pbakaus/impeccable`, `npx skills add Leonxlnx/taste-skill`, `npx skills add emilkowalski/skills`.
+  - Token savers: `rtk-ai/rtk` (Rust CLI, then its Claude Code hook setup), `Graphify-Labs/graphify` (build the graph for this repo), `DietrichGebert/ponytail`.
+  - Do not install OmniRoute (it routes code through other AI providers).
