@@ -204,23 +204,25 @@ password_requirements = ""
 # Number of emails that can be sent per hour. Requires auth.email.smtp to be enabled.
 email_sent = 2
 # Number of SMS messages that can be sent per hour. Requires auth.sms to be enabled.
-sms_sent = 30
+sms_sent = 10
 # Number of anonymous sign-ins that can be made per hour per IP address. Requires enable_anonymous_sign_ins = true.
 anonymous_users = 30
 # Number of sessions that can be refreshed in a 5 minute interval per IP address.
 token_refresh = 150
 # Number of sign up and sign-in requests that can be made in a 5 minute interval per IP address (excludes anonymous users).
-sign_in_sign_ups = 30
+sign_in_sign_ups = 10
 # Number of OTP / Magic link verifications that can be made in a 5 minute interval per IP address.
-token_verifications = 30
+token_verifications = 10
 # Number of Web3 logins that can be made in a 5 minute interval per IP address.
 web3 = 30
 
-# Configure one of the supported captcha providers: `hcaptcha`, `turnstile`.
-# [auth.captcha]
-# enabled = true
-# provider = "hcaptcha"
-# secret = ""
+# Local development sends no paid SMS and has no real Turnstile keys.
+# Hosted rollout: docs/HOSTED_SETUP.md. Never push this local config to hosted.
+# Enable on hosted only after every initial/resend/reauth OTP flow sends captchaToken.
+[auth.captcha]
+enabled = false
+provider = "turnstile"
+# For an opt-in local challenge test only: secret = "env(TURNSTILE_SECRET_KEY)"
 
 [auth.email]
 # Allow/disallow new user signups via email to your project.
@@ -233,7 +235,7 @@ enable_confirmations = false
 # If enabled, users will need to reauthenticate or have logged in recently to change their password.
 secure_password_change = false
 # Controls the minimum amount of time that must pass before sending another signup confirmation or password reset email.
-max_frequency = "1s"
+max_frequency = "60s"
 # Number of characters used in the email OTP.
 otp_length = 6
 # Number of seconds before the email OTP expires (defaults to 1 hour).
@@ -283,7 +285,7 @@ enable_confirmations = false
 # Template for sending OTP to users
 template = "Your Wedded App code is {{ .Code }}"
 # Controls the minimum amount of time that must pass before sending another sms otp.
-max_frequency = "5s"
+max_frequency = "60s"
 
 # Test numbers (without the +) and their fixed codes. Auth returns these codes before it calls
 # the SMS provider, so they work locally with the dummy Twilio settings below. 555-01xx numbers
@@ -340,7 +342,7 @@ enroll_enabled = false
 verify_enabled = false
 otp_length = 6
 template = "Your code is {{ .Code }}"
-max_frequency = "5s"
+max_frequency = "60s"
 
 # Configure MFA via WebAuthn
 # [auth.mfa.web_authn]
