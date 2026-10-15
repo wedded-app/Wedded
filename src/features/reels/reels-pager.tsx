@@ -77,7 +77,8 @@ export function ReelsPager({
   const router = useRouter();
   const { t, locale } = useLocale();
   const { requireSignIn, session } = useSession();
-  const bottomSpace = useBottomSpace();
+  // Scroll views need extra trailing padding; reel overlays only need to clear the bar.
+  const bottomSpace = useBottomSpace() - Spacing.xl;
   const reels = useReelsFeed(feed);
   const traditions = useTraditions();
   const like = useToggleLike();
