@@ -111,6 +111,7 @@ function VendorAvatar({ row }: { row: VendorStatusRow }) {
         <Image
           source={{ uri: row.vendor.photoUrl }}
           contentFit="cover"
+          accessible={false}
           style={styles.avatarPhoto}
         />
       ) : (
