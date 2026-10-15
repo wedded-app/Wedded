@@ -202,6 +202,8 @@ export type Proposal = {
     city: string;
     photoUrl: string | null;
     foundingNumber: number | null;
+    /** A demo sample vendor: show the Sample tag. */
+    isSample: boolean;
   };
   priceCents: number | null;
   priceUnit: ProposalUnit | null;
@@ -230,6 +232,7 @@ type ProposalRow = {
   status: string;
   conversation_id: string | null;
   created_at: string;
+  vendor_is_sample?: boolean | null;
 };
 
 const UNITS: ProposalUnit[] = ['event', 'hour', 'person', 'plate', 'day'];
@@ -245,6 +248,7 @@ export function toProposal(row: ProposalRow): Proposal {
       city: row.vendor_city,
       photoUrl: row.cover_path ? photoUrl(row.cover_path, 'medium') : null,
       foundingNumber: row.founding_number,
+      isSample: row.vendor_is_sample ?? false,
     },
     priceCents: row.price_cents,
     priceUnit: UNITS.find((u) => u === row.price_unit) ?? null,

@@ -2805,6 +2805,7 @@ export type Database = {
           status: string;
           vendor_city: string;
           vendor_id: string;
+          vendor_is_sample: boolean;
           vendor_name: string;
           vendor_slug: string;
         }[];

@@ -1,14 +1,14 @@
 import { router } from 'expo-router';
 import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
+import Animated from 'react-native-reanimated';
 
 import { AppText } from '@/components/app-text';
-import { Button } from '@/components/button';
-import { Icon } from '@/components/icon';
-import { NavScreen } from '@/components/nav';
+import { Icon, type IconName } from '@/components/icon';
 import { Segmented } from '@/components/segmented';
+import { SampleTag } from '@/components/sample-tag';
 import { StateView } from '@/components/state-view';
-import { makeStyles, Spacing, useColors } from '@/constants/theme';
+import { makeStyles, Radius, SchemeContext, Spacing, useColors } from '@/constants/theme';
 import {
   type LookingCard,
   requestProblem,
@@ -16,20 +16,35 @@ import {
   useProStatus,
 } from '@/data/requests';
 import { useCurrentBusiness } from '@/features/business/use-current-business';
-import { LookingPost, ProBadge } from '@/features/requests/request-parts';
-import { ProTeaser } from '@/features/requests/pro-teaser';
+import { DateTile, GlassCard, GlowButton, NightScreen } from '@/features/requests/night';
+import { useLookingTeaser } from '@/features/requests/pro-teaser';
+import { FamilyAvatar } from '@/features/requests/request-parts';
 import { useRequestWords } from '@/features/requests/use-request-words';
+import { localized } from '@/i18n/localized';
 import { useLocale } from '@/i18n/locale-context';
+import { useCountUp } from '@/lib/use-count-up';
+import { Motion } from '@/lib/motion';
 
 type Reach = '25' | '50' | 'any';
 
 /**
- * Families looking (#221): for vendors on Wedded Pro, requests from families
- * near them in their vendor types, newest first, laid out like Threads. Each
- * says if the vendor is free that day and how many proposals it has; "Send a
- * proposal" opens the composer. Free vendors see the teaser instead.
+ * Families looking (#221), on the night page: for Wedded Pro vendors, a calm
+ * Threads-like feed of families near them who need what they do. Each post:
+ * the family's letters, name, town and how long ago, the date as a calendar
+ * page, what they need, guests, budget and distance, their note, whether the
+ * vendor is free that day, then Send a proposal. Free vendors get the
+ * teaser: the real count, big, over soft blurred posts, and Wedded Pro.
  */
 export default function FamiliesLookingScreen() {
+  return (
+    <SchemeContext.Provider value="dark">
+      <FamiliesLooking />
+    </SchemeContext.Provider>
+  );
+}
+
+function FamiliesLooking() {
+  const Colors = useColors();
   const styles = useStyles();
   const { t } = useLocale();
   const { vendorId, isPending } = useCurrentBusiness();
@@ -38,40 +53,43 @@ export default function FamiliesLookingScreen() {
   const feed = useFamiliesLooking(vendorId, { maxMiles: reach === 'any' ? 500 : Number(reach) });
   const cards = feed.data?.pages.flat() ?? [];
   const isPro = pro.data?.plan === 'pro';
-  const words = useRequestWords();
+  const locked = !isPro || (feed.isError && requestProblem(feed.error) === 'proOnly');
+
+  if (isPending || pro.isPending) {
+    return (
+      <NightScreen>
+        <StateView state="loading" />
+      </NightScreen>
+    );
+  }
+  if (locked) return <Teaser vendorId={vendorId} />;
 
   let content;
-  if (isPending || pro.isPending) {
-    content = <StateView state="loading" />;
-  } else if (!isPro || (feed.isError && requestProblem(feed.error) === 'proOnly')) {
-    content = <ProTeaser vendorId={vendorId} />;
-  } else if (feed.isPending) {
+  if (feed.isPending) {
     content = <StateView state="loading" />;
   } else if (feed.isError) {
     content = <StateView state="error" onRetry={() => void feed.refetch()} />;
   } else if (cards.length === 0) {
-    content = <StateView state="empty" icon="megaphone-outline" message={t('looking.empty')} />;
+    content = (
+      <GlassCard style={styles.empty}>
+        <Icon name="megaphone-outline" size={32} color={Colors.champagne} />
+        <AppText color="text2" style={styles.center}>
+          {t('looking.empty')}
+        </AppText>
+      </GlassCard>
+    );
   } else {
     content = (
       <View>
         {cards.map((card, index) => (
-          <View key={card.id}>
+          <Animated.View key={card.id} entering={Motion.stagger(Math.min(index, 6))}>
             {index > 0 && <View style={styles.hairline} />}
-            <LookingPost
-              familyName={card.familyName}
-              isSample={card.isSample}
-              city={card.city}
-              ago={words.ago(card.postedAt)}
-              headline={words.headline(card)}
-              facts={words.facts(card, card.miles)}
-              note={card.note}
-              footer={<PostFooter card={card} />}
-            />
-          </View>
+            <Post card={card} />
+          </Animated.View>
         ))}
         {feed.hasNextPage && (
-          <Button
-            variant="secondary"
+          <GlowButton
+            glass
             label={t('looking.more')}
             loading={feed.isFetchingNextPage}
             onPress={() => void feed.fetchNextPage()}
@@ -82,45 +100,97 @@ export default function FamiliesLookingScreen() {
   }
 
   return (
-    <NavScreen title={t('looking.title')} subtitle={t('looking.subtitle')}>
-      {isPro && (
-        <View style={styles.filters}>
-          <ProBadge />
-          <Segmented<Reach>
-            accessibilityLabel={t('looking.reach')}
-            value={reach}
-            onChange={setReach}
-            options={[
-              { value: '25', label: t('looking.miles', { count: 25 }) },
-              { value: '50', label: t('looking.miles', { count: 50 }) },
-              { value: 'any', label: t('looking.anywhere') },
-            ]}
-          />
-        </View>
-      )}
+    <NightScreen
+      eyebrow={t('pro.eyebrow')}
+      title={t('looking.title')}
+      subtitle={t('looking.subtitle')}
+    >
+      <Segmented<Reach>
+        accessibilityLabel={t('looking.reach')}
+        value={reach}
+        onChange={setReach}
+        options={[
+          { value: '25', label: t('looking.miles', { count: 25 }) },
+          { value: '50', label: t('looking.miles', { count: 50 }) },
+          { value: 'any', label: t('looking.anywhere') },
+        ]}
+      />
       {content}
-    </NavScreen>
+    </NightScreen>
   );
 }
 
-/** Under a post: whether the vendor is free that day, the proposal count, and the action. */
-function PostFooter({ card }: { card: LookingCard }) {
+function Fact({ icon, children }: { icon: IconName; children: string }) {
+  const Colors = useColors();
+  const styles = useStyles();
+  return (
+    <View style={styles.fact}>
+      <Icon name={icon} size={15} color={Colors.champagne} />
+      <AppText variant="label" weight={600}>
+        {children}
+      </AppText>
+    </View>
+  );
+}
+
+/** One family's request, Threads-style. */
+function Post({ card }: { card: LookingCard }) {
   const Colors = useColors();
   const styles = useStyles();
   const { t } = useLocale();
+  const words = useRequestWords();
+  const facts = words.facts(card, card.miles);
   const free = card.dateStatus === 'open';
   const busy = card.dateStatus === 'booked';
+  const headline = localized(card.categoryName);
+  const event = card.eventName ? localized(card.eventName) : null;
+
   return (
-    <View style={styles.footer}>
+    <View style={styles.post}>
+      <View style={styles.byline}>
+        <FamilyAvatar name={card.familyName} />
+        <View style={styles.grow}>
+          <View style={styles.nameRow}>
+            <AppText weight={700}>{card.familyName}</AppText>
+            <SampleTag show={card.isSample} />
+          </View>
+          <AppText variant="label" weight={400} color="text2">
+            {[card.city, words.ago(card.postedAt)].join(' · ')}
+          </AppText>
+        </View>
+      </View>
+
+      <View style={styles.what}>
+        {card.eventDate ? <DateTile date={card.eventDate} /> : null}
+        <View style={styles.grow}>
+          {event ? (
+            <AppText variant="label" weight={700} color="champagne">
+              {event.toUpperCase()}
+            </AppText>
+          ) : null}
+          <AppText variant="title" serif weight={600}>
+            {headline}
+          </AppText>
+        </View>
+      </View>
+
+      <View style={styles.facts}>
+        {facts.guests && <Fact icon="people-outline">{facts.guests}</Fact>}
+        {facts.budget && <Fact icon="cash-outline">{facts.budget}</Fact>}
+        {facts.distance && <Fact icon="location-outline">{facts.distance}</Fact>}
+      </View>
+
+      {card.note ? <AppText style={styles.note}>{`“${card.note}”`}</AppText> : null}
+
       <View style={styles.meta}>
         {(free || busy) && (
           <View style={styles.metaItem}>
             <Icon
               name={free ? 'checkmark-circle' : 'close-circle-outline'}
-              size={16}
+              size={17}
               color={free ? Colors.success : Colors.error}
             />
-            <AppText variant="label" weight={600} color={free ? 'success' : 'error'}>
+            <AppText variant="label" weight={700} color={free ? 'success' : 'error'}>
               {t(free ? 'looking.free' : 'looking.booked')}
             </AppText>
           </View>
@@ -131,17 +201,18 @@ function PostFooter({ card }: { card: LookingCard }) {
             : t('looking.proposals', { count: card.proposalCount })}
         </AppText>
       </View>
+
       {card.alreadyProposed ? (
         <View style={styles.sent}>
-          <Icon name="checkmark-circle" size={18} color={Colors.primary} />
-          <AppText weight={600} color="primary">
+          <Icon name="checkmark-circle" size={20} color={Colors.champagne} />
+          <AppText weight={700} color="champagne">
             {t('looking.sent')}
           </AppText>
         </View>
       ) : card.proposalsFull ? (
         <AppText color="text2">{t('looking.full')}</AppText>
       ) : (
-        <Button
+        <GlowButton
           icon="paper-plane-outline"
           label={t('looking.propose')}
           onPress={() =>
@@ -153,18 +224,110 @@ function PostFooter({ card }: { card: LookingCard }) {
   );
 }
 
+/** For vendors not on Pro: the real count, big, over blurred posts, and Wedded Pro. */
+function Teaser({ vendorId }: { vendorId: string }) {
+  const styles = useStyles();
+  const { t } = useLocale();
+  const { total, what } = useLookingTeaser(vendorId);
+  const shown = useCountUp(total, 1100);
+
+  return (
+    <NightScreen
+      eyebrow={t('pro.eyebrow')}
+      footer={
+        <GlowButton
+          icon="sparkles"
+          label={t('looking.teaser.goPro')}
+          onPress={() => router.push('/business/pro')}
+        />
+      }
+    >
+      <View style={styles.hero}>
+        <AppText serif weight={600} style={styles.bigNumber} maxFontSizeMultiplier={1.2}>
+          {String(shown)}
+        </AppText>
+        <AppText variant="title" serif weight={500} style={styles.center}>
+          {what}
+        </AppText>
+        <AppText variant="bodyLg" color="text2" style={styles.center}>
+          {t('looking.teaser.body')}
+        </AppText>
+      </View>
+      {/* Soft, unreadable stand-ins for the posts Pro unlocks: never real details */}
+      <View
+        style={styles.ghosts}
+        accessible={false}
+        importantForAccessibility="no-hide-descendants"
+      >
+        {[0, 1, 2].map((i) => (
+          <GlassCard key={i} style={[styles.ghost, { opacity: 0.55 - i * 0.15 }]}>
+            <View style={styles.ghostRow}>
+              <View style={styles.ghostDot} />
+              <View style={[styles.ghostBar, { width: '40%' }]} />
+            </View>
+            <View style={[styles.ghostBar, styles.ghostTall, { width: '70%' }]} />
+            <View style={[styles.ghostBar, { width: '90%' }]} />
+            <View style={[styles.ghostBar, { width: '55%' }]} />
+          </GlassCard>
+        ))}
+      </View>
+    </NightScreen>
+  );
+}
+
 const useStyles = makeStyles((Colors) => ({
-  filters: {
-    gap: Spacing.md,
+  grow: {
+    flex: 1,
+  },
+  center: {
+    textAlign: 'center',
+  },
+  empty: {
+    alignItems: 'center',
+    paddingVertical: Spacing.xxl,
   },
   hairline: {
     height: StyleSheet.hairlineWidth,
-    marginLeft: 44 + Spacing.md,
-    backgroundColor: Colors.separator,
+    backgroundColor: Colors.nightLine,
   },
-  footer: {
+  post: {
     gap: Spacing.md,
-    marginTop: Spacing.xs,
+    paddingVertical: Spacing.xl,
+  },
+  nameRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flexWrap: 'wrap',
+    gap: Spacing.sm,
+  },
+  byline: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.md,
+  },
+  what: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.lg,
+  },
+  facts: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: Spacing.sm,
+  },
+  fact: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: Spacing.md,
+    paddingVertical: 7,
+    borderRadius: Radius.chip,
+    backgroundColor: Colors.nightCard,
+    borderWidth: 1,
+    borderColor: Colors.nightLine,
+  },
+  note: {
+    fontStyle: 'italic',
   },
   meta: {
     flexDirection: 'row',
@@ -183,5 +346,41 @@ const useStyles = makeStyles((Colors) => ({
     alignItems: 'center',
     gap: Spacing.sm,
     minHeight: 48,
+  },
+  hero: {
+    alignItems: 'center',
+    gap: Spacing.md,
+    paddingTop: Spacing.xl,
+  },
+  bigNumber: {
+    fontSize: 120,
+    lineHeight: 132,
+    color: Colors.champagne,
+    fontVariant: ['tabular-nums'],
+  },
+  ghosts: {
+    gap: Spacing.md,
+  },
+  ghost: {
+    gap: Spacing.sm,
+  },
+  ghostRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.sm,
+  },
+  ghostDot: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: Colors.nightCardStrong,
+  },
+  ghostBar: {
+    height: 12,
+    borderRadius: 6,
+    backgroundColor: Colors.nightCardStrong,
+  },
+  ghostTall: {
+    height: 20,
   },
 }));

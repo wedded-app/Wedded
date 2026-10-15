@@ -110,8 +110,10 @@ describe('toProposal', () => {
       status: 'sent',
       conversation_id: null,
       created_at: '2026-10-14T08:00:00Z',
+      vendor_is_sample: true,
     });
     expect(proposal.vendor.name).toEqual({ en: 'Dhol Di Awaaz' });
+    expect(proposal.vendor.isSample).toBe(true);
     expect(proposal.vendor.photoUrl).toContain('v1/photo');
     expect(proposal.priceUnit).toBe('event');
   });

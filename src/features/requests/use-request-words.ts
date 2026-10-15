@@ -47,9 +47,16 @@ export function useRequestWords() {
       facts: (r: RequestLike, miles?: number | null): PostFacts => ({
         date: r.eventDate ? formatDate(r.eventDate) : null,
         guests:
-          r.guestBand && r.guestBand !== 'not_sure' ? t(`inquiry.guestBands.${r.guestBand}`) : null,
+          r.guestBand && r.guestBand !== 'not_sure'
+            ? t('requests.guests', { band: t(`inquiry.guestBands.${r.guestBand}`) })
+            : null,
         budget: budgetWords(r.budgetMinCents, r.budgetMaxCents, t, group(r.categorySlug)),
-        distance: miles != null ? t('requests.miles', { count: Math.round(miles) }) : null,
+        distance:
+          miles == null
+            ? null
+            : miles < 1
+              ? t('requests.nearby')
+              : t('requests.miles', { count: Math.round(miles) }),
       }),
       ago: (iso: string) => timeAgo(iso, t),
     };

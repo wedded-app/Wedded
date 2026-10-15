@@ -248,7 +248,8 @@
   "common": {
     "comingSoon": "Coming soon",
     "back": "Back",
-    "goHome": "Go to Home"
+    "goHome": "Go to Home",
+    "close": "Close"
   },
   "states": {
     "loading": "Loading…",
@@ -1970,11 +1971,23 @@
     },
     "gone": "This request isn't here anymore.",
     "ago": {
-      "now": "now",
-      "minutes": "{{count}}m",
-      "hours": "{{count}}h",
-      "days": "{{count}}d",
-      "weeks": "{{count}}w"
+      "now": "Just now",
+      "minutes": {
+        "one": "1 minute ago",
+        "other": "{{count}} minutes ago"
+      },
+      "hours": {
+        "one": "1 hour ago",
+        "other": "{{count}} hours ago"
+      },
+      "days": {
+        "one": "Yesterday",
+        "other": "{{count}} days ago"
+      },
+      "weeks": {
+        "one": "1 week ago",
+        "other": "{{count}} weeks ago"
+      }
     },
     "budget": {
       "upTo": "Up to {{amount}}",
@@ -2013,14 +2026,14 @@
     },
     "home": {
       "title": "Let vendors come to you",
-      "body": "Post what you need. Vendors send you their prices."
+      "body": "Ask once. Vendors near you send their prices."
     },
     "post": {
-      "title": "Post a request",
-      "body": "Tell vendors what you need. They send you a price, and you choose.",
+      "title": "Ask vendors",
+      "body": "Vendors near you send their prices. You choose.",
       "hint": "Opens a form to post a request to vendors",
-      "fromPlan": "Post a request for this event",
-      "preview": "HOW VENDORS SEE IT",
+      "fromPlan": "Ask vendors for this event",
+      "preview": "WHAT VENDORS SEE",
       "previewLabel": "How vendors will see your request",
       "pickType": "Pick what you need",
       "you": "You",
@@ -2028,26 +2041,38 @@
       "event": "Which event?",
       "type": "What do you need?",
       "typeError": "Pick what you need",
-      "budget": "Your budget (optional)",
+      "budget": "Pick one, or skip it",
       "note": "Anything else? (optional)",
       "noteHint": "Like: two dhol players for an hour, from 9 pm",
       "privacy": "Vendors see “{{name}}” and {{city}}. Never your phone number or email, until you choose one.",
-      "send": "Post request",
+      "send": "Ask vendors",
       "town": "Your town",
       "townMatch": "Vendors near {{city}} will see it",
       "townError": "Type your town, like Yuba City",
-      "needsPlan": "Start your wedding plan first, so vendors know your date and events."
+      "needsPlan": "Start your wedding plan first, so vendors know your date and events.",
+      "stepOf": "STEP {{step}} OF {{total}}",
+      "step1": "What do you need?",
+      "step2": "Your budget",
+      "step3": "Anything to add?",
+      "continue": "Continue",
+      "budgetHint": "Vendors see the range, so the prices you get fit.",
+      "vendorCount": {
+        "one": "1 near you",
+        "other": "{{count}} near you"
+      }
     },
     "mine": {
-      "title": "Posted requests",
+      "title": "Your asks",
       "subtitle": "What you asked vendors for, and their prices.",
-      "rowHint": "Vendors send you prices",
+      "rowHint": "Ask once, vendors send prices",
       "empty": "Post what you need, like a DJ for the reception, and vendors send you their prices.",
       "proposals": {
         "zero": "No proposals yet",
         "one": "1 proposal",
         "other": "{{count}} proposals"
-      }
+      },
+      "eyebrow": "REQUESTS",
+      "emptyTitle": "Let vendors come to you"
     },
     "inbox": {
       "subtitle": "Compare prices, then choose one.",
@@ -2082,7 +2107,12 @@
       "acceptBodyNoPrice": "We'll start a chat with {{vendor}}. Nothing is booked until you both agree.",
       "priceInChat": "Price in chat",
       "freeOnDate": "Free on your date",
-      "openChat": "Open chat"
+      "openChat": "Open chat",
+      "title": {
+        "one": "1 vendor answered",
+        "other": "{{count}} vendors answered"
+      },
+      "postedShort": "SENT TO VENDORS NEAR YOU"
     },
     "problems": {
       "failed": "Something went wrong. Try again.",
@@ -2103,7 +2133,25 @@
       "title": "Proposal",
       "chosenVendor": "They chose your proposal",
       "chosenFamily": "You chose this proposal"
-    }
+    },
+    "invite": {
+      "today": "Today!",
+      "away": {
+        "one": "1 day away",
+        "other": "{{count}} days away"
+      },
+      "dateAway": "{{date}} · {{away}}"
+    },
+    "nearby": "Nearby",
+    "sent": {
+      "title": "Sent!",
+      "body": "{{category}} vendors near {{city}} can see it now. Their prices will show up here."
+    },
+    "match": {
+      "title": "You chose {{vendor}}",
+      "body": "Opening your chat…"
+    },
+    "guests": "{{band}} guests"
   },
   "looking": {
     "title": "Families looking",
@@ -2137,7 +2185,16 @@
         "other": "{{count}} families near you are looking"
       },
       "body": "See what they need, their date and budget, and send them your price.",
-      "goPro": "See Wedded Pro"
+      "goPro": "See Wedded Pro",
+      "need": {
+        "one": "family near you is looking for a vendor",
+        "other": "families near you are looking for vendors"
+      },
+      "needCategory": {
+        "one": "family near you needs a {{category}}",
+        "other": "families near you need a {{category}}"
+      },
+      "hint": "Opens Families looking"
     },
     "more": "Show more",
     "full": "This family has all the proposals they can take"
@@ -2152,7 +2209,8 @@
     "noteError": "Write a little more, so they know what you're offering",
     "menu": "Attach a menu (optional)",
     "once": "You can send one proposal per request. If they choose you, a chat opens.",
-    "send": "Send proposal"
+    "send": "Send proposal",
+    "eyebrow": "FOR {{name}}"
   },
   "pro": {
     "badge": "Pro",
@@ -2161,7 +2219,7 @@
     "name": "Wedded Pro",
     "price": "$50",
     "perMonth": "a month",
-    "cancelAnytime": "Cancel anytime.",
+    "cancelAnytime": "Renews every month. Cancel anytime.",
     "perks": {
       "looking": {
         "title": "See families looking",
@@ -2187,7 +2245,11 @@
     "free": "Your listing, inquiries, chat and reels stay free, with or without Pro.",
     "pastDue": "Your card didn't go through. Update it on the Wedded website.",
     "renews": "Renews {{date}}",
-    "ends": "Ends {{date}}"
+    "ends": "Ends {{date}}",
+    "eyebrow": "WEDDED PRO",
+    "manage": "Manage or cancel Pro",
+    "updateCard": "Update your card",
+    "manageOnWebsite": "You change your card or cancel on the Wedded website."
   },
   "licences": {
     "title": "Licences",

@@ -1,17 +1,18 @@
 import * as WebBrowser from 'expo-web-browser';
-import { Platform, View, type ViewStyle } from 'react-native';
+import { View } from 'react-native';
+import Animated from 'react-native-reanimated';
 
 import { AppText } from '@/components/app-text';
-import { Button } from '@/components/button';
 import { Icon, type IconName } from '@/components/icon';
-import { NavScreen } from '@/components/nav';
 import { StateView } from '@/components/state-view';
-import { makeStyles, Radius, Spacing, useColors } from '@/constants/theme';
 import { SITE_URL_IS_PLACEHOLDER, siteLink } from '@/constants/links';
+import { makeStyles, SchemeContext, Spacing, useColors } from '@/constants/theme';
 import { useProStatus } from '@/data/requests';
 import { useCurrentBusiness } from '@/features/business/use-current-business';
 import { formatDate } from '@/features/inquiry/inquiry-helpers';
+import { GlassCard, GlowButton, NightScreen } from '@/features/requests/night';
 import { useLocale } from '@/i18n/locale-context';
+import { Motion } from '@/lib/motion';
 
 const PERKS: { icon: IconName; key: string }[] = [
   { icon: 'megaphone-outline', key: 'looking' },
@@ -21,73 +22,86 @@ const PERKS: { icon: IconName; key: string }[] = [
 ];
 
 /**
- * Wedded Pro (#221): what a vendor gets for $50 a month, and Subscribe, which
- * opens the website (Pro is sold there through Stripe, not in the app). Your
- * listing, inquiries, chat and reels stay free either way.
+ * Wedded Pro (#221), on the night page: "Families come to you." in the
+ * serif, $50 a month large in gold, what you get as glowing rows, and
+ * Subscribe, which opens the website (Pro is sold there, not in the app).
+ * Pro vendors see when it renews or ends, or a gentle note when the card
+ * failed, and Manage or cancel, one tap like Subscribe. Listings, inquiries, chat and reels stay free either way.
  */
 export default function ProScreen() {
+  return (
+    <SchemeContext.Provider value="dark">
+      <Pro />
+    </SchemeContext.Provider>
+  );
+}
+
+function Pro() {
   const Colors = useColors();
   const styles = useStyles();
   const { t } = useLocale();
   const { business, vendorId, isPending } = useCurrentBusiness();
   const pro = useProStatus(vendorId);
-  const image = `linear-gradient(160deg, ${Colors.heroFrom} 0%, ${Colors.heroTo} 100%)`;
 
-  if (isPending || pro.isPending) return <StateView state="loading" />;
+  if (isPending || pro.isPending) {
+    return (
+      <NightScreen>
+        <StateView state="loading" />
+      </NightScreen>
+    );
+  }
   const isPro = pro.data?.plan === 'pro';
   const renews = pro.data?.renewsOn ? formatDate(pro.data.renewsOn.slice(0, 10)) : null;
 
-  const subscribe = () => {
+  const openWebsite = () => {
     if (!business) return;
     void WebBrowser.openBrowserAsync(siteLink(`/pro?vendor=${business.slug}`));
   };
 
   return (
-    <NavScreen title={t('pro.title')} subtitle={t('pro.subtitle')}>
-      <View
-        style={[
-          styles.hero,
-          (Platform.OS === 'web'
-            ? { backgroundImage: image }
-            : { experimental_backgroundImage: image }) as unknown as ViewStyle,
-        ]}
-      >
-        <Icon name="sparkles" size={30} color={Colors.onHero} />
-        <AppText variant="display" color="onHero" serif>
-          {t('pro.name')}
-        </AppText>
-        <View style={styles.priceRow}>
-          <AppText color="onHero" style={styles.price} maxFontSizeMultiplier={1.4}>
+    <NightScreen
+      eyebrow={t('pro.eyebrow')}
+      title={t('pro.subtitle')}
+      footer={
+        <View style={styles.footer}>
+          {isPro ? (
+            // Leaving is as easy as joining: the same one tap, the same website.
+            <GlowButton
+              glass={!pro.data?.pastDue}
+              icon={pro.data?.pastDue ? 'card-outline' : 'settings-outline'}
+              label={t(pro.data?.pastDue ? 'pro.updateCard' : 'pro.manage')}
+              onPress={openWebsite}
+            />
+          ) : (
+            <GlowButton icon="sparkles" label={t('pro.subscribe')} onPress={openWebsite} />
+          )}
+          <AppText variant="label" weight={400} color="text2" style={styles.center}>
+            {isPro
+              ? t('pro.manageOnWebsite')
+              : SITE_URL_IS_PLACEHOLDER
+                ? t('pro.soon')
+                : t('pro.onWebsite')}
+          </AppText>
+        </View>
+      }
+    >
+      <View>
+        <View style={styles.price}>
+          <AppText serif weight={600} style={styles.amount} maxFontSizeMultiplier={1.3}>
             {t('pro.price')}
           </AppText>
-          <AppText variant="bodyLg" color="onHero2">
+          <AppText variant="title" weight={600}>
             {t('pro.perMonth')}
           </AppText>
         </View>
-        <AppText color="onHero2">{t('pro.cancelAnytime')}</AppText>
+        <AppText color="text2">{t('pro.cancelAnytime')}</AppText>
       </View>
 
-      <View style={styles.perks}>
-        {PERKS.map((perk) => (
-          <View key={perk.key} style={styles.perk}>
-            <View style={styles.perkIcon}>
-              <Icon name={perk.icon} size={22} color={Colors.primary} />
-            </View>
-            <View style={styles.grow}>
-              <AppText weight={700}>{t(`pro.perks.${perk.key}.title`)}</AppText>
-              <AppText color="text2">{t(`pro.perks.${perk.key}.body`)}</AppText>
-            </View>
-          </View>
-        ))}
-      </View>
-
-      {isPro ? (
-        <View style={styles.on}>
-          <Icon name="checkmark-circle" size={24} color={Colors.success} />
+      {isPro && (
+        <GlassCard strong style={styles.on}>
+          <Icon name="checkmark-circle" size={28} color={Colors.success} />
           <View style={styles.grow}>
-            <AppText weight={700} color="success">
-              {t('pro.youreOn')}
-            </AppText>
+            <AppText weight={700}>{t('pro.youreOn')}</AppText>
             {pro.data?.pastDue ? (
               <AppText color="error">{t('pro.pastDue')}</AppText>
             ) : renews ? (
@@ -96,64 +110,65 @@ export default function ProScreen() {
               </AppText>
             ) : null}
           </View>
-        </View>
-      ) : (
-        <Button label={t('pro.subscribe')} onPress={subscribe} />
+        </GlassCard>
       )}
-      <AppText variant="label" weight={400} color="text2">
-        {SITE_URL_IS_PLACEHOLDER ? t('pro.soon') : t('pro.onWebsite')}
-      </AppText>
-      <AppText variant="label" weight={400} color="text2">
+
+      <View style={styles.perks}>
+        {PERKS.map((perk, i) => (
+          <Animated.View key={perk.key} entering={Motion.stagger(i)} style={styles.perk}>
+            <Icon name={perk.icon} size={26} color={Colors.champagne} />
+            <View style={styles.grow}>
+              <AppText variant="heading" weight={700}>
+                {t(`pro.perks.${perk.key}.title`)}
+              </AppText>
+              <AppText color="text2">{t(`pro.perks.${perk.key}.body`)}</AppText>
+            </View>
+          </Animated.View>
+        ))}
+      </View>
+
+      <AppText color="text2" style={styles.center}>
         {t('pro.free')}
       </AppText>
-    </NavScreen>
+    </NightScreen>
   );
 }
 
 const useStyles = makeStyles((Colors) => ({
-  hero: {
-    gap: Spacing.sm,
-    padding: Spacing.xl,
-    borderRadius: Radius.card,
-    borderCurve: 'continuous',
-    backgroundColor: Colors.heroFrom,
-    overflow: 'hidden',
+  grow: {
+    flex: 1,
   },
-  priceRow: {
-    flexDirection: 'row',
-    alignItems: 'baseline',
+  center: {
+    textAlign: 'center',
+  },
+  footer: {
     gap: Spacing.sm,
-    marginTop: Spacing.sm,
   },
   price: {
-    fontSize: 48,
-    lineHeight: 56,
-    fontWeight: '800',
-    fontVariant: ['tabular-nums'],
-  },
-  perks: {
-    gap: Spacing.lg,
-  },
-  perk: {
     flexDirection: 'row',
-    gap: Spacing.md,
-    alignItems: 'flex-start',
+    alignItems: 'baseline',
+    flexWrap: 'wrap',
+    columnGap: Spacing.md,
   },
-  perkIcon: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: Colors.primaryTint,
+  amount: {
+    fontSize: 88,
+    lineHeight: 100,
+    color: Colors.champagne,
+    fontVariant: ['tabular-nums'],
   },
   on: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: Spacing.sm,
-    minHeight: 48,
   },
-  grow: {
-    flex: 1,
+  perks: {
+    // A plain list, not a stack of cards: the price and the button are the
+    // only things that need a frame.
+    gap: Spacing.xl,
+    paddingVertical: Spacing.sm,
+  },
+  perk: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: Spacing.lg,
   },
 }));
