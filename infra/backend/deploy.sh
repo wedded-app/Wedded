@@ -56,8 +56,10 @@ set_env API_EXTERNAL_URL "$url/auth/v1"
 set_env SITE_URL "$url"
 set_env PROXY_DOMAIN "$DOMAIN"
 set_env ADDITIONAL_REDIRECT_URLS 'exp://**,weddingapp://**'
-set_env ENABLE_EMAIL_AUTOCONFIRM false # with it on, a new email sign-up gets a password session that refuse_password_sign_in blocks
-set_env ENABLE_PHONE_SIGNUP false     # no text-message provider yet
+# Auto-confirm off: with it on, a new sign-up by code gets a password session that refuse_password_sign_in blocks
+set_env ENABLE_EMAIL_AUTOCONFIRM false
+set_env ENABLE_PHONE_AUTOCONFIRM false
+set_env ENABLE_PHONE_SIGNUP false # no text-message provider yet
 set_env ENABLE_ANONYMOUS_USERS false
 set_env GLOBAL_S3_BUCKET "$STORAGE_BUCKET"
 set_env REGION "$AWS_REGION"
