@@ -1,0 +1,106 @@
+# Legal checklist — Tab 1 / #228
+
+Status as of 2026-10-14. This is an implementation inventory and **draft for a lawyer**, not a finding that the product complies with every law. Founders and counsel must approve the policies, business identity, retention schedule, launch regions and applicable rights before publication. Tab 2 (#229) owns screens and public policy routes; Tab 1 owns data, mail and policy source text.
+
+| Item | Status / remaining evidence | Owner |
+| --- | --- | --- |
+| 1. Privacy policy | First draft: [PRIVACY_DRAFT.md](PRIVACY_DRAFT.md); counsel review and public route pending | Tab 1 #228; Tab 2 #229; founders + lawyer |
+| 2. Terms | First draft: [TERMS_DRAFT.md](TERMS_DRAFT.md); review and public route pending | Tab 1 #228; Tab 2 #229; founders + lawyer |
+| 3. Refund policy | First draft: [REFUND_DRAFT.md](REFUND_DRAFT.md); review and billing verification pending | Tab 1 #228; Tab 2 #229; founders + lawyer |
+| 4. Cookie policy | Current service/storage inventory below; public explanation pending | Tab 1 #228; Tab 2 #229; founders + lawyer |
+| 5. Cookie banner | No analytics or ad SDKs today; no banner planned for current essential storage. Reassess third-party embeds and launch jurisdictions before release | Tab 2 #229; founders + lawyer |
+| 6. Form consents | Contact purpose and age confirmation exist; audit all forms and link approved policies | Tab 2 #229; founders + lawyer |
+| 7. No unnecessary data | Inventory below; no birthdate collected; retention/minimization review pending | Tab 1 #228; founders + lawyer |
+| 8. Third-party SDK audit | Current table below; provider contracts, SDK telemetry and embed behavior require release review | Tab 1 #228; founders + lawyer |
+| 9. Dark patterns | Audit onboarding, permissions, checkout and cancellation | Tab 2 #229; founders + lawyer |
+| 10. Hidden fees | Verify final amounts, renewal wording and Stripe fees on all payment screens | Tab 2 #229; founders + lawyer |
+| 11. Fake reviews | Audit seeded/demo content and production claims; clearly label samples | Tab 2 #229; founders |
+| 12. Unsupported claims | Audit marketing copy against evidence | Tab 2 #229; founders + lawyer |
+| 13. Alt text | Screen and media audit pending | Tab 2 #229 |
+| 14. Contrast | Mobile/web light and dark theme audit pending | Tab 2 #229 |
+| 15. Keyboard navigation | Web focus order, forms and dialogs audit pending | Tab 2 #229 |
+| 16. Business details | Configurable email business line; legal name, postal address and support contact pending LLC | Tab 1 #228; founders + lawyer |
+| 17. Age consent | `profiles.adult_confirmed_at` records 18+ confirmation; no birthdate; review wording/enforcement | Tab 1 #228; Tab 2 #229; founders + lawyer |
+| 18. Unsubscribe | Signed GET confirmation / POST stop and resume; service-only opt-outs; deployed verification pending | Tab 1 #228 |
+| 19. Font/image licences | Bundled fonts use OFL; verify notices and licences for every production photo/video; samples are not proof of rights | Tab 1 #228; Tab 2 #229; founders |
+| 20. Data deletion | `delete-account` exists; verify storage/provider cleanup, retained payments and opt-out suppression with counsel | Tab 1 #228; founders + lawyer |
+
+## Data inventory
+
+Fields are enumerated from the checked-in generated schema, including identifiers and timestamps because they can link records to a person. Reference-only categories, places, cultures, faiths and event dictionaries are not person records; a person’s selections can reveal sensitive information. Structured JSON, messages, notes and uploaded media may contain additional personal information supplied by users. Avoid requesting unnecessary sensitive content.
+
+| Table | Fields | Why retained |
+| --- | --- | --- |
+| `conversations` | `created_at`, `family_name`, `family_notified_at`, `family_read_at`, `family_user_id`, `id`, `last_message_at`, `vendor_id`, `vendor_notified_at`, `vendor_read_at` | Route family/vendor chats, show the family short name and track unread/notification state. |
+| `deposits` | `amount_cents`, `canceled_at`, `conversation_id`, `created_at`, `currency`, `event_slug`, `family_user_id`, `id`, `livemode`, `note`, `paid_at`, `refunded_at`, `requested_by`, `status`, `stripe_account_id`, `stripe_payment_intent_id`, `updated_at`, `vendor_id` | Track family/vendor payment requests, Stripe references, amount and payment/refund state. |
+| `follows` | `created_at`, `follower_id`, `user_id`, `vendor_id` | Maintain followed vendors and reels preferences. |
+| `inquiries` | `channel`, `created_at`, `details`, `event_date`, `event_slugs`, `failure`, `guest_band`, `id`, `language`, `location`, `message`, `preferred_contact`, `provider_message_id`, `reply_answer`, `reply_answered_at`, `sender_email`, `sender_name`, `sender_phone`, `sent_at`, `start_time`, `status`, `user_id`, `vendor_id` | Deliver the requested introduction, contact preferences and wedding details; record delivery, replies and follow-up. |
+| `linked_account_tokens` | `access_token`, `account_id`, `expires_at`, `refresh_token`, `scopes`, `updated_at` | Authorize social imports; service-only credentials, not public profile data. |
+| `linked_accounts` | `external_id`, `handle`, `id`, `last_synced_at`, `linked_at`, `platform`, `status`, `user_id`, `vendor_id` | Attribute and manage vendor social accounts and imports. |
+| `message_reactions` | `conversation_id`, `created_at`, `message_id`, `reaction`, `user_id` | Show who reacted to a chat message and when. |
+| `messages` | `body`, `conversation_id`, `created_at`, `data`, `id`, `inquiry_id`, `kind`, `pushed_at`, `reply_to`, `sender_role`, `sender_user_id` | Deliver text, photos, voice, quotes, menus, bookings, deposits and proposals to conversation participants; body/data may contain personal content. |
+| `profiles` | `adult_confirmed_at`, `city`, `created_at`, `full_name`, `id`, `phone`, `updated_at` | Identify the person, contact them about inquiries, record adult confirmation and maintain the profile. |
+| `push_tokens` | `created_at`, `platform`, `token`, `updated_at`, `user_id` | Deliver chat alerts to a registered device and remove invalid tokens. |
+| `reel_comments` | `body`, `created_at`, `hidden`, `id`, `reel_id`, `user_id` | Publish comments with author and moderation state. |
+| `reel_likes` | `created_at`, `reel_id`, `user_id` | Remember likes and show engagement counts. |
+| `reel_reports` | `comment_id`, `created_at`, `id`, `note`, `reason`, `reel_id`, `reported_user_id`, `reporter_id`, `status` | Record who reported content, their reason/details and moderation outcome. |
+| `reel_views_daily` | `count`, `day`, `reel_id` | Count daily reel views for vendor insights; review any identifiers before adding analytics. |
+| `reels` | `author_id`, `caption`, `created_at`, `credit_name`, `duration_s`, `event_slug`, `height`, `id`, `linked_account_id`, `platform`, `source`, `source_id`, `source_url`, `status`, `thumb_path`, `vendor_id`, `video_path`, `width` | Publish credited video/media, captions and social source metadata; identify the uploader. |
+| `request_proposals` | `answered_at`, `conversation_id`, `created_at`, `id`, `menu_id`, `note`, `price_cents`, `price_unit`, `reel_id`, `request_id`, `sent_by`, `status`, `vendor_id` | Deliver a vendor’s price, note and menu to a family and track acceptance. |
+| `saved_vendors` | `created_at`, `event_slug`, `id`, `user_id`, `vendor_id` | Maintain a person’s shortlist. |
+| `user_blocks` | `blocked_id`, `blocker_id`, `created_at` | Enforce a person’s block choices. |
+| `vendor_activity_daily` | `count`, `day`, `kind`, `vendor_id` | Aggregate vendor activity for business insights. |
+| `vendor_leads` | `business_name`, `category`, `city`, `claimed_vendor_id`, `contact_name`, `created_at`, `id`, `instagram_handle`, `kind`, `language`, `note`, `phone`, `status`, `updated_at` | Receive and follow up on listing claims and business signups. |
+| `vendor_links` | `confirmed_by_both`, `confirmed_by_vendor`, `confirmed_by_venue`, `created_at`, `id`, `kind`, `updated_at`, `vendor_id`, `venue_vendor_id` | Publish vendor website and social links. |
+| `vendor_media` | `blurhash`, `created_at`, `credit_text`, `credit_vendor_id`, `event_slug`, `height`, `id`, `is_cover`, `kind`, `sort_order`, `storage_path`, `updated_at`, `vendor_id`, `venue_vendor_id`, `width` | Publish vendor media and credits and track uploads. |
+| `vendor_members` | `created_at`, `role`, `user_id`, `vendor_id` | Authorize owner/staff access to a vendor account. |
+| `vendor_menus` | `created_at`, `cuisine`, `description`, `description_pa`, `diet`, `id`, `min_guests`, `name`, `name_pa`, `price_from`, `price_unit`, `sections`, `sort_order`, `updated_at`, `vendor_id` | Publish vendor menu files and pricing. |
+| `vendor_payment_accounts` | `charges_enabled`, `created_at`, `details_submitted`, `livemode`, `stripe_account_id`, `updated_at`, `vendor_id` | Connect vendors to their Stripe accounts and show payment readiness; no card number storage. |
+| `vendor_private` | `checks_email`, `created_at`, `email`, `exact_location`, `notes`, `owner_name`, `street_address`, `updated_at`, `vendor_id` | Contact vendors and determine whether to send email or relay inquiries. |
+| `vendor_subscriptions` | `cancel_at_period_end`, `created_at`, `current_period_end`, `livemode`, `plan`, `status`, `stripe_customer_id`, `stripe_subscription_id`, `updated_at`, `vendor_id` | Track Wedded Pro customer/subscription IDs, billing state and period end. |
+| `vendor_unavailable_days` | `created_at`, `day`, `part`, `status`, `vendor_id` | Show the dates on which a vendor cannot take bookings. |
+| `vendors` | `address_line`, `address_visibility`, `bio`, `bio_pa`, `calendar_updated_at`, `call_phone`, `city`, `created_at`, `details`, `founding_number`, `id`, `instagram_handle`, `is_sample`, `languages`, `last_verified_at`, `location`, `name`, `name_pa`, `office_hours`, `preferred_contact`, `price_display`, `price_from`, `price_note`, `price_to`, `price_unit`, `service_radius_miles`, `slug`, `source`, `status`, `tagline`, `tagline_pa`, `team_size`, `text_phone`, `travel_note`, `updated_at`, `website_url`, `whatsapp_phone`, `will_travel`, `years_in_business` | Publish business descriptions, contacts, locations, pricing and listing ownership; sole-trader details may identify a person. |
+| `wedding_bookings` | `category_slug`, `created_at`, `event_slug`, `note`, `updated_at`, `updated_by`, `vendor_id`, `wedding_id` | Record chosen vendors and private booking notes and who updated them. |
+| `wedding_events` | `created_at`, `event_date`, `event_slug`, `guest_band`, `updated_at`, `wedding_id` | Save event dates, guest bands and planning choices. |
+| `wedding_invites` | `created_at`, `created_by`, `expires_at`, `id`, `max_uses`, `revoked_at`, `role`, `token`, `uses`, `wedding_id` | Authorize joining a plan with role, expiry and use limits; tokens are bearer secrets. |
+| `wedding_members` | `invited_by`, `joined_at`, `role`, `user_id`, `wedding_id` | Authorize shared planning and show member roles. |
+| `wedding_reactions` | `reaction`, `updated_at`, `user_id`, `vendor_id`, `wedding_id` | Share family shortlist preferences and notes. |
+| `wedding_requests` | `budget_max_cents`, `budget_min_cents`, `category_slug`, `city_slug`, `closed_at`, `created_at`, `created_by`, `event_date`, `event_slug`, `expires_at`, `guest_band`, `id`, `note`, `proposal_count`, `status`, `updated_at`, `wedding_id` | Share wedding service needs, budget, date/location and notes with eligible vendors. |
+| `wedding_suggestions` | `category_slug`, `created_at`, `event_slug`, `id`, `note`, `resolved_at`, `resolved_by`, `status`, `suggested_by`, `vendor_id`, `wedding_id` | Share family planning suggestions and track decisions. |
+| `weddings` | `created_at`, `created_by`, `id`, `planning_for`, `title`, `traditions`, `updated_at`, `wedding_date` | Save wedding title, date, planning relationship, cultural/religious preferences and owner. |
+
+| `email_opt_outs` | `email`, `created_at` | Suppress optional application emails until the recipient resumes; independent of account identity so deletion does not silently resubscribe. |
+
+Additional stores:
+
+- Supabase Auth: user ID, email, phone, identity/provider IDs and metadata, verification/sign-in timestamps, session/refresh tokens and security logs (including IP/user agent where recorded). Purpose: authentication, account security and abuse prevention. Never expose service credentials in clients.
+- Storage: vendor photos/menu/video objects and paths, social previews, private chat photos/voice and uploader/owner metadata. Purpose: display listings or deliver shared content. Public vendor/reel uploads are visible publicly; chat objects require participant access.
+- Device/web storage: Supabase session credentials, language/theme and planning preferences, local caches/drafts, permission state and cached media. Purpose: keep sign-in and app preferences working. No advertising identifier or analytics SDK is installed. Location permission is used to suggest nearby places; do not treat it as consent to publish a home address.
+- Resend/Mailpit: recipient/sender/copy addresses, subject/body, delivery and idempotency metadata. Purpose: inquiry delivery and unread chat alerts. Mailpit is local only. A family’s inquiry contact details are intentionally sent to its selected vendor or relayed by founders. Sign-in/security mail is separate from optional application notifications.
+- Stripe: customer and Connect account identity/contact/verification data, payment method/card details and transaction records live at Stripe; application tables retain IDs, amounts, currency, status and billing dates. Purpose: deposits and Pro subscriptions. Review Stripe’s retention and merchant obligations with counsel.
+- Hosting/infrastructure and provider logs: request IP/user agent, timestamps, request/error IDs and operational logs may be processed by hosting, Supabase, AWS, Apple/Google, Stripe, Resend and embed providers. Purpose: service operation, fraud prevention and delivery. Founders must set log retention and access controls; do not log signed unsubscribe URLs or secrets.
+
+There is no approved numeric retention schedule yet. Account deletion, shared-plan succession, uploaded media cleanup, financial record retention, backups and independent email suppression must be reviewed and tested before promising a specific erasure deadline. See `supabase/functions/delete-account/index.ts` and foreign-key actions in migrations.
+
+## SDKs and services
+
+| SDK/service | Data and purpose | Release review |
+| --- | --- | --- |
+| Supabase | Auth, Postgres personal data, Realtime, Storage and Edge Functions | RLS, backups, retention, region and processing agreement |
+| Stripe | Card handling, vendor Connect verification, deposits and Wedded Pro | Cards remain at Stripe; verify billing and refund disclosures |
+| Expo push through Apple/Google | Expo/device push token, notification title/body and delivery metadata | Permission and lock-screen preview content; no marketing consent inferred |
+| Apple sign-in | Apple identity token, provider ID, shared name/email or private relay address | Register sender domain for private relay; revoke credentials on deletion |
+| Resend | Application email addresses, content and delivery metadata | Verified domain, postal address and suppression; auth mail configured separately |
+| TikTok/Instagram oEmbed and WebView embeds | Social URLs/IDs, public creator metadata and embeds; requests may expose IP, user agent and provider cookies | Third-party tracking depends on provider behavior; review before making cookie claims |
+| Bundled Fraunces, Inter, Mukta Mahee fonts | Local font files under OFL; no runtime Google Fonts request intended | Preserve package OFL notices in distribution |
+| AWS photo hosting/resizing and web hosting | Public listing media and HTTP request logs | Media rights, logs, access/retention settings |
+
+No analytics or advertising SDK is installed today. Essential sign-in/preferences alone do not call for a marketing cookie banner in the current design; this is a product assumption awaiting counsel review for launch regions and embed behavior, not a universal legal exemption.
+
+## Review references
+
+The [FTC email guide](https://www.ftc.gov/business-guidance/resources/can-spam-act-compliance-guide-business) describes commercial-email opt-out and postal-address requirements; a city name alone is not a valid postal address. The [California Attorney General’s privacy-policy guide](https://oag.ca.gov/privacy/facts/online-privacy/privacy-policy) explains policy disclosures. Counsel must determine which laws apply; this checklist does not establish CCPA applicability.
+
+## Tab 2 integration
+
+Policy source paths: `docs/PRIVACY_DRAFT.md`, `docs/TERMS_DRAFT.md`, `docs/REFUND_DRAFT.md`. Suggested public routes are `/privacy`, `/terms`, `/refunds`; these routes are not implemented by Tab 1. Keep the “draft for a lawyer” notice until founders approve final text. Link the policies from sign-up, forms, payments and the website footer as appropriate. Cookie explanations and embedded-provider behavior need review before final copy.
