@@ -19,7 +19,8 @@ export function BusinessTabScreen(props: ComponentProps<typeof NavScreen>) {
   );
 }
 
-function BusinessLabel() {
+/** The saffron "Business" label, for business screens drawn without BusinessTabScreen. */
+export function BusinessLabel() {
   const Colors = useColors();
   const styles = useStyles();
   const { t } = useLocale();
