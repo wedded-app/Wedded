@@ -1,11 +1,11 @@
 import { Image } from 'expo-image';
 import type { ReactNode } from 'react';
-import { Platform, View, type ViewStyle } from 'react-native';
+import { View } from 'react-native';
 
 import { AppText } from '@/components/app-text';
 import { SampleTag } from '@/components/sample-tag';
 import { Icon, type IconName } from '@/components/icon';
-import { makeStyles, Radius, Spacing, useColors } from '@/constants/theme';
+import { backgroundCss, makeStyles, Radius, Spacing, useColors } from '@/constants/theme';
 import { useLocale } from '@/i18n/locale-context';
 
 import { initials } from './requests-format';
@@ -26,9 +26,7 @@ export function FamilyAvatar({ name, size = 44 }: { name: string; size?: number 
           justifyContent: 'center',
           backgroundColor: Colors.heroFrom,
         },
-        (Platform.OS === 'web'
-          ? { backgroundImage: image }
-          : { experimental_backgroundImage: image }) as unknown as ViewStyle,
+        backgroundCss(image),
       ]}
     >
       <AppText
