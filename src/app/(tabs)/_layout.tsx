@@ -24,7 +24,12 @@ const TABS: (Omit<TabSpec, 'label'> & { labelKey: string })[] = [
     iconFilled: 'play-circle',
   },
   { name: '(search)', labelKey: 'tabs.search', icon: 'search-outline', iconFilled: 'search' },
-  { name: 'saved', labelKey: 'tabs.saved', icon: 'heart-outline', iconFilled: 'heart' },
+  {
+    name: 'requests',
+    labelKey: 'tabs.requests',
+    icon: 'megaphone-outline',
+    iconFilled: 'megaphone',
+  },
   {
     name: 'profile',
     labelKey: 'tabs.profile',
@@ -34,7 +39,7 @@ const TABS: (Omit<TabSpec, 'label'> & { labelKey: string })[] = [
 ];
 
 /**
- * Bottom tabs: Home, Reels (the discover route), Search, Saved, Profile, in a floating glass bar (the iOS
+ * Bottom tabs: Home, Reels (the discover route), Search, Requests, Profile, in a floating glass bar (the iOS
  * 26 tab bar) that content scrolls under. Labels are always visible and
  * come from i18n. Expo Router's JS tabs draw it the same on iPhone,
  * Android and the web; the glass itself is the system material on iOS 26.
