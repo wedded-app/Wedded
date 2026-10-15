@@ -36,7 +36,7 @@ export function ProTeaser({ vendorId }: { vendorId: string }) {
  * are looking". Counts only, never a family's details.
  */
 export function useLookingTeaser(vendorId: string) {
-  const { t, locale } = useLocale();
+  const { t } = useLocale();
   const summary = useFamiliesLookingSummary(vendorId);
   const total = summary.data?.total ?? 0;
   const kinds = summary.data?.byCategory ?? [];
@@ -44,7 +44,7 @@ export function useLookingTeaser(vendorId: string) {
     kinds.length === 1
       ? t('looking.teaser.needCategory', {
           count: total,
-          category: localized(kinds[0].categoryName, locale),
+          category: localized(kinds[0].categoryName),
         })
       : t('looking.teaser.need', { count: total });
   return { total, what };

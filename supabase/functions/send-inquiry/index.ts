@@ -18,7 +18,8 @@
 
 import { createClient } from '@supabase/supabase-js';
 
-import { buildInquiryEmail, sendEmail } from '../_shared/inquiry-email.ts';
+import { inquiryEmailFor } from '../_shared/email-links.ts';
+import { sendEmail } from '../_shared/inquiry-email.ts';
 import { parseInquiry } from '../_shared/inquiry-input.ts';
 
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL') ?? '';
@@ -144,7 +145,7 @@ Deno.serve(async (request) => {
   });
 
   try {
-    const email = buildInquiryEmail({
+    const email = await inquiryEmailFor(admin, {
       inquiryId: id,
       channel: result.channel,
       vendorName: result.vendor_name,

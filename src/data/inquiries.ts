@@ -31,7 +31,7 @@ export type InquiryDraft = {
   location: string;
   message: string;
   preferredContact: ReplyBy;
-  language: 'en' | 'pa';
+  language: 'en';
   /** Answers to the category's own questions. */
   details?: Record<string, unknown>;
   /** Defaults to the profile; the form lets people edit them. */
@@ -134,7 +134,7 @@ async function fetchMyInquiries() {
   const { data, error } = await supabase
     .from('inquiries')
     .select(
-      'id, vendor_id, event_slugs, event_date, guest_band, status, created_at, sent_at, reply_answer, vendor:vendors(slug, name, name_pa)',
+      'id, vendor_id, event_slugs, event_date, guest_band, status, created_at, sent_at, reply_answer, vendor:vendors(slug, name)',
     )
     .order('created_at', { ascending: false });
   if (error) throw error;

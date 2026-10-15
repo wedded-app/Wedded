@@ -136,13 +136,13 @@ function Fact({ icon, children }: { icon: IconName; children: string }) {
 function Post({ card }: { card: LookingCard }) {
   const Colors = useColors();
   const styles = useStyles();
-  const { t, locale } = useLocale();
+  const { t } = useLocale();
   const words = useRequestWords();
   const facts = words.facts(card, card.miles);
   const free = card.dateStatus === 'open';
   const busy = card.dateStatus === 'booked';
-  const headline = localized(card.categoryName, locale);
-  const event = card.eventName ? localized(card.eventName, locale) : null;
+  const headline = localized(card.categoryName);
+  const event = card.eventName ? localized(card.eventName) : null;
 
   return (
     <View style={styles.post}>

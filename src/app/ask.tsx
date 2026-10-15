@@ -54,7 +54,7 @@ const REPLY_BY: ReplyBy[] = ['call', 'text', 'whatsapp', 'email'];
  */
 export default function AskScreen() {
   const styles = useStyles();
-  const { t, locale } = useLocale();
+  const { t } = useLocale();
   const params = useLocalSearchParams<{ vendorId?: string; event?: string; kind?: string }>();
   const isTour = params.kind === 'tour';
   const vendorId = params.vendorId ?? '';
@@ -120,7 +120,7 @@ export default function AskScreen() {
     vendor.data?.eventSlugs ?? [],
     showAllEvents,
   );
-  const suggested = suggestedMessage(t, locale, {
+  const suggested = suggestedMessage(t, {
     events: chosenEvents.map((event) => event.name),
     date: dateUnsure ? null : date,
     place,
@@ -249,7 +249,7 @@ export default function AskScreen() {
       location: place.trim(),
       message: message.trim(),
       preferredContact: replyBy,
-      language: locale,
+      language: 'en' as const,
       name: name.trim() || undefined,
       phone: cleanPhone ?? undefined,
       details: {
@@ -289,7 +289,7 @@ export default function AskScreen() {
       </Screen>
     );
   }
-  const vendorName = localized(vendor.data.name, locale);
+  const vendorName = localized(vendor.data.name);
 
   return (
     <Screen edges={['top', 'bottom']}>
@@ -309,7 +309,7 @@ export default function AskScreen() {
             {vendorName}
           </AppText>
           <AppText color="text2">
-            {[vendor.data.category && localized(vendor.data.category, locale), vendor.data.city]
+            {[vendor.data.category && localized(vendor.data.category), vendor.data.city]
               .filter(Boolean)
               .join(' · ')}
           </AppText>
@@ -320,7 +320,7 @@ export default function AskScreen() {
             {eventChoices.shown.map((event) => (
               <Chip
                 key={event.slug}
-                label={localized(event.name, locale)}
+                label={localized(event.name)}
                 selected={eventSlugs.includes(event.slug)}
                 onPress={() =>
                   change(setEventSlugs)(
@@ -379,7 +379,7 @@ export default function AskScreen() {
             <AppText color="text2">
               {t('inquiry.fromPlan', {
                 dates: namedPlanDates
-                  .map((d) => `${localized(d.event, locale)}: ${formatDate(d.date)}`)
+                  .map((d) => `${localized(d.event)}: ${formatDate(d.date)}`)
                   .join(' · '),
               })}
             </AppText>
@@ -387,7 +387,7 @@ export default function AskScreen() {
           {namedPlanDates.length === 1 && !pickedDate && (
             <AppText color="text2">
               {t('inquiry.fromPlanOne', {
-                event: localized(namedPlanDates[0].event, locale),
+                event: localized(namedPlanDates[0].event),
                 date: formatDate(namedPlanDates[0].date),
               })}
             </AppText>

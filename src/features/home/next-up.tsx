@@ -38,7 +38,7 @@ type PlanView = ReturnType<typeof usePlanView>;
 export function NextUp({ view }: { view: PlanView }) {
   const Colors = useColors();
   const styles = useStyles();
-  const { t, locale } = useLocale();
+  const { t } = useLocale();
   const { width } = useWindowDimensions();
   const { plan, chosen, needsByEvent, canEdit, toggleBooked } = view;
   const items = nextToBook(plan, chosen, needsByEvent, SHOWN);
@@ -85,7 +85,7 @@ export function NextUp({ view }: { view: PlanView }) {
                   successHaptic();
                   toggleBooked(item.eventSlug, item.need.categorySlug);
                 }}
-                label={localized(item.need.name, locale)}
+                label={localized(item.need.name)}
               />
             </Animated.View>
           ))}
@@ -114,7 +114,7 @@ function NextUpCard({
 }) {
   const Colors = useColors();
   const styles = useStyles();
-  const { t, locale } = useLocale();
+  const { t } = useLocale();
   const { place, maxMiles } = useSearchLocation();
   const search = useVendorSearch({
     latitude: place?.latitude,
@@ -131,7 +131,7 @@ function NextUpCard({
   const results = search.data ?? [];
   const cover = results.find((vendor) => vendor.coverPath)?.coverPath ?? null;
   const shown = results.length >= COUNT_LIMIT ? `${COUNT_LIMIT}+` : String(results.length);
-  const event = localized(item.eventName, locale);
+  const event = localized(item.eventName);
   const count = search.isPending
     ? ' '
     : results.length === 0

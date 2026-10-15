@@ -1,7 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 
 import type { GuestBand } from '@/data/inquiries';
-import type { Locale } from '@/i18n';
 import { asLocalizedText, localized, type LocalizedText } from '@/i18n/localized';
 import { supabase } from '@/lib/supabase';
 
@@ -27,7 +26,7 @@ export function fromDateString(value: string): Date {
   return new Date(year, month - 1, day);
 }
 
-/** "Sat, Jun 12, 2027". Dates keep Latin digits in both languages (vision §4). */
+/** "Sat, Jun 12, 2027". */
 export function formatDate(value: string): string {
   return new Intl.DateTimeFormat('en-US', {
     weekday: 'short',
@@ -65,12 +64,11 @@ export function planDatesFor(
 }
 
 /**
- * The suggested message (S11 item 5), in the app's language. It's rewritten as
+ * The suggested message (S11 item 5). It's rewritten as
  * the form changes until they edit it themselves.
  */
 export function suggestedMessage(
   t: Translate,
-  locale: Locale,
   parts: {
     events: LocalizedText[];
     date: string | null;
@@ -85,14 +83,14 @@ export function suggestedMessage(
   const joiner = t('inquiry.auto.and');
   const events =
     parts.events.length > 0
-      ? parts.events.map((event) => localized(event, locale)).join(` ${joiner} `)
+      ? parts.events.map((event) => localized(event)).join(` ${joiner} `)
       : t('inquiry.auto.wedding');
   const knownGuests = parts.guests && parts.guests !== 'not_sure' ? parts.guests : null;
   // "Jaago on Fri, Jun 11 and Anand Karaj on Sat, Jun 12"
   if (!parts.tour && parts.eventDates && parts.eventDates.length >= 2) {
     const dates = parts.eventDates
       .map(({ event, date }) =>
-        t('inquiry.auto.eventOn', { event: localized(event, locale), date: formatDate(date) }),
+        t('inquiry.auto.eventOn', { event: localized(event), date: formatDate(date) }),
       )
       .join(` ${joiner} `);
     return t(`inquiry.auto.${knownGuests ? 'datesAndGuests' : 'dates'}`, {
@@ -137,7 +135,7 @@ async function fetchInquiryVendor(vendorId: string): Promise<InquiryVendor | nul
   const { data, error } = await supabase
     .from('vendors')
     .select(
-      'id, slug, name, name_pa, city, call_phone, text_phone, whatsapp_phone, vendor_categories(position, category:categories(slug, name)), vendor_events(event_slug)',
+      'id, slug, name, city, call_phone, text_phone, whatsapp_phone, vendor_categories(position, category:categories(slug, name)), vendor_events(event_slug)',
     )
     .eq('id', vendorId)
     .maybeSingle();
@@ -147,7 +145,7 @@ async function fetchInquiryVendor(vendorId: string): Promise<InquiryVendor | nul
   return {
     id: data.id,
     slug: data.slug,
-    name: data.name_pa ? { en: data.name, pa: data.name_pa } : { en: data.name },
+    name: { en: data.name },
     city: data.city,
     category: primary ? asLocalizedText(primary.category?.name) : null,
     categorySlug: primary?.category?.slug ?? null,

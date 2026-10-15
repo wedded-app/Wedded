@@ -252,28 +252,11 @@ function AboutSection({ draft, change, errorFor }: SectionProps) {
         maxLength={TAGLINE_MAX + 20}
       />
       <TextField
-        label={t('business.listing.taglinePa')}
-        hint={count(draft.taglinePa, TAGLINE_MAX)}
-        value={draft.taglinePa}
-        onChangeText={(taglinePa) => change({ taglinePa })}
-        error={errorFor('taglinePa')}
-        maxLength={TAGLINE_MAX + 20}
-      />
-      <TextField
         label={t('business.listing.bio')}
         hint={count(draft.bio, BIO_MAX)}
         value={draft.bio}
         onChangeText={(bio) => change({ bio })}
         error={errorFor('bio')}
-        multiline
-        maxLength={BIO_MAX + 100}
-      />
-      <TextField
-        label={t('business.listing.bioPa')}
-        hint={count(draft.bioPa, BIO_MAX)}
-        value={draft.bioPa}
-        onChangeText={(bioPa) => change({ bioPa })}
-        error={errorFor('bioPa')}
         multiline
         maxLength={BIO_MAX + 100}
       />

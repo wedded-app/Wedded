@@ -63,7 +63,7 @@ async function fetchSaved(): Promise<SavedVendor[]> {
   const { data, error } = await supabase
     .from('saved_vendors')
     .select(
-      'id, vendor_id, event_slug, vendor:vendors(slug, name, name_pa, city, price_display, price_from, price_unit, vendor_categories(position, category:categories(name)), vendor_media!vendor_media_vendor_id_fkey(storage_path, is_cover, sort_order))',
+      'id, vendor_id, event_slug, vendor:vendors(slug, name, city, price_display, price_from, price_unit, vendor_categories(position, category:categories(name)), vendor_media!vendor_media_vendor_id_fkey(storage_path, is_cover, sort_order))',
     )
     .order('created_at', { ascending: false });
   if (error) throw error;
@@ -84,7 +84,7 @@ async function fetchSaved(): Promise<SavedVendor[]> {
       vendor: {
         slug: vendor.slug,
         photoUrl: coverOf(vendor.vendor_media),
-        name: vendor.name_pa ? { en: vendor.name, pa: vendor.name_pa } : { en: vendor.name },
+        name: { en: vendor.name },
         city: vendor.city,
         category: primary ? asLocalizedText(primary.category?.name) : null,
         startingPrice: showsPrice

@@ -20,7 +20,6 @@ import { AppText } from '@/components/app-text';
 import { BackButton } from '@/components/back-button';
 import { useBottomSpace } from '@/components/tab-bar';
 import { makeStyles, Sizes, Spacing } from '@/constants/theme';
-import type { Locale } from '@/i18n';
 
 /**
  * Scroll tracking for a screen with a large title: pass `onScroll` to an
@@ -60,7 +59,6 @@ type NavBarProps = {
   scroll: NavScroll;
   /** The small centred title that appears once the large one scrolls away. */
   title?: string | null;
-  titleLang?: Locale;
   /** Shows the glass Back button (Home, with nothing to go back to). */
   back?: boolean;
   /** Glass buttons on the right, e.g. the language switch. */
@@ -74,7 +72,7 @@ type NavBarProps = {
  * once the large title scrolls under it, a soft backdrop that fades the
  * content out and the title in small type. Sits on top of the screen.
  */
-export function NavBar({ scroll, title, titleLang, back = true, trailing, leading }: NavBarProps) {
+export function NavBar({ scroll, title, back = true, trailing, leading }: NavBarProps) {
   const styles = useStyles();
   const top = useBarTop();
   // Worklets may capture only the shared values, never the whole scroll
@@ -99,7 +97,6 @@ export function NavBar({ scroll, title, titleLang, back = true, trailing, leadin
           <Animated.View style={[styles.titleWrap, styles.noTouch, collapsed]}>
             <AppText
               variant="button"
-              lang={titleLang}
               numberOfLines={1}
               maxFontSizeMultiplier={1.3}
               style={styles.title}
@@ -119,10 +116,8 @@ export function NavBar({ scroll, title, titleLang, back = true, trailing, leadin
 type LargeTitleProps = {
   scroll: NavScroll;
   title: string;
-  lang?: Locale;
-  /** The other script, or a line of context, under the title. */
+  /** A line of context under the title. */
   subtitle?: string | null;
-  subtitleLang?: Locale;
   /** A small line above the title, e.g. "Saving to Jaago". */
   eyebrow?: string | null;
   style?: StyleProp<ViewStyle>;
@@ -133,15 +128,7 @@ type LargeTitleProps = {
  * a little when pulled down, as on iOS, and hands over to the NavBar's small
  * title when it scrolls away.
  */
-export function LargeTitle({
-  scroll,
-  title,
-  lang,
-  subtitle,
-  subtitleLang,
-  eyebrow,
-  style,
-}: LargeTitleProps) {
+export function LargeTitle({ scroll, title, subtitle, eyebrow, style }: LargeTitleProps) {
   const styles = useStyles();
   const { scrollY } = scroll;
   const stretch = useAnimatedStyle(() => ({
@@ -159,11 +146,11 @@ export function LargeTitle({
           {eyebrow}
         </AppText>
       ) : null}
-      <AppText variant="display" lang={lang} accessibilityRole="header">
+      <AppText variant="display" accessibilityRole="header">
         {title}
       </AppText>
       {subtitle ? (
-        <AppText variant="bodyLg" color="text2" lang={subtitleLang}>
+        <AppText variant="bodyLg" color="text2">
           {subtitle}
         </AppText>
       ) : null}
@@ -173,9 +160,7 @@ export function LargeTitle({
 
 type NavScreenProps = Omit<ScrollViewProps, 'onScroll' | 'children'> & {
   title?: string | null;
-  titleLang?: Locale;
   subtitle?: string | null;
-  subtitleLang?: Locale;
   eyebrow?: string | null;
   back?: boolean;
   trailing?: ReactNode;
@@ -189,9 +174,7 @@ type NavScreenProps = Omit<ScrollViewProps, 'onScroll' | 'children'> & {
  */
 export function NavScreen({
   title,
-  titleLang,
   subtitle,
-  subtitleLang,
   eyebrow,
   back = true,
   trailing,
@@ -218,18 +201,11 @@ export function NavScreen({
         ]}
       >
         {title ? (
-          <LargeTitle
-            scroll={scroll}
-            title={title}
-            lang={titleLang}
-            subtitle={subtitle}
-            subtitleLang={subtitleLang}
-            eyebrow={eyebrow}
-          />
+          <LargeTitle scroll={scroll} title={title} subtitle={subtitle} eyebrow={eyebrow} />
         ) : null}
         {children}
       </Animated.ScrollView>
-      <NavBar scroll={scroll} title={title} titleLang={titleLang} back={back} trailing={trailing} />
+      <NavBar scroll={scroll} title={title} back={back} trailing={trailing} />
     </View>
   );
 }

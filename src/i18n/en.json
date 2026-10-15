@@ -10,8 +10,6 @@
     "discover": "Reels"
   },
   "home": {
-    "headline": "Every vendor for every event of your wedding",
-    "subtitle": "Roka to reception. Northern California.",
     "phases": {
       "before": "Before the wedding",
       "weddingDay": "Wedding day",
@@ -24,7 +22,6 @@
     "seeAll": "See all",
     "whatDoYouNeed": "What do you need?",
     "seeAllTypes": "All types",
-    "myEvents": "My events",
     "nextUp": "Next up",
     "booked": "booked",
     "seePlan": "See plan",
@@ -138,7 +135,6 @@
     "workedWith": "Has worked with",
     "claim": "Are you this vendor? Claim your profile",
     "photos": "Photos",
-    "photo": "Photo",
     "realWeddings": "Real weddings here",
     "photoBy": "Photo by {{name}}",
     "bookTour": "Book a tour",
@@ -170,7 +166,7 @@
   },
   "forVendors": {
     "title": "List your business, free",
-    "intro": "Free listings for our first 50 founding vendors. Families browsing find you for exactly what you do. Leave your details and we'll call or text you to set up your page.",
+    "intro": "Listing your business on Wedded is free. Families browsing find you for exactly what you do. Leave your details and we'll call or text you to set up your page.",
     "claimTitle": "Claim your profile",
     "claimIntro": "Is this your business? Leave your details and we'll call or text you to check it's you and hand the page over.",
     "businessName": "Business name",
@@ -222,10 +218,6 @@
     }
   },
   "profile": {
-    "language": "Language",
-    "english": "English",
-    "punjabi": "ਪੰਜਾਬੀ",
-    "textSize": "Text size",
     "account": {
       "signInTitle": "Save vendors and ask about prices",
       "signInBody": "Make a free account with Apple, Google, your phone or your email. You can keep browsing without one.",
@@ -235,9 +227,7 @@
       "finish": "Continue",
       "edit": "Edit my details",
       "signOut": "Sign out",
-      "deleteAccount": "Delete my account",
-      "myInquiries": "My inquiries",
-      "myInquiriesCount": "My inquiries ({{count}})"
+      "deleteAccount": "Delete my account"
     },
     "editShort": "Edit details",
     "stats": {
@@ -384,7 +374,8 @@
     "signInWithApple": "Sign in with Apple",
     "signInWithGoogle": "Sign in with Google",
     "signInWithPhone": "Sign in with phone number",
-    "signInWithEmail": "Sign in with email"
+    "signInWithEmail": "Sign in with email",
+    "legal": "By continuing, you agree to our {{terms}}. Learn how we use your data in our {{privacy}}."
   },
   "saveVendor": {
     "title": "Save to which event?",
@@ -493,7 +484,7 @@
     "sent": {
       "title": "Sent to {{vendor}}",
       "queuedTitle": "We'll send it to {{vendor}} first thing tomorrow",
-      "next": "Most vendors reply within 1 to 2 days by call or text. A copy is in your email.",
+      "next": "The vendor has your request and will reply by call or text. A copy is in your email.",
       "faster": "Want a faster answer?",
       "callNow": "Call now",
       "textNow": "Text now",
@@ -503,7 +494,7 @@
       "chatTitle": "Keep talking here",
       "chatBody": "Your inquiry is now a chat with {{vendor}}. Their reply shows up in Messages, and we'll email you too.",
       "chatButton": "Continue in chat",
-      "nextNoEmail": "Most vendors reply within 1 to 2 days by call or text.",
+      "nextNoEmail": "The vendor has your request and will reply by call or text.",
       "seeRequests": "See all my requests"
     },
     "tourTitle": "Book a tour",
@@ -580,7 +571,6 @@
   },
   "myInquiries": {
     "title": "My requests",
-    "back": "Back",
     "empty": "You haven't asked any vendors yet. Tap \"Ask about price & date\" on a vendor to start.",
     "askedOn": "Asked on {{date}}",
     "viewVendor": "View vendor",
@@ -607,14 +597,8 @@
     }
   },
   "discover": {
-    "title": "Discover",
-    "eyebrow": "Real work from NorCal vendors",
-    "stories": "Vendor stories",
     "openStory": "Watch {{name}}'s photos",
-    "empty": "No photos yet. Check back soon.",
     "photoOf": "Photo {{number}} of {{total}}, {{name}}",
-    "doubleTapHint": "Double-tap to save",
-    "askLabel": "Ask {{name}} about price and date",
     "shareLabel": "Share {{name}}"
   },
   "story": {
@@ -654,7 +638,15 @@
     "about": "About",
     "version": "Version",
     "account": "Account",
-    "madeIn": "Made in Northern California for Punjabi families"
+    "madeIn": "Made in Northern California for Punjabi families",
+    "legal": "Legal",
+    "legalSoon": "The Terms, Privacy and Refund pages open on the Wedded website once it's live.",
+    "soon": "Soon",
+    "legalPages": {
+      "terms": "Terms of Service",
+      "privacy": "Privacy Policy",
+      "refunds": "Refund Policy"
+    }
   },
   "planner": {
     "title": "My Wedding",
@@ -1154,7 +1146,7 @@
     "privacyLink": "Privacy Policy",
     "phrases": {
       "plan": "Plan your family's wedding, together.",
-      "events": "Every event, every vendor, one plan.",
+      "events": "Every event, all in one plan.",
       "vendors": "Find vendors your family will love.",
       "ask": "Ask for prices and dates in one tap.",
       "countdown": "Your countdown to the big day.",
@@ -1480,7 +1472,6 @@
       "editTitle": "Change menu",
       "name": "Menu name",
       "nameHint": "For example: Gold Package",
-      "namePa": "Menu name in Punjabi (if you like)",
       "description": "About this menu",
       "cuisine": "Cuisine",
       "cuisineHint": "For example: Punjabi, Indo-Chinese",
@@ -1575,7 +1566,6 @@
         "booked": "You're taken for the whole day.",
         "held": "Someone is deciding. You're not free yet."
       },
-      "partNote": "Part of this day is marked. Picking one of these sets the whole day.",
       "saveFailed": "That didn't save. Check your internet, then try again.",
       "freshTitle": "Is your calendar up to date?",
       "freshBody": "Families only see your days as open while your calendar is fresh. Tap this whenever you've checked it.",
@@ -1783,17 +1773,13 @@
           "title": "About you",
           "gain": "Families trust vendors who say who they are and how they work."
         },
-        "bioPa": {
-          "title": "About you in Punjabi",
-          "gain": "Many families read in Punjabi, especially parents and grandparents."
-        },
         "price": {
           "title": "A starting price",
           "gain": "Families ask more often when they can see a price."
         },
         "contact": {
           "title": "A phone or WhatsApp number",
-          "gain": "Most families want to call or WhatsApp before they book."
+          "gain": "Many families like to call or WhatsApp before they book."
         },
         "instagram": {
           "title": "Your Instagram",
@@ -1823,9 +1809,7 @@
       "about": "About you",
       "aboutHint": "What families read first under your name.",
       "tagline": "One line about you (English)",
-      "taglinePa": "One line about you (ਪੰਜਾਬੀ)",
       "bio": "About you (English)",
-      "bioPa": "About you (ਪੰਜਾਬੀ)",
       "price": "Price",
       "priceHint": "Families ask more often when they can see a price.",
       "priceShow": "How to show your price",
@@ -2244,5 +2228,17 @@
     "manage": "Manage or cancel Pro",
     "updateCard": "Update your card",
     "manageOnWebsite": "You change your card or cancel on the Wedded website."
+  },
+  "licences": {
+    "title": "Licences",
+    "fonts": "Fonts",
+    "fontsFooter": "Free to use under the SIL Open Font License.",
+    "pictures": "Video and icons",
+    "picturesFooter": "The welcome video is cut from free clips on Pexels, used under the Pexels License.",
+    "welcomeVideo": "Welcome video",
+    "by": "By {{name}}",
+    "software": "Software",
+    "softwareFooter": "Thank you to everyone who builds and shares these.",
+    "openSource": "Open-source software, under the MIT licence"
   }
 }

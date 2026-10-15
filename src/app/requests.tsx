@@ -32,7 +32,7 @@ export default function PostedRequestsScreen() {
 function PostedRequests() {
   const Colors = useColors();
   const styles = useStyles();
-  const { t, locale } = useLocale();
+  const { t } = useLocale();
   const view = usePlanView();
   const requests = useMyRequests(view.wedding?.id ?? '');
   const words = useRequestWords();
@@ -77,7 +77,7 @@ function PostedRequests() {
             pressedScale={0.98}
           >
             <RequestInvite
-              eventName={event ? localized(event.name, locale) : null}
+              eventName={event ? localized(event.name) : null}
               headline={words.category(r.categorySlug)}
               date={r.eventDate}
               facts={words.facts(r)}

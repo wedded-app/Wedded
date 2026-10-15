@@ -219,7 +219,6 @@ type ProposalRow = {
   vendor_id: string;
   vendor_slug: string;
   vendor_name: string;
-  vendor_name_pa: string | null;
   vendor_city: string;
   cover_path: string | null;
   founding_number: number | null;
@@ -242,7 +241,7 @@ export function toProposal(row: ProposalRow): Proposal {
     vendor: {
       id: row.vendor_id,
       slug: row.vendor_slug,
-      name: { en: row.vendor_name, ...(row.vendor_name_pa ? { pa: row.vendor_name_pa } : {}) },
+      name: { en: row.vendor_name },
       city: row.vendor_city,
       photoUrl: row.cover_path ? photoUrl(row.cover_path, 'medium') : null,
       foundingNumber: row.founding_number,

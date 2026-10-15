@@ -48,7 +48,7 @@ export default function ProposeSheet() {
 function Propose() {
   const Colors = useColors();
   const styles = useStyles();
-  const { t, locale } = useLocale();
+  const { t } = useLocale();
   const { request = '' } = useLocalSearchParams<{ request: string }>();
   const { vendorId } = useCurrentBusiness();
   const words = useRequestWords();
@@ -124,8 +124,8 @@ function Propose() {
       }
     >
       <RequestInvite
-        eventName={card.eventName ? localized(card.eventName, locale) : null}
-        headline={localized(card.categoryName, locale)}
+        eventName={card.eventName ? localized(card.eventName) : null}
+        headline={localized(card.categoryName)}
         date={card.eventDate}
         facts={words.facts(card, card.miles)}
         note={card.note || null}
@@ -177,7 +177,7 @@ function Propose() {
             {menus.data?.map((m) => (
               <Chip
                 key={m.id}
-                label={localized(m.name, locale)}
+                label={localized(m.name)}
                 selected={menu === m.id}
                 onPress={() => setMenu(menu === m.id ? null : m.id)}
               />

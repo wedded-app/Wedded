@@ -23,7 +23,7 @@ import { useFeed } from '@/data/feed';
 import { useSavedVendors, useSaveVendor } from '@/data/saved';
 import { markStorySeen } from '@/features/discover/seen-stories';
 import { shareVendor } from '@/features/vendors/share';
-import { localized, vendorText } from '@/i18n/localized';
+import { localized } from '@/i18n/localized';
 import { useLocale } from '@/i18n/locale-context';
 import { saveHaptic } from '@/lib/haptics';
 
@@ -52,7 +52,7 @@ export default function StoryScreen() {
   const styles = useStyles();
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { locale, t } = useLocale();
+  const { t } = useLocale();
   const reduceMotion = useReducedMotion();
   const { vendor: startSlug, photo: startPhoto } = useLocalSearchParams<{
     vendor?: string;
@@ -186,9 +186,9 @@ export default function StoryScreen() {
     );
   }
 
-  const name = localized(post.name, locale);
-  const category = post.category ? localized(post.category.name, locale) : null;
-  const caption = vendorText(post.caption.en ?? undefined, post.caption.pa ?? undefined, locale);
+  const name = localized(post.name);
+  const category = post.category ? localized(post.category.name) : null;
+  const caption = post.caption?.trim() || null;
   const saved = (saves.data ?? []).some((save) => save.vendorId === post.vendorId);
 
   const openProfile = () => {

@@ -9,7 +9,7 @@ import { SheetHeader } from '@/components/sheet-header';
 import { StateView } from '@/components/state-view';
 import { Spacing } from '@/constants/theme';
 import { useVendors } from '@/data/vendors';
-import { bilingual, localized } from '@/i18n/localized';
+import { localized } from '@/i18n/localized';
 import { useLocale } from '@/i18n/locale-context';
 
 /**
@@ -20,7 +20,7 @@ import { useLocale } from '@/i18n/locale-context';
  * `?event=` the reel's event.
  */
 export default function ReelBookScreen() {
-  const { t, locale } = useLocale();
+  const { t } = useLocale();
   const { vendors = '', event } = useLocalSearchParams<{ vendors?: string; event?: string }>();
   const slugs = useMemo(() => vendors.split(',').filter(Boolean), [vendors]);
   const profiles = useVendors(slugs);
@@ -58,21 +58,20 @@ export default function ReelBookScreen() {
         ) : (
           <ListSection>
             {found.map((vendor) => {
-              const { primary } = bilingual(vendor.name, locale);
+              const name = localized(vendor.name);
               const category = vendor.categories[0];
-              const about = [category && localized(category.name, locale), vendor.city]
+              const about = [category && localized(category.name), vendor.city]
                 .filter(Boolean)
                 .join(' · ');
               return (
                 <ListRow
                   key={vendor.id}
                   icon="storefront-outline"
-                  title={primary.text}
-                  titleLang={primary.lang}
+                  title={name}
                   titleVariant="bodyLg"
                   subtitle={about}
                   onPress={() => ask(vendor.id)}
-                  accessibilityLabel={t('reels.bookVendor', { name: primary.text })}
+                  accessibilityLabel={t('reels.bookVendor', { name })}
                 />
               );
             })}

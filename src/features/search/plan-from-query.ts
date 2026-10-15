@@ -38,13 +38,11 @@ const WEDDING_WORDS = [
   'vivah',
   'biyah',
   'byah',
-  'ਵਿਆਹ',
-  'ਸ਼ਾਦੀ',
 ];
 
 const MONTHS = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'];
 
-const GUEST_WORDS = 'people|persons|guests?|ppl|pax|ਮਹਿਮਾਨ|ਲੋਕ';
+const GUEST_WORDS = 'people|persons|guests?|ppl|pax';
 
 /** Lower case, punctuation as spaces, padded so " term " finds whole words. */
 function clean(text: string): string {
@@ -112,15 +110,13 @@ function dateIn(raw: string): string | null {
 
 function matching(text: string, items: Named[]): string[] {
   return items
-    .filter((item) =>
-      [item.slug, item.name.en, item.name.pa ?? ''].some((term) => term && hasTerm(text, term)),
-    )
+    .filter((item) => [item.slug, item.name.en].some((term) => term && hasTerm(text, term)))
     .map((item) => item.slug);
 }
 
 /**
  * What a search says about the wedding, or null when it isn't about planning
- * one. It counts as planning when it says "wedding" (or shaadi, viah, ਵਿਆਹ),
+ * one. It counts as planning when it says "wedding" (or shaadi, viah),
  * or names an event plus one more detail. "mehndi" alone is someone looking
  * for a mehndi artist, so it stays a plain search.
  */

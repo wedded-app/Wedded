@@ -34,7 +34,7 @@ import { useLocale } from '@/i18n/locale-context';
 export default function BusinessPhotoSheet() {
   const Colors = useColors();
   const styles = useStyles();
-  const { t, locale } = useLocale();
+  const { t } = useLocale();
   const { id = '' } = useLocalSearchParams<{ id: string }>();
   const { vendorId } = useCurrentBusiness();
   const photos = useMyVendorPhotos(vendorId);
@@ -50,12 +50,12 @@ export default function BusinessPhotoSheet() {
     for (const tradition of traditions.data ?? []) {
       for (const event of tradition.events) {
         if (event.isCore && !seen.has(event.slug)) {
-          seen.set(event.slug, localized(event.name, locale));
+          seen.set(event.slug, localized(event.name));
         }
       }
     }
     return [...seen].map(([slug, name]) => ({ slug, name }));
-  }, [traditions.data, locale]);
+  }, [traditions.data]);
 
   const list = photos.data ?? [];
   const index = list.findIndex((p) => p.id === id);

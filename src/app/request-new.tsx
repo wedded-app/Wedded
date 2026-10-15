@@ -62,7 +62,7 @@ export default function AskVendorsSheet() {
 function AskVendors() {
   const Colors = useColors();
   const styles = useStyles();
-  const { t, locale } = useLocale();
+  const { t } = useLocale();
   const params = useLocalSearchParams<{ event?: string; category?: string }>();
   const { profile } = useSession();
   const { place: searchPlace } = useSearchLocation();
@@ -215,7 +215,7 @@ function AskVendors() {
                   <Chip
                     key={e.slug}
                     role="radio"
-                    label={localized(e.name, locale)}
+                    label={localized(e.name)}
                     selected={event === e.slug}
                     onPress={() => {
                       setEvent(e.slug);
@@ -237,7 +237,7 @@ function AskVendors() {
                     <PressableScale
                       accessibilityRole="radio"
                       accessibilityState={{ selected: picked }}
-                      accessibilityLabel={localized(need.name, locale)}
+                      accessibilityLabel={localized(need.name)}
                       onPress={() => {
                         selectionHaptic();
                         setCategory(need.categorySlug);
@@ -264,7 +264,7 @@ function AskVendors() {
                       )}
                       <View style={styles.tileWords}>
                         <AppText weight={700} color="onHero" numberOfLines={3}>
-                          {localized(need.name, locale)}
+                          {localized(need.name)}
                         </AppText>
                         {(vendorCounts.data?.[need.categorySlug] ?? 0) > 0 && (
                           <AppText variant="label" weight={600} color="onHero2">
@@ -345,7 +345,7 @@ function AskVendors() {
               {t('requests.post.preview')}
             </AppText>
             <RequestInvite
-              eventName={eventLabel ? localized(eventLabel.name, locale) : null}
+              eventName={eventLabel ? localized(eventLabel.name) : null}
               headline={category ? words.category(category) : ''}
               date={date}
               facts={words.facts(draft)}

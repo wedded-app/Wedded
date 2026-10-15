@@ -20,7 +20,6 @@ export function sectionFor(key: string): ListingSection | null {
   switch (key) {
     case 'tagline':
     case 'bio':
-    case 'bioPa':
       return 'about';
     case 'price':
       return 'price';
@@ -37,9 +36,7 @@ export function sectionFor(key: string): ListingSection | null {
 /** What the editor holds: text for what people type, '' for blank. */
 export type ListingDraft = {
   tagline: string;
-  taglinePa: string;
   bio: string;
-  bioPa: string;
   priceDisplay: PriceDisplay;
   priceFrom: string;
   priceTo: string;
@@ -68,9 +65,7 @@ export function listingToDraft(listing: Listing): ListingDraft {
   const number = (value: number | null) => (value === null ? '' : String(value));
   return {
     tagline: text(listing.tagline),
-    taglinePa: text(listing.taglinePa),
     bio: text(listing.bio),
-    bioPa: text(listing.bioPa),
     priceDisplay: listing.priceDisplay ?? 'contact',
     priceFrom: number(listing.priceFrom),
     priceTo: number(listing.priceTo),
@@ -128,14 +123,8 @@ export function draftChanges(
   if (draft.tagline.trim().length > TAGLINE_MAX) {
     return { changes: {}, problem: { field: 'tagline', kind: 'taglineLong' } };
   }
-  if (draft.taglinePa.trim().length > TAGLINE_MAX) {
-    return { changes: {}, problem: { field: 'taglinePa', kind: 'taglineLong' } };
-  }
   if (draft.bio.trim().length > BIO_MAX) {
     return { changes: {}, problem: { field: 'bio', kind: 'bioLong' } };
-  }
-  if (draft.bioPa.trim().length > BIO_MAX) {
-    return { changes: {}, problem: { field: 'bioPa', kind: 'bioLong' } };
   }
 
   const priced = draft.priceDisplay === 'starting_at' || draft.priceDisplay === 'range';
@@ -177,9 +166,7 @@ export function draftChanges(
 
   const next: EditableListing = {
     tagline: orNull(draft.tagline),
-    taglinePa: orNull(draft.taglinePa),
     bio: orNull(draft.bio),
-    bioPa: orNull(draft.bioPa),
     priceDisplay: draft.priceDisplay,
     priceFrom,
     priceTo,

@@ -24,7 +24,7 @@ import { selectionHaptic } from '@/lib/haptics';
  * Mehndi…), from the database. The vendors in each clip are one tap away.
  */
 export default function ReelsScreen() {
-  const { t, locale } = useLocale();
+  const { t } = useLocale();
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { height } = useWindowDimensions();
@@ -40,8 +40,8 @@ export default function ReelsScreen() {
       (homeEvents.data ?? [])
         .flatMap((section) => section.events)
         .filter((event) => event.isCore)
-        .map((event) => ({ slug: event.slug, name: localized(event.name, locale) })),
-    [homeEvents.data, locale],
+        .map((event) => ({ slug: event.slug, name: localized(event.name) })),
+    [homeEvents.data],
   );
   const eventName = events.find((event) => event.slug === eventSlug)?.name;
 

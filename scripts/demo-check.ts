@@ -52,13 +52,6 @@ async function checkBrowse(db: SupabaseClient, hallSlug: string) {
     .eq('slug', 'reception')
     .maybeSingle();
   check(Boolean(reception), 'Reception is an event', 'There is no Reception event');
-  const name = reception?.name as { en: string; pa?: string } | undefined;
-  check(
-    Boolean(name?.pa),
-    `Reception has a Punjabi name (${name?.pa})`,
-    'Reception has no Punjabi name, so the Punjabi toggle shows English',
-    'warn',
-  );
 
   const { count } = await db
     .from('event_categories')

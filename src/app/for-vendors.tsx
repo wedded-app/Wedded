@@ -25,7 +25,7 @@ type Field = 'businessName' | 'contactName' | 'city' | 'phone' | 'instagram';
 export default function ForVendorsScreen() {
   const { claim = '' } = useLocalSearchParams<{ claim?: string }>();
   const router = useRouter();
-  const { locale, t } = useLocale();
+  const { t } = useLocale();
   const claimed = useVendor(claim);
   const submit = useSubmitVendorLead();
   const [attempted, setAttempted] = useState(false);
@@ -39,8 +39,7 @@ export default function ForVendorsScreen() {
   });
 
   const isClaim = claim.length > 0;
-  const businessName =
-    draft.businessName || (claimed.data ? localized(claimed.data.name, locale) : '');
+  const businessName = draft.businessName || (claimed.data ? localized(claimed.data.name) : '');
   const phone = normalizePhone(draft.phone);
   const instagram = draft.instagram.trim().replace(/^@/, '');
 
@@ -68,7 +67,7 @@ export default function ForVendorsScreen() {
       phone,
       instagramHandle: instagram || undefined,
       claimedVendorId: isClaim ? claimed.data?.id : undefined,
-      language: locale,
+      language: 'en',
     });
   }
 

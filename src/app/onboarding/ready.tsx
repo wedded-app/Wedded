@@ -29,7 +29,7 @@ const COUNTED = 100;
  */
 export default function ReadyScreen() {
   const styles = useStyles();
-  const { t, locale } = useLocale();
+  const { t } = useLocale();
   const { plan, chosen, progress, next } = usePlanView();
   const { place, maxMiles } = useSearchLocation();
   const nearby = useVendorSearch(
@@ -76,8 +76,8 @@ export default function ReadyScreen() {
             detail={
               first
                 ? t('onboarding.ready.firstUp', {
-                    need: localized(first.need.name, locale),
-                    event: localized(first.eventName, locale),
+                    need: localized(first.need.name),
+                    event: localized(first.eventName),
                   })
                 : t('onboarding.ready.noEventsDetail')
             }

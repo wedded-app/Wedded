@@ -26,7 +26,7 @@ export type VendorSearch = {
   maxMiles?: number | null;
   categorySlug?: string;
   eventSlug?: string;
-  /** Free text: vendor names and category names or synonyms, English or Gurmukhi. */
+  /** Free text: vendor names and category names or synonyms. */
   query?: string;
   /** Also vendors who travel beyond their radius ("Show vendors who travel to you"). */
   includeTravelers?: boolean;
@@ -105,7 +105,7 @@ export async function searchVendors(params: VendorSearch): Promise<VendorResult[
     return {
       id: row.id ?? '',
       slug: row.slug ?? '',
-      name: row.name_pa ? { en: row.name ?? '', pa: row.name_pa } : { en: row.name ?? '' },
+      name: { en: row.name ?? '' },
       city: row.city ?? '',
       categorySlug: row.primary_category_slug,
       category: asLocalizedText(row.primary_category_name),

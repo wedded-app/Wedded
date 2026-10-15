@@ -78,7 +78,7 @@ export default function RequestScreen() {
 function Request() {
   const Colors = useColors();
   const styles = useStyles();
-  const { t, locale } = useLocale();
+  const { t } = useLocale();
   const { width } = useWindowDimensions();
   const { id = '', posted } = useLocalSearchParams<{ id: string; posted?: string }>();
   const view = usePlanView();
@@ -149,7 +149,7 @@ function Request() {
 
   const status = request.expired && request.status === 'open' ? 'expired' : request.status;
   const facesFrom = live.map((p) => ({
-    name: localized(p.vendor.name, locale),
+    name: localized(p.vendor.name),
     photoUrl: p.vendor.photoUrl,
   }));
 
@@ -164,7 +164,7 @@ function Request() {
         title={live.length > 0 ? t('requests.inbox.title', { count: live.length }) : undefined}
       >
         <RequestInvite
-          eventName={event ? localized(event.name, locale) : null}
+          eventName={event ? localized(event.name) : null}
           headline={words.category(request.categorySlug)}
           date={request.eventDate}
           facts={words.facts(request)}
@@ -294,8 +294,8 @@ function ProposalCard({
 }) {
   const Colors = useColors();
   const styles = useStyles();
-  const { t, locale } = useLocale();
-  const name = localized(p.vendor.name, locale);
+  const { t } = useLocale();
+  const name = localized(p.vendor.name);
   const stats = useVendorPublicStats(p.vendor.id);
   const free = useVendorDateStatus(p.vendor.id, eventDate);
   const record = [

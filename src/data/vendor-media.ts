@@ -98,7 +98,7 @@ export function useVendorPhotos(vendorId: string) {
 async function fetchRealWeddingsAt(venueId: string): Promise<VenuePhoto[]> {
   const { data, error } = await supabase
     .from('vendor_media')
-    .select(`${PHOTO_COLUMNS}, vendor:vendors!vendor_media_vendor_id_fkey(slug, name, name_pa)`)
+    .select(`${PHOTO_COLUMNS}, vendor:vendors!vendor_media_vendor_id_fkey(slug, name)`)
     .eq('venue_vendor_id', venueId)
     .neq('vendor_id', venueId)
     .order('created_at', { ascending: false })
@@ -108,9 +108,7 @@ async function fetchRealWeddingsAt(venueId: string): Promise<VenuePhoto[]> {
     ...toPhoto(row),
     vendor: {
       slug: row.vendor.slug,
-      name: row.vendor.name_pa
-        ? { en: row.vendor.name, pa: row.vendor.name_pa }
-        : { en: row.vendor.name },
+      name: { en: row.vendor.name },
     },
   }));
 }

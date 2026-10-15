@@ -17,7 +17,7 @@ export type FeedPost = {
   slug: string;
   name: LocalizedText;
   /** The vendor's own words (tagline, else the start of the bio). */
-  caption: { en: string | null; pa: string | null };
+  caption: string | null;
   city: string;
   foundingNumber: number | null;
   category: { slug: string; name: LocalizedText; groupSlug: string } | null;
@@ -40,11 +40,8 @@ type Row = {
     id: string;
     slug: string;
     name: string;
-    name_pa: string | null;
     tagline: string | null;
-    tagline_pa: string | null;
     bio: string | null;
-    bio_pa: string | null;
     city: string;
     founding_number: number | null;
     price_display: string;
@@ -78,7 +75,7 @@ async function fetchFeed(): Promise<FeedPost[]> {
     .from('vendor_media')
     .select(
       `id, storage_path, width, height, blurhash, is_cover, sort_order, event_slug, credit_text, created_at,
-       vendor:vendors!vendor_media_vendor_id_fkey!inner(id, slug, name, name_pa, tagline, tagline_pa, bio, bio_pa, city,
+       vendor:vendors!vendor_media_vendor_id_fkey!inner(id, slug, name, tagline, bio, city,
          founding_number, price_display, price_from, price_to, price_unit, status,
          vendor_categories(position, category:categories(slug, name, group_slug)))`,
     )
@@ -96,8 +93,8 @@ async function fetchFeed(): Promise<FeedPost[]> {
       post = {
         vendorId: v.id,
         slug: v.slug,
-        name: v.name_pa ? { en: v.name, pa: v.name_pa } : { en: v.name },
-        caption: { en: v.tagline ?? v.bio, pa: v.tagline_pa ?? v.bio_pa },
+        name: { en: v.name },
+        caption: v.tagline ?? v.bio,
         city: v.city,
         foundingNumber: v.founding_number,
         category: primary

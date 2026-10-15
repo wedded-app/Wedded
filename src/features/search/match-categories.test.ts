@@ -1,20 +1,20 @@
 import { editDistance, matchCategories } from './match-categories';
 
 const categories = [
-  { slug: 'dhol', name: { en: 'Dhol player', pa: 'ਢੋਲੀ' }, aliases: ['dhol', 'dholi', 'ਢੋਲ'] },
+  { slug: 'dhol', name: { en: 'Dhol player' }, aliases: ['dhol', 'dholi'] },
   { slug: 'dholki-singers', name: { en: 'Dholki and sangeet singers' }, aliases: [] },
   {
     slug: 'mehndi-artist',
-    name: { en: 'Mehndi artist', pa: 'ਮਹਿੰਦੀ' },
+    name: { en: 'Mehndi artist' },
     aliases: ['henna', 'mehendi'],
   },
   {
     slug: 'banquet-hall',
-    name: { en: 'Banquet hall', pa: 'ਬੈਂਕੁਇਟ ਹਾਲ' },
+    name: { en: 'Banquet hall' },
     aliases: ['hall', 'palace'],
   },
   { slug: 'community-center', name: { en: 'Community center' }, aliases: ['community hall'] },
-  { slug: 'photographer', name: { en: 'Photographer', pa: 'ਫੋਟੋਗ੍ਰਾਫਰ' }, aliases: ['photos'] },
+  { slug: 'photographer', name: { en: 'Photographer' }, aliases: ['photos'] },
   { slug: 'caterer', name: { en: 'Caterer' }, aliases: ['catering', 'food'] },
 ];
 const slugs = (text: string) => matchCategories(categories, text).map((c) => c.slug);
@@ -22,11 +22,6 @@ const slugs = (text: string) => matchCategories(categories, text).map((c) => c.s
 describe('matchCategories', () => {
   it('puts an exact alias first', () => {
     expect(slugs('dhol')).toEqual(['dhol', 'dholki-singers']);
-  });
-
-  it('matches Gurmukhi names and aliases', () => {
-    expect(slugs('ਢੋਲ')).toEqual(['dhol']);
-    expect(slugs('ਮਹਿੰਦੀ')).toEqual(['mehndi-artist']);
   });
 
   it('matches the words parents use', () => {
@@ -72,9 +67,5 @@ describe('editDistance', () => {
     expect(editDistance('dhool', 'dhol')).toBe(1);
     expect(editDistance('mendhi', 'mehndi')).toBe(2);
     expect(editDistance('', 'abc')).toBe(3);
-  });
-
-  it('counts Gurmukhi by character', () => {
-    expect(editDistance('ਢੋਲ', 'ਢੋਲੀ')).toBe(1);
   });
 });

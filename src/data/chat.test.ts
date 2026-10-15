@@ -71,7 +71,6 @@ describe('toConversation', () => {
       vendor_id: 'v1',
       vendor_slug: 'royal-orchard',
       vendor_name: 'Royal Orchard',
-      vendor_name_pa: null,
       vendor_cover_path: 'v1/p1',
       family_name: 'Harjit K.',
       last_message_at: '2026-10-01T10:00:00Z',

@@ -78,7 +78,7 @@ const CONTACT_STATS: (keyof BusinessStats)[] = [
 export default function BusinessScreen() {
   const Colors = useColors();
   const styles = useStyles();
-  const { t, locale } = useLocale();
+  const { t } = useLocale();
   const current = useCurrentBusiness();
   const [days, setDays] = useState<StatsPeriod>(30);
   // At large text the number cards go one per row instead of two
@@ -108,7 +108,7 @@ export default function BusinessScreen() {
     );
   }
 
-  const name = locale === 'pa' && business.namePa ? business.namePa : business.name;
+  const name = business.name;
   const now = stats.data?.current ?? EMPTY_STATS;
   const before = stats.data?.previous ?? EMPTY_STATS;
   const changeWords = (key: keyof BusinessStats) => {
@@ -128,7 +128,7 @@ export default function BusinessScreen() {
             <Chip
               key={b.id}
               role="radio"
-              label={locale === 'pa' && b.namePa ? b.namePa : b.name}
+              label={b.name}
               selected={b.id === business.id}
               onPress={() => chooseBusiness(b.id)}
             />

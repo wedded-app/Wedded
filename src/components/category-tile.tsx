@@ -1,11 +1,10 @@
 import { View, type StyleProp, type ViewStyle } from 'react-native';
 
 import { AppText, useFontScale } from '@/components/app-text';
-import { BilingualName } from '@/components/bilingual-name';
 import { Card } from '@/components/card';
 import { Icon, type IconName } from '@/components/icon';
 import { makeStyles, Radius, Sizes, Spacing, useColors } from '@/constants/theme';
-import { bilingual, type LocalizedText } from '@/i18n/localized';
+import { type LocalizedText, localized } from '@/i18n/localized';
 import { useLocale } from '@/i18n/locale-context';
 
 export type CategoryTileProps = {
@@ -37,9 +36,9 @@ export function CategoryTile({
 }: CategoryTileProps) {
   const Colors = useColors();
   const styles = useStyles();
-  const { locale, t } = useLocale();
+  const { t } = useLocale();
   const scale = Math.min(useFontScale('body'), 1.4);
-  const { primary } = bilingual(name, locale);
+  const title = localized(name);
   const count =
     vendorCount === undefined
       ? undefined
@@ -48,15 +47,16 @@ export function CategoryTile({
   return (
     <Card
       onPress={onPress}
-      accessibilityLabel={count ? `${primary.text}, ${count}` : primary.text}
-      accessibilityLanguage={primary.lang}
+      accessibilityLabel={count ? `${title}, ${count}` : title}
       style={[styles.card, style]}
     >
       <View style={[styles.glyph, { width: 40 * scale, height: 40 * scale }]}>
         <Icon name={icon} size={Sizes.iconSmall * scale} color={Colors.primary} />
       </View>
       <View style={styles.text}>
-        <BilingualName name={name} variant="body" weight={600} />
+        <AppText variant="body" weight={600}>
+          {title}
+        </AppText>
         {count && (
           <AppText variant="label" weight={400} color="text2">
             {count}

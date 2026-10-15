@@ -160,3 +160,14 @@ Everything added since this guide was written (Plan together, the family shortli
 
 - Decided 2026-10-06: the phone opens the app as an EAS Update in Expo Go, published on every merge to `main` by `.github/workflows/demo.yml` (see CLAUDE.md, "Shared demo"). A development build is only needed once a library Expo Go doesn't include comes in.
 - A separate development project (Phase 1, "separate development and production environments") can wait until after the demo. Until then, the local database is development.
+
+
+## Email preference links (#228)
+
+Deploy `email-unsubscribe` alongside `notify-chat`, `send-inquiry` and `send-queued-inquiries` after the opt-out migration. It uses signed links without a login (`verify_jwt = false`). GET only displays confirmation; POST stops or resumes optional application emails. Test a real email link, a scanner GET, stop, repeat stop, and resume on the hosted project.
+
+Optional `EMAIL_LINK_SECRET`: a strong random server-only signing secret; otherwise links use `SUPABASE_SERVICE_ROLE_KEY` (or `SUPABASE_SECRET_KEY`). Rotating the signing key invalidates older links, so prefer a dedicated stable secret. Never put it in an `EXPO_PUBLIC_` value. `EMAIL_LINKS_URL` optionally overrides the functions base URL; normally `${SUPABASE_URL}/functions/v1` is used. If a proxy is used, forward the query string and POST body unchanged.
+
+Set `BUSINESS_NAME` to the legal business name and `BUSINESS_ADDRESS` to the complete postal address once the LLC exists, before commercial mail. The fallback city is not a complete postal address. Founders and counsel own these values. Supabase Auth’s sign-in/security emails are configured separately; these optional-notification preferences do not suppress authentication mail.
+
+Policy source drafts and remaining launch gates: [LEGAL_CHECKLIST.md](LEGAL_CHECKLIST.md). Tab 2 owns public policy routes; drafts require counsel approval before publication.

@@ -4,7 +4,6 @@ import { Pressable, StyleSheet, View, type StyleProp, type ViewStyle } from 'rea
 import { AppText, useFontScale, type AppTextProps } from '@/components/app-text';
 import { Icon, type IconName } from '@/components/icon';
 import { type ColorToken, makeStyles, Radius, Sizes, Spacing, useColors } from '@/constants/theme';
-import type { Locale } from '@/i18n';
 
 // Where a row's text starts when it has an icon: the separator lines up with it.
 const TEXT_INSET = Spacing.lg + Sizes.rowIcon + Spacing.md;
@@ -14,10 +13,10 @@ const TEXT_INSET = Spacing.lg + Sizes.rowIcon + Spacing.md;
  * type" (App Store's section titles). Group headers inside a section are
  * ListSection's `header`.
  */
-export function SectionTitle({ children, lang }: { children: string; lang?: Locale }) {
+export function SectionTitle({ children }: { children: string }) {
   const styles = useStyles();
   return (
-    <AppText variant="section" lang={lang} accessibilityRole="header" style={styles.sectionTitle}>
+    <AppText variant="section" accessibilityRole="header" style={styles.sectionTitle}>
       {children}
     </AppText>
   );
@@ -74,10 +73,8 @@ export function ListSection({ header, footer, inset = false, children, style }: 
 
 export type ListRowProps = {
   title: string;
-  titleLang?: Locale;
-  /** A second line: the other script, or details. */
+  /** A second line of details. */
   subtitle?: string;
-  subtitleLang?: Locale;
   /** A glyph in the app colour at the start of the row. */
   icon?: IconName;
   iconColor?: ColorToken;
@@ -106,9 +103,7 @@ export type ListRowProps = {
  */
 export function ListRow({
   title,
-  titleLang,
   subtitle,
-  subtitleLang,
   icon,
   iconColor = 'primary',
   value,
@@ -142,11 +137,11 @@ export function ListRow({
         </View>
       )}
       <View style={styles.text}>
-        <AppText variant={titleVariant} color={titleColor} lang={titleLang}>
+        <AppText variant={titleVariant} color={titleColor}>
           {title}
         </AppText>
         {subtitle ? (
-          <AppText variant="label" weight={400} color="text2" lang={subtitleLang}>
+          <AppText variant="label" weight={400} color="text2">
             {subtitle}
           </AppText>
         ) : null}
@@ -192,7 +187,6 @@ export function ListRow({
     <Pressable
       accessibilityRole={accessibilityRole}
       accessibilityLabel={accessibilityLabel ?? title}
-      accessibilityLanguage={titleLang}
       accessibilityState={checked !== undefined ? { selected: checked } : undefined}
       onPress={onPress}
       style={({ pressed }) => [styles.row, pressed && styles.pressed]}
