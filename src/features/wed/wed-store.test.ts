@@ -11,7 +11,18 @@ jest.mock('expo-haptics', () => ({
 
 jest.mock('@/data/vendor-media', () => ({ photoUrl: (path: string) => `https://photos/${path}` }));
 
+const mockSendToVendor = jest.fn(async (slug: string, _text: string) => `chat-${slug}`);
+jest.mock('@/data/chat', () => ({
+  sendToVendor: (slug: string, text: string) => mockSendToVendor(slug, text),
+}));
+
+// Lets a finished send's .then run
+const flush = async () => {
+  for (let i = 0; i < 5; i++) await Promise.resolve();
+};
+
 beforeEach(() => {
+  mockSendToVendor.mockClear();
   jest.useFakeTimers();
   wed.reset();
   wed.setOnWedTab(true);
@@ -236,5 +247,42 @@ describe('apps and memory', () => {
     expect(getWed().facts.some((f) => f.id === second.id)).toBe(false);
     wed.restoreFact(second, 1);
     expect(getWed().facts[1].id).toBe(second.id);
+  });
+});
+
+describe('sending for real', () => {
+  it("puts the family's message in the vendor's chat once Undo runs out", async () => {
+    wed.editMessage('tasting', 'Could we come Saturday at 1?');
+    wed.approve('tasting');
+    jest.advanceTimersByTime(9_000);
+    expect(mockSendToVendor).not.toHaveBeenCalled();
+    jest.advanceTimersByTime(1_000);
+    expect(mockSendToVendor).toHaveBeenCalledWith(
+      'saffron-tandoor-catering',
+      'Could we come Saturday at 1?',
+    );
+    await flush();
+    expect(getWed().approvals[0].chats).toEqual(['chat-saffron-tandoor-catering']);
+  });
+
+  it('sends nothing after Undo or Not now', () => {
+    wed.approve('tasting');
+    wed.undo('tasting');
+    wed.decline('tasting');
+    jest.advanceTimersByTime(20_000);
+    expect(mockSendToVendor).not.toHaveBeenCalled();
+  });
+
+  it('says so when a message fails to send', async () => {
+    mockSendToVendor.mockRejectedValueOnce(new Error('offline'));
+    wed.approve('tasting');
+    jest.advanceTimersByTime(10_000);
+    await flush();
+    expect(getWed().items).toContainEqual(
+      expect.objectContaining({
+        kind: 'receipt',
+        text: expect.stringContaining("Couldn't send to Saffron Tandoor"),
+      }),
+    );
   });
 });
