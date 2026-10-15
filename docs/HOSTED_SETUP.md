@@ -74,7 +74,7 @@ npm run vendors:import -- vendor-data/<hall>.json
 npm run photos:upload -- photos
 ```
 
-Sample-vendor placeholder photos (`photos:samples`) are local only; on the hosted project, sample vendors show their category icon until they get photos.
+Sample vendors get their photos from `npm run photos:upload -- --samples` (the generated `sample-photos/` folder, or labelled placeholders without it). To fill the rest of the demo (reels, requests, a planned wedding, chats, leads and numbers), run the commands in the README's "The whole demo" without `--local`.
 
 ## 8. Point the app at it
 
