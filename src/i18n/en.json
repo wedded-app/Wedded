@@ -10,8 +10,6 @@
     "discover": "Reels"
   },
   "home": {
-    "headline": "Vendors for every event of your wedding",
-    "subtitle": "Roka to reception. Northern California.",
     "phases": {
       "before": "Before the wedding",
       "weddingDay": "Wedding day",
@@ -24,7 +22,6 @@
     "seeAll": "See all",
     "whatDoYouNeed": "What do you need?",
     "seeAllTypes": "All types",
-    "myEvents": "My events",
     "nextUp": "Next up",
     "booked": "booked",
     "seePlan": "See plan",
@@ -138,7 +135,6 @@
     "workedWith": "Has worked with",
     "claim": "Are you this vendor? Claim your profile",
     "photos": "Photos",
-    "photo": "Photo",
     "realWeddings": "Real weddings here",
     "photoBy": "Photo by {{name}}",
     "bookTour": "Book a tour",
@@ -225,7 +221,6 @@
     "language": "Language",
     "english": "English",
     "punjabi": "ਪੰਜਾਬੀ",
-    "textSize": "Text size",
     "account": {
       "signInTitle": "Save vendors and ask about prices",
       "signInBody": "Make a free account with Apple, Google, your phone or your email. You can keep browsing without one.",
@@ -235,9 +230,7 @@
       "finish": "Continue",
       "edit": "Edit my details",
       "signOut": "Sign out",
-      "deleteAccount": "Delete my account",
-      "myInquiries": "My inquiries",
-      "myInquiriesCount": "My inquiries ({{count}})"
+      "deleteAccount": "Delete my account"
     },
     "editShort": "Edit details",
     "stats": {
@@ -383,7 +376,8 @@
     "signInWithApple": "Sign in with Apple",
     "signInWithGoogle": "Sign in with Google",
     "signInWithPhone": "Sign in with phone number",
-    "signInWithEmail": "Sign in with email"
+    "signInWithEmail": "Sign in with email",
+    "legal": "By continuing, you agree to our {{terms}}. Learn how we use your data in our {{privacy}}."
   },
   "saveVendor": {
     "title": "Save to which event?",
@@ -579,7 +573,6 @@
   },
   "myInquiries": {
     "title": "My requests",
-    "back": "Back",
     "empty": "You haven't asked any vendors yet. Tap \"Ask about price & date\" on a vendor to start.",
     "askedOn": "Asked on {{date}}",
     "viewVendor": "View vendor",
@@ -606,11 +599,8 @@
     }
   },
   "discover": {
-    "title": "Discover",
-    "eyebrow": "Wedding reels from NorCal",
     "stories": "Vendor stories",
     "openStory": "Watch {{name}}'s photos",
-    "empty": "No photos yet. Check back soon.",
     "photoOf": "Photo {{number}} of {{total}}, {{name}}",
     "doubleTapHint": "Double-tap to save",
     "askLabel": "Ask {{name}} about price and date",
@@ -653,7 +643,15 @@
     "about": "About",
     "version": "Version",
     "account": "Account",
-    "madeIn": "Made in Northern California for Punjabi families"
+    "madeIn": "Made in Northern California for Punjabi families",
+    "legal": "Legal",
+    "legalSoon": "The Terms, Privacy and Refund pages open on the Wedded website once it's live.",
+    "soon": "Soon",
+    "legalPages": {
+      "terms": "Terms of Service",
+      "privacy": "Privacy Policy",
+      "refunds": "Refund Policy"
+    }
   },
   "planner": {
     "title": "My Wedding",
@@ -1574,7 +1572,6 @@
         "booked": "You're taken for the whole day.",
         "held": "Someone is deciding. You're not free yet."
       },
-      "partNote": "Part of this day is marked. Picking one of these sets the whole day.",
       "saveFailed": "That didn't save. Check your internet, then try again.",
       "freshTitle": "Is your calendar up to date?",
       "freshBody": "Families only see your days as open while your calendar is fresh. Tap this whenever you've checked it.",
@@ -2196,5 +2193,17 @@
     "pastDue": "Your card didn't go through. Update it on the Wedded website.",
     "renews": "Renews {{date}}",
     "ends": "Ends {{date}}"
+  },
+  "licences": {
+    "title": "Licences",
+    "fonts": "Fonts",
+    "fontsFooter": "Free to use under the SIL Open Font License.",
+    "pictures": "Video and icons",
+    "picturesFooter": "The welcome video is cut from free clips on Pexels, used under the Pexels License.",
+    "welcomeVideo": "Welcome video",
+    "by": "By {{name}}",
+    "software": "Software",
+    "softwareFooter": "Thank you to everyone who builds and shares these.",
+    "openSource": "Open-source software, under the MIT licence"
   }
 }
