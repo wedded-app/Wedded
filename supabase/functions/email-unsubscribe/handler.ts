@@ -1,3 +1,4 @@
+import { limitedBody } from '../_shared/body.ts';
 import { createClient } from '@supabase/supabase-js';
 import { verifiedEmail } from '../_shared/email-links.ts';
 
@@ -47,7 +48,11 @@ export async function handleRequest(request: Request): Promise<Response> {
     if (request.method === 'GET') {
       return page(`Stop emails to ${email}?`, form('stop', 'Stop emails'));
     }
-    const body = new URLSearchParams(await request.text());
+    const raw = await limitedBody(request, 4096);
+    if (raw === null) {
+      return page('Request too large', '<p>Use the button in your email link.</p>', 413);
+    }
+    const body = new URLSearchParams(raw);
     const action = body.get('List-Unsubscribe') === 'One-Click' ? 'stop' : body.get('action');
     if (action !== 'stop' && action !== 'resume') {
       return page('Invalid request', '<p>Choose Stop emails or Start emails again.</p>', 400);
