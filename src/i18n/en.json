@@ -1458,7 +1458,6 @@
   },
   "business": {
     "title": "My business",
-    "profileHint": "Your numbers, the families who asked, menus and calendar",
     "notVendor": "This is for vendor accounts. If you run a wedding business, ask us to add you.",
     "yourListing": "Your page",
     "listingHint": "Families see these on your page. Keep them up to date so they ask about the right things.",
@@ -1646,13 +1645,6 @@
       "working": "Making your spreadsheet…",
       "failed": "Your spreadsheet didn't come through. Check your internet, then try again.",
       "cantShare": "This phone can't share files from the app. Try on another phone, or on a computer at the website."
-    },
-    "home": {
-      "week": {
-        "one": "This week: 1 person saw your page, {{asked}} asked about a date",
-        "other": "This week: {{count}} people saw your page, {{asked}} asked about a date"
-      },
-      "hint": "Opens My business"
     },
     "insights": {
       "period": {
@@ -1957,6 +1949,32 @@
       }
     }
   },
+  "businessMode": {
+    "label": "Business",
+    "labelA11y": "Business mode",
+    "tabs": {
+      "today": "Today",
+      "wanted": "Wanted",
+      "reels": "Reels",
+      "leads": "Leads",
+      "business": "Business"
+    },
+    "today": {
+      "title": "Today",
+      "waitingTitle": "Waiting for your reply",
+      "seeLeads": "See all your leads",
+      "weekTitle": "This week",
+      "allNumbers": "See all your numbers",
+      "comingUp": "Coming up",
+      "noDates": "No days booked yet. Mark the days you're busy, so families only ask about days you're free.",
+      "openCalendar": "Open your calendar"
+    },
+    "account": "Account",
+    "switchToBusiness": "Switch to business",
+    "switchToBusinessHint": "Your leads, the families looking and your page",
+    "switchToPlanning": "Switch to planning",
+    "switchToPlanningHint": "Plan your own family's wedding"
+  },
   "requests": {
     "headline": "{{category}} for the {{event}}",
     "miles": {
@@ -2082,7 +2100,7 @@
     "problems": {
       "failed": "Something went wrong. Try again.",
       "notAllowed": "You can't do that here.",
-      "proOnly": "Families looking is part of Wedded Pro.",
+      "proOnly": "Wanted is part of Wedded Pro.",
       "alreadyOpen": "You already have an open request for this. Look in Posted requests.",
       "tooManyOpen": "You have a lot of open requests. Close one first.",
       "rate": "That's a lot for one day. Try again tomorrow.",
@@ -2101,7 +2119,7 @@
     }
   },
   "looking": {
-    "title": "Families looking",
+    "title": "Wanted",
     "subtitle": "Families near you who need what you do.",
     "rowHint": "Send families your price",
     "reach": "How far",

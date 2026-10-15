@@ -3,22 +3,17 @@ import { useState } from 'react';
 import { ActivityIndicator, View } from 'react-native';
 
 import { AppText, useFontScale } from '@/components/app-text';
-import { Button } from '@/components/button';
 import { Chip } from '@/components/chip';
 import { FieldError } from '@/components/field-error';
-import { Icon } from '@/components/icon';
 import { ListRow, ListSection, SectionTitle } from '@/components/list';
-import { NavScreen } from '@/components/nav';
 import { Segmented } from '@/components/segmented';
 import { StateView } from '@/components/state-view';
-import { makeStyles, Radius, Spacing, useColors } from '@/constants/theme';
+import { makeStyles, Spacing, useColors } from '@/constants/theme';
 import {
   type BusinessStats,
   EMPTY_STATS,
   type StatsPeriod,
-  useBusinessLeads,
   useBusinessStats,
-  waitingCount,
 } from '@/data/business';
 import { useExportBusiness } from '@/data/business-export';
 import {
@@ -29,9 +24,10 @@ import {
 import { useVendorMenus } from '@/data/vendor-menus';
 import { useMyVendorPhotos } from '@/data/vendor-photos-self';
 import { changeFrom } from '@/features/business/business-format';
-import { LeadRow, StatCard } from '@/features/business/business-parts';
+import { switchToPlanning } from '@/features/business/app-mode';
+import { NotLiveNotice, StatCard } from '@/features/business/business-parts';
+import { BusinessTabScreen } from '@/features/business/business-tab-screen';
 import { GetPaid } from '@/features/business/get-paid';
-import { FamiliesLookingEntry } from '@/features/requests/families-looking-entry';
 import {
   FunnelSteps,
   HowYouCompare,
@@ -67,13 +63,13 @@ const CONTACT_STATS: (keyof BusinessStats)[] = [
 ];
 
 /**
- * My business (C6): a vendor's own home. Which business (when they run
+ * Business mode's Business tab (C6, #252): which business (when they run
  * several), whether the page is live, how it did over 7, 30 or 90 days next
- * to the period before, the families who asked (waiting ones first), then
- * menus, calendar and the page itself, and "Export everything" as a
- * spreadsheet. C6b adds a headline, the views chart, seen to booked, reply
- * speed, what families want, how they compare, their reels and a checklist
- * for the page. Opened from Profile and Home.
+ * to the period before, then menus, calendar and the page itself, getting
+ * paid, and "Export everything" as a spreadsheet. C6b adds a headline, the
+ * views chart, seen to booked, reply speed, what families want, how they
+ * compare, their reels and a checklist for the page. Settings and "Switch to
+ * planning" are at the bottom. The families who asked have their own tab.
  */
 export default function BusinessScreen() {
   const Colors = useColors();
@@ -87,7 +83,6 @@ export default function BusinessScreen() {
   const insights = useBusinessInsights(current.vendorId, days);
   const reels = useBusinessReels(current.vendorId);
   const checklist = useBusinessChecklist(current.vendorId);
-  const leads = useBusinessLeads(current.vendorId);
   const menus = useVendorMenus(current.vendorId);
   const photos = useMyVendorPhotos(current.vendorId);
   const exporting = useExportBusiness(current.vendorId);
@@ -95,16 +90,16 @@ export default function BusinessScreen() {
 
   if (current.isPending) {
     return (
-      <NavScreen title={t('business.title')}>
+      <BusinessTabScreen title={t('business.title')}>
         <StateView state="loading" />
-      </NavScreen>
+      </BusinessTabScreen>
     );
   }
   if (!business) {
     return (
-      <NavScreen title={t('business.title')}>
+      <BusinessTabScreen title={t('business.title')}>
         <StateView state="empty" icon="storefront-outline" message={t('business.notVendor')} />
-      </NavScreen>
+      </BusinessTabScreen>
     );
   }
 
@@ -116,12 +111,10 @@ export default function BusinessScreen() {
     if (!change) return null;
     return t(`business.stats.change.${change.kind}`, { percent: change.percent, days });
   };
-  const leadList = leads.data ?? [];
-  const waiting = waitingCount(leadList);
   const contactRows = CONTACT_STATS.filter((key) => now[key] > 0);
 
   return (
-    <NavScreen title={t('business.title')} subtitle={name}>
+    <BusinessTabScreen title={t('business.title')} subtitle={name}>
       {current.businesses.length > 1 && (
         <View style={styles.chips} accessibilityRole="radiogroup">
           {current.businesses.map((b) => (
@@ -136,12 +129,7 @@ export default function BusinessScreen() {
         </View>
       )}
 
-      {business.status !== 'published' && (
-        <View style={styles.notice}>
-          <Icon name="eye-off-outline" size={22} color={Colors.kesari} />
-          <AppText style={styles.grow}>{t('business.notLive')}</AppText>
-        </View>
-      )}
+      {business.status !== 'published' && <NotLiveNotice />}
 
       {stats.data && (
         <AppText variant="title" accessibilityRole="header">
@@ -198,39 +186,6 @@ export default function BusinessScreen() {
         </>
       )}
 
-      <View style={styles.block}>
-        <SectionTitle>{t('business.leads.title')}</SectionTitle>
-        {leads.isPending ? (
-          <StateView state="loading" />
-        ) : leads.isError ? (
-          <StateView state="error" onRetry={() => void leads.refetch()} />
-        ) : leadList.length === 0 ? (
-          <AppText color="text2">{t('business.leads.empty')}</AppText>
-        ) : (
-          <>
-            {waiting > 0 && (
-              <AppText weight={600} color="primary">
-                {t('business.leads.waitingCount', { count: waiting })}
-              </AppText>
-            )}
-            {leadList.slice(0, 3).map((lead) => (
-              <LeadRow
-                key={lead.id}
-                lead={lead}
-                onPress={() => router.push({ pathname: '/business/lead', params: { id: lead.id } })}
-              />
-            ))}
-            {leadList.length > 3 && (
-              <Button
-                variant="secondary"
-                label={t('business.leads.seeAll', { count: leadList.length })}
-                onPress={() => router.push('/business/leads')}
-              />
-            )}
-          </>
-        )}
-      </View>
-
       {insights.data && <WhatFamiliesWant asks={insights.data.asks} />}
       {insights.data?.compare && <HowYouCompare compare={insights.data.compare} />}
       {reels.data && <YourReels reels={reels.data} />}
@@ -280,8 +235,6 @@ export default function BusinessScreen() {
         )}
       </ListSection>
 
-      <FamiliesLookingEntry vendorId={business.id} />
-
       <GetPaid vendorId={business.id} />
 
       <View style={styles.block}>
@@ -311,26 +264,29 @@ export default function BusinessScreen() {
           />
         )}
       </View>
-    </NavScreen>
+
+      <ListSection header={t('businessMode.account')}>
+        <ListRow
+          icon="settings-outline"
+          title={t('settings.title')}
+          onPress={() => router.push('/settings')}
+        />
+        <ListRow
+          icon="heart-outline"
+          title={t('businessMode.switchToPlanning')}
+          subtitle={t('businessMode.switchToPlanningHint')}
+          onPress={switchToPlanning}
+        />
+      </ListSection>
+    </BusinessTabScreen>
   );
 }
 
-const useStyles = makeStyles((Colors) => ({
+const useStyles = makeStyles(() => ({
   chips: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: Spacing.sm,
-  },
-  notice: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.md,
-    padding: Spacing.lg,
-    borderRadius: Radius.card,
-    backgroundColor: Colors.kesariTint,
-  },
-  grow: {
-    flex: 1,
   },
   block: {
     gap: Spacing.md,

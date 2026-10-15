@@ -146,6 +146,19 @@ export function LeadRow({ lead, onPress }: { lead: Lead; onPress: () => void }) 
   );
 }
 
+/** "Your page isn't live yet": on Today and the Business tab until a founder publishes it. */
+export function NotLiveNotice() {
+  const Colors = useColors();
+  const styles = useStyles();
+  const { t } = useLocale();
+  return (
+    <View style={styles.notice}>
+      <Icon name="eye-off-outline" size={22} color={Colors.kesari} />
+      <AppText style={styles.grow}>{t('business.notLive')}</AppText>
+    </View>
+  );
+}
+
 const useStyles = makeStyles((Colors) => ({
   card: {
     flexGrow: 1,
@@ -208,6 +221,14 @@ const useStyles = makeStyles((Colors) => ({
     paddingHorizontal: Spacing.sm,
     paddingVertical: 2,
     borderRadius: Radius.chip,
+    backgroundColor: Colors.kesariTint,
+  },
+  notice: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.md,
+    padding: Spacing.lg,
+    borderRadius: Radius.card,
     backgroundColor: Colors.kesariTint,
   },
 }));
