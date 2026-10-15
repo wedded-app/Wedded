@@ -111,16 +111,19 @@ export function GlassTabBar({
   const Colors = overVideo ? Palettes.dark : appColors;
   const reduceMotion = useReducedMotion();
   const [width, setWidth] = useState(0);
-  const itemWidth = width > 0 ? (width - PADDING * 2) / state.routes.length : 0;
+  // Only the routes with a tab: a hidden route (href: null, like Wed) gets no slot
+  const shown = state.routes.filter((route) => tabs.some((tab) => tab.name === route.name));
+  const selected = shown.findIndex((route) => route.key === state.routes[state.index]?.key);
+  const itemWidth = width > 0 ? (width - PADDING * 2) / shown.length : 0;
   const x = useSharedValue(0);
   const keyboardShown = useKeyboardShown();
   const hidden = useSyncExternalStore(subscribeHidden, isHidden, neverHidden);
   const drop = useSharedValue(0);
 
   useEffect(() => {
-    const target = state.index * itemWidth;
+    const target = Math.max(selected, 0) * itemWidth;
     x.value = reduceMotion || itemWidth === 0 ? target : withSpring(target, Springs.snappy);
-  }, [state.index, itemWidth, reduceMotion, x]);
+  }, [selected, itemWidth, reduceMotion, x]);
 
   // Below the bottom edge, shadow and all
   useEffect(() => {
@@ -152,7 +155,7 @@ export function GlassTabBar({
             accessibilityRole="tablist"
             onLayout={(event) => setWidth(event.nativeEvent.layout.width)}
           >
-            {itemWidth > 0 && (
+            {itemWidth > 0 && selected >= 0 && (
               <Animated.View
                 style={[
                   styles.highlight,
@@ -161,8 +164,8 @@ export function GlassTabBar({
                 ]}
               />
             )}
-            {state.routes.map((route, index) => {
-              const focused = state.index === index;
+            {shown.map((route, index) => {
+              const focused = selected === index;
               const spec = tabs.find((tab) => tab.name === route.name);
               const label = spec?.label ?? descriptors[route.key].options.title ?? route.name;
               const color = focused ? Colors.primary : Colors.text;

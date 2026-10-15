@@ -100,9 +100,9 @@ export type ReelActions = {
  * tapped (keep tapping for more); holding pauses and hides everything so the
  * video shows whole. The rail on the right has the poster (with follow),
  * like, comments, share, sound and more; at the bottom are who posted it,
- * the caption (two lines, then "more"), the event, the vendors in it (the
- * one who posted it, then the ones tagged), each opening that vendor's page,
- * and Book this vendor. Wide clips show whole, not cropped. A pasted TikTok or
+ * the caption (two lines, then "more"), then one row with the event and a
+ * single vendors chip (one vendor opens their page; several open a list of
+ * the poster and the ones tagged), and Book this vendor. Wide clips show whole, not cropped. A pasted TikTok or
  * Instagram reel plays in the platform's own player instead (its own taps and
  * sound), credited to whoever made it, with a link to the original post.
  */
@@ -319,7 +319,7 @@ export function ReelItem({
 
       <Animated.View
         pointerEvents={holding ? 'none' : 'box-none'}
-        style={[styles.rail, { bottom: bottomSpace + Spacing.lg }, chromeStyle]}
+        style={[styles.rail, { bottom: bottomSpace + Spacing.sm }, chromeStyle]}
       >
         <View style={styles.posterButton}>
           <Pressable
@@ -400,7 +400,7 @@ export function ReelItem({
 
       <Animated.View
         pointerEvents={holding ? 'none' : 'box-none'}
-        style={[styles.info, { bottom: bottomSpace + Spacing.lg }, chromeStyle]}
+        style={[styles.info, { bottom: bottomSpace + Spacing.sm }, chromeStyle]}
       >
         <Pressable accessibilityRole="link" onPress={openPoster} style={styles.posterRow}>
           <AppText variant="bodyLg" weight={700} numberOfLines={1} style={styles.ink}>
@@ -468,35 +468,52 @@ export function ReelItem({
             </AppText>
           </Pressable>
         )}
-        {eventName && (
-          <View style={styles.eventPill}>
-            <Icon name="sparkles" size={14} color={REEL_INK} />
-            <AppText variant="label" weight={600} style={styles.ink}>
-              {eventName}
-            </AppText>
-          </View>
-        )}
-        {vendors.length > 0 && (
+        {(eventName || vendors.length > 0) && (
           <View style={styles.tags}>
-            {vendors.map((vendor) => (
+            {eventName && (
+              <View style={styles.tag}>
+                <Icon name="sparkles" size={14} color={REEL_INK} />
+                <AppText variant="label" weight={600} style={styles.ink}>
+                  {eventName}
+                </AppText>
+              </View>
+            )}
+            {/* One chip for the vendors, so the caption covers less of the clip:
+                one opens their page, several open a list of them */}
+            {vendors.length > 0 && (
               <Pressable
-                key={vendor.slug}
                 accessibilityRole="link"
-                accessibilityLabel={t('reels.taggedVendor', { name: vendor.name })}
+                accessibilityLabel={
+                  vendors.length === 1
+                    ? t('reels.taggedVendor', { name: vendors[0].name })
+                    : t('reels.seeVendors', { count: vendors.length })
+                }
                 onPress={() =>
-                  router.push({ pathname: '/v/[slug]', params: { slug: vendor.slug } })
+                  vendors.length === 1
+                    ? router.push({ pathname: '/v/[slug]', params: { slug: vendors[0].slug } })
+                    : router.push({
+                        pathname: '/reel-book',
+                        params: { vendors: vendors.map((v) => v.slug).join(','), see: '1' },
+                      })
                 }
                 // The chip is slim over the video; its touch area is 48 tall
                 hitSlop={{ top: 6, bottom: 6 }}
-                style={({ pressed }) => [styles.tag, pressed && styles.pressed]}
+                style={({ pressed }) => [styles.tag, styles.vendorTag, pressed && styles.pressed]}
               >
                 <Icon name="storefront-outline" size={14} color={REEL_INK} />
-                <AppText variant="label" weight={600} numberOfLines={1} style={styles.ink}>
-                  {vendor.name}
+                <AppText
+                  variant="label"
+                  weight={600}
+                  numberOfLines={1}
+                  style={[styles.ink, styles.shrink]}
+                >
+                  {vendors.length === 1
+                    ? vendors[0].name
+                    : t('reels.vendorCount', { count: vendors.length })}
                 </AppText>
                 <Icon name="chevron-forward" size={12} color={REEL_DIM} />
               </Pressable>
-            ))}
+            )}
           </View>
         )}
         {vendors.length > 0 && (
@@ -648,7 +665,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     right: Spacing.sm,
     alignItems: 'center',
-    gap: Spacing.lg,
+    gap: Spacing.md,
   },
   posterButton: {
     alignItems: 'center',
@@ -702,19 +719,10 @@ const styles = StyleSheet.create({
     borderRadius: Radius.chip,
     backgroundColor: PILL,
   },
-  eventPill: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    alignSelf: 'flex-start',
-    gap: Spacing.xs,
-    paddingHorizontal: Spacing.md,
-    minHeight: 30,
-    borderRadius: Radius.chip,
-    backgroundColor: PILL,
-  },
   tags: {
     flexDirection: 'row',
     flexWrap: 'wrap',
+    alignItems: 'center',
     gap: Spacing.xs,
   },
   tag: {
@@ -726,6 +734,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.md,
     borderRadius: Radius.chip,
     backgroundColor: PILL,
+  },
+  // A long vendor name shortens with "…" instead of pushing the chip off
+  vendorTag: {
+    flexShrink: 1,
+  },
+  shrink: {
+    flexShrink: 1,
   },
   book: {
     flexDirection: 'row',

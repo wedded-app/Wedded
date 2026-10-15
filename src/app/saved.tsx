@@ -21,7 +21,7 @@ type Section = { key: string; title: LocalizedText; data: SavedVendor[] };
  * Saved (vision S15): everything the family saved, grouped by event in
  * ceremony order, then "Not sure yet". Saving needs an account; logged out,
  * this page explains that and offers sign-in. It opens over the tabs (from
- * Profile, the save toast, Wed's Lists and photos), since Wed took its tab.
+ * Profile, the save toast, Wed's Lists and photos), since Requests took its tab.
  */
 export default function SavedScreen() {
   const Colors = useColors();
