@@ -40,6 +40,7 @@ const useStyles = makeStyles((Colors) => ({
     backgroundColor: Colors.fill,
   },
   onPhoto: {
-    backgroundColor: 'rgba(0, 0, 0, 0.45)',
+    // 5.7:1 for white text even over a white photo (WCAG AA)
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
   },
 }));
