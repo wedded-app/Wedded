@@ -74,7 +74,7 @@ const CAMERA_MAX_SECONDS = 30;
  */
 export default function PostReelScreen() {
   const Colors = useColors();
-  const { t, locale } = useLocale();
+  const { t } = useLocale();
   const { requireSignIn } = useSession();
   const events = useHomeEvents();
   const { vendorIds } = useIsVendor();
@@ -511,7 +511,7 @@ export default function PostReelScreen() {
                     <Chip
                       key={event.slug}
                       role="radio"
-                      label={localized(event.name, locale)}
+                      label={localized(event.name)}
                       selected={eventSlug === event.slug}
                       onPress={() => setEventSlug(eventSlug === event.slug ? null : event.slug)}
                     />
@@ -564,10 +564,10 @@ export default function PostReelScreen() {
                   <Pressable
                     key={v.id}
                     accessibilityRole="button"
-                    accessibilityLabel={t('postReel.tag', { name: localized(v.name, locale) })}
+                    accessibilityLabel={t('postReel.tag', { name: localized(v.name) })}
                     onPress={() => {
                       selectionHaptic();
-                      setTags([...tags, { id: v.id, name: localized(v.name, locale) }]);
+                      setTags([...tags, { id: v.id, name: localized(v.name) }]);
                       setQuery('');
                     }}
                     style={({ pressed }) => [
@@ -579,10 +579,10 @@ export default function PostReelScreen() {
                     <Icon name="storefront-outline" size={22} color={Colors.primary} />
                     <View style={styles.grow}>
                       <AppText weight={600} numberOfLines={1}>
-                        {localized(v.name, locale)}
+                        {localized(v.name)}
                       </AppText>
                       <AppText variant="label" weight={400} color="text2" numberOfLines={1}>
-                        {[v.category ? localized(v.category, locale) : null, v.city]
+                        {[v.category ? localized(v.category) : null, v.city]
                           .filter(Boolean)
                           .join(' · ')}
                       </AppText>

@@ -164,7 +164,7 @@ const post = (slug: string, groupSlug: string, photos = 1): FeedPost => ({
   vendorId: `v-${slug}`,
   slug,
   name: { en: slug },
-  caption: { en: null, pa: null },
+  caption: null,
   city: 'Yuba City',
   foundingNumber: null,
   category: { slug: 'x', name: { en: 'X' }, groupSlug },

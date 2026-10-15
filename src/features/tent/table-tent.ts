@@ -64,32 +64,25 @@ export function escapeHtml(text: string): string {
     .replace(/'/g, '&#39;');
 }
 
-/** Everything printed on the tent. Both languages always, whatever the app is set to. */
+/** Everything printed on the tent. */
 export type TableTent = {
   url: string;
   name: string;
-  namePa?: string | null;
-  /** "Founding vendor #1" and "ਮੋਢੀ ਵੈਂਡਰ #1", or null for a vendor without a number. */
-  founding: { en: string; pa: string } | null;
-  scan: { en: string; pa: string };
-  findUs: { en: string; pa: string };
+  /** "Founding vendor #1", or null for a vendor without a number. */
+  founding: string | null;
+  scan: string;
+  findUs: string;
 };
 
 function panel(tent: TableTent, svg: string, flipped: boolean): string {
   const display = tent.url.replace(/^https?:\/\//, '');
   return `
   <section class="panel${flipped ? ' flipped' : ''}">
-    <p class="find">${escapeHtml(tent.findUs.en)}<br><span lang="pa">${escapeHtml(tent.findUs.pa)}</span></p>
-    ${
-      tent.founding
-        ? `<p class="founding">${escapeHtml(tent.founding.en)} · <span lang="pa">${escapeHtml(tent.founding.pa)}</span></p>`
-        : ''
-    }
+    <p class="find">${escapeHtml(tent.findUs)}</p>
+    ${tent.founding ? `<p class="founding">${escapeHtml(tent.founding)}</p>` : ''}
     <h1>${escapeHtml(tent.name)}</h1>
-    ${tent.namePa ? `<h2 lang="pa">${escapeHtml(tent.namePa)}</h2>` : ''}
     <div class="qr">${svg}</div>
-    <p class="scan">${escapeHtml(tent.scan.en)}</p>
-    <p class="scan" lang="pa">${escapeHtml(tent.scan.pa)}</p>
+    <p class="scan">${escapeHtml(tent.scan)}</p>
     <p class="url">${escapeHtml(display)}</p>
   </section>`;
 }
@@ -102,7 +95,7 @@ function panel(tent: TableTent, svg: string, flipped: boolean): string {
 export function tableTentHtml(tent: TableTent): string {
   const svg = qrSvg(qrMatrix(tent.url), tent.url);
   return `<!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
 <meta charset="utf-8">
 <title>${escapeHtml(tent.name)}</title>
@@ -112,11 +105,10 @@ export function tableTentHtml(tent: TableTent): string {
   html, body { width: 8.5in; height: 11in; background: ${Colors.qrLight}; }
   body {
     color: ${Colors.text};
-    font-family: -apple-system, "Helvetica Neue", Roboto, "Noto Sans Gurmukhi", "Gurmukhi MN", Arial, sans-serif;
+    font-family: -apple-system, "Helvetica Neue", Roboto, Arial, sans-serif;
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
   }
-  [lang="pa"] { font-family: "Noto Sans Gurmukhi", "Gurmukhi MN", "Mukta Mahee", sans-serif; }
   .panel {
     height: 5.5in;
     padding: 0.35in 0.6in;
@@ -132,7 +124,6 @@ export function tableTentHtml(tent: TableTent): string {
   .find { font-size: 12pt; color: ${Colors.text2}; line-height: 1.35; }
   .founding { font-size: 14pt; font-weight: 700; color: ${Colors.kesari}; }
   h1 { font-size: 24pt; line-height: 1.15; color: ${Colors.primary}; }
-  h2 { font-size: 18pt; font-weight: 600; line-height: 1.4; }
   .qr { width: 2in; height: 2in; margin: 0.08in 0; }
   .qr svg { width: 100%; height: 100%; display: block; }
   .scan { font-size: 13pt; font-weight: 600; line-height: 1.4; }

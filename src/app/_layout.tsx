@@ -6,15 +6,8 @@ import {
   Inter_700Bold,
   Inter_800ExtraBold,
 } from '@expo-google-fonts/inter';
-import {
-  MuktaMahee_400Regular,
-  MuktaMahee_500Medium,
-  MuktaMahee_600SemiBold,
-  MuktaMahee_700Bold,
-  MuktaMahee_800ExtraBold,
-  useFonts,
-} from '@expo-google-fonts/mukta-mahee';
 import { QueryClientProvider } from '@tanstack/react-query';
+import { useFonts } from 'expo-font';
 import { DarkTheme, DefaultTheme, type Href, router, Stack, ThemeProvider } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
@@ -37,22 +30,17 @@ SplashScreen.preventAutoHideAsync();
 configurePushHandling();
 
 // iPhones draw Latin text in San Francisco, the system font, so Inter is only
-// needed on Android and the web (see FontFamilies in constants/theme.ts).
-const LATIN_FONTS =
+// needed on Android and the web (see fontStyle in constants/theme.ts).
+const LATIN_FONTS: Record<string, number> =
   Platform.OS === 'ios'
     ? {}
     : { Inter_400Regular, Inter_500Medium, Inter_600SemiBold, Inter_700Bold, Inter_800ExtraBold };
 
 export default function RootLayout() {
-  // Fonts load at runtime so the app runs in Expo Go. Both scripts are gated
-  // behind the splash screen so no screen ever renders in a system fallback.
+  // Fonts load at runtime so the app runs in Expo Go, behind the splash
+  // screen so no screen ever renders in a system fallback.
   const [fontsLoaded, fontError] = useFonts({
     ...LATIN_FONTS,
-    MuktaMahee_400Regular,
-    MuktaMahee_500Medium,
-    MuktaMahee_600SemiBold,
-    MuktaMahee_700Bold,
-    MuktaMahee_800ExtraBold,
     // The display serif for the welcome and phone sign-in screens.
     Fraunces_500Medium,
     Fraunces_600SemiBold,

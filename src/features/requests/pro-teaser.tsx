@@ -18,7 +18,7 @@ import { localized } from '@/i18n/localized';
 export function ProTeaser({ vendorId, compact = false }: { vendorId: string; compact?: boolean }) {
   const Colors = useColors();
   const styles = useStyles();
-  const { t, locale } = useLocale();
+  const { t } = useLocale();
   const summary = useFamiliesLookingSummary(vendorId);
   const s = summary.data;
   const image = `linear-gradient(135deg, ${Colors.heroFrom} 0%, ${Colors.heroTo} 100%)`;
@@ -30,7 +30,7 @@ export function ProTeaser({ vendorId, compact = false }: { vendorId: string; com
     : top && top.count > 0 && s.byCategory.length === 1
       ? t('looking.teaser.category', {
           count: top.count,
-          category: localized(top.categoryName, locale),
+          category: localized(top.categoryName),
         })
       : t('looking.teaser.total', { count: s.total });
 

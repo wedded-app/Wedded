@@ -140,7 +140,6 @@ type ConversationRow = {
   vendor_id: string;
   vendor_slug: string;
   vendor_name: string;
-  vendor_name_pa: string | null;
   vendor_cover_path: string | null;
   family_name: string | null;
   last_message_at: string;
@@ -158,9 +157,7 @@ export function toConversation(row: ConversationRow): Conversation {
     vendor: {
       id: row.vendor_id,
       slug: row.vendor_slug,
-      name: row.vendor_name_pa
-        ? { en: row.vendor_name, pa: row.vendor_name_pa }
-        : { en: row.vendor_name },
+      name: { en: row.vendor_name },
       photoUrl: row.vendor_cover_path ? photoUrl(row.vendor_cover_path, 'small') : null,
     },
     family: { firstName: row.family_name },

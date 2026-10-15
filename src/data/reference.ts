@@ -2,7 +2,7 @@
  * Reference data hooks: events, what each event needs, and categories.
  * These tables change only when the founders edit them, so the results stay
  * fresh for a day. Every name comes back as LocalizedText; show it with
- * localized() or bilingual(). Nothing here is hardcoded: order and grouping
+ * localized(). Nothing here is hardcoded: order and grouping
  * come from the database (docs/PRODUCT_VISION.md section 3).
  */
 import { useQuery } from '@tanstack/react-query';
@@ -185,7 +185,7 @@ export function useEventNeeds(slug: string) {
 export type Category = {
   slug: string;
   name: LocalizedText;
-  /** Other spellings and names, in English and Gurmukhi, for matching search text. */
+  /** Other spellings and names, for matching search text. */
   aliases: string[];
   groupSlug: string;
 };

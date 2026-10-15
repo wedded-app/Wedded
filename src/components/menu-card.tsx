@@ -18,8 +18,8 @@ import { useLocale } from '@/i18n/locale-context';
 export function MenuCard({ menu, onPress }: { menu: Menu; onPress?: () => void }) {
   const Colors = useColors();
   const styles = useStyles();
-  const { locale, t } = useLocale();
-  const name = localized(menu.name, locale);
+  const { t } = useLocale();
+  const name = localized(menu.name);
   const price = menuPrice(menu, t);
   const minimum = menuMinimum(menu, t);
   const details = [price, minimum, menu.cuisine].filter(Boolean).join(' · ');

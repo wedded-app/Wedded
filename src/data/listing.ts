@@ -22,9 +22,7 @@ export type Listing = {
   status: string;
   city: string;
   tagline: string | null;
-  taglinePa: string | null;
   bio: string | null;
-  bioPa: string | null;
   priceDisplay: PriceDisplay | null;
   priceFrom: number | null;
   priceTo: number | null;
@@ -92,9 +90,7 @@ export type ListingProblem = {
 
 const FIELDS: ListingField[] = [
   'tagline',
-  'taglinePa',
   'bio',
-  'bioPa',
   'priceDisplay',
   'priceFrom',
   'priceTo',

@@ -27,7 +27,7 @@ import { useLocale } from '@/i18n/locale-context';
  */
 export default function LocationScreen() {
   const Colors = useColors();
-  const { t, locale } = useLocale();
+  const { t } = useLocale();
   const { place, maxMiles, setPlace, setMaxMiles, clearPlace } = useSearchLocation();
   const cities = useCities();
   const areaCodes = useAreaCodes();
@@ -205,7 +205,7 @@ export default function LocationScreen() {
         </AppText>
         <View style={styles.chips} accessibilityRole="radiogroup">
           {(areaCodes.data ?? []).map((area) => {
-            const label = `${area.code} · ${localized(area.label, locale)}`;
+            const label = `${area.code} · ${localized(area.label)}`;
             return (
               <Chip
                 key={area.code}

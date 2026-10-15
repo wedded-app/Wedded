@@ -16,10 +16,9 @@ const row = {
   id: 'v1',
   slug: 'gabru-dhol-crew',
   name: 'Gabru Dhol Crew',
-  name_pa: null,
   city: 'Manteca',
   primary_category_slug: 'dhol',
-  primary_category_name: { en: 'Dhol player', pa: 'ਢੋਲੀ' },
+  primary_category_name: { en: 'Dhol player' },
   price_display: 'starting_at',
   price_from: 400,
   price_to: null,
@@ -55,7 +54,7 @@ describe('searchVendors', () => {
     );
     expect(result).toMatchObject({
       name: { en: 'Gabru Dhol Crew' },
-      category: { en: 'Dhol player', pa: 'ਢੋਲੀ' },
+      category: { en: 'Dhol player' },
       startingPrice: { amount: 400, unit: 'event' },
       distanceMiles: 12.4,
       photoUrl: 'https://cdn/v1/p1/400.webp',
@@ -67,7 +66,6 @@ describe('searchVendors', () => {
       data: [
         {
           ...row,
-          name_pa: 'ਗੱਭਰੂ',
           price_display: 'hidden',
           distance_miles: null,
           cover_path: null,
@@ -82,7 +80,7 @@ describe('searchVendors', () => {
       expect.objectContaining({ max_miles: null }),
     );
     expect(result).toMatchObject({
-      name: { en: 'Gabru Dhol Crew', pa: 'ਗੱਭਰੂ' },
+      name: { en: 'Gabru Dhol Crew' },
       startingPrice: null,
       distanceMiles: null,
       photoUrl: null,

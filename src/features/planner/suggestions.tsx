@@ -38,7 +38,7 @@ export function Suggestions({
 }) {
   const Colors = useColors();
   const styles = useStyles();
-  const { t, locale } = useLocale();
+  const { t } = useLocale();
   const suggestions = useWeddingSuggestions(wedding.id);
   const members = useWeddingMembers(wedding.id);
   const categories = useCategories();
@@ -56,11 +56,11 @@ export function Suggestions({
     t('planTogether.someone');
   const eventName = (slug: string) => {
     const event = events.find((e) => e.slug === slug);
-    return event ? localized(event.name, locale) : slug;
+    return event ? localized(event.name) : slug;
   };
   const categoryName = (slug: string) => {
     const category = categories.data?.find((c) => c.slug === slug);
-    return category ? localized(category.name, locale) : slug;
+    return category ? localized(category.name) : slug;
   };
   const failed = () => setError(t('suggestions.failed'));
 
@@ -99,7 +99,7 @@ export function Suggestions({
         const busy =
           (resolve.isPending && resolve.variables?.id === s.id) ||
           (withdraw.isPending && withdraw.variables === s.id);
-        const vendorName = s.vendor ? localized(s.vendor.name, locale) : '…';
+        const vendorName = s.vendor ? localized(s.vendor.name) : '…';
         return (
           <Animated.View
             key={s.id}

@@ -38,7 +38,7 @@ const UNITS: ProposalUnit[] = ['event', 'person', 'plate', 'hour'];
  */
 export default function ProposeSheet() {
   const styles = useStyles();
-  const { t, locale } = useLocale();
+  const { t } = useLocale();
   const { request = '' } = useLocalSearchParams<{ request: string }>();
   const { vendorId } = useCurrentBusiness();
   const words = useRequestWords();
@@ -136,7 +136,7 @@ export default function ProposeSheet() {
               {menus.data?.map((m) => (
                 <Chip
                   key={m.id}
-                  label={localized(m.name, locale)}
+                  label={localized(m.name)}
                   selected={menu === m.id}
                   onPress={() => setMenu(menu === m.id ? null : m.id)}
                 />

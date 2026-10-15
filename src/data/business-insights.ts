@@ -242,7 +242,6 @@ export type ChecklistKey =
   | 'cover'
   | 'tagline'
   | 'bio'
-  | 'bioPa'
   | 'price'
   | 'contact'
   | 'instagram'
@@ -263,7 +262,6 @@ export const CHECKLIST_ORDER: ChecklistKey[] = [
   'menus',
   'tagline',
   'bio',
-  'bioPa',
   'languages',
   'reel',
   'instagram',

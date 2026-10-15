@@ -106,7 +106,7 @@ function FollowUp({
 export default function MyInquiriesScreen() {
   const Colors = useColors();
   const styles = useStyles();
-  const { t, locale } = useLocale();
+  const { t } = useLocale();
   const inquiries = useMyInquiries();
   const events = useHomeEvents();
   const eventNames = new Map(
@@ -126,20 +126,13 @@ export default function MyInquiriesScreen() {
     body = (
       <View style={styles.list}>
         {inquiries.data.map((item) => {
-          const vendorName = item.vendor
-            ? localized(
-                item.vendor.name_pa
-                  ? { en: item.vendor.name, pa: item.vendor.name_pa }
-                  : { en: item.vendor.name },
-                locale,
-              )
-            : t('saved.noLongerListed');
+          const vendorName = item.vendor ? item.vendor.name : t('saved.noLongerListed');
           const eventsText =
             item.event_slugs.length > 0
               ? item.event_slugs
                   .map((slug) => {
                     const name = eventNames.get(slug);
-                    return name ? localized(name, locale) : slug;
+                    return name ? localized(name) : slug;
                   })
                   .join(', ')
               : t('saved.notSure');

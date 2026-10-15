@@ -66,7 +66,7 @@ export function Composer({
 }) {
   const Colors = useColors();
   const styles = useStyles();
-  const { locale, t } = useLocale();
+  const { t } = useLocale();
   const scale = Math.min(useFontScale('bodyLg'), 1.6);
   const canSend = value.trim().length > 0 && !sending;
   const size = Typography.bodyLg.size * scale;
@@ -152,7 +152,7 @@ export function Composer({
               maxLength={2000}
               style={[
                 styles.input,
-                fontStyle(locale, 400),
+                fontStyle(400),
                 {
                   fontSize: size,
                   lineHeight: size * 1.3,

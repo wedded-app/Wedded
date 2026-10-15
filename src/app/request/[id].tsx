@@ -203,8 +203,8 @@ function ProposalCard({
 }) {
   const Colors = useColors();
   const styles = useStyles();
-  const { t, locale } = useLocale();
-  const name = localized(p.vendor.name, locale);
+  const { t } = useLocale();
+  const name = localized(p.vendor.name);
   const stats = useVendorPublicStats(p.vendor.id);
   const free = useVendorDateStatus(p.vendor.id, eventDate);
   const record = [

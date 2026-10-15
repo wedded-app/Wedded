@@ -9,14 +9,12 @@ import Animated, {
 } from 'react-native-reanimated';
 
 import { AppText } from '@/components/app-text';
-import { BilingualName } from '@/components/bilingual-name';
 import { eventIcon } from '@/components/event-icon';
 import { Icon } from '@/components/icon';
 import { PressableScale } from '@/components/pressable-scale';
 import { makeStyles, Radius, Spacing, useColors } from '@/constants/theme';
 import type { TraditionEvent } from '@/data/reference';
 import { localized } from '@/i18n/localized';
-import { useLocale } from '@/i18n/locale-context';
 import { Motion } from '@/lib/motion';
 
 export type EventChoiceProps = {
@@ -36,7 +34,6 @@ export type EventChoiceProps = {
 export function EventChoice({ event, selected, onPress, wide, disabled }: EventChoiceProps) {
   const Colors = useColors();
   const styles = useStyles();
-  const { locale } = useLocale();
   const reduceMotion = useReducedMotion();
   const on = useSharedValue(selected ? 1 : 0);
   const [off, tint, edge, onEdge] = [
@@ -65,7 +62,7 @@ export function EventChoice({ event, selected, onPress, wide, disabled }: EventC
       <PressableScale
         accessibilityRole="checkbox"
         accessibilityState={{ checked: selected, disabled: !!disabled }}
-        accessibilityLabel={localized(event.name, locale)}
+        accessibilityLabel={localized(event.name)}
         disabled={disabled}
         onPress={onPress}
         pressedScale={0.95}
@@ -86,10 +83,12 @@ export function EventChoice({ event, selected, onPress, wide, disabled }: EventC
               </Animated.View>
             )}
           </View>
-          <BilingualName name={event.name} variant="body" weight={600} />
+          <AppText variant="body" weight={600}>
+            {localized(event.name)}
+          </AppText>
           {event.timing && (
             <AppText variant="caption" color="text2" numberOfLines={2}>
-              {localized(event.timing, locale)}
+              {localized(event.timing)}
             </AppText>
           )}
         </Animated.View>

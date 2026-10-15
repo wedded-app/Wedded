@@ -118,17 +118,17 @@ function PhotoCard({
 }) {
   const Colors = useColors();
   const styles = useStyles();
-  const { t, locale } = useLocale();
+  const { t } = useLocale();
   const { toggleSave } = useSaveVendor();
   const savedFor = useSavedEventsFor(vendor.id);
   const saved = eventSlug ? savedFor.includes(eventSlug) : savedFor.length > 0;
-  const name = localized(vendor.name, locale);
+  const name = localized(vendor.name);
   const distance = distanceWords(vendor.distanceMiles, t);
   const price = priceWords(vendor.startingPrice, t);
   const facts = [vendor.city, distance?.shown].filter(Boolean).join(' · ');
   const spoken = [
     name,
-    vendor.category ? localized(vendor.category, locale) : null,
+    vendor.category ? localized(vendor.category) : null,
     vendor.city,
     distance?.spoken,
     price?.spoken,

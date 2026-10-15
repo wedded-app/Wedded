@@ -241,7 +241,7 @@ function Stat({ value, label, onPress }: { value: number; label: string; onPress
 function SavedGrid() {
   const Colors = useColors();
   const styles = useStyles();
-  const { t, locale } = useLocale();
+  const { t } = useLocale();
   const { status } = useSession();
   const saves = useSavedVendors();
   if (status !== 'signedIn') return null;
@@ -268,7 +268,7 @@ function SavedGrid() {
             <Pressable
               key={vendor.slug}
               accessibilityRole="button"
-              accessibilityLabel={localized(vendor.name, locale)}
+              accessibilityLabel={localized(vendor.name)}
               onPress={() => router.push(`/v/${vendor.slug}` as Href)}
               style={({ pressed }) => [styles.tile, pressed && styles.pressed]}
             >

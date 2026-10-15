@@ -24,13 +24,13 @@ export type VendorLinks = {
   workedWith: LinkedVendor[];
 };
 
-type Row = { id: string; slug: string; name: string; name_pa: string | null; city: string };
+type Row = { id: string; slug: string; name: string; city: string };
 
 function toLinked(row: Row): LinkedVendor {
   return {
     id: row.id,
     slug: row.slug,
-    name: row.name_pa ? { en: row.name, pa: row.name_pa } : { en: row.name },
+    name: { en: row.name },
     city: row.city,
   };
 }
@@ -39,7 +39,7 @@ async function fetchVendorLinks(vendorId: string): Promise<VendorLinks> {
   const { data, error } = await supabase
     .from('vendor_links')
     .select(
-      'kind, venue_vendor_id, venue:vendors!vendor_links_venue_vendor_id_fkey(id, slug, name, name_pa, city), vendor:vendors!vendor_links_vendor_id_fkey(id, slug, name, name_pa, city)',
+      'kind, venue_vendor_id, venue:vendors!vendor_links_venue_vendor_id_fkey(id, slug, name, city), vendor:vendors!vendor_links_vendor_id_fkey(id, slug, name, city)',
     )
     .or(`venue_vendor_id.eq.${vendorId},vendor_id.eq.${vendorId}`);
   if (error) throw error;

@@ -26,7 +26,7 @@ The full feature-by-feature record (tables, functions, hooks, screens, scripts) 
 
 - **Screens:** pages with a title use `NavScreen` (`src/components/nav.tsx`); grouped rows are `ListSection` / `ListRow` / `SectionTitle`; sheets start with `SheetHeader`; text is always `AppText`; buttons `Button`, chips `Chip`, fields `TextField`, empty/loading/error `StateView`. `Icon` takes an Ionicons name and draws the SF Symbol on iPhone (add new ones to its map).
 - **Colours and dark mode:** never import colours; `useColors()` in components and `makeStyles((Colors) => …)` for styles. Respect Reduce Motion (Reanimated's `useReducedMotion`), large text (`useFontScale()`), 48 pt taps.
-- **Words:** every string in English and Punjabi (`src/i18n/en.json`, `pa.json`), plain and warm; database names through `localized()`.
+- **Words:** every string in `src/i18n/en.json` through `t()`, plain and warm; database names through `localized()`. English only since 2026-10-15 (DECISIONS.md): no Punjabi strings, columns or fonts.
 - **Data:** TanStack Query hooks in `src/data/` (Tab 1's side) over the typed Supabase client (`src/lib/supabase.ts`); writes go through RPCs with RLS. Cultures, events and vendor types always come from the database.
 - **Accounts:** `useSession()` (`src/features/auth/session.tsx`) with `requireSignIn(action)`; browsing never needs an account. Vendor accounts: `useMyBusinesses()` / `useIsVendor()`.
 - **Main areas:** Home `src/app/(tabs)/(home)/`, Search `(tabs)/(search)/`, Reels `(tabs)/discover.tsx`, My Wedding `/plan`, vendor page `/v/[slug]`, Ask `/ask`, chat `/messages` and `/chat/[id]`, My business `/business/*`.

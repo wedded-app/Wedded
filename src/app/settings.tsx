@@ -18,7 +18,6 @@ import { useEnablePush, usePushStatus } from '@/features/chat/push-ask';
 import { useSearchLocation } from '@/features/location/search-location';
 import { resetOnboarding } from '@/features/onboarding/onboarding-state';
 import { TEXT_SIZES, useSettings, type TextSize } from '@/features/settings/settings';
-import type { Locale } from '@/i18n';
 import { useLocale } from '@/i18n/locale-context';
 import { selectionHaptic } from '@/lib/haptics';
 
@@ -28,20 +27,15 @@ const LEGAL_PAGES: { page: LegalPage; icon: IconName }[] = [
   { page: 'refunds', icon: 'arrow-undo-outline' },
 ];
 
-const LANGUAGES: { locale: Locale; labelKey: string }[] = [
-  { locale: 'en', labelKey: 'profile.english' },
-  { locale: 'pa', labelKey: 'profile.punjabi' },
-];
-
 /**
  * Settings (vision S16), laid out like the iPhone's own: appearance with
- * light and dark previews, text size, language, haptics, where to search,
+ * light and dark previews, text size, haptics, where to search,
  * then about, the legal pages and licences, and account. Everything is saved on this phone.
  */
 export default function SettingsScreen() {
   const Colors = useColors();
   const styles = useStyles();
-  const { t, locale, setLocale } = useLocale();
+  const { t } = useLocale();
   const settings = useSettings();
   const { place, maxMiles, openLocationSheet } = useSearchLocation();
   const { status, signOut } = useSession();
@@ -102,22 +96,6 @@ export default function SettingsScreen() {
           />
           <AppText>{t('settings.textSample')}</AppText>
         </View>
-      </ListSection>
-
-      <ListSection header={t('profile.language')}>
-        {LANGUAGES.map((language) => (
-          <ListRow
-            key={language.locale}
-            title={t(language.labelKey)}
-            titleLang={language.locale}
-            accessibilityRole="radio"
-            checked={language.locale === locale}
-            onPress={() => {
-              if (language.locale !== locale) selectionHaptic();
-              setLocale(language.locale);
-            }}
-          />
-        ))}
       </ListSection>
 
       <ListSection inset header={t('settings.general')}>

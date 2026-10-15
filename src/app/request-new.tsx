@@ -33,7 +33,7 @@ import { useLocale } from '@/i18n/locale-context';
 export default function PostRequestSheet() {
   const Colors = useColors();
   const styles = useStyles();
-  const { t, locale } = useLocale();
+  const { t } = useLocale();
   const params = useLocalSearchParams<{ event?: string; category?: string }>();
   const { profile } = useSession();
   const view = usePlanView();
@@ -139,7 +139,7 @@ export default function PostRequestSheet() {
                 <Chip
                   key={e.slug}
                   role="radio"
-                  label={localized(e.name, locale)}
+                  label={localized(e.name)}
                   selected={event === e.slug}
                   onPress={() => {
                     setEvent(e.slug);
@@ -159,7 +159,7 @@ export default function PostRequestSheet() {
               <Chip
                 key={need.categorySlug}
                 role="radio"
-                label={localized(need.name, locale)}
+                label={localized(need.name)}
                 selected={category === need.categorySlug}
                 onPress={() => {
                   setCategory(need.categorySlug);

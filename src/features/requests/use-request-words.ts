@@ -23,7 +23,7 @@ type RequestLike = {
  * for the Jaago"), the facts under it, and how long ago it was posted.
  */
 export function useRequestWords() {
-  const { t, locale } = useLocale();
+  const { t } = useLocale();
   const categories = useCategories();
   const eventName = useEventNames();
 
@@ -31,7 +31,7 @@ export function useRequestWords() {
     const byslug = new Map((categories.data ?? []).map((c) => [c.slug, c]));
     const category = (slug: string) => {
       const found = byslug.get(slug);
-      return found ? localized(found.name, locale) : slug;
+      return found ? localized(found.name) : slug;
     };
     const group = (slug: string) => byslug.get(slug)?.groupSlug ?? null;
     return {
@@ -53,5 +53,5 @@ export function useRequestWords() {
       }),
       ago: (iso: string) => timeAgo(iso, t),
     };
-  }, [categories.data, eventName, locale, t]);
+  }, [categories.data, eventName, t]);
 }

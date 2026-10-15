@@ -218,9 +218,6 @@
     }
   },
   "profile": {
-    "language": "Language",
-    "english": "English",
-    "punjabi": "ਪੰਜਾਬੀ",
     "account": {
       "signInTitle": "Save vendors and ask about prices",
       "signInBody": "Make a free account with Apple, Google, your phone or your email. You can keep browsing without one.",
@@ -599,11 +596,8 @@
     }
   },
   "discover": {
-    "stories": "Vendor stories",
     "openStory": "Watch {{name}}'s photos",
     "photoOf": "Photo {{number}} of {{total}}, {{name}}",
-    "doubleTapHint": "Double-tap to save",
-    "askLabel": "Ask {{name}} about price and date",
     "shareLabel": "Share {{name}}"
   },
   "story": {
@@ -1477,7 +1471,6 @@
       "editTitle": "Change menu",
       "name": "Menu name",
       "nameHint": "For example: Gold Package",
-      "namePa": "Menu name in Punjabi (if you like)",
       "description": "About this menu",
       "cuisine": "Cuisine",
       "cuisineHint": "For example: Punjabi, Indo-Chinese",
@@ -1779,10 +1772,6 @@
           "title": "About you",
           "gain": "Families trust vendors who say who they are and how they work."
         },
-        "bioPa": {
-          "title": "About you in Punjabi",
-          "gain": "Many families read in Punjabi, especially parents and grandparents."
-        },
         "price": {
           "title": "A starting price",
           "gain": "Families ask more often when they can see a price."
@@ -1819,9 +1808,7 @@
       "about": "About you",
       "aboutHint": "What families read first under your name.",
       "tagline": "One line about you (English)",
-      "taglinePa": "One line about you (ਪੰਜਾਬੀ)",
       "bio": "About you (English)",
-      "bioPa": "About you (ਪੰਜਾਬੀ)",
       "price": "Price",
       "priceHint": "Families ask more often when they can see a price.",
       "priceShow": "How to show your price",

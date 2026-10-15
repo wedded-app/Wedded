@@ -44,7 +44,7 @@ import { useLocale } from '@/i18n/locale-context';
 export default function HomeScreen() {
   const Colors = useColors();
   const scheme = useScheme();
-  const { t, locale } = useLocale();
+  const { t } = useLocale();
   const router = useRouter();
   const queryClient = useQueryClient();
   const scroll = useNavScroll();
@@ -90,7 +90,7 @@ export default function HomeScreen() {
   }
 
   const eventName = (slug: string) =>
-    localized(events.find((event) => event.slug === slug)?.name ?? { en: slug }, locale);
+    localized(events.find((event) => event.slug === slug)?.name ?? { en: slug });
   const first = next[0];
   const findFirst = () =>
     first
@@ -140,8 +140,8 @@ export default function HomeScreen() {
                 <VendorPhotoCards
                   title={
                     plan.weddingDate
-                      ? t('home.freeOnDateTitle', { type: localized(first.need.name, locale) })
-                      : t('home.nearYouTitle', { type: localized(first.need.name, locale) })
+                      ? t('home.freeOnDateTitle', { type: localized(first.need.name) })
+                      : t('home.nearYouTitle', { type: localized(first.need.name) })
                   }
                   link={t('home.seeAll')}
                   onLink={findFirst}

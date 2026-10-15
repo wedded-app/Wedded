@@ -23,7 +23,7 @@ import { useLocale } from '@/i18n/locale-context';
  * traditions it leads to.
  */
 export default function RootsStep() {
-  const { t, locale } = useLocale();
+  const { t } = useLocale();
   const answers = useAnswers();
   const traditions = useTraditions();
   const faiths = useFaiths();
@@ -36,7 +36,7 @@ export default function RootsStep() {
 
   const place = (slug: string | null) => {
     const name = backgrounds.data?.find((b) => b.slug === slug)?.name;
-    return name ? localized(name, locale) : t('onboarding.roots.elsewhere');
+    return name ? localized(name) : t('onboarding.roots.elsewhere');
   };
 
   return (
@@ -79,7 +79,7 @@ export default function RootsStep() {
               {/* Named only for a mixed wedding asked about two faiths */}
               {asking.length > 1 && faithName && (
                 <AppText variant="label" weight={600} color="text2" style={styles.heading}>
-                  {localized(faithName, locale)}
+                  {localized(faithName)}
                 </AppText>
               )}
               {ordered.map((tradition, index) => (
@@ -89,7 +89,7 @@ export default function RootsStep() {
                   role="checkbox"
                   label={place(tradition.backgroundSlug)}
                   detail={tellingEvents(tradition, wide)
-                    .map((event) => localized(event.name, locale))
+                    .map((event) => localized(event.name))
                     .join(' · ')}
                   selected={answers.roots.includes(tradition.slug)}
                   onPress={() => setAnswers({ roots: toggleIn(answers.roots, tradition.slug) })}

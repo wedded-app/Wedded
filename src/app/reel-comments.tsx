@@ -40,7 +40,7 @@ export default function ReelCommentsScreen() {
   const remove = useRemoveComment(reel);
   const [text, setText] = useState('');
   const [error, setError] = useState<string>();
-  const type = useTypeStyle({ variant: 'body', text });
+  const type = useTypeStyle({ variant: 'body' });
   const close = () => router.canGoBack() && router.back();
 
   const send = () => {
