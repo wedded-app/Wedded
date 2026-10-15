@@ -17,16 +17,22 @@ import { useLocale } from '@/i18n/locale-context';
  * more than one vendor (the one who posted it and the ones tagged). Picking
  * one opens the Ask screen in its place, with the reel's event, so a family
  * is two taps from asking. `?vendors=` is their slugs, poster first, and
- * `?event=` the reel's event.
+ * `?event=` the reel's event. With `?see=1` (the reel's vendors chip) it is
+ * "Vendors in this reel" instead, and picking one opens their page.
  */
 export default function ReelBookScreen() {
   const { t } = useLocale();
-  const { vendors = '', event } = useLocalSearchParams<{ vendors?: string; event?: string }>();
+  const {
+    vendors = '',
+    event,
+    see,
+  } = useLocalSearchParams<{ vendors?: string; event?: string; see?: string }>();
   const slugs = useMemo(() => vendors.split(',').filter(Boolean), [vendors]);
   const profiles = useVendors(slugs);
 
   const ask = (vendorId: string) =>
     router.replace({ pathname: '/ask', params: event ? { vendorId, event } : { vendorId } });
+  const open = (slug: string) => router.replace({ pathname: '/v/[slug]', params: { slug } });
 
   let content;
   if (slugs.length === 0 || profiles.some((p) => p.isError)) {
@@ -49,9 +55,11 @@ export default function ReelBookScreen() {
       <ScrollView contentContainerStyle={styles.content}>
         <View style={styles.intro}>
           <AppText variant="title" accessibilityRole="header">
-            {t('reels.bookWhich')}
+            {see ? t('reels.seeWhich') : t('reels.bookWhich')}
           </AppText>
-          <AppText color="text2">{t('reels.bookWhichBody')}</AppText>
+          <AppText color="text2">
+            {see ? t('reels.seeWhichBody') : t('reels.bookWhichBody')}
+          </AppText>
         </View>
         {found.length === 0 ? (
           <AppText color="text2">{t('reels.bookNone')}</AppText>
@@ -70,8 +78,10 @@ export default function ReelBookScreen() {
                   title={name}
                   titleVariant="bodyLg"
                   subtitle={about}
-                  onPress={() => ask(vendor.id)}
-                  accessibilityLabel={t('reels.bookVendor', { name })}
+                  onPress={() => (see ? open(vendor.slug) : ask(vendor.id))}
+                  accessibilityLabel={
+                    see ? t('reels.taggedVendor', { name }) : t('reels.bookVendor', { name })
+                  }
                 />
               );
             })}
