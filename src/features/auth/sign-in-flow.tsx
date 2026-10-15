@@ -13,6 +13,9 @@ import { TextField } from '@/components/text-field';
 import { Spacing, useColors } from '@/constants/theme';
 import { useIsVendor } from '@/data/chat';
 import { useLocale } from '@/i18n/locale-context';
+
+import { type Captcha, useCaptcha } from './captcha';
+import { TurnstileBox } from './turnstile-box';
 import { successHaptic } from '@/lib/haptics';
 import { formatPhone } from '@/lib/phone';
 import { supabase } from '@/lib/supabase';
@@ -37,10 +40,11 @@ type CodeTarget = { kind: SignInMethod; to: string };
 type Step = 'choose' | SignInMethod | 'code';
 
 /** Send a sign-in code by email or text. New people get an account. */
-function sendCode({ kind, to }: CodeTarget) {
+function sendCode({ kind, to }: CodeTarget, captcha: Captcha) {
+  const options = { shouldCreateUser: true, ...captcha.take() };
   return kind === 'email'
-    ? supabase.auth.signInWithOtp({ email: to, options: { shouldCreateUser: true } })
-    : supabase.auth.signInWithOtp({ phone: to, options: { shouldCreateUser: true } });
+    ? supabase.auth.signInWithOtp({ email: to, options })
+    : supabase.auth.signInWithOtp({ phone: to, options });
 }
 
 /**
@@ -61,6 +65,8 @@ export function SignInFlow({ mode, method }: { mode: SignInMode; method?: SignIn
   const [typedEmail, setTypedEmail] = useState('');
   const [typedPhone, setTypedPhone] = useState('');
   const finished = useRef(false);
+  // One bot check for the whole flow, so a resend gets a fresh token (#234)
+  const captcha = useCaptcha();
 
   // Signed in without a profile (a code was just accepted, Apple or Google
   // just finished, or they came from Profile to finish setting up), or
@@ -106,6 +112,7 @@ export function SignInFlow({ mode, method }: { mode: SignInMode; method?: SignIn
     back = () => setStep('choose');
     content = (
       <EmailStep
+        captcha={captcha}
         initialEmail={typedEmail}
         onSent={(sentTo) => {
           setTypedEmail(sentTo);
@@ -119,6 +126,7 @@ export function SignInFlow({ mode, method }: { mode: SignInMode; method?: SignIn
     back = () => setStep('choose');
     content = (
       <PhoneStep
+        captcha={captcha}
         initialPhone={typedPhone}
         onSent={(sentTo, typed) => {
           setTypedPhone(typed);
@@ -130,7 +138,7 @@ export function SignInFlow({ mode, method }: { mode: SignInMode; method?: SignIn
     );
   } else if (target) {
     back = () => setStep(target.kind);
-    content = <CodeStep target={target} onChange={back} />;
+    content = <CodeStep target={target} captcha={captcha} onChange={back} />;
   } else {
     content = <ChooseStep onChoose={setStep} />;
   }
@@ -152,6 +160,9 @@ export function SignInFlow({ mode, method }: { mode: SignInMode; method?: SignIn
         }
       />
       {content}
+      {(step === 'email' || step === 'phone' || step === 'code') && !showAboutYou && (
+        <TurnstileBox captcha={captcha} />
+      )}
     </Screen>
   );
 }
@@ -173,10 +184,12 @@ function ChooseStep({ onChoose }: { onChoose: (method: SignInMethod) => void }) 
 }
 
 function EmailStep({
+  captcha,
   initialEmail,
   onSent,
   onOtherWays,
 }: {
+  captcha: Captcha;
   initialEmail: string;
   onSent: (email: string) => void;
   onOtherWays: () => void;
@@ -193,8 +206,12 @@ function EmailStep({
       return;
     }
     setError(undefined);
+    if (!captcha.ready) {
+      setError(t('signIn.captchaWait'));
+      return;
+    }
     setSending(true);
-    const { error: authError } = await sendCode({ kind: 'email', to: clean });
+    const { error: authError } = await sendCode({ kind: 'email', to: clean }, captcha);
     setSending(false);
     if (authError) {
       setError(t(authErrorKey(authError, 'email')));
@@ -234,10 +251,12 @@ function EmailStep({
 }
 
 function PhoneStep({
+  captcha,
   initialPhone,
   onSent,
   onOtherWays,
 }: {
+  captcha: Captcha;
   initialPhone: string;
   /** The number in E.164, and as they typed it. */
   onSent: (phone: string, typed: string) => void;
@@ -255,8 +274,12 @@ function PhoneStep({
       return;
     }
     setError(undefined);
+    if (!captcha.ready) {
+      setError(t('signIn.captchaWait'));
+      return;
+    }
     setSending(true);
-    const { error: authError } = await sendCode({ kind: 'phone', to: e164 });
+    const { error: authError } = await sendCode({ kind: 'phone', to: e164 }, captcha);
     setSending(false);
     if (authError) {
       setError(t(authErrorKey(authError, 'phone')));
@@ -309,7 +332,15 @@ function PhoneStep({
   );
 }
 
-function CodeStep({ target, onChange }: { target: CodeTarget; onChange: () => void }) {
+function CodeStep({
+  target,
+  captcha,
+  onChange,
+}: {
+  target: CodeTarget;
+  captcha: Captcha;
+  onChange: () => void;
+}) {
   const { t } = useLocale();
   const { kind, to } = target;
   const [code, setCode] = useState('');
@@ -357,8 +388,12 @@ function CodeStep({ target, onChange }: { target: CodeTarget; onChange: () => vo
 
   async function resend() {
     setError(undefined);
+    if (!captcha.ready) {
+      setError(t('signIn.captchaWait'));
+      return;
+    }
     setResending(true);
-    const { error: authError } = await sendCode(target);
+    const { error: authError } = await sendCode(target, captcha);
     setResending(false);
     if (authError) {
       setError(t(authErrorKey(authError, kind)));

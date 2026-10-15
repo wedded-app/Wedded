@@ -161,7 +161,6 @@ Everything added since this guide was written (Plan together, the family shortli
 - Decided 2026-10-06: the phone opens the app as an EAS Update in Expo Go, published on every merge to `main` by `.github/workflows/demo.yml` (see CLAUDE.md, "Shared demo"). A development build is only needed once a library Expo Go doesn't include comes in.
 - A separate development project (Phase 1, "separate development and production environments") can wait until after the demo. Until then, the local database is development.
 
-
 ## Email preference links (#228)
 
 Deploy `email-unsubscribe` alongside `notify-chat`, `send-inquiry` and `send-queued-inquiries` after the opt-out migration. It uses signed links without a login (`verify_jwt = false`). GET only displays confirmation; POST stops or resumes optional application emails. Test a real email link, a scanner GET, stop, repeat stop, and resume on the hosted project.
@@ -171,7 +170,6 @@ Optional `EMAIL_LINK_SECRET`: a strong random server-only signing secret; otherw
 Set `BUSINESS_NAME` to the legal business name and `BUSINESS_ADDRESS` to the complete postal address once the LLC exists, before commercial mail. The fallback city is not a complete postal address. Founders and counsel own these values. Supabase Auth’s sign-in/security emails are configured separately; these optional-notification preferences do not suppress authentication mail.
 
 Policy source drafts and remaining launch gates: [LEGAL_CHECKLIST.md](LEGAL_CHECKLIST.md). Tab 2 owns public policy routes; drafts require counsel approval before publication.
-
 
 ## OTP abuse protection — required before paid SMS launch
 
@@ -186,6 +184,6 @@ Local `supabase/config.toml` now uses a 60-second minimum interval for email/SMS
 5. Only after client integration passes on all three platforms, open Supabase **Authentication → Bot and Abuse Protection → CAPTCHA**, choose **Turnstile**, set the widget secret and enable it. Supabase verifies the token server-side; a client-only challenge does not protect the public Auth API. The local `[auth.captcha]` section stays disabled so test numbers work without production keys. Do not turn on hosted CAPTCHA before the clients send tokens: doing so locks out email/phone sign-in.
 6. Verify directly against the hosted Auth API that a missing, invalid, expired or reused token is refused without sending a code; a fresh valid token sends at most one code. Verify repeated requests hit 429 at the configured per-recipient/project/IP limits, and verify SMS geographic restrictions. Use test numbers/sandbox delivery to avoid real charge-generating load tests. Test email and phone initial send, resend and deletion reauthentication on iOS, Android and web. Save results with the launch checklist.
 
-Current code audit: `src/features/auth/sign-in-flow.tsx` and `phone-sign-in.tsx` call `signInWithOtp` without captchaToken. They are **not yet CAPTCHA-protected**. This configuration/runbook change cannot claim hosted bot protection is active. Founders own Cloudflare/provider accounts and secret setup; the auth-screen owner must wire and test the client challenge before enabling paid SMS.
+App side (wired 2026-10-15, #234): `useCaptcha()` and `TurnstileBox` (`src/features/auth/`) put one Turnstile widget in each code flow (the sign-in sheet's email, phone and code steps, the phone sign-in screen, and Delete my account's proof-it's-you), in "interaction-only" mode so it shows only when Cloudflare wants a tap. Each `signInWithOtp` sends a fresh single-use `captchaToken` and the widget restarts for the next one; a send before the check finishes says "One moment". Phones run it in a web view whose page address is `EXPO_PUBLIC_SITE_URL`, so add that hostname (and the web app's) to the widget's allowed hostnames. With no `EXPO_PUBLIC_TURNSTILE_SITE_KEY` nothing changes. Turn it on in this order: (1) set `EXPO_PUBLIC_TURNSTILE_SITE_KEY` in the Expo `preview` environment and publish, so clients send tokens (Supabase ignores them while CAPTCHA is off); (2) check sign-in still works on iPhone, Android and the web; (3) only then enable CAPTCHA in Supabase with the secret (step 5). Cloudflare's test keys (site key `1x00000000000000000000AA`, secret `1x0000000000000000000000000000000AA`) always pass, for trying it locally.
 
 References: [Supabase Auth rate limits](https://supabase.com/docs/guides/auth/rate-limits), [Supabase CAPTCHA](https://supabase.com/docs/guides/auth/auth-captcha), [Cloudflare mobile Turnstile](https://developers.cloudflare.com/turnstile/get-started/mobile-implementation/). Recheck dashboard wording and limits before rollout.

@@ -105,6 +105,9 @@ export function authErrorKey(error: AuthErrorLike, kind: 'email' | 'phone' = 'em
       return 'signIn.errors.phoneOff';
     case 'email_provider_disabled':
       return 'signIn.errors.emailOff';
+    // Turnstile's token was missing, used or expired (#234)
+    case 'captcha_failed':
+      return 'signIn.errors.captcha';
     case 'validation_failed':
       return kind === 'phone' ? 'aboutYou.errors.phoneInvalid' : 'signIn.errors.emailInvalid';
   }
