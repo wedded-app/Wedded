@@ -28,7 +28,7 @@ import { selectionHaptic, successHaptic } from '@/lib/haptics';
  */
 export default function SuggestScreen() {
   const Colors = useColors();
-  const { t, locale } = useLocale();
+  const { t } = useLocale();
   const { vendor: slug = '', event } = useLocalSearchParams<{ vendor?: string; event?: string }>();
   const vendor = useVendor(slug);
   const view = usePlanView();
@@ -87,7 +87,7 @@ export default function SuggestScreen() {
           {t('suggestions.sent')}
         </AppText>
         <AppText color="text2" style={styles.center}>
-          {t('suggestions.sentBody', { name: localized(v.name, locale) })}
+          {t('suggestions.sentBody', { name: localized(v.name) })}
         </AppText>
         <Button label={t('suggestions.done')} onPress={close} style={styles.stretch} />
       </View>
@@ -97,7 +97,7 @@ export default function SuggestScreen() {
       <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
         <View style={styles.intro}>
           <AppText variant="title" accessibilityRole="header">
-            {t('suggestions.sheetTitle', { name: localized(v.name, locale) })}
+            {t('suggestions.sheetTitle', { name: localized(v.name) })}
           </AppText>
           <AppText color="text2">{t('suggestions.sheetSubtitle')}</AppText>
         </View>
@@ -109,7 +109,7 @@ export default function SuggestScreen() {
               <Chip
                 key={e.slug}
                 role="radio"
-                label={localized(e.name, locale)}
+                label={localized(e.name)}
                 selected={pickedEvent === e.slug}
                 onPress={() => {
                   selectionHaptic();
@@ -128,7 +128,7 @@ export default function SuggestScreen() {
                 <Chip
                   key={c.slug}
                   role="radio"
-                  label={localized(c.name, locale)}
+                  label={localized(c.name)}
                   selected={pickedCategory === c.slug}
                   onPress={() => {
                     selectionHaptic();

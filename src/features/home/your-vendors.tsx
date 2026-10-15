@@ -38,7 +38,7 @@ export function YourVendors({
 }) {
   const Colors = useColors();
   const styles = useStyles();
-  const { t, locale } = useLocale();
+  const { t } = useLocale();
   const conversations = useConversations();
   const rows = useMemo(
     () => vendorStatusRows(conversations.data ?? [], wedding?.bookedVendors ?? {}),
@@ -85,7 +85,7 @@ export function YourVendors({
           {rows.slice(0, SHOWN).map((row) => (
             <ListRow
               key={row.key}
-              title={localized(row.vendor.name, locale)}
+              title={localized(row.vendor.name)}
               subtitle={subtitle(row)}
               leading={<VendorAvatar row={row} />}
               trailing={<StatusMark row={row} />}
@@ -104,8 +104,7 @@ export function YourVendors({
 
 function VendorAvatar({ row }: { row: VendorStatusRow }) {
   const styles = useStyles();
-  const { locale } = useLocale();
-  const name = localized(row.vendor.name, locale);
+  const name = localized(row.vendor.name);
   return (
     <View style={styles.avatar}>
       {row.vendor.photoUrl ? (

@@ -13,7 +13,6 @@ const CREDITS: { section: string; rows: { name: string; by: string; url: string 
     rows: [
       { name: 'Fraunces', by: 'Undercase Type', url: OFL },
       { name: 'Inter', by: 'Rasmus Andersson', url: OFL },
-      { name: 'Mukta Mahee', by: 'Ek Type', url: OFL },
     ],
   },
   {

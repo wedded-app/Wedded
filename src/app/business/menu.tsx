@@ -129,11 +129,6 @@ export default function BusinessMenuScreen() {
         onChangeText={(name) => change({ name })}
       />
       <TextField
-        label={t('business.menus.namePa')}
-        value={draft.namePa}
-        onChangeText={(namePa) => change({ namePa })}
-      />
-      <TextField
         label={t('business.menus.description')}
         value={draft.description}
         onChangeText={(description) => change({ description })}

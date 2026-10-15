@@ -31,7 +31,7 @@ export function YourFamily({
 }) {
   const Colors = useColors();
   const styles = useStyles();
-  const { t, locale } = useLocale();
+  const { t } = useLocale();
   const members = useWeddingMembers(weddingId);
   const shortlist = useFamilyShortlist(weddingId);
   const suggestions = useWeddingSuggestions(weddingId);
@@ -73,11 +73,11 @@ export function YourFamily({
     item.kind === 'loved'
       ? t('home.loved', {
           names: joinNames(item.names, t('home.and')),
-          vendor: localized(item.vendor.name, locale),
+          vendor: localized(item.vendor.name),
         })
       : t('home.suggested', {
           name: item.name ?? t('home.someone'),
-          vendor: localized(item.vendor.name, locale),
+          vendor: localized(item.vendor.name),
           event: eventName(item.eventSlug),
         });
 

@@ -1,7 +1,6 @@
 import { ListRow } from '@/components/list';
 import type { IconName } from '@/components/icon';
-import { bilingual, type LocalizedText } from '@/i18n/localized';
-import { useLocale } from '@/i18n/locale-context';
+import { type LocalizedText, localized } from '@/i18n/localized';
 
 export type CategoryRowProps = {
   /** The category's name from the database. */
@@ -24,19 +23,15 @@ export function CategoryRow({
   icon = 'storefront-outline',
   onPress,
 }: CategoryRowProps) {
-  const { locale } = useLocale();
-  const { primary, secondary } = bilingual(name, locale);
-  const subtitle = [secondary?.text, detail].filter(Boolean).join(' · ');
+  const title = localized(name);
 
   return (
     <ListRow
-      title={primary.text}
-      titleLang={primary.lang}
+      title={title}
       titleVariant="bodyLg"
-      subtitle={subtitle || undefined}
-      subtitleLang={secondary && !detail ? secondary.lang : undefined}
+      subtitle={detail || undefined}
       icon={icon ?? undefined}
-      accessibilityLabel={[primary.text, detail].filter(Boolean).join(', ')}
+      accessibilityLabel={[title, detail].filter(Boolean).join(', ')}
       onPress={onPress}
     />
   );

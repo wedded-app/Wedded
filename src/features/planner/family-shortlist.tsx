@@ -80,9 +80,9 @@ export function FamilyShortlist({ weddingId }: { weddingId: string }) {
 function ShortlistCard({ vendor, weddingId }: { vendor: ShortlistVendor; weddingId: string }) {
   const Colors = useColors();
   const styles = useStyles();
-  const { t, locale } = useLocale();
+  const { t } = useLocale();
   const react = useReact(weddingId);
-  const name = localized(vendor.name, locale);
+  const name = localized(vendor.name);
 
   return (
     <View style={styles.card}>

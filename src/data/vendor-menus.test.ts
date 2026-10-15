@@ -5,9 +5,7 @@ jest.mock('@/lib/supabase', () => ({ supabase: {} }));
 const row = {
   id: 'm1',
   name: 'Gold Package',
-  name_pa: null,
   description: 'Five appetizers',
-  description_pa: null,
   cuisine: 'Punjabi',
   diet: ['veg', 'halal', 'nonsense'],
   price_from: 38,

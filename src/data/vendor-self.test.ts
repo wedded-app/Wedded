@@ -30,7 +30,6 @@ describe('menu drafts', () => {
     });
     expect(row).toEqual({
       name: 'Gold',
-      name_pa: null,
       description: null,
       cuisine: null,
       diet: [],
@@ -65,9 +64,7 @@ describe('menu drafts', () => {
     const menu = toMenu({
       id: 'm1',
       name: 'Gold',
-      name_pa: 'ਗੋਲਡ',
       description: null,
-      description_pa: null,
       cuisine: 'Punjabi',
       diet: ['halal'],
       price_from: 38,
@@ -77,7 +74,7 @@ describe('menu drafts', () => {
     });
     const draft = menuToDraft(menu);
     expect(draft.id).toBe('m1');
-    expect(draft.namePa).toBe('ਗੋਲਡ');
+    expect(draft.name).toBe('Gold');
     expect(menuRow(draft)).toMatchObject({
       price_from: 38,
       price_unit: 'person',

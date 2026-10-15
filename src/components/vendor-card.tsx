@@ -22,7 +22,7 @@ import { saveHaptic } from '@/lib/haptics';
 export type PriceUnit = 'event' | 'hour' | 'person' | 'plate' | 'hand' | 'turban' | 'day';
 
 export type VendorCardProps = {
-  /** The business name; `pa` is shown in Punjabi mode when the vendor has one. */
+  /** The business name. */
   name: LocalizedText;
   /** The vendor's main category, from the database. */
   category: LocalizedText;
@@ -108,14 +108,14 @@ export function VendorCard({
 }: VendorCardProps) {
   const Colors = useColors();
   const styles = useStyles();
-  const { locale, t } = useLocale();
+  const { t } = useLocale();
   const scale = Math.min(useFontScale('label'), 1.4);
 
   const distance = distanceWords(distanceMiles, t);
   const price = priceWords(startingPrice, t);
 
-  const vendorName = localized(name, locale);
-  const categoryName = localized(category, locale);
+  const vendorName = localized(name);
+  const categoryName = localized(category);
   // Non-breaking spaces keep "31 mi" together when the line wraps.
   const details = [categoryName, city, distance?.shown.replace(/ /g, ' ')]
     .filter(Boolean)

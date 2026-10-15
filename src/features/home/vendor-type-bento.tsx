@@ -129,8 +129,8 @@ function Tile({
 }) {
   const Colors = useColors();
   const styles = useStyles();
-  const { t, locale } = useLocale();
-  const name = localized(group.name, locale);
+  const { t } = useLocale();
+  const name = localized(group.name);
   const onColour = look !== 'light' || photo !== null;
   const ink = onColour ? 'onHero' : 'text';
   const subtle = onColour ? 'onHero2' : 'text2';

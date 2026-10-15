@@ -24,7 +24,7 @@ type Section = { key: string; title: LocalizedText; data: SavedVendor[] };
  */
 export default function SavedScreen() {
   const Colors = useColors();
-  const { t, locale } = useLocale();
+  const { t } = useLocale();
   const { status, requireSignIn } = useSession();
   const saved = useSavedVendors();
   const events = useHomeEvents();
@@ -62,7 +62,7 @@ export default function SavedScreen() {
     );
     body = sections.map((section) => (
       <View key={section.key} style={styles.section}>
-        <SectionTitle>{localized(section.title, locale)}</SectionTitle>
+        <SectionTitle>{localized(section.title)}</SectionTitle>
         <CompareButton
           slugs={section.data.flatMap((save) => (save.vendor ? [save.vendor.slug] : []))}
         />
@@ -100,7 +100,7 @@ export default function SavedScreen() {
 }
 
 function SavedItem({ save, onRemove }: { save: SavedVendor; onRemove: () => void }) {
-  const { t, locale } = useLocale();
+  const { t } = useLocale();
   const { vendor } = save;
 
   return (
@@ -126,9 +126,7 @@ function SavedItem({ save, onRemove }: { save: SavedVendor; onRemove: () => void
         icon="heart-dislike-outline"
         label={t('saved.remove')}
         accessibilityLabel={
-          vendor
-            ? t('saved.removeNamed', { name: localized(vendor.name, locale) })
-            : t('saved.remove')
+          vendor ? t('saved.removeNamed', { name: localized(vendor.name) }) : t('saved.remove')
         }
         onPress={onRemove}
         style={styles.remove}

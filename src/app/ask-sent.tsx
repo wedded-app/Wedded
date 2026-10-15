@@ -30,7 +30,7 @@ import { successHaptic } from '@/lib/haptics';
  */
 export default function AskSentScreen() {
   const Colors = useColors();
-  const { t, locale } = useLocale();
+  const { t } = useLocale();
   // Phone sign-ins have no email, so no copy goes anywhere
   const { email } = useSession();
   const params = useLocalSearchParams<{ vendorId?: string; event?: string; queued?: string }>();
@@ -41,7 +41,7 @@ export default function AskSentScreen() {
   );
   const events = useHomeEvents();
 
-  const name = vendor.data ? localized(vendor.data.name, locale) : '';
+  const name = vendor.data ? localized(vendor.data.name) : '';
   const event = events.data
     ?.flatMap((section) => section.events)
     .find((candidate) => candidate.slug === params.event);
@@ -112,7 +112,7 @@ export default function AskSentScreen() {
         <Card style={styles.card}>
           <AppText>
             {event
-              ? t('inquiry.sent.savedTo', { event: localized(event.name, locale) })
+              ? t('inquiry.sent.savedTo', { event: localized(event.name) })
               : t('inquiry.sent.savedNotSure')}
           </AppText>
           <Button

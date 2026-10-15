@@ -10,7 +10,7 @@ import { NavScreen } from '@/components/nav';
 import { StateView } from '@/components/state-view';
 import { Spacing } from '@/constants/theme';
 import { useEvent, useEventNeeds } from '@/data/reference';
-import { bilingual, localized } from '@/i18n/localized';
+import { localized } from '@/i18n/localized';
 import { useLocale } from '@/i18n/locale-context';
 
 // Headings for event_categories.importance; anything new shows without one.
@@ -23,10 +23,10 @@ const IMPORTANCE_HEADINGS: Partial<Record<string, string>> = {
 export default function EventScreen() {
   const { slug = '' } = useLocalSearchParams<{ slug: string }>();
   const router = useRouter();
-  const { locale, t } = useLocale();
+  const { t } = useLocale();
   const event = useEvent(slug);
   const needs = useEventNeeds(slug);
-  const title = event.data ? bilingual(event.data.name, locale) : null;
+  const title = event.data ? localized(event.data.name) : null;
 
   const retry = () => {
     void event.refetch();
@@ -54,11 +54,11 @@ export default function EventScreen() {
           <View style={styles.about}>
             {event.data.timing && (
               <IconLine icon="time-outline" color="text2">
-                {localized(event.data.timing, locale)}
+                {localized(event.data.timing)}
               </IconLine>
             )}
             {event.data.summary && (
-              <AppText variant="bodyLg">{localized(event.data.summary, locale)}</AppText>
+              <AppText variant="bodyLg">{localized(event.data.summary)}</AppText>
             )}
           </View>
         )}
@@ -90,16 +90,7 @@ export default function EventScreen() {
     );
   }
 
-  return (
-    <NavScreen
-      title={title?.primary.text}
-      titleLang={title?.primary.lang}
-      subtitle={title?.secondary?.text}
-      subtitleLang={title?.secondary?.lang}
-    >
-      {body}
-    </NavScreen>
-  );
+  return <NavScreen title={title}>{body}</NavScreen>;
 }
 
 const styles = StyleSheet.create({

@@ -1649,12 +1649,10 @@ export type Database = {
           created_at: string;
           cuisine: string | null;
           description: string | null;
-          description_pa: string | null;
           diet: string[];
           id: string;
           min_guests: number | null;
           name: string;
-          name_pa: string | null;
           price_from: number | null;
           price_unit: string | null;
           sections: NonNullable<Json>;
@@ -1666,12 +1664,10 @@ export type Database = {
           created_at?: string;
           cuisine?: string | null;
           description?: string | null;
-          description_pa?: string | null;
           diet?: string[];
           id?: string;
           min_guests?: number | null;
           name: string;
-          name_pa?: string | null;
           price_from?: number | null;
           price_unit?: string | null;
           sections?: NonNullable<Json>;
@@ -1683,12 +1679,10 @@ export type Database = {
           created_at?: string;
           cuisine?: string | null;
           description?: string | null;
-          description_pa?: string | null;
           diet?: string[];
           id?: string;
           min_guests?: number | null;
           name?: string;
-          name_pa?: string | null;
           price_from?: number | null;
           price_unit?: string | null;
           sections?: NonNullable<Json>;
@@ -1872,7 +1866,6 @@ export type Database = {
           address_line: string | null;
           address_visibility: string;
           bio: string | null;
-          bio_pa: string | null;
           calendar_updated_at: string | null;
           call_phone: string | null;
           city: string;
@@ -1886,7 +1879,6 @@ export type Database = {
           last_verified_at: string | null;
           location: unknown;
           name: string;
-          name_pa: string | null;
           office_hours: string | null;
           preferred_contact: string | null;
           price_display: string;
@@ -1899,7 +1891,6 @@ export type Database = {
           source: string;
           status: string;
           tagline: string | null;
-          tagline_pa: string | null;
           team_size: number | null;
           text_phone: string | null;
           travel_note: string | null;
@@ -1913,7 +1904,6 @@ export type Database = {
           address_line?: string | null;
           address_visibility?: string;
           bio?: string | null;
-          bio_pa?: string | null;
           calendar_updated_at?: string | null;
           call_phone?: string | null;
           city: string;
@@ -1927,7 +1917,6 @@ export type Database = {
           last_verified_at?: string | null;
           location: unknown;
           name: string;
-          name_pa?: string | null;
           office_hours?: string | null;
           preferred_contact?: string | null;
           price_display?: string;
@@ -1940,7 +1929,6 @@ export type Database = {
           source?: string;
           status?: string;
           tagline?: string | null;
-          tagline_pa?: string | null;
           team_size?: number | null;
           text_phone?: string | null;
           travel_note?: string | null;
@@ -1954,7 +1942,6 @@ export type Database = {
           address_line?: string | null;
           address_visibility?: string;
           bio?: string | null;
-          bio_pa?: string | null;
           calendar_updated_at?: string | null;
           call_phone?: string | null;
           city?: string;
@@ -1968,7 +1955,6 @@ export type Database = {
           last_verified_at?: string | null;
           location?: unknown;
           name?: string;
-          name_pa?: string | null;
           office_hours?: string | null;
           preferred_contact?: string | null;
           price_display?: string;
@@ -1981,7 +1967,6 @@ export type Database = {
           source?: string;
           status?: string;
           tagline?: string | null;
-          tagline_pa?: string | null;
           team_size?: number | null;
           text_phone?: string | null;
           travel_note?: string | null;
@@ -2654,7 +2639,6 @@ export type Database = {
         Returns: {
           id: string;
           name: string;
-          name_pa: string;
           role: string;
           slug: string;
           status: string;
@@ -2675,7 +2659,6 @@ export type Database = {
           vendor_cover_path: string;
           vendor_id: string;
           vendor_name: string;
-          vendor_name_pa: string;
           vendor_slug: string;
         }[];
       };
@@ -2818,7 +2801,6 @@ export type Database = {
           vendor_city: string;
           vendor_id: string;
           vendor_name: string;
-          vendor_name_pa: string;
           vendor_slug: string;
         }[];
       };
@@ -2862,7 +2844,6 @@ export type Database = {
           latitude: number;
           longitude: number;
           name: string;
-          name_pa: string;
           price_display: string;
           price_from: number;
           price_to: number;
@@ -2983,7 +2964,6 @@ export type Database = {
           maybes: number;
           my_reaction: string;
           name: string;
-          name_pa: string;
           nos: number;
           published: boolean;
           saved_by: string[];

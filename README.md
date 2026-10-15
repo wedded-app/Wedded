@@ -10,13 +10,13 @@ A cross-platform mobile app (iOS and Android) for finding and booking every wedd
 
 ## Stack
 
-| Layer | Tool |
-| --- | --- |
-| App | Expo (React Native), TypeScript, Expo Router |
-| Backend | Supabase (auth, Postgres, file storage) |
-| Code style | ESLint and Prettier |
-| Builds | EAS Build (TestFlight and Play internal testing) |
-| Design | Figma |
+| Layer      | Tool                                             |
+| ---------- | ------------------------------------------------ |
+| App        | Expo (React Native), TypeScript, Expo Router     |
+| Backend    | Supabase (auth, Postgres, file storage)          |
+| Code style | ESLint and Prettier                              |
+| Builds     | EAS Build (TestFlight and Play internal testing) |
+| Design     | Figma                                            |
 
 ## Run it
 
@@ -67,6 +67,7 @@ Everything is checked before anything is saved, and each problem is explained. R
 ### Is the demo ready?
 
 `npm run demo:check -- --hall=<slug> --local` walks the November demo path (vision §13) and prints a checklist:
+
 - Reception and Banquet hall.
 - The hall first near Yuba City, with a price.
 - Its profile: founding #1, the six fact chips, Call and Directions, photos, "Real weddings here" and two approved caterers.
@@ -78,6 +79,7 @@ Everything is checked before anything is saved, and each problem is explained. R
 ### The founders' numbers
 
 `npm run report -- --local` prints the last 7 days as text you can paste into WhatsApp:
+
 - new families;
 - inquiries and follow-up answers;
 - saves;
@@ -86,6 +88,7 @@ Everything is checked before anything is saved, and each problem is explained. R
 - the most viewed vendors.
 
 Add `--days=30` for longer. `npm run report -- --local --vendor=<slug> --month=2026-10` writes one vendor's monthly scorecard, ready to send to them. For the hosted database, set `SUPABASE_URL` and `SUPABASE_SECRET_KEY` instead of `--local`.
+
 ### Vendor accounts (for chat)
 
 A vendor's owner chats with families in the same app, signing in with the same email code. Link their email to their listing:
@@ -98,17 +101,16 @@ npm run vendors:invite -- --local --vendor=royal-orchard-banquet-hall --list
 Add `--role=staff` for their staff, and `--remove` to take access away. Without `--local`, set `SUPABASE_URL` and `SUPABASE_SECRET_KEY`.
 
 ### Vendor calendars
+
 Until vendors have accounts, founders keep each vendor's calendar after a call or text:
+
 ```bash
 npm run availability -- --local --vendor=royal-orchard-banquet-hall --booked=2027-06-12,2027-06-13 --held=2027-06-19 --evening=2027-06-26
 npm run availability -- --local --vendor=royal-orchard-banquet-hall --open=2027-06-13 --list
 ```
+
 - **Days you mark:** `--booked` (all day), `--held` (someone is holding it), `--morning` / `--evening` (that part of the day is booked). `--open` clears a day.
 - **Days you don't mark** show as open for 60 days after each update, and after that as unknown. Families see "open", "booked", "held" or "partly booked", never who booked.
-
-### Punjabi review sheet
-
-`npm run i18n:review -- --local` writes `punjabi-review.csv` (gitignored): every English text in the app (event names and timings, vendor types, groups, area-code chips, and the app's own words) next to its Punjabi, with the missing ones first in each section. Open it in Google Sheets or Excel, have the family fill in the **Correction** column, and give the file back to Claude Code to apply. Add `--out=<file>` to write it somewhere else.
 
 ### Vendor photos
 
@@ -132,13 +134,13 @@ Then run `npm run photos:upload -- photos --local` for your local database, or w
 
 Settings for the hosted project (set once with `supabase secrets set NAME=value`):
 
-| Name | What it's for |
-| --- | --- |
-| `RESEND_API_KEY` | Sending inquiry emails through Resend |
-| `INQUIRY_FROM` | The sender, e.g. `Wedded App <inquiries@mail.yourdomain.com>` (needs the verified domain, Phase 5) |
-| `FOUNDERS_EMAIL` | Founders' emails, comma-separated: a blind copy of every inquiry, and relayed inquiries for vendors who don't use email |
-| `INQUIRY_TEST_INBOX` | While testing, every vendor email goes here instead of to the vendor |
-| `SITE_URL` | The website once there's a domain, e.g. `https://weddedapp.com`: chat notification emails link to it |
+| Name                 | What it's for                                                                                                           |
+| -------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| `RESEND_API_KEY`     | Sending inquiry emails through Resend                                                                                   |
+| `INQUIRY_FROM`       | The sender, e.g. `Wedded App <inquiries@mail.yourdomain.com>` (needs the verified domain, Phase 5)                      |
+| `FOUNDERS_EMAIL`     | Founders' emails, comma-separated: a blind copy of every inquiry, and relayed inquiries for vendors who don't use email |
+| `INQUIRY_TEST_INBOX` | While testing, every vendor email goes here instead of to the vendor                                                    |
+| `SITE_URL`           | The website once there's a domain, e.g. `https://weddedapp.com`: chat notification emails link to it                    |
 
 The nightly job that sends queued inquiries (when the daily email limit was reached) reads two values from the database's Vault. Set them once per hosted project in the SQL editor:
 
@@ -149,17 +151,17 @@ select vault.create_secret('<service role key>', 'service_role_key');
 
 ## Layout
 
-| Path | What lives there |
-| --- | --- |
-| `src/app/` | Screens and navigators (Expo Router). `(tabs)/` holds Home, Search, Saved, Profile |
-| `src/components/` | Reusable UI. `AppText` is the only text component: it picks the Latin or Gurmukhi font and sets line height |
-| `src/constants/theme.ts` | Colour, spacing, radius and type-scale tokens from the product vision |
-| `src/i18n/` | English and Punjabi strings, the `useLocale()` hook and the persisted language setting |
-| `src/lib/` | Small utilities (device storage, the Supabase client) |
-| `src/types/database.ts` | TypeScript types generated from the database (`npm run db:types`); don't edit by hand |
-| `supabase/migrations/` | Every database change, in order. Reference data (events, categories) lives here so production gets it too |
-| `supabase/tests/` | Database tests (pgTAP): data completeness and what logged-out and signed-in users can do |
-| `docs/` | Plan, decisions, product vision |
+| Path                     | What lives there                                                                                          |
+| ------------------------ | --------------------------------------------------------------------------------------------------------- |
+| `src/app/`               | Screens and navigators (Expo Router). `(tabs)/` holds Home, Search, Saved, Profile                        |
+| `src/components/`        | Reusable UI. `AppText` is the only text component: it picks the font and sets line height                 |
+| `src/constants/theme.ts` | Colour, spacing, radius and type-scale tokens from the product vision                                     |
+| `src/i18n/`              | The app's English strings, the `useLocale()` hook and `localized()` for database names                    |
+| `src/lib/`               | Small utilities (device storage, the Supabase client)                                                     |
+| `src/types/database.ts`  | TypeScript types generated from the database (`npm run db:types`); don't edit by hand                     |
+| `supabase/migrations/`   | Every database change, in order. Reference data (events, categories) lives here so production gets it too |
+| `supabase/tests/`        | Database tests (pgTAP): data completeness and what logged-out and signed-in users can do                  |
+| `docs/`                  | Plan, decisions, product vision                                                                           |
 
 ## Docs
 

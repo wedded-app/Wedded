@@ -210,7 +210,7 @@ function AskList({
 
 /** What families ask about: their events, guest sizes, wedding months and towns. */
 export function WhatFamiliesWant({ asks }: { asks: Asks }) {
-  const { t, locale } = useLocale();
+  const { t } = useLocale();
   const empty =
     asks.events.length + asks.guests.length + asks.months.length + asks.places.length === 0;
   return (
@@ -223,7 +223,7 @@ export function WhatFamiliesWant({ asks }: { asks: Asks }) {
             title={t('business.insights.want.events')}
             rows={asks.events.map((e) => ({
               key: e.slug,
-              label: localized(e.name, locale),
+              label: localized(e.name),
               count: e.count,
             }))}
           />
@@ -257,8 +257,8 @@ export function WhatFamiliesWant({ asks }: { asks: Asks }) {
 export function HowYouCompare({ compare }: { compare: Compare }) {
   const Colors = useColors();
   const styles = useStyles();
-  const { t, locale } = useLocale();
-  const kind = localized(compare.category.name, locale);
+  const { t } = useLocale();
+  const kind = localized(compare.category.name);
   const rows: { key: 'views' | 'inquiries'; mine: number; typical: number }[] = [
     { key: 'views', ...compare.views },
     { key: 'inquiries', ...compare.inquiries },

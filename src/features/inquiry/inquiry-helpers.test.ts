@@ -1,5 +1,4 @@
 import en from '@/i18n/en.json';
-import pa from '@/i18n/pa.json';
 
 import {
   eventChips,
@@ -83,11 +82,11 @@ describe('planDatesFor', () => {
 });
 
 describe('suggestedMessage', () => {
-  const events = [{ en: 'Jaago', pa: 'ਜਾਗੋ' }];
+  const events = [{ en: 'Jaago' }];
 
   it('names each event with its own day when they ask about several', () => {
     expect(
-      suggestedMessage(translator(en), 'en', {
+      suggestedMessage(translator(en), {
         events: [events[0], { en: 'Anand Karaj' }],
         date: '2027-06-11',
         place: 'Yuba City',
@@ -104,7 +103,7 @@ describe('suggestedMessage', () => {
 
   it('writes the full sentence when date and guests are known', () => {
     expect(
-      suggestedMessage(translator(en), 'en', {
+      suggestedMessage(translator(en), {
         events,
         date: '2027-06-12',
         place: 'Yuba City',
@@ -117,7 +116,7 @@ describe('suggestedMessage', () => {
 
   it('leaves out what they are not sure of', () => {
     expect(
-      suggestedMessage(translator(en), 'en', {
+      suggestedMessage(translator(en), {
         events: [],
         date: null,
         place: '',
@@ -130,7 +129,7 @@ describe('suggestedMessage', () => {
 
   it('asks to visit for a tour', () => {
     expect(
-      suggestedMessage(translator(en), 'en', {
+      suggestedMessage(translator(en), {
         events: [{ en: 'Reception' }],
         date: '2027-06-13',
         place: 'Yuba City',
@@ -138,17 +137,6 @@ describe('suggestedMessage', () => {
         tour: true,
       }),
     ).toContain('would like to visit your hall');
-  });
-
-  it('writes in Punjabi with the Gurmukhi event name', () => {
-    const message = suggestedMessage(translator(pa), 'pa', {
-      events,
-      date: null,
-      place: 'Yuba City',
-      guests: null,
-    });
-    expect(message).toContain('ਜਾਗੋ');
-    expect(message.startsWith('ਸਤ ਸ੍ਰੀ ਅਕਾਲ ਜੀ')).toBe(true);
   });
 });
 

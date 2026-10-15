@@ -75,7 +75,7 @@ export function ReelsPager({
   empty: ReactNode;
 }) {
   const router = useRouter();
-  const { t, locale } = useLocale();
+  const { t } = useLocale();
   const { requireSignIn, session } = useSession();
   const bottomSpace = useBottomSpace();
   const reels = useReelsFeed(feed);
@@ -119,11 +119,11 @@ export function ReelsPager({
     const names: Record<string, string> = {};
     for (const tradition of traditions.data ?? []) {
       for (const event of tradition.events) {
-        names[event.slug] ??= localized(event.name, locale);
+        names[event.slug] ??= localized(event.name);
       }
     }
     return names;
-  }, [traditions.data, locale]);
+  }, [traditions.data]);
 
   // Stable, as FlatList requires
   const onViewable = useCallback(({ viewableItems }: { viewableItems: ViewToken[] }) => {

@@ -10,9 +10,7 @@ const listing: Listing = {
   status: 'published',
   city: 'Yuba City',
   tagline: 'Banquet hall for 600',
-  taglinePa: null,
   bio: null,
-  bioPa: null,
   priceDisplay: 'starting_at',
   priceFrom: 5000,
   priceTo: null,
@@ -42,14 +40,14 @@ describe('listing editor', () => {
     const draft = {
       ...listingToDraft(listing),
       tagline: '  ',
-      bioPa: 'ਸਾਡਾ ਹਾਲ',
+      bio: 'Our hall',
       whatsappPhone: '(530) 555-0199',
       languages: ['pa', 'en', 'hi'] as ListingLanguage[],
     };
     expect(draftChanges(listing, draft)).toEqual({
       changes: {
         tagline: null,
-        bioPa: 'ਸਾਡਾ ਹਾਲ',
+        bio: 'Our hall',
         whatsappPhone: '+15305550199',
         languages: ['pa', 'en', 'hi'],
       },
@@ -89,7 +87,7 @@ describe('listing editor', () => {
   });
 
   it('opens Fix it at the right section', () => {
-    expect(sectionFor('bioPa')).toBe('about');
+    expect(sectionFor('bio')).toBe('about');
     expect(sectionFor('instagram')).toBe('contact');
     expect(sectionFor('photos')).toBeNull();
   });

@@ -19,7 +19,7 @@ export function IconLine({
 }) {
   const Colors = useColors();
   const scale = useFontScale('body');
-  const { lineHeight } = useTypeStyle({ text: children });
+  const { lineHeight } = useTypeStyle({});
 
   return (
     <View style={styles.row}>

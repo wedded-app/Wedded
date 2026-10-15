@@ -20,7 +20,7 @@ export function SearchField({ value, onChangeText, placeholder, ref }: SearchFie
   const styles = useStyles();
   const { t } = useLocale();
   const scale = useFontScale('body');
-  const { script, lineHeight, maxFontSizeMultiplier, ...font } = useTypeStyle({ text: value });
+  const { lineHeight, maxFontSizeMultiplier, ...font } = useTypeStyle({});
 
   return (
     <View style={styles.field}>
@@ -32,7 +32,6 @@ export function SearchField({ value, onChangeText, placeholder, ref }: SearchFie
         placeholder={placeholder ?? t('search.placeholder')}
         placeholderTextColor={Colors.text2}
         accessibilityLabel={placeholder ?? t('search.label')}
-        accessibilityLanguage={script}
         returnKeyType="search"
         autoCorrect={false}
         autoCapitalize="none"

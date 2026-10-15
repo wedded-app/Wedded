@@ -28,7 +28,7 @@ describe('toInsights', () => {
       funnel: { searches: 2, views: 15, saves: 1, contacts: 2, inquiries: 2, booked: 1 },
       replies: { leads: 2, replied: 1, rate: '0.50' as unknown as number, medianMinutes: 90 },
       asks: {
-        events: [{ slug: 'reception', name: { en: 'Reception', pa: 'ਰਿਸੈਪਸ਼ਨ' }, count: 2 }],
+        events: [{ slug: 'reception', name: { en: 'Reception' }, count: 2 }],
         guests: [],
         months: [],
         places: [],
@@ -42,7 +42,7 @@ describe('toInsights', () => {
     });
     expect(insights.daily).toEqual([]);
     expect(insights.replies.rate).toBe(0.5);
-    expect(insights.asks.events[0].name).toEqual({ en: 'Reception', pa: 'ਰਿਸੈਪਸ਼ਨ' });
+    expect(insights.asks.events[0].name).toEqual({ en: 'Reception' });
     expect(insights.compare?.category.name).toEqual({ en: 'caterer' });
     expect(insights.compare?.views.typical).toBe(3);
   });

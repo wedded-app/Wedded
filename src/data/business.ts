@@ -23,7 +23,6 @@ export type Business = {
   id: string;
   slug: string;
   name: string;
-  namePa: string | null;
   /** draft, published, … (vendors.status) */
   status: string;
   role: 'owner' | 'staff';
@@ -33,7 +32,6 @@ export function toBusiness(row: {
   id: string;
   slug: string;
   name: string;
-  name_pa: string | null;
   status: string;
   role: string;
 }): Business {
@@ -41,7 +39,6 @@ export function toBusiness(row: {
     id: row.id,
     slug: row.slug,
     name: row.name,
-    namePa: row.name_pa,
     status: row.status,
     role: row.role === 'staff' ? 'staff' : 'owner',
   };
