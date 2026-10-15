@@ -16,7 +16,7 @@ import { DateField } from '@/components/date-field';
 import { eventIcon } from '@/components/event-icon';
 import { groupIcon } from '@/components/group-icon';
 import { Icon } from '@/components/icon';
-import { SectionTitle } from '@/components/list';
+import { ListRow, ListSection, SectionTitle } from '@/components/list';
 import { NavScreen } from '@/components/nav';
 import { ProgressBar } from '@/components/progress-bar';
 import { StateView } from '@/components/state-view';
@@ -213,6 +213,17 @@ export default function PlanScreen() {
             />
           ))}
         </View>
+      )}
+
+      {!view.loading && (
+        <ListSection>
+          <ListRow
+            icon="mail-outline"
+            title={t('cards.planEntry')}
+            subtitle={t('cards.planEntryBody')}
+            onPress={() => router.push('/cards')}
+          />
+        </ListSection>
       )}
 
       {wedding && <Suggestions wedding={wedding} events={chosen} />}
