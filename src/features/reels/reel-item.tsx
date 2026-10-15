@@ -269,7 +269,7 @@ export function ReelItem({
         >
           <VideoView
             player={player}
-            style={StyleSheet.absoluteFill}
+            style={styles.video}
             contentFit={fit}
             nativeControls={false}
             allowsPictureInPicture={false}
@@ -576,6 +576,14 @@ const styles = StyleSheet.create({
     width: '100%',
     backgroundColor: '#000000',
     overflow: 'hidden',
+  },
+  // Web videos keep their intrinsic size unless both dimensions are explicit.
+  video: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    width: '100%',
+    height: '100%',
   },
   center: {
     position: 'absolute',

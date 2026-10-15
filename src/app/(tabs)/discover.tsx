@@ -1,7 +1,7 @@
 import { useFocusEffect, useRouter } from 'expo-router';
 import { setStatusBarStyle } from 'expo-status-bar';
 import { useCallback, useMemo, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, useWindowDimensions, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AppText } from '@/components/app-text';
@@ -27,7 +27,7 @@ export default function ReelsScreen() {
   const { t } = useLocale();
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { height } = useWindowDimensions();
+  const [height, setHeight] = useState(0);
   const { status, requireSignIn } = useSession();
   const [mode, setMode] = useState<FeedMode>('for_you');
   const [eventSlug, setEventSlug] = useState<string | null>(null);
@@ -103,22 +103,27 @@ export default function ReelsScreen() {
   );
 
   return (
-    <View style={styles.screen}>
-      <ReelsPager
-        key={`${mode}:${eventSlug ?? ''}`}
-        feed={{ mode, eventSlug }}
-        height={height}
-        swipeHint
-        empty={
-          mode === 'following' && status !== 'signedIn'
-            ? emptyFollowing
-            : eventSlug
-              ? emptyEvent
-              : mode === 'following'
-                ? emptyFollowing
-                : emptyForYou
-        }
-      />
+    <View
+      style={styles.screen}
+      onLayout={({ nativeEvent }) => setHeight(nativeEvent.layout.height)}
+    >
+      {height > 0 && (
+        <ReelsPager
+          key={`${mode}:${eventSlug ?? ''}`}
+          feed={{ mode, eventSlug }}
+          height={height}
+          swipeHint
+          empty={
+            mode === 'following' && status !== 'signedIn'
+              ? emptyFollowing
+              : eventSlug
+                ? emptyEvent
+                : mode === 'following'
+                  ? emptyFollowing
+                  : emptyForYou
+          }
+        />
+      )}
 
       <View style={[styles.top, { paddingTop: insets.top + Spacing.xs }]} pointerEvents="box-none">
         {/* Post a reel: top right, where Instagram's Reels camera sits */}
