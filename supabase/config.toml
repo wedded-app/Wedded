@@ -484,3 +484,7 @@ enabled = true
 # Signed email links work without a login. GET never changes preferences.
 [functions.email-unsubscribe]
 verify_jwt = false
+
+# Pro billing platform webhook: Stripe signature verification in the handler.
+[functions.pro-webhook]
+verify_jwt = false

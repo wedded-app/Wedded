@@ -1788,6 +1788,8 @@ export type Database = {
       vendor_subscriptions: {
         Row: {
           cancel_at_period_end: boolean;
+          checkout_attempt: string | null;
+          checkout_expires_at: string | null;
           created_at: string;
           current_period_end: string | null;
           livemode: boolean;
@@ -1795,11 +1797,14 @@ export type Database = {
           status: string;
           stripe_customer_id: string | null;
           stripe_subscription_id: string | null;
+          synced_at: string | null;
           updated_at: string;
           vendor_id: string;
         };
         Insert: {
           cancel_at_period_end?: boolean;
+          checkout_attempt?: string | null;
+          checkout_expires_at?: string | null;
           created_at?: string;
           current_period_end?: string | null;
           livemode?: boolean;
@@ -1807,11 +1812,14 @@ export type Database = {
           status: string;
           stripe_customer_id?: string | null;
           stripe_subscription_id?: string | null;
+          synced_at?: string | null;
           updated_at?: string;
           vendor_id: string;
         };
         Update: {
           cancel_at_period_end?: boolean;
+          checkout_attempt?: string | null;
+          checkout_expires_at?: string | null;
           created_at?: string;
           current_period_end?: string | null;
           livemode?: boolean;
@@ -1819,6 +1827,7 @@ export type Database = {
           status?: string;
           stripe_customer_id?: string | null;
           stripe_subscription_id?: string | null;
+          synced_at?: string | null;
           updated_at?: string;
           vendor_id?: string;
         };
@@ -2506,6 +2515,13 @@ export type Database = {
           vendor_slug: string;
         }[];
       };
+      claim_pro_checkout: {
+        Args: { p_vendor_id: string };
+        Returns: {
+          attempt_id: string;
+          expires_at: string;
+        }[];
+      };
       claim_push_messages: {
         Args: Record<PropertyKey, never>;
         Returns: {
@@ -2823,6 +2839,21 @@ export type Database = {
           p_vendor_id: string;
         };
         Returns: undefined;
+      };
+      save_pro_customer: {
+        Args: { p_livemode: boolean; p_stripe_customer_id: string; p_vendor_id: string };
+        Returns: string;
+      };
+      save_pro_subscription: {
+        Args: {
+          p_cancel_at_period_end: boolean;
+          p_current_period_end: string;
+          p_observed_at: string;
+          p_status: string;
+          p_stripe_customer_id: string;
+          p_stripe_subscription_id: string;
+        };
+        Returns: string;
       };
       search_vendors: {
         Args: {
