@@ -352,7 +352,8 @@
       "appleFailed": "We couldn't sign you in with Apple. Please try again, or use another way.",
       "googleFailed": "We couldn't sign you in with Google. Please try again, or use another way.",
       "appleOff": "Sign in with Apple isn't ready yet. Please use another way for now.",
-      "googleOff": "Sign in with Google isn't ready yet. Please use another way for now."
+      "googleOff": "Sign in with Google isn't ready yet. Please use another way for now.",
+      "captcha": "We couldn't check this is really you. Wait a moment and try again."
     },
     "why": "Save vendors, ask for prices and plan with family.",
     "withApple": "Continue with Apple",
@@ -374,7 +375,9 @@
     "signInWithGoogle": "Sign in with Google",
     "signInWithPhone": "Sign in with phone number",
     "signInWithEmail": "Sign in with email",
-    "legal": "By continuing, you agree to our {{terms}}. Learn how we use your data in our {{privacy}}."
+    "legal": "By continuing, you agree to our {{terms}}. Learn how we use your data in our {{privacy}}.",
+    "captcha": "Checking you're a person",
+    "captchaWait": "One moment, we're checking this is really you. Try again in a second."
   },
   "saveVendor": {
     "title": "Save to which event?",

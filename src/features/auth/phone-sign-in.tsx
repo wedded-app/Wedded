@@ -44,6 +44,9 @@ import {
 } from '@/constants/theme';
 import { PillButton } from '@/features/onboarding/onboarding-step';
 import { useLocale } from '@/i18n/locale-context';
+
+import { type Captcha, useCaptcha } from './captcha';
+import { TurnstileBox } from './turnstile-box';
 import { selectionHaptic } from '@/lib/haptics';
 import { Motion } from '@/lib/motion';
 import { formatPhone } from '@/lib/phone';
@@ -70,8 +73,11 @@ const FOCUS_DELAY_MS = 350;
 
 type Step = 'number' | 'code';
 
-function sendCode(phone: string) {
-  return supabase.auth.signInWithOtp({ phone, options: { shouldCreateUser: true } });
+function sendCode(phone: string, captcha: Captcha) {
+  return supabase.auth.signInWithOtp({
+    phone,
+    options: { shouldCreateUser: true, ...captcha.take() },
+  });
 }
 
 /**
@@ -104,6 +110,8 @@ function PhoneSignInScreens() {
   const [digits, setDigits] = useState('');
   const [sentTo, setSentTo] = useState<string | null>(null);
   const [verified, setVerified] = useState(false);
+  // One bot check for both steps, so a resend gets a fresh token (#234)
+  const captcha = useCaptcha();
 
   const close = useCallback(() => {
     if (router.canGoBack()) router.back();
@@ -160,6 +168,7 @@ function PhoneSignInScreens() {
               style={styles.fill}
             >
               <NumberStep
+                captcha={captcha}
                 intro={moved === null}
                 country={country}
                 digits={digits}
@@ -180,6 +189,7 @@ function PhoneSignInScreens() {
               style={styles.fill}
             >
               <CodeStep
+                captcha={captcha}
                 phone={sentTo}
                 shown={sentTo.startsWith('+1') ? formatPhone(sentTo) : sentTo}
                 onEdit={() => {
@@ -191,6 +201,7 @@ function PhoneSignInScreens() {
               />
             </Animated.View>
           )}
+          <TurnstileBox captcha={captcha} />
         </View>
       </KeyboardAvoidingView>
     </View>
@@ -198,6 +209,7 @@ function PhoneSignInScreens() {
 }
 
 function NumberStep({
+  captcha,
   intro,
   country,
   digits,
@@ -205,6 +217,7 @@ function NumberStep({
   onDigits,
   onSent,
 }: {
+  captcha: Captcha;
   /** First arrival: the title, the number and Continue rise in one after another. */
   intro: boolean;
   country: Country;
@@ -245,9 +258,13 @@ function NumberStep({
       fail(t(digits ? 'phoneSignIn.invalid' : 'phoneSignIn.required'));
       return;
     }
+    if (!captcha.ready) {
+      fail(t('signIn.captchaWait'));
+      return;
+    }
     setError(undefined);
     setSending(true);
-    const { error: authError } = await sendCode(phone);
+    const { error: authError } = await sendCode(phone, captcha);
     setSending(false);
     if (authError) {
       fail(t(authErrorKey(authError, 'phone')));
@@ -392,11 +409,13 @@ function NumberStep({
 }
 
 function CodeStep({
+  captcha,
   phone,
   shown,
   onEdit,
   onVerified,
 }: {
+  captcha: Captcha;
   /** In E.164, to verify against. */
   phone: string;
   /** As it's shown: "(916) 555-0100". */
@@ -457,8 +476,12 @@ function CodeStep({
   async function resend() {
     setError(undefined);
     setNotice(undefined);
+    if (!captcha.ready) {
+      setError(t('signIn.captchaWait'));
+      return;
+    }
     setResending(true);
-    const { error: authError } = await sendCode(phone);
+    const { error: authError } = await sendCode(phone, captcha);
     setResending(false);
     if (authError) {
       setError(t(authErrorKey(authError, 'phone')));
