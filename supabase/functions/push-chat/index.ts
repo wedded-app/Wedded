@@ -10,6 +10,7 @@
 //   403 { error: 'forbidden' }
 
 import { createClient } from '@supabase/supabase-js';
+import { isServiceRequest } from '../_shared/request-security.ts';
 
 import { buildPushes, type PushClaim, type PushMessage } from './push.ts';
 
@@ -26,15 +27,6 @@ function json(body: unknown, status: number): Response {
     status,
     headers: { 'Content-Type': 'application/json' },
   });
-}
-
-function roleOf(token: string): string | undefined {
-  try {
-    const payload = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
-    return JSON.parse(atob(payload.padEnd(Math.ceil(payload.length / 4) * 4, '='))).role;
-  } catch {
-    return undefined;
-  }
 }
 
 type Ticket = { status: 'ok' | 'error'; details?: { error?: string } };
@@ -56,8 +48,8 @@ async function sendBatch(batch: PushMessage[]): Promise<Ticket[]> {
 }
 
 Deno.serve(async (request) => {
-  const token = request.headers.get('Authorization')?.replace(/^Bearer\s+/i, '') ?? '';
-  if (token !== SERVICE_KEY && roleOf(token) !== 'service_role') {
+  if (request.method !== 'POST') return json({ error: 'method_not_allowed' }, 405);
+  if (!isServiceRequest(request, SERVICE_KEY)) {
     return json({ error: 'forbidden' }, 403);
   }
 
