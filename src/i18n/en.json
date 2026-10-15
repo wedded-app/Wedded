@@ -10,8 +10,6 @@
     "discover": "Reels"
   },
   "home": {
-    "headline": "Every vendor for every event of your wedding",
-    "subtitle": "Roka to reception. Northern California.",
     "phases": {
       "before": "Before the wedding",
       "weddingDay": "Wedding day",
@@ -24,7 +22,6 @@
     "seeAll": "See all",
     "whatDoYouNeed": "What do you need?",
     "seeAllTypes": "All types",
-    "myEvents": "My events",
     "nextUp": "Next up",
     "booked": "booked",
     "seePlan": "See plan",
@@ -138,7 +135,6 @@
     "workedWith": "Has worked with",
     "claim": "Are you this vendor? Claim your profile",
     "photos": "Photos",
-    "photo": "Photo",
     "realWeddings": "Real weddings here",
     "photoBy": "Photo by {{name}}",
     "bookTour": "Book a tour",
@@ -225,7 +221,6 @@
     "language": "Language",
     "english": "English",
     "punjabi": "ਪੰਜਾਬੀ",
-    "textSize": "Text size",
     "account": {
       "signInTitle": "Save vendors and ask about prices",
       "signInBody": "Make a free account with Apple, Google, your phone or your email. You can keep browsing without one.",
@@ -235,9 +230,7 @@
       "finish": "Continue",
       "edit": "Edit my details",
       "signOut": "Sign out",
-      "deleteAccount": "Delete my account",
-      "myInquiries": "My inquiries",
-      "myInquiriesCount": "My inquiries ({{count}})"
+      "deleteAccount": "Delete my account"
     },
     "editShort": "Edit details",
     "stats": {
@@ -580,7 +573,6 @@
   },
   "myInquiries": {
     "title": "My requests",
-    "back": "Back",
     "empty": "You haven't asked any vendors yet. Tap \"Ask about price & date\" on a vendor to start.",
     "askedOn": "Asked on {{date}}",
     "viewVendor": "View vendor",
@@ -607,11 +599,8 @@
     }
   },
   "discover": {
-    "title": "Discover",
-    "eyebrow": "Real work from NorCal vendors",
     "stories": "Vendor stories",
     "openStory": "Watch {{name}}'s photos",
-    "empty": "No photos yet. Check back soon.",
     "photoOf": "Photo {{number}} of {{total}}, {{name}}",
     "doubleTapHint": "Double-tap to save",
     "askLabel": "Ask {{name}} about price and date",
@@ -1583,7 +1572,6 @@
         "booked": "You're taken for the whole day.",
         "held": "Someone is deciding. You're not free yet."
       },
-      "partNote": "Part of this day is marked. Picking one of these sets the whole day.",
       "saveFailed": "That didn't save. Check your internet, then try again.",
       "freshTitle": "Is your calendar up to date?",
       "freshBody": "Families only see your days as open while your calendar is fresh. Tap this whenever you've checked it.",

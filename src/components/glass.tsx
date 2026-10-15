@@ -74,6 +74,3 @@ const fallbackStyle = (Colors: Palette): ViewStyle => ({
   backgroundColor: Colors.glassFallback,
   boxShadow: `0 6px 20px ${Colors.glassShadow}, ${edge(Colors)}`,
 });
-
-/** Whether this device draws real Liquid Glass (iOS 26 and later). */
-export const hasNativeGlass = nativeGlass;
