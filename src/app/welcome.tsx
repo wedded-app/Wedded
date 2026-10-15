@@ -207,7 +207,7 @@ function Welcome() {
         ]}
       >
         <Animated.View entering={Motion.enter} style={styles.brand}>
-          <Image source={RIBBON} style={styles.ribbon} resizeMode="contain" />
+          <Image source={RIBBON} style={styles.ribbon} resizeMode="contain" accessible={false} />
           <AppText variant="heading" weight={800} color="onPhoto" style={styles.brandName}>
             {t('welcome.brand')}
           </AppText>

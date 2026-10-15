@@ -42,7 +42,7 @@ const light = {
   accent: '#F0A030', // marigold: fills only, never text
   kesari: '#A8500A', // text-safe saffron, "Founding vendor" text
   kesariTint: '#FBEFE3', // saffron at about 10 percent, behind founding numbers
-  success: '#248A3D', // systemGreen as iOS draws it with Increase Contrast, 4.6:1
+  success: '#1E7B34', // a deeper systemGreen: 4.6:1 on grouped grey and fills, 5.3:1 on white (WCAG AA)
   successTint: 'rgba(36, 138, 61, 0.14)', // behind a green word, e.g. the Veg tag
   pink: '#B4335C',
   verified: '#1F6F5F',

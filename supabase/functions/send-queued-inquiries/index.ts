@@ -11,6 +11,7 @@
 //   403 { error: 'forbidden' }
 
 import { createClient } from '@supabase/supabase-js';
+import { isServiceRequest } from '../_shared/request-security.ts';
 
 import { inquiryEmailFor } from '../_shared/email-links.ts';
 import { sendEmail } from '../_shared/inquiry-email.ts';
@@ -27,19 +28,9 @@ function json(body: unknown, status: number): Response {
   });
 }
 
-/** The role in the (gateway-verified) JWT. */
-function roleOf(token: string): string | undefined {
-  try {
-    const payload = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
-    return JSON.parse(atob(payload.padEnd(Math.ceil(payload.length / 4) * 4, '='))).role;
-  } catch {
-    return undefined;
-  }
-}
-
 Deno.serve(async (request) => {
-  const token = request.headers.get('Authorization')?.replace(/^Bearer\s+/i, '') ?? '';
-  if (token !== SERVICE_KEY && roleOf(token) !== 'service_role') {
+  if (request.method !== 'POST') return json({ error: 'method_not_allowed' }, 405);
+  if (!isServiceRequest(request, SERVICE_KEY)) {
     return json({ error: 'forbidden' }, 403);
   }
 

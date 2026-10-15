@@ -8,6 +8,7 @@
 //   401 unauthorized · 403 not_allowed · 400 invalid · 503 not_set_up · 502 stripe_error
 
 import { createClient } from '@supabase/supabase-js';
+import { jsonBody, limitedBody } from '../_shared/body.ts';
 
 import { paymentStatus, stripeClient, stripeSettings } from '../_shared/stripe.ts';
 
@@ -46,12 +47,16 @@ Deno.serve(async (request) => {
   const { data: userData, error: userError } = await admin.auth.getUser(token);
   if (userError || !userData.user) return json({ error: 'unauthorized' }, 401);
 
-  const body = await request.json().catch(() => null) as
+  const raw = await limitedBody(request, 2048);
+  if (raw === null) return json({ error: 'body_too_large' }, 413);
+  const body = jsonBody(raw) as
     | { vendorId?: unknown; action?: unknown }
     | null;
   const vendorId = typeof body?.vendorId === 'string' ? body.vendorId : '';
   const action = body?.action === 'refresh' ? 'refresh' : body?.action === 'link' ? 'link' : null;
-  if (!/^[0-9a-f-]{36}$/.test(vendorId) || !action) return json({ error: 'invalid' }, 400);
+  if (
+    !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(vendorId) || !action
+  ) return json({ error: 'invalid' }, 400);
 
   const { data: member } = await admin
     .from('vendor_members')

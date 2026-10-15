@@ -293,7 +293,7 @@ async function main() {
     const { data: city } = await db.from('cities').select('name').eq('slug', town).single();
     const { error } = await db
       .from('profiles')
-      .upsert({ id, full_name: name, city: city?.name ?? 'Yuba City', phone });
+      .upsert({ id, full_name: name, city: city?.name ?? 'Yuba City', phone, is_sample: true });
     if (error) fail(`Couldn't save ${name}: ${error.message}`);
     return id;
   }

@@ -36,6 +36,8 @@ export type VendorCardProps = {
   photoUrl?: string | null;
   /** Shows the "Founding vendor" badge. */
   foundingNumber?: number | null;
+  /** A demo sample: shows the "Sample" badge. */
+  isSample?: boolean;
   /** Shows "Travels to you": based outside your distance, but they cover your area. */
   travelsToYou?: boolean;
   /** Filled heart when true. */
@@ -100,6 +102,7 @@ export function VendorCard({
   startingPrice,
   photoUrl,
   foundingNumber,
+  isSample,
   travelsToYou = false,
   saved = false,
   onToggleSave,
@@ -123,7 +126,14 @@ export function VendorCard({
   const saveLabel = saved
     ? t('vendorCard.unsave', { name: vendorName })
     : t('vendorCard.save', { name: vendorName });
-  const badges: { key: string; label: string; icon: 'ribbon-outline' | 'car-outline' }[] = [];
+  const badges: {
+    key: string;
+    label: string;
+    icon: 'ribbon-outline' | 'car-outline' | 'information-circle-outline';
+  }[] = [];
+  if (isSample) {
+    badges.push({ key: 'sample', label: t('sample.tag'), icon: 'information-circle-outline' });
+  }
   if (foundingNumber != null) {
     badges.push({ key: 'founding', label: t('vendorCard.founding'), icon: 'ribbon-outline' });
   }

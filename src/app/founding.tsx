@@ -40,7 +40,7 @@ export default function FoundingWallScreen() {
               key={item.slug}
               title={name}
               titleVariant="bodyLg"
-              subtitle={details}
+              subtitle={item.isSample ? `${details} · ${t('sample.tag')}` : details}
               accessibilityLabel={t('founding.rowSpoken', {
                 number: item.foundingNumber,
                 name,

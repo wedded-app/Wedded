@@ -57,6 +57,8 @@ export type VendorResult = {
   photoUrl: string | null;
   /** The cover's storage path, for a bigger size (photoUrl(coverPath, 'medium')). */
   coverPath: string | null;
+  /** A demo sample, not a real business: show the Sample tag. */
+  isSample: boolean;
 };
 
 const PRICE_UNITS: readonly string[] = [
@@ -122,6 +124,7 @@ export async function searchVendors(params: VendorSearch): Promise<VendorResult[
       longitude: row.longitude ?? 0,
       photoUrl: row.cover_path ? photoUrl(row.cover_path, 'small') : null,
       coverPath: row.cover_path,
+      isSample: row.is_sample ?? false,
     };
   });
 }

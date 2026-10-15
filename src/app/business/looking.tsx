@@ -6,6 +6,7 @@ import Animated from 'react-native-reanimated';
 import { AppText } from '@/components/app-text';
 import { Icon, type IconName } from '@/components/icon';
 import { Segmented } from '@/components/segmented';
+import { SampleTag } from '@/components/sample-tag';
 import { StateView } from '@/components/state-view';
 import { makeStyles, Radius, SchemeContext, Spacing, useColors } from '@/constants/theme';
 import {
@@ -149,7 +150,10 @@ function Post({ card }: { card: LookingCard }) {
       <View style={styles.byline}>
         <FamilyAvatar name={card.familyName} />
         <View style={styles.grow}>
-          <AppText weight={700}>{card.familyName}</AppText>
+          <View style={styles.nameRow}>
+            <AppText weight={700}>{card.familyName}</AppText>
+            <SampleTag show={card.isSample} />
+          </View>
           <AppText variant="label" weight={400} color="text2">
             {[card.city, words.ago(card.postedAt)].join(' · ')}
           </AppText>
@@ -289,6 +293,12 @@ const useStyles = makeStyles((Colors) => ({
   post: {
     gap: Spacing.md,
     paddingVertical: Spacing.xl,
+  },
+  nameRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flexWrap: 'wrap',
+    gap: Spacing.sm,
   },
   byline: {
     flexDirection: 'row',

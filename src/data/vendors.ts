@@ -85,6 +85,8 @@ export type VendorProfile = {
   price: VendorPrice | null;
   priceNote: string | null;
   foundingNumber: number | null;
+  /** A demo sample, not a real business: show the Sample tag. */
+  isSample: boolean;
   facts: HallFacts;
   /** Up to 3, primary first. */
   categories: { slug: string; name: LocalizedText; groupSlug: string }[];
@@ -133,7 +135,7 @@ async function fetchVendor(slug: string): Promise<VendorProfile | null> {
   const { data, error } = await supabase
     .from('vendors')
     .select(
-      'id, slug, name, tagline, bio, city, address_line, service_radius_miles, will_travel, travel_note, call_phone, text_phone, whatsapp_phone, instagram_handle, website_url, languages, price_display, price_from, price_to, price_unit, price_note, founding_number, details, vendor_categories(position, category:categories(slug, name, group_slug))',
+      'id, slug, name, tagline, bio, city, address_line, service_radius_miles, will_travel, travel_note, call_phone, text_phone, whatsapp_phone, instagram_handle, website_url, languages, price_display, price_from, price_to, price_unit, price_note, founding_number, is_sample, details, vendor_categories(position, category:categories(slug, name, group_slug))',
     )
     .eq('slug', slug)
     .maybeSingle();
@@ -159,6 +161,7 @@ async function fetchVendor(slug: string): Promise<VendorProfile | null> {
     price: priceOf(data),
     priceNote: data.price_note,
     foundingNumber: data.founding_number,
+    isSample: data.is_sample,
     facts: factsOf(data.details),
     categories: [...data.vendor_categories]
       .sort((a, b) => a.position - b.position)
@@ -197,6 +200,8 @@ export type FoundingVendor = {
   foundingNumber: number;
   name: LocalizedText;
   city: string;
+  /** A demo sample, not a real business: show the Sample tag. */
+  isSample: boolean;
   /** Their primary category. */
   category: LocalizedText | null;
 };
@@ -205,7 +210,7 @@ async function fetchFoundingVendors(): Promise<FoundingVendor[]> {
   const { data, error } = await supabase
     .from('vendors')
     .select(
-      'slug, name, city, founding_number, vendor_categories(position, category:categories(slug, name))',
+      'slug, name, city, founding_number, is_sample, vendor_categories(position, category:categories(slug, name))',
     )
     .not('founding_number', 'is', null)
     .order('founding_number');
@@ -219,6 +224,7 @@ async function fetchFoundingVendors(): Promise<FoundingVendor[]> {
         foundingNumber: row.founding_number,
         name: { en: row.name },
         city: row.city,
+        isSample: row.is_sample,
         category: primary ? asLocalizedText(primary.category.name) : null,
       },
     ];

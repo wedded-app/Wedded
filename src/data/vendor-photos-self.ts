@@ -1,3 +1,4 @@
+import { assertUploadFits } from './upload-limits';
 /**
  * Vendors add and arrange their own photos (C6d, #212). The phone makes the
  * three sizes the app shows (400, 1080 and 1600 wide, WebP), uploads them to
@@ -111,9 +112,11 @@ export async function uploadVendorPhoto(
         .renderAsync();
       const saved = await rendered.saveAsync({ format: SaveFormat.WEBP, compress: 0.8 });
       const path = `${folder}/${size.name}.webp`;
+      const bytes = await readBytes(saved.uri);
+      assertUploadFits('vendor-media', bytes, 'image/webp');
       const { error } = await supabase.storage
         .from('vendor-media')
-        .upload(path, await readBytes(saved.uri), { contentType: 'image/webp', upsert: false });
+        .upload(path, bytes, { contentType: 'image/webp', upsert: false });
       if (error) throw new Error(error.message);
       uploaded.push(path);
       if (size.name === 1600) largest = { width: saved.width, height: saved.height };

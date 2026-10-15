@@ -149,6 +149,7 @@ export default function SearchScreen() {
                     startingPrice={vendor.startingPrice}
                     photoUrl={vendor.photoUrl}
                     foundingNumber={vendor.foundingNumber}
+                    isSample={vendor.isSample}
                     saved={savedIds.has(vendor.id)}
                     onToggleSave={() => toggleSave(vendor.id)}
                     onPress={() =>
