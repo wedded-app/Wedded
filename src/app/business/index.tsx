@@ -27,8 +27,11 @@ import {
   useBusinessReels,
 } from '@/data/business-insights';
 import { useVendorMenus } from '@/data/vendor-menus';
+import { useMyVendorPhotos } from '@/data/vendor-photos-self';
 import { changeFrom } from '@/features/business/business-format';
 import { LeadRow, StatCard } from '@/features/business/business-parts';
+import { GetPaid } from '@/features/business/get-paid';
+import { FamiliesLookingEntry } from '@/features/requests/families-looking-entry';
 import {
   FunnelSteps,
   HowYouCompare,
@@ -75,7 +78,7 @@ const CONTACT_STATS: (keyof BusinessStats)[] = [
 export default function BusinessScreen() {
   const Colors = useColors();
   const styles = useStyles();
-  const { t, locale } = useLocale();
+  const { t } = useLocale();
   const current = useCurrentBusiness();
   const [days, setDays] = useState<StatsPeriod>(30);
   // At large text the number cards go one per row instead of two
@@ -86,6 +89,7 @@ export default function BusinessScreen() {
   const checklist = useBusinessChecklist(current.vendorId);
   const leads = useBusinessLeads(current.vendorId);
   const menus = useVendorMenus(current.vendorId);
+  const photos = useMyVendorPhotos(current.vendorId);
   const exporting = useExportBusiness(current.vendorId);
   const business = current.business;
 
@@ -104,7 +108,7 @@ export default function BusinessScreen() {
     );
   }
 
-  const name = locale === 'pa' && business.namePa ? business.namePa : business.name;
+  const name = business.name;
   const now = stats.data?.current ?? EMPTY_STATS;
   const before = stats.data?.previous ?? EMPTY_STATS;
   const changeWords = (key: keyof BusinessStats) => {
@@ -124,7 +128,7 @@ export default function BusinessScreen() {
             <Chip
               key={b.id}
               role="radio"
-              label={locale === 'pa' && b.namePa ? b.namePa : b.name}
+              label={b.name}
               selected={b.id === business.id}
               onPress={() => chooseBusiness(b.id)}
             />
@@ -216,11 +220,13 @@ export default function BusinessScreen() {
                 onPress={() => router.push({ pathname: '/business/lead', params: { id: lead.id } })}
               />
             ))}
-            <Button
-              variant="secondary"
-              label={t('business.leads.seeAll', { count: leadList.length })}
-              onPress={() => router.push('/business/leads')}
-            />
+            {leadList.length > 3 && (
+              <Button
+                variant="secondary"
+                label={t('business.leads.seeAll', { count: leadList.length })}
+                onPress={() => router.push('/business/leads')}
+              />
+            )}
           </>
         )}
       </View>
@@ -245,6 +251,13 @@ export default function BusinessScreen() {
           onPress={() => router.push('/business/listing')}
         />
         <ListRow
+          icon="images-outline"
+          title={t('business.photos.title')}
+          subtitle={t('business.photos.rowHint')}
+          value={photos.data ? String(photos.data.length) : undefined}
+          onPress={() => router.push('/business/photos')}
+        />
+        <ListRow
           icon="restaurant-outline"
           title={t('business.menus.title')}
           subtitle={t('business.menus.rowHint')}
@@ -266,6 +279,10 @@ export default function BusinessScreen() {
           />
         )}
       </ListSection>
+
+      <FamiliesLookingEntry vendorId={business.id} />
+
+      <GetPaid vendorId={business.id} />
 
       <View style={styles.block}>
         <ListSection>

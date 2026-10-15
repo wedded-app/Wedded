@@ -19,18 +19,18 @@ import { useCurrentBusiness } from './use-current-business';
 export function BusinessHomeCard() {
   const Colors = useColors();
   const styles = useStyles();
-  const { t, locale } = useLocale();
+  const { t } = useLocale();
   const current = useCurrentBusiness();
   const stats = useBusinessStats(current.vendorId, 7);
   const leads = useBusinessLeads(current.vendorId);
   const business = current.business;
   if (!business) return null;
 
-  const name = locale === 'pa' && business.namePa ? business.namePa : business.name;
+  const name = business.name;
   const week = stats.data?.current;
   const waiting = waitingCount(leads.data ?? []);
   const weekLine = week
-    ? t('business.home.week', { views: week.views, asked: week.inquiries })
+    ? t('business.home.week', { count: week.views, asked: week.inquiries })
     : null;
 
   return (

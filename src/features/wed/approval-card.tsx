@@ -377,7 +377,7 @@ function Fact({ icon, label, text }: { icon: IconName; label: string; text: stri
   const Colors = useColors();
   const styles = useStyles();
   const scale = useFontScale('body');
-  const { lineHeight } = useTypeStyle({ text });
+  const { lineHeight } = useTypeStyle({});
   return (
     <View style={styles.fact}>
       <View style={[styles.factIcon, { height: lineHeight * scale, width: Sizes.icon * scale }]}>
@@ -397,7 +397,7 @@ function Message({ id, text, editable }: { id: string; text: string; editable: b
   const styles = useStyles();
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(text);
-  const { script, maxFontSizeMultiplier, ...font } = useTypeStyle({ text: draft });
+  const { maxFontSizeMultiplier, ...font } = useTypeStyle({});
 
   const done = () => {
     wed.editMessage(id, draft.trim() || text);
@@ -437,7 +437,6 @@ function Message({ id, text, editable }: { id: string; text: string; editable: b
           multiline
           autoFocus
           accessibilityLabel="The message"
-          accessibilityLanguage={script}
           maxFontSizeMultiplier={maxFontSizeMultiplier}
           style={[font, styles.input, { color: Colors.text }]}
         />

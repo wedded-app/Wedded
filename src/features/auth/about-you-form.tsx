@@ -47,6 +47,8 @@ export type AboutYouFormProps = {
   confirmedAdult?: boolean;
   /** Button text; defaults to "Create account". */
   submitLabel?: string;
+  /** A vendor account: the same details, asked in a business's words. */
+  forBusiness?: boolean;
   style?: StyleProp<ViewStyle>;
 };
 
@@ -70,6 +72,7 @@ export function AboutYouForm({
   emailHidden = false,
   confirmedAdult = false,
   submitLabel,
+  forBusiness = false,
   style,
 }: AboutYouFormProps) {
   const { t } = useLocale();
@@ -92,6 +95,20 @@ export function AboutYouForm({
     phone: phoneRef,
     email: emailRef,
   };
+
+  // The cursor starts in the first empty box (the name, for a new account)
+  const [firstEmpty] = useState<TextFieldName | null>(() =>
+    !draft.name.trim()
+      ? 'name'
+      : !draft.city.trim()
+        ? 'city'
+        : !draft.phone.trim()
+          ? 'phone'
+          : null,
+  );
+  const scroll = useRef<ScrollView>(null);
+  // Done on the last box: the keyboard goes and the button comes into view
+  const showSubmit = () => setTimeout(() => scroll.current?.scrollToEnd({ animated: true }), 250);
 
   const { errors, values } = validateAboutYou(draft);
   // The phone is the last box when the email is read-only or left out.
@@ -118,14 +135,16 @@ export function AboutYouForm({
 
   return (
     <ScrollView
+      ref={scroll}
       style={style}
       contentContainerStyle={styles.content}
       keyboardShouldPersistTaps="handled"
       automaticallyAdjustKeyboardInsets
     >
       <AppText variant="title" accessibilityRole="header">
-        {t('aboutYou.title')}
+        {t(forBusiness ? 'aboutYou.business.title' : 'aboutYou.title')}
       </AppText>
+      {forBusiness && <AppText color="text2">{t('aboutYou.business.intro')}</AppText>}
 
       <TextField
         ref={nameRef}
@@ -138,6 +157,7 @@ export function AboutYouForm({
         returnKeyType="next"
         submitBehavior="submit"
         onSubmitEditing={() => cityRef.current?.focus()}
+        autoFocus={firstEmpty === 'name'}
       />
       <TextField
         ref={cityRef}
@@ -150,19 +170,21 @@ export function AboutYouForm({
         returnKeyType="next"
         submitBehavior="submit"
         onSubmitEditing={() => phoneRef.current?.focus()}
+        autoFocus={firstEmpty === 'city'}
       />
       <TextField
         ref={phoneRef}
         type="phone"
         label={t('aboutYou.phone')}
-        hint={t('aboutYou.phoneHint')}
+        hint={t(forBusiness ? 'aboutYou.business.phoneHint' : 'aboutYou.phoneHint')}
         value={draft.phone}
         onChangeText={setField('phone')}
         error={errorFor('phone')}
         maxLength={20}
         returnKeyType={phoneIsLast ? 'done' : 'next'}
         submitBehavior={phoneIsLast ? 'blurAndSubmit' : 'submit'}
-        onSubmitEditing={() => !phoneIsLast && emailRef.current?.focus()}
+        onSubmitEditing={() => (phoneIsLast ? showSubmit() : emailRef.current?.focus())}
+        autoFocus={firstEmpty === 'phone'}
       />
       {!emailHidden && (
         <TextField
@@ -177,6 +199,7 @@ export function AboutYouForm({
           maxLength={254}
           returnKeyType="done"
           submitBehavior="blurAndSubmit"
+          onSubmitEditing={showSubmit}
         />
       )}
       {!confirmedAdult && (

@@ -26,7 +26,7 @@ import { Motion } from '@/lib/motion';
  */
 export default function PlanEventsScreen() {
   const styles = useStyles();
-  const { t, locale } = useLocale();
+  const { t } = useLocale();
   const view = usePlanView();
   const { plan, traditions, active, events, canEdit } = view;
   const activeSlugs = active.map((tradition) => tradition.slug);
@@ -77,7 +77,7 @@ export default function PlanEventsScreen() {
             {traditions.map((tradition) => (
               <Chip
                 key={tradition.slug}
-                label={localized(tradition.name, locale)}
+                label={localized(tradition.name)}
                 selected={activeSlugs.includes(tradition.slug)}
                 disabled={!canEdit}
                 onPress={() => view.toggleTradition(tradition.slug, activeSlugs)}

@@ -18,7 +18,7 @@ import { LocationChip } from '@/features/location/location-chip';
 import { FiltersButton } from '@/features/search/filters-button';
 import { useSearchFilters } from '@/features/search/search-filters';
 import { useSearchLocation } from '@/features/location/search-location';
-import { bilingual, localized } from '@/i18n/localized';
+import { localized } from '@/i18n/localized';
 import { useLocale } from '@/i18n/locale-context';
 
 const WIDER_MILES = 50;
@@ -36,7 +36,7 @@ export default function ResultsScreen() {
     category: string;
     event?: string;
   }>();
-  const { locale, t } = useLocale();
+  const { t } = useLocale();
   const router = useRouter();
   const scroll = useNavScroll();
   const top = useNavTop();
@@ -88,7 +88,7 @@ export default function ResultsScreen() {
   const category = categories.data?.find((c) => c.slug === categorySlug);
   // While categories load, show no title rather than the raw slug.
   const categoryName = category?.name ?? (categories.isPending ? null : { en: categorySlug });
-  const title = categoryName ? bilingual(categoryName, locale) : null;
+  const title = categoryName ? localized(categoryName) : null;
 
   async function onRefresh() {
     setRefreshing(true);
@@ -101,13 +101,8 @@ export default function ResultsScreen() {
       {title && (
         <LargeTitle
           scroll={scroll}
-          title={title.primary.text}
-          lang={title.primary.lang}
-          subtitle={title.secondary?.text}
-          subtitleLang={title.secondary?.lang}
-          eyebrow={
-            event.data ? t('results.savingTo', { event: localized(event.data.name, locale) }) : null
-          }
+          title={title}
+          eyebrow={event.data ? t('results.savingTo', { event: localized(event.data.name) }) : null}
         />
       )}
       <LocationChip />
@@ -177,6 +172,7 @@ export default function ResultsScreen() {
             startingPrice={item.startingPrice}
             photoUrl={item.photoUrl}
             foundingNumber={item.foundingNumber}
+            isSample={item.isSample}
             travelsToYou={item.withinSearchRadius === false}
             saved={savedIds.has(item.id)}
             onToggleSave={() => toggleSave(item.id, eventSlug)}
@@ -200,7 +196,7 @@ export default function ResultsScreen() {
           />
         }
       />
-      <NavBar scroll={scroll} title={title?.primary.text} titleLang={title?.primary.lang} />
+      <NavBar scroll={scroll} title={title} />
     </View>
   );
 }

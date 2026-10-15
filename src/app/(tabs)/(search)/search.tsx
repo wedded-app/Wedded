@@ -44,7 +44,7 @@ const VENDOR_LIMIT = 10;
  * wedding" on top, which opens the first questions already filled in.
  */
 export default function SearchScreen() {
-  const { t, locale } = useLocale();
+  const { t } = useLocale();
   const router = useRouter();
   const { focus } = useLocalSearchParams<{ focus?: string }>();
   const inputRef = useRef<TextInput>(null);
@@ -163,6 +163,7 @@ export default function SearchScreen() {
                     startingPrice={vendor.startingPrice}
                     photoUrl={vendor.photoUrl}
                     foundingNumber={vendor.foundingNumber}
+                    isSample={vendor.isSample}
                     saved={savedIds.has(vendor.id)}
                     onToggleSave={() => toggleSave(vendor.id)}
                     onPress={() =>
@@ -202,7 +203,7 @@ export default function SearchScreen() {
                 <Chip
                   key={category.slug}
                   role="button"
-                  label={localized(category.name, locale)}
+                  label={localized(category.name)}
                   onPress={() => openCategory(category.slug)}
                 />
               ))}

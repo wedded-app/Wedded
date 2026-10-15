@@ -14,21 +14,12 @@ import { SITE_URL_IS_PLACEHOLDER, siteLink } from '@/constants/links';
 import { BorderWidth, Palettes, Radius, Spacing } from '@/constants/theme';
 import { useVendor } from '@/data/vendors';
 import { tableTentHtml, type TableTent } from '@/features/tent/table-tent';
-import { i18n } from '@/i18n';
 import { useLocale } from '@/i18n/locale-context';
 
 // The preview is the printed page: white paper whatever the phone's appearance.
 const Colors = Palettes.light;
 
 const QR_SIZE = 200;
-
-/** A string in both languages: the tent is bilingual whatever the app is set to. */
-function both(key: string, options?: Record<string, unknown>) {
-  return {
-    en: i18n.t(key, { ...options, locale: 'en' }),
-    pa: i18n.t(key, { ...options, locale: 'pa' }),
-  };
-}
 
 /**
  * The printed QR table tent a founding vendor gets for their front desk
@@ -61,11 +52,10 @@ export default function TableTentScreen() {
   const tent: TableTent = {
     url,
     name: v.name.en,
-    namePa: v.name.pa,
     founding:
-      v.foundingNumber != null ? both('vendor.foundingNumber', { number: v.foundingNumber }) : null,
-    scan: both('tent.scan'),
-    findUs: both('tent.findUs', { app: i18n.t('app.name', { locale: 'en' }) }),
+      v.foundingNumber != null ? t('vendor.foundingNumber', { number: v.foundingNumber }) : null,
+    scan: t('tent.scan'),
+    findUs: t('tent.findUs', { app: t('app.name') }),
   };
 
   async function print() {
@@ -104,33 +94,19 @@ export default function TableTentScreen() {
         {/* One side of the tent, as it prints. */}
         <View style={styles.preview}>
           <AppText color="text2" style={styles.center}>
-            {tent.findUs.en}
-          </AppText>
-          <AppText color="text2" lang="pa" style={styles.center}>
-            {tent.findUs.pa}
+            {tent.findUs}
           </AppText>
           {tent.founding && (
             <AppText weight={700} color="kesari" style={styles.center}>
-              {`${tent.founding.en} · `}
-              <AppText weight={700} color="kesari" lang="pa">
-                {tent.founding.pa}
-              </AppText>
+              {tent.founding}
             </AppText>
           )}
           <AppText variant="title" color="primary" style={styles.center}>
             {tent.name}
           </AppText>
-          {tent.namePa ? (
-            <AppText variant="heading" lang="pa" style={styles.center}>
-              {tent.namePa}
-            </AppText>
-          ) : null}
           <QrCode value={url} size={QR_SIZE} accessibilityLabel={t('tent.qrLabel', { url })} />
           <AppText weight={600} style={styles.center}>
-            {tent.scan.en}
-          </AppText>
-          <AppText weight={600} lang="pa" style={styles.center}>
-            {tent.scan.pa}
+            {tent.scan}
           </AppText>
           <AppText variant="label" color="text2" style={styles.center}>
             {url.replace(/^https?:\/\//, '')}

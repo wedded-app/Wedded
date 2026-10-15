@@ -23,11 +23,8 @@ const SLUG = /^[a-z0-9]+(-[a-z0-9]+)*$/;
 
 const TEXT_LIMITS = {
   name: 80,
-  name_pa: 80,
   tagline: 120,
-  tagline_pa: 120,
   bio: 2000,
-  bio_pa: 2000,
   city: 80,
   address_line: 200,
   travel_note: 300,
@@ -129,9 +126,7 @@ export type VendorInput = {
 /** A menu as the file gives it; the database checks the sections' shape. */
 export type VendorMenu = {
   name: string;
-  name_pa?: string;
   description?: string;
-  description_pa?: string;
   cuisine?: string;
   diet?: string[];
   price_from?: number;

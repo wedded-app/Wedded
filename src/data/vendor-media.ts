@@ -42,7 +42,7 @@ export type VenuePhoto = VendorPhoto & {
   vendor: { slug: string; name: LocalizedText };
 };
 
-type PhotoRow = {
+export type PhotoRow = {
   id: string;
   storage_path: string;
   width: number;
@@ -54,7 +54,7 @@ type PhotoRow = {
   credit: { name: string } | null;
 };
 
-function toPhoto(row: PhotoRow): VendorPhoto {
+export function toPhoto(row: PhotoRow): VendorPhoto {
   return {
     id: row.id,
     width: row.width,
@@ -71,7 +71,7 @@ function toPhoto(row: PhotoRow): VendorPhoto {
   };
 }
 
-const PHOTO_COLUMNS =
+export const PHOTO_COLUMNS =
   'id, storage_path, width, height, blurhash, is_cover, event_slug, credit_text, credit:vendors!vendor_media_credit_vendor_id_fkey(name)';
 
 async function fetchVendorPhotos(vendorId: string): Promise<VendorPhoto[]> {
@@ -98,7 +98,7 @@ export function useVendorPhotos(vendorId: string) {
 async function fetchRealWeddingsAt(venueId: string): Promise<VenuePhoto[]> {
   const { data, error } = await supabase
     .from('vendor_media')
-    .select(`${PHOTO_COLUMNS}, vendor:vendors!vendor_media_vendor_id_fkey(slug, name, name_pa)`)
+    .select(`${PHOTO_COLUMNS}, vendor:vendors!vendor_media_vendor_id_fkey(slug, name)`)
     .eq('venue_vendor_id', venueId)
     .neq('vendor_id', venueId)
     .order('created_at', { ascending: false })
@@ -108,9 +108,7 @@ async function fetchRealWeddingsAt(venueId: string): Promise<VenuePhoto[]> {
     ...toPhoto(row),
     vendor: {
       slug: row.vendor.slug,
-      name: row.vendor.name_pa
-        ? { en: row.vendor.name, pa: row.vendor.name_pa }
-        : { en: row.vendor.name },
+      name: { en: row.vendor.name },
     },
   }));
 }

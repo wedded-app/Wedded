@@ -192,7 +192,7 @@ function Typing({
   const Colors = useColors();
   const styles = useStyles();
   const reduceMotion = useReducedMotion();
-  const { script, maxFontSizeMultiplier, ...font } = useTypeStyle({ variant: 'body', text: draft });
+  const { maxFontSizeMultiplier, ...font } = useTypeStyle({ variant: 'body' });
   const hasWords = draft.trim().length > 0;
   const shown = useSharedValue(hasWords ? 1 : 0);
 
@@ -248,7 +248,6 @@ function Typing({
         {...ONE_ROW_ON_WEB}
         maxFontSizeMultiplier={maxFontSizeMultiplier}
         accessibilityLabel="Ask Wed anything"
-        accessibilityLanguage={script}
         onKeyPress={onKeyPress}
         style={[
           font,

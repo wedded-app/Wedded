@@ -25,6 +25,9 @@ export type PhotoUpload = {
 
 type Send = ReturnType<typeof useSendMessage>;
 
+/** iOS drops a permission question asked while an alert is still closing. */
+const afterAlert = () => new Promise((resolve) => setTimeout(resolve, 400));
+
 /** Shows a native question and says which button was pressed. */
 function ask(title: string, body: string, no: string, yes: string): Promise<boolean> {
   return new Promise((resolve) =>
@@ -68,6 +71,7 @@ export function usePhotoSender(conversationId: string, send: Send) {
         t('chat.photos.continue'),
       );
       if (!go) return false;
+      await afterAlert();
       const access = await askMediaAccess('library');
       if (access === 'granted') return true;
       if (access === 'denied') {

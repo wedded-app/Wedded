@@ -1,5 +1,5 @@
-import { type Ref } from 'react';
-import { Pressable, TextInput, View } from 'react-native';
+import { type Ref, useState } from 'react';
+import { Platform, Pressable, TextInput, View } from 'react-native';
 
 import { useFontScale, useTypeStyle } from '@/components/app-text';
 import { Icon } from '@/components/icon';
@@ -20,10 +20,12 @@ export function SearchField({ value, onChangeText, placeholder, ref }: SearchFie
   const styles = useStyles();
   const { t } = useLocale();
   const scale = useFontScale('body');
-  const { script, lineHeight, maxFontSizeMultiplier, ...font } = useTypeStyle({ text: value });
+  const { lineHeight, maxFontSizeMultiplier, ...font } = useTypeStyle({});
+  // On the web, a ring shows keyboard users where they are (phones draw none)
+  const [focused, setFocused] = useState(false);
 
   return (
-    <View style={styles.field}>
+    <View style={[styles.field, Platform.OS === 'web' && focused && styles.focused]}>
       <Icon name="search" size={Sizes.iconSmall * scale} color={Colors.text2} weight="medium" />
       <TextInput
         ref={ref}
@@ -32,13 +34,14 @@ export function SearchField({ value, onChangeText, placeholder, ref }: SearchFie
         placeholder={placeholder ?? t('search.placeholder')}
         placeholderTextColor={Colors.text2}
         accessibilityLabel={placeholder ?? t('search.label')}
-        accessibilityLanguage={script}
         returnKeyType="search"
         autoCorrect={false}
         autoCapitalize="none"
         maxFontSizeMultiplier={maxFontSizeMultiplier}
         selectionColor={Colors.primary}
         cursorColor={Colors.primary}
+        onFocus={() => setFocused(true)}
+        onBlur={() => setFocused(false)}
         style={[styles.input, font]}
       />
       {value.length > 0 && (
@@ -64,6 +67,12 @@ const useStyles = makeStyles((Colors) => ({
     paddingLeft: Spacing.md + 2,
     borderRadius: Radius.button,
     backgroundColor: Colors.fill,
+    // Room for the web focus ring, so the text doesn't move when it shows
+    borderWidth: 2,
+    borderColor: 'transparent',
+  },
+  focused: {
+    borderColor: Colors.primary,
   },
   input: {
     flex: 1,

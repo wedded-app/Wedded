@@ -42,7 +42,7 @@ const light = {
   accent: '#F0A030', // marigold: fills only, never text
   kesari: '#A8500A', // text-safe saffron, "Founding vendor" text
   kesariTint: '#FBEFE3', // saffron at about 10 percent, behind founding numbers
-  success: '#248A3D', // systemGreen as iOS draws it with Increase Contrast, 4.6:1
+  success: '#1E7B34', // a deeper systemGreen: 4.6:1 on grouped grey and fills, 5.3:1 on white (WCAG AA)
   successTint: 'rgba(36, 138, 61, 0.14)', // behind a green word, e.g. the Veg tag
   pink: '#B4335C',
   verified: '#1F6F5F',
@@ -273,32 +273,27 @@ export const BorderWidth = {
 /**
  * Type scale, mirroring iOS Dynamic Type at the default size (Large Title 34,
  * Title 1 28, Title 3 20, Body 17, Subheadline 15, Footnote 13), with a 19
- * point body for the names elders scan for. Gurmukhi letterforms hang from
- * the headline and read smaller at the same nominal size, so Punjabi text
- * renders ~8% bigger with taller line height (vowel marks stack above and
- * below and clip when line height is tight).
+ * point body for the names elders scan for.
  */
 export const Typography = {
-  display: { size: 34, weight: 700, lineHeight: 1.2, lineHeightPa: 1.35, maxScale: 1.6 },
-  title: { size: 28, weight: 700, lineHeight: 1.2, lineHeightPa: 1.35, maxScale: 1.8 },
-  section: { size: 22, weight: 700, lineHeight: 1.25, lineHeightPa: 1.4, maxScale: 1.8 },
-  heading: { size: 20, weight: 600, lineHeight: 1.25, lineHeightPa: 1.45, maxScale: 2 },
-  bodyLg: { size: 19, weight: 400, lineHeight: 1.3, lineHeightPa: 1.6, maxScale: 2 },
-  body: { size: 17, weight: 400, lineHeight: 1.33, lineHeightPa: 1.6, maxScale: 2 },
-  label: { size: 15, weight: 500, lineHeight: 1.33, lineHeightPa: 1.55, maxScale: 1.6 },
-  button: { size: 17, weight: 600, lineHeight: 1.3, lineHeightPa: 1.5, maxScale: 1.6 },
-  caption: { size: 13, weight: 400, lineHeight: 1.35, lineHeightPa: 1.55, maxScale: 1.5 },
+  display: { size: 34, weight: 700, lineHeight: 1.2, maxScale: 1.6 },
+  title: { size: 28, weight: 700, lineHeight: 1.2, maxScale: 1.8 },
+  section: { size: 22, weight: 700, lineHeight: 1.25, maxScale: 1.8 },
+  heading: { size: 20, weight: 600, lineHeight: 1.25, maxScale: 2 },
+  bodyLg: { size: 19, weight: 400, lineHeight: 1.3, maxScale: 2 },
+  body: { size: 17, weight: 400, lineHeight: 1.33, maxScale: 2 },
+  label: { size: 15, weight: 500, lineHeight: 1.33, maxScale: 1.6 },
+  button: { size: 17, weight: 600, lineHeight: 1.3, maxScale: 1.6 },
+  caption: { size: 13, weight: 400, lineHeight: 1.35, maxScale: 1.5 },
 } as const;
 
 export type TypographyVariant = keyof typeof Typography;
 export type FontWeight = 400 | 500 | 600 | 700 | 800;
 
-export const GURMUKHI_SIZE_MULTIPLIER = 1.08;
-
 /**
  * Latin text is San Francisco on iPhone (the system font), and Inter on
  * Android and the web, the closest free match, loaded at runtime so it works
- * in Expo Go. Gurmukhi is Mukta Mahee everywhere. Loaded fonts carry their
+ * in Expo Go. Loaded fonts carry their
  * weight in the family name; adding a fontWeight to them makes Android and
  * browsers draw a fake bold, so only the system font gets one.
  */
@@ -312,36 +307,19 @@ const INTER = {
 
 const latin = (weight: FontWeight) => (Platform.OS === 'ios' ? 'System' : INTER[weight]);
 
-export const FontFamilies: Record<'en' | 'pa', Record<FontWeight, string>> = {
-  en: {
-    400: latin(400),
-    500: latin(500),
-    600: latin(600),
-    700: latin(700),
-    800: latin(800),
-  },
-  pa: {
-    400: 'MuktaMahee_400Regular',
-    500: 'MuktaMahee_500Medium',
-    600: 'MuktaMahee_600SemiBold',
-    700: 'MuktaMahee_700Bold',
-    800: 'MuktaMahee_800ExtraBold',
-  },
-};
-
 /**
  * Fraunces, a soft and lively serif, for the few big display lines (the
  * welcome phrases, "What's your phone number?"). Loaded at runtime with the
  * other fonts, in two weights, so it carries its weight in the family name
- * like Inter. Latin only; Gurmukhi keeps Mukta Mahee.
+ * like Inter.
  */
 export function serifFamily(weight: FontWeight): string {
   return weight >= 600 ? 'Fraunces_600SemiBold' : 'Fraunces_500Medium';
 }
 
-/** The style that draws `weight` in `script`: family, plus fontWeight for the system font. */
-export function fontStyle(script: 'en' | 'pa', weight: FontWeight) {
-  const fontFamily = FontFamilies[script][weight];
+/** The style that draws `weight`: family, plus fontWeight for the system font. */
+export function fontStyle(weight: FontWeight) {
+  const fontFamily = latin(weight);
   return fontFamily === 'System'
     ? { fontFamily, fontWeight: String(weight) as `${FontWeight}` }
     : { fontFamily };

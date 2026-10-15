@@ -78,6 +78,14 @@ export default function ProfileScreen() {
             onPress={() => router.push('/my-inquiries')}
           />
         )}
+        {status === 'signedIn' && !isVendor && (
+          <ListRow
+            icon="megaphone-outline"
+            title={t('requests.mine.title')}
+            subtitle={t('requests.mine.rowHint')}
+            onPress={() => router.push('/requests')}
+          />
+        )}
         <ListRow
           icon="chatbubbles-outline"
           title={t('chat.title')}
@@ -95,11 +103,13 @@ export default function ProfileScreen() {
           title={t('home.foundingWall')}
           onPress={() => router.push('/founding')}
         />
-        <ListRow
-          icon="storefront-outline"
-          title={t('home.forVendors')}
-          onPress={() => router.push('/for-vendors')}
-        />
+        {!isVendor && (
+          <ListRow
+            icon="storefront-outline"
+            title={t('home.forVendors')}
+            onPress={() => router.push('/for-vendors')}
+          />
+        )}
       </ListSection>
     </NavScreen>
   );
@@ -275,7 +285,7 @@ function WedSection() {
 function SavedGrid() {
   const Colors = useColors();
   const styles = useStyles();
-  const { t, locale } = useLocale();
+  const { t } = useLocale();
   const { status } = useSession();
   const saves = useSavedVendors();
   if (status !== 'signedIn') return null;
@@ -306,7 +316,7 @@ function SavedGrid() {
             <Pressable
               key={vendor.slug}
               accessibilityRole="button"
-              accessibilityLabel={localized(vendor.name, locale)}
+              accessibilityLabel={localized(vendor.name)}
               onPress={() => router.push(`/v/${vendor.slug}` as Href)}
               style={({ pressed }) => [styles.tile, pressed && styles.pressed]}
             >

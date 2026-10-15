@@ -4,10 +4,12 @@
  * before, their leads (the inquiries families sent) and reel view counting.
  * Only the vendor's members can read any of it (see the my_business migration).
  */
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { useSession } from '@/features/auth/session';
 import { supabase } from '@/lib/supabase';
+
+import { chatKeys } from './chat';
 
 export const businessKeys = {
   all: ['business'] as const,
@@ -23,7 +25,6 @@ export type Business = {
   id: string;
   slug: string;
   name: string;
-  namePa: string | null;
   /** draft, published, … (vendors.status) */
   status: string;
   role: 'owner' | 'staff';
@@ -33,7 +34,6 @@ export function toBusiness(row: {
   id: string;
   slug: string;
   name: string;
-  name_pa: string | null;
   status: string;
   role: string;
 }): Business {
@@ -41,7 +41,6 @@ export function toBusiness(row: {
     id: row.id,
     slug: row.slug,
     name: row.name,
-    namePa: row.name_pa,
     status: row.status,
     role: row.role === 'staff' ? 'staff' : 'owner',
   };
@@ -67,6 +66,51 @@ export function useMyBusinesses() {
     isPending: userId.length > 0 && query.isPending,
     error: query.error,
   };
+}
+
+// Signing a business up (R5, #222) -------------------------------------------------------
+
+export type NewBusiness = {
+  name: string;
+  /** A vendor type from `categories` */
+  categorySlug: string;
+  /** A town from `cities` (matchCities) */
+  citySlug: string;
+};
+
+export type StartBusinessError = 'needsProfile' | 'tooMany' | 'invalid' | 'offline' | 'failed';
+
+/** What went wrong, from start_my_business's error message. */
+export function startBusinessErrorKind(message: string): StartBusinessError {
+  if (message.includes('needs_profile')) return 'needsProfile';
+  if (message.includes('too_many_drafts')) return 'tooMany';
+  if (/invalid_(name|category|city)/.test(message)) return 'invalid';
+  if (/network request failed|failed to fetch/i.test(message)) return 'offline';
+  return 'failed';
+}
+
+/**
+ * "Wedding business" at sign-up: makes an unpublished listing the person owns (after About
+ * you), or returns their draft of the same name. A founder publishes it. Returns its id and slug.
+ */
+export function useStartMyBusiness() {
+  const queryClient = useQueryClient();
+  const { session } = useSession();
+  return useMutation({
+    mutationFn: async (business: NewBusiness) => {
+      const { data, error } = await supabase.rpc('start_my_business', {
+        p_name: business.name.trim(),
+        p_category_slug: business.categorySlug,
+        p_city_slug: business.citySlug,
+      });
+      if (error) throw new Error(error.message);
+      return data as { vendorId: string; slug: string };
+    },
+    onSettled: () => {
+      void queryClient.invalidateQueries({ queryKey: businessKeys.all });
+      void queryClient.invalidateQueries({ queryKey: chatKeys.vendor(session?.user.id ?? '') });
+    },
+  });
 }
 
 // Numbers ----------------------------------------------------------------------------------

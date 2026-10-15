@@ -78,10 +78,7 @@ export function TextField({
   const Colors = useColors();
   const styles = useStyles();
   const [focused, setFocused] = useState(false);
-  const { script, lineHeight, maxFontSizeMultiplier, ...font } = useTypeStyle({
-    variant: 'bodyLg',
-    text: value ?? '',
-  });
+  const { lineHeight, maxFontSizeMultiplier, ...font } = useTypeStyle({ variant: 'bodyLg' });
 
   return (
     <View style={[styles.container, style]}>
@@ -98,7 +95,6 @@ export function TextField({
         ref={ref}
         accessibilityLabel={label}
         accessibilityHint={error ?? hint}
-        accessibilityLanguage={script}
         placeholderTextColor={Colors.text2}
         maxFontSizeMultiplier={maxFontSizeMultiplier}
         selectionColor={Colors.primary}

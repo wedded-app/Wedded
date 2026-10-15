@@ -413,6 +413,13 @@ export function ReelItem({
               </AppText>
             </View>
           )}
+          {reel.isSample && (
+            <View style={styles.vendorBadge} accessible accessibilityLabel={t('sample.label')}>
+              <AppText variant="caption" weight={700} style={styles.ink}>
+                {t('sample.tag')}
+              </AppText>
+            </View>
+          )}
         </Pressable>
         {reel.sourceUrl && reel.platform && (
           <Pressable

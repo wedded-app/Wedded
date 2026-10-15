@@ -5,7 +5,6 @@
  */
 import { useMutation } from '@tanstack/react-query';
 
-import type { Locale } from '@/i18n';
 import { supabase } from '@/lib/supabase';
 
 export type VendorLead = {
@@ -19,7 +18,7 @@ export type VendorLead = {
   instagramHandle?: string;
   /** Set for "Claim your profile". */
   claimedVendorId?: string;
-  language: Locale;
+  language: 'en';
 };
 
 async function submitVendorLead(lead: VendorLead) {

@@ -18,7 +18,7 @@ import { useLocale } from '@/i18n/locale-context';
 export default function FoundingWallScreen() {
   const styles = useStyles();
   const router = useRouter();
-  const { locale, t } = useLocale();
+  const { t } = useLocale();
   const vendors = useFoundingVendors();
 
   let body;
@@ -31,8 +31,8 @@ export default function FoundingWallScreen() {
     body = (
       <ListSection>
         {vendors.data.map((item) => {
-          const name = localized(item.name, locale);
-          const details = [item.category && localized(item.category, locale), item.city]
+          const name = localized(item.name);
+          const details = [item.category && localized(item.category), item.city]
             .filter(Boolean)
             .join(' · ');
           return (
@@ -40,7 +40,7 @@ export default function FoundingWallScreen() {
               key={item.slug}
               title={name}
               titleVariant="bodyLg"
-              subtitle={details}
+              subtitle={item.isSample ? `${details} · ${t('sample.tag')}` : details}
               accessibilityLabel={t('founding.rowSpoken', {
                 number: item.foundingNumber,
                 name,

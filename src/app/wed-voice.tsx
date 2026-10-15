@@ -6,22 +6,16 @@ import { AppText, useTypeStyle } from '@/components/app-text';
 import { GlassButton } from '@/components/glass-button';
 import { Icon, type IconName } from '@/components/icon';
 import { Screen } from '@/components/screen';
-import { Segmented } from '@/components/segmented';
 import { type ColorToken, makeStyles, Spacing, Typography, useColors } from '@/constants/theme';
 import { openWed, WED_HREF } from '@/features/wed/open-wed';
 import { VoiceBars } from '@/features/wed/voice-bars';
 import { wed } from '@/features/wed/wed-store';
 import { WedMark } from '@/features/wed/wed-mark';
-import type { Locale } from '@/i18n';
-import { useLocale } from '@/i18n/locale-context';
 import { selectionHaptic } from '@/lib/haptics';
 
 // Speech to text needs a development build, so for now what Wed "hears" is
-// scripted: the same ask in English or Punjabi, one word at a time
-const SAID: Record<Locale, string> = {
-  en: 'Find a dhol player for the Jaago',
-  pa: 'ਜਾਗੋ ਲਈ ਢੋਲੀ ਲੱਭੋ',
-};
+// scripted, one word at a time
+const SAID = 'Find a dhol player for the Jaago';
 const FIRST_WORD_MS = 900;
 const WORD_MS = 280;
 const BARS = 44;
@@ -29,7 +23,7 @@ const ROUND = 64;
 
 /**
  * MOCKUP: talking to Wed, full screen (a long press on the Wed tab). Wed
- * listens in English or Punjabi, the words appear big as they're heard (the
+ * listens, the words appear big as they're heard (the
  * newest one lighter until the next arrives), and Done sends them to the chat
  * and opens it, where Wed gets to work. Mute stops it listening without
  * leaving. Close leaves without sending anything.
@@ -37,11 +31,9 @@ const ROUND = 64;
 export default function WedVoiceScreen() {
   const Colors = useColors();
   const styles = useStyles();
-  const { locale } = useLocale();
-  const [lang, setLang] = useState<Locale>(locale);
   const [heard, setHeard] = useState(0);
   const [muted, setMuted] = useState(false);
-  const words = SAID[lang].split(' ');
+  const words = SAID.split(' ');
   const finished = heard >= words.length;
 
   // The next word arrives while Wed is listening
@@ -52,7 +44,7 @@ export default function WedVoiceScreen() {
   }, [heard, muted, words.length]);
 
   // Two lines of captions are kept free, so the words never push the page about
-  const { lineHeight } = useTypeStyle({ variant: 'title', lang });
+  const { lineHeight } = useTypeStyle({ variant: 'title' });
   const { fontScale } = useWindowDimensions();
   const captionHeight = lineHeight * 2 * Math.min(fontScale, Typography.title.maxScale);
 
@@ -65,7 +57,7 @@ export default function WedVoiceScreen() {
       close();
       return;
     }
-    wed.send(SAID[lang], { spoken: true });
+    wed.send(SAID, { spoken: true });
     openWed();
   }
 
@@ -77,24 +69,6 @@ export default function WedVoiceScreen() {
     <Screen plain edges={['top', 'bottom']}>
       <View style={styles.top}>
         <GlassButton icon="close" color={Colors.text} accessibilityLabel="Close" onPress={close} />
-        <View style={styles.langs}>
-          <View style={styles.langsTrack}>
-            <Segmented<Locale>
-              accessibilityLabel="Language you're speaking"
-              value={lang}
-              onChange={(next) => {
-                if (next === lang) return;
-                setLang(next);
-                setHeard(0);
-              }}
-              options={[
-                { value: 'en', label: 'English', lang: 'en' },
-                { value: 'pa', label: 'ਪੰਜਾਬੀ', lang: 'pa' },
-              ]}
-            />
-          </View>
-        </View>
-        <View style={styles.balance} />
       </View>
 
       <View style={styles.middle}>
@@ -106,13 +80,13 @@ export default function WedVoiceScreen() {
           <AppText
             variant="title"
             weight={600}
-            lang={lang}
+
             style={styles.center}
             accessibilityLiveRegion="polite"
           >
             {settled.join(' ')}
             {newest ? (
-              <AppText variant="title" weight={600} lang={lang} color="text2">
+              <AppText variant="title" weight={600} color="text2">
                 {settled.length > 0 ? ` ${newest}` : newest}
               </AppText>
             ) : null}
@@ -226,18 +200,6 @@ const useStyles = makeStyles(() => ({
     alignItems: 'center',
     gap: Spacing.md,
     paddingTop: Spacing.sm,
-  },
-  langs: {
-    flex: 1,
-    alignItems: 'center',
-  },
-  langsTrack: {
-    width: '100%',
-    maxWidth: 260,
-  },
-  // As wide as Close, so the languages sit in the middle
-  balance: {
-    width: 48,
   },
   middle: {
     flex: 1,

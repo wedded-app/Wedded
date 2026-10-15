@@ -5,6 +5,8 @@ import {
   Alert,
   FlatList,
   Platform,
+  RefreshControl,
+  ScrollView,
   Share,
   StyleSheet,
   View,
@@ -73,7 +75,7 @@ export function ReelsPager({
   empty: ReactNode;
 }) {
   const router = useRouter();
-  const { t, locale } = useLocale();
+  const { t } = useLocale();
   const { requireSignIn, session } = useSession();
   const bottomSpace = useBottomSpace();
   const reels = useReelsFeed(feed);
@@ -99,11 +101,15 @@ export function ReelsPager({
     void writeSetting(StorageKeys.reelsSwipeHint, 'done');
   };
 
+  const feedEmpty = reels.isSuccess && (reels.data?.pages[0]?.length ?? 0) === 0;
+  const { refetch } = reels;
   useFocusEffect(
     useCallback(() => {
       setFocused(true);
+      // An empty feed looks again each time the tab opens, for reels posted meanwhile
+      if (feedEmpty) void refetch();
       return () => setFocused(false);
-    }, []),
+    }, [feedEmpty, refetch]),
   );
 
   const list = useMemo(() => reels.data?.pages.flat() ?? [], [reels.data]);
@@ -113,11 +119,11 @@ export function ReelsPager({
     const names: Record<string, string> = {};
     for (const tradition of traditions.data ?? []) {
       for (const event of tradition.events) {
-        names[event.slug] ??= localized(event.name, locale);
+        names[event.slug] ??= localized(event.name);
       }
     }
     return names;
-  }, [traditions.data, locale]);
+  }, [traditions.data]);
 
   // Stable, as FlatList requires
   const onViewable = useCallback(({ viewableItems }: { viewableItems: ViewToken[] }) => {
@@ -193,7 +199,21 @@ export function ReelsPager({
     );
   }
   if (list.length === 0) {
-    return <View style={[styles.center, { height }]}>{empty}</View>;
+    // Nothing yet: pull down to look again (opening the tab looks again too)
+    return (
+      <ScrollView
+        contentContainerStyle={[styles.center, { minHeight: height }]}
+        refreshControl={
+          <RefreshControl
+            refreshing={reels.isRefetching}
+            onRefresh={() => void reels.refetch()}
+            tintColor={REEL_INK}
+          />
+        }
+      >
+        {empty}
+      </ScrollView>
+    );
   }
 
   return (

@@ -26,7 +26,7 @@ const RIBBON = require('../../../assets/images/ribbon.png');
  */
 export function PlanPreview({ step }: { step: Step }) {
   const styles = useStyles();
-  const { t, locale } = useLocale();
+  const { t } = useLocale();
   const answers = useAnswers();
   const traditions = useTraditions();
 
@@ -39,7 +39,7 @@ export function PlanPreview({ step }: { step: Step }) {
 
   let plans: string | null = null;
   if (events.length > 0) {
-    plans = events.map((event) => localized(event.name, locale)).join(' · ');
+    plans = events.map((event) => localized(event.name)).join(' · ');
     if (more > 0) plans += `  ${t('onboarding.plan.more', { count: more })}`;
   } else if (answers.otherTradition) {
     plans = t('onboarding.kind.otherDetail');

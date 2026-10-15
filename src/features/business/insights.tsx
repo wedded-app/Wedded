@@ -210,7 +210,7 @@ function AskList({
 
 /** What families ask about: their events, guest sizes, wedding months and towns. */
 export function WhatFamiliesWant({ asks }: { asks: Asks }) {
-  const { t, locale } = useLocale();
+  const { t } = useLocale();
   const empty =
     asks.events.length + asks.guests.length + asks.months.length + asks.places.length === 0;
   return (
@@ -223,7 +223,7 @@ export function WhatFamiliesWant({ asks }: { asks: Asks }) {
             title={t('business.insights.want.events')}
             rows={asks.events.map((e) => ({
               key: e.slug,
-              label: localized(e.name, locale),
+              label: localized(e.name),
               count: e.count,
             }))}
           />
@@ -257,8 +257,8 @@ export function WhatFamiliesWant({ asks }: { asks: Asks }) {
 export function HowYouCompare({ compare }: { compare: Compare }) {
   const Colors = useColors();
   const styles = useStyles();
-  const { t, locale } = useLocale();
-  const kind = localized(compare.category.name, locale);
+  const { t } = useLocale();
+  const kind = localized(compare.category.name);
   const rows: { key: 'views' | 'inquiries'; mine: number; typical: number }[] = [
     { key: 'views', ...compare.views },
     { key: 'inquiries', ...compare.inquiries },
@@ -329,11 +329,15 @@ export function YourReels({ reels }: { reels: BusinessReel[] }) {
         </>
       ) : (
         reels.map((reel, i) => {
-          const counts = t('business.insights.reelCounts', {
-            views: compactCount(reel.views),
-            likes: compactCount(reel.likes),
-            comments: compactCount(reel.comments),
-          });
+          // "1 view · 12 likes · 2.4K comments": each part says one or many
+          const counts = (['views', 'likes', 'comments'] as const)
+            .map((kind) =>
+              t(`business.insights.reelCount.${kind}`, {
+                count: reel[kind],
+                n: compactCount(reel[kind]),
+              }),
+            )
+            .join(' · ');
           return (
             <View
               key={reel.id}

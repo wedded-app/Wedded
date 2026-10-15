@@ -19,6 +19,9 @@ import { MIN_VOICE_MS, voiceContentType } from './voice';
 
 type Send = ReturnType<typeof useSendMessage>;
 
+/** iOS drops a permission question asked while an alert is still closing. */
+const afterAlert = () => new Promise((resolve) => setTimeout(resolve, 400));
+
 /**
  * idle; held (recording while the finger is down: letting go sends);
  * locked (a tap started it: Cancel or Send); sending.
@@ -80,6 +83,7 @@ export function useVoiceRecorder(conversationId: string, send: Send) {
         t('chat.photos.continue'),
       );
       if (!go) return false;
+      await afterAlert();
       const asked = await requestRecordingPermissionsAsync().catch(() => null);
       if (asked?.granted) return true;
       if (asked?.canAskAgain !== false) {
@@ -157,7 +161,8 @@ export function useVoiceRecorder(conversationId: string, send: Send) {
       setMode(next);
       // Let go before it started: too short to keep
       if (next === 'held' && releasedEarly.current) await finish();
-    } catch {
+    } catch (error) {
+      console.warn('Voice note: the microphone did not start', error);
       setNotice(t('chat.voice.cantRecord'));
       setMode('idle');
     } finally {

@@ -9,7 +9,6 @@ import Animated, {
 } from 'react-native-reanimated';
 
 import { AppText } from '@/components/app-text';
-import { BilingualName } from '@/components/bilingual-name';
 import { Button } from '@/components/button';
 import { CheckCircle } from '@/components/check-circle';
 import { Chip } from '@/components/chip';
@@ -17,7 +16,7 @@ import { DateField } from '@/components/date-field';
 import { eventIcon } from '@/components/event-icon';
 import { groupIcon } from '@/components/group-icon';
 import { Icon } from '@/components/icon';
-import { SectionTitle } from '@/components/list';
+import { ListRow, ListSection, SectionTitle } from '@/components/list';
 import { NavScreen } from '@/components/nav';
 import { ProgressBar } from '@/components/progress-bar';
 import { StateView } from '@/components/state-view';
@@ -52,7 +51,7 @@ type BookedVendors = Record<string, { slug: string; name: string }>;
 export default function PlanScreen() {
   const Colors = useColors();
   const styles = useStyles();
-  const { t, locale } = useLocale();
+  const { t } = useLocale();
   const view = usePlanView();
   const { plan, wedding, canEdit, saveFailed, active, chosen, needsByEvent, progress } = view;
   const suggestions = useWeddingSuggestions(wedding?.id ?? null);
@@ -92,8 +91,8 @@ export default function PlanScreen() {
     );
     successHaptic();
     setCheer({
-      done: done ? localized(done.name, locale) : '',
-      next: next ? localized(next.name, locale) : null,
+      done: done ? localized(done.name) : '',
+      next: next ? localized(next.name) : null,
     });
     setTimeout(() => setOpen(next ? [next.slug] : []), 700);
   }
@@ -177,7 +176,7 @@ export default function PlanScreen() {
             </View>
             <AppText variant="label" weight={400} color="text2" style={styles.pad}>
               {[
-                ...active.map((tradition) => localized(tradition.name, locale)),
+                ...active.map((tradition) => localized(tradition.name)),
                 t('planner.eventsCount', { count: chosen.length }),
               ].join(' · ')}
             </AppText>
@@ -229,6 +228,17 @@ export default function PlanScreen() {
         </View>
       )}
 
+      {!view.loading && (
+        <ListSection>
+          <ListRow
+            icon="mail-outline"
+            title={t('cards.planEntry')}
+            subtitle={t('cards.planEntryBody')}
+            onPress={() => router.push('/cards')}
+          />
+        </ListSection>
+      )}
+
       {wedding && <Suggestions wedding={wedding} events={chosen} />}
       {wedding && <PlanTogether wedding={wedding} />}
       {wedding && <FamilyShortlist weddingId={wedding.id} />}
@@ -273,14 +283,14 @@ function EventPlan({
 }) {
   const Colors = useColors();
   const styles = useStyles();
-  const { t, locale } = useLocale();
+  const { t } = useLocale();
   const reduceMotion = useReducedMotion();
   const [showNice, setShowNice] = useState(false);
   const essential = essentialNeeds(sections);
   const extras = sections.filter((s) => s.importance !== 'essential').flatMap((s) => s.needs);
   const done = essential.filter((need) => booked.includes(need.categorySlug)).length;
   const complete = essential.length > 0 && done === essential.length;
-  const name = localized(event.name, locale);
+  const name = localized(event.name);
 
   const wasComplete = useRef(complete);
   useEffect(() => {
@@ -336,7 +346,9 @@ function EventPlan({
           />
         </View>
         <View style={styles.grow}>
-          <BilingualName name={event.name} variant="bodyLg" weight={600} />
+          <AppText variant="bodyLg" weight={600}>
+            {localized(event.name)}
+          </AppText>
           {date ? (
             <AppText variant="label" weight={600} color="primary">
               {formatDate(date)}
@@ -344,7 +356,7 @@ function EventPlan({
           ) : (
             event.timing && (
               <AppText variant="caption" color="text2">
-                {localized(event.timing, locale)}
+                {localized(event.timing)}
               </AppText>
             )
           )}
@@ -450,6 +462,21 @@ function EventPlan({
               />
             </View>
           )}
+          {canEdit && (
+            <Pressable
+              accessibilityRole="button"
+              accessibilityHint={t('requests.post.hint')}
+              onPress={() =>
+                router.push({ pathname: '/request-new', params: { event: event.slug } })
+              }
+              style={({ pressed }) => [styles.more, pressed && styles.headPressed]}
+            >
+              <Icon name="megaphone-outline" size={17} color={Colors.primary} />
+              <AppText weight={600} color="primary">
+                {t('requests.post.fromPlan')}
+              </AppText>
+            </Pressable>
+          )}
         </Animated.View>
       )}
     </Animated.View>
@@ -483,8 +510,8 @@ function NeedRow({
 }) {
   const Colors = useColors();
   const styles = useStyles();
-  const { t, locale } = useLocale();
-  const name = localized(need.name, locale);
+  const { t } = useLocale();
+  const name = localized(need.name);
 
   return (
     <Animated.View layout={Motion.layout} style={styles.need}>

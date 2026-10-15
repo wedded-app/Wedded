@@ -32,7 +32,6 @@ select is(
   (select public.update_my_listing('b1200000-0000-4000-8000-000000000001', jsonb_build_object(
      'tagline', '  Dhol for every baraat  ',
      'bio', 'Three generations of dhol players.',
-     'bioPa', 'ਤਿੰਨ ਪੀੜ੍ਹੀਆਂ ਤੋਂ ਢੋਲੀ।',
      'priceDisplay', 'starting_at',
      'priceFrom', 450,
      'priceUnit', 'event',
@@ -42,12 +41,11 @@ select is(
      'languages', jsonb_build_array('pa', 'en', 'hi'),
      'serviceRadiusMiles', 50,
      'willTravel', true
-   )) - array['name', 'slug', 'status', 'city', 'taglinePa', 'priceTo', 'priceNote', 'callPhone',
+   )) - array['name', 'slug', 'status', 'city', 'priceTo', 'priceNote', 'callPhone',
               'textPhone', 'preferredContact', 'yearsInBusiness', 'teamSize', 'travelNote', 'officeHours']),
   jsonb_build_object(
     'tagline', 'Dhol for every baraat',
     'bio', 'Three generations of dhol players.',
-    'bioPa', 'ਤਿੰਨ ਪੀੜ੍ਹੀਆਂ ਤੋਂ ਢੋਲੀ।',
     'priceDisplay', 'starting_at',
     'priceFrom', 450,
     'priceUnit', 'event',

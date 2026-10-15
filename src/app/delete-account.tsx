@@ -16,8 +16,10 @@ import { TextField } from '@/components/text-field';
 import { Sizes, Spacing, useColors } from '@/constants/theme';
 import { toLatinDigits } from '@/features/auth/about-you-validation';
 import { authErrorKey, reauthMethod } from '@/features/auth/auth-helpers';
+import { useCaptcha } from '@/features/auth/captcha';
 import { confirmWithProvider } from '@/features/auth/providers';
 import { useSession } from '@/features/auth/session';
+import { TurnstileBox } from '@/features/auth/turnstile-box';
 import { useLocale } from '@/i18n/locale-context';
 import { formatPhone } from '@/lib/phone';
 import { supabase } from '@/lib/supabase';
@@ -47,6 +49,8 @@ export default function DeleteAccountScreen() {
   const [code, setCode] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string>();
+  // The proof-it's-you code goes through the same bot check as sign-in (#234)
+  const captcha = useCaptcha();
 
   const method = session ? reauthMethod(session.user, Platform.OS) : null;
   const account = email ?? (phone ? formatPhone(phone) : null);
@@ -73,17 +77,21 @@ export default function DeleteAccountScreen() {
       return;
     }
 
+    if (!captcha.ready) {
+      setError(t('signIn.captchaWait'));
+      return;
+    }
     let sendError;
     setBusy(true);
     if (method === 'email' && email) {
       ({ error: sendError } = await supabase.auth.signInWithOtp({
         email,
-        options: { shouldCreateUser: false },
+        options: { shouldCreateUser: false, ...captcha.take() },
       }));
     } else if (method === 'phone' && phone) {
       ({ error: sendError } = await supabase.auth.signInWithOtp({
         phone,
-        options: { shouldCreateUser: false },
+        options: { shouldCreateUser: false, ...captcha.take() },
       }));
     }
     setBusy(false);
@@ -258,6 +266,7 @@ export default function DeleteAccountScreen() {
           {t('deleteAccount.title')}
         </AppText>
         {body}
+        <TurnstileBox captcha={captcha} />
       </ScrollView>
     </Screen>
   );

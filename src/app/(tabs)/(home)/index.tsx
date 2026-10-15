@@ -11,6 +11,7 @@ import { SearchButton } from '@/components/search-button';
 import { StateView } from '@/components/state-view';
 import { useBottomSpace } from '@/components/tab-bar';
 import { Sizes, Spacing, useColors, useScheme } from '@/constants/theme';
+import { useIsVendor } from '@/data/chat';
 import { useFeed, type FeedPost } from '@/data/feed';
 import { useCategoryGroups, useHomeEvents } from '@/data/reference';
 import { useCategoryVendorCounts } from '@/data/vendors';
@@ -19,6 +20,7 @@ import { ChatButton } from '@/features/chat/chat-button';
 import { EventCarousel } from '@/features/home/event-carousel';
 import { HomeCover, useCoverHeight } from '@/features/home/home-cover';
 import { NextUp } from '@/features/home/next-up';
+import { PostRequestCard } from '@/features/requests/post-request-card';
 import { SectionHeader } from '@/features/home/section-header';
 import { VendorPhotoCards } from '@/features/home/vendor-photo-cards';
 import { BENTO_TILES, VendorTypeBento } from '@/features/home/vendor-type-bento';
@@ -43,7 +45,7 @@ import { useLocale } from '@/i18n/locale-context';
 export default function HomeScreen() {
   const Colors = useColors();
   const scheme = useScheme();
-  const { t, locale } = useLocale();
+  const { t } = useLocale();
   const router = useRouter();
   const queryClient = useQueryClient();
   const scroll = useNavScroll();
@@ -56,9 +58,13 @@ export default function HomeScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const { wedding, loading, plan, events, next } = view;
   const planning = !!wedding || (loading && !!plan.syncedWeddingId);
+  // A vendor account that isn't planning a wedding gets no "Plan your wedding"
+  // cover: their My business card comes first instead
+  const { isVendor } = useIsVendor();
+  const showCover = planning || !isVendor;
 
   // The small title and the bar's backdrop come in as the cover scrolls away
-  const collapseAt = coverHeight - navTop;
+  const collapseAt = showCover ? coverHeight - navTop : 0;
   useEffect(() => scroll.setCollapseAt(collapseAt), [scroll, collapseAt]);
 
   // White clock and battery over the cover, the app's own once it's gone.
@@ -85,7 +91,7 @@ export default function HomeScreen() {
   }
 
   const eventName = (slug: string) =>
-    localized(events.find((event) => event.slug === slug)?.name ?? { en: slug }, locale);
+    localized(events.find((event) => event.slug === slug)?.name ?? { en: slug });
   const first = next[0];
   const findFirst = () =>
     first
@@ -114,9 +120,9 @@ export default function HomeScreen() {
           />
         }
       >
-        <HomeCover view={view} posts={posts} />
+        {showCover && <HomeCover view={view} posts={posts} />}
 
-        <View style={styles.body}>
+        <View style={[styles.body, !showCover && { paddingTop: navTop + Spacing.lg }]}>
           {/* Vendor accounts: their business first (families never see it) */}
           <BusinessHomeCard />
           <View style={styles.find}>
@@ -131,13 +137,14 @@ export default function HomeScreen() {
           {planning ? (
             <>
               <NextUp view={view} />
+              <PostRequestCard />
               <YourVendors wedding={wedding} eventName={eventName} onFind={findFirst} />
               {first ? (
                 <VendorPhotoCards
                   title={
                     plan.weddingDate
-                      ? t('home.freeOnDateTitle', { type: localized(first.need.name, locale) })
-                      : t('home.nearYouTitle', { type: localized(first.need.name, locale) })
+                      ? t('home.freeOnDateTitle', { type: localized(first.need.name) })
+                      : t('home.nearYouTitle', { type: localized(first.need.name) })
                   }
                   link={t('home.seeAll')}
                   onLink={findFirst}

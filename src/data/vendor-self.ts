@@ -19,7 +19,6 @@ export type MenuDraft = {
   /** Set when changing a menu that exists. */
   id?: string;
   name: string;
-  namePa: string;
   description: string;
   cuisine: string;
   dietTags: DietTag[];
@@ -32,7 +31,6 @@ export type MenuDraft = {
 export function emptyMenuDraft(): MenuDraft {
   return {
     name: '',
-    namePa: '',
     description: '',
     cuisine: '',
     dietTags: [],
@@ -48,7 +46,6 @@ export function menuToDraft(menu: Menu): MenuDraft {
   return {
     id: menu.id,
     name: menu.name.en,
-    namePa: menu.name.pa ?? '',
     description: menu.description?.en ?? '',
     cuisine: menu.cuisine ?? '',
     dietTags: menu.dietTags,
@@ -86,7 +83,6 @@ export function menuProblem(draft: MenuDraft): MenuProblem | null {
   if (row.sections.some((s) => !s.title)) return 'sectionTitle';
   if (
     row.name.length > LIMITS.name ||
-    (row.name_pa?.length ?? 0) > LIMITS.name ||
     (row.description?.length ?? 0) > LIMITS.description ||
     (row.cuisine?.length ?? 0) > LIMITS.cuisine ||
     row.sections.length > 20 ||
@@ -121,7 +117,6 @@ export function menuRow(draft: MenuDraft) {
     .filter((section) => section.title || section.items.length > 0);
   return {
     name: draft.name.trim(),
-    name_pa: orNull(draft.namePa),
     description: orNull(draft.description),
     cuisine: orNull(draft.cuisine),
     diet: draft.dietTags,

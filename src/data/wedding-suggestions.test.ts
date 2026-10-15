@@ -22,7 +22,7 @@ const base: WeddingSuggestion = {
 };
 
 describe('suggestions', () => {
-  it('turns a row into a suggestion, with both scripts of the vendor name', () => {
+  it('turns a row into a suggestion, with the vendor name', () => {
     const s = toSuggestion({
       id: 's1',
       event_slug: 'reception',
@@ -33,10 +33,10 @@ describe('suggestions', () => {
       resolved_by: 'u2',
       resolved_at: '2026-10-02T10:00:00Z',
       created_at: '2026-10-01T10:00:00Z',
-      vendor: { id: 'v1', slug: 'royal-orchard', name: 'Royal Orchard', name_pa: 'ਰਾਇਲ ਆਰਚਰਡ' },
+      vendor: { id: 'v1', slug: 'royal-orchard', name: 'Royal Orchard' },
     });
     expect(s.status).toBe('accepted');
-    expect(s.vendor?.name).toEqual({ en: 'Royal Orchard', pa: 'ਰਾਇਲ ਆਰਚਰਡ' });
+    expect(s.vendor?.name).toEqual({ en: 'Royal Orchard' });
   });
 
   it('shows open ones first, oldest first, then those decided in the last two weeks', () => {

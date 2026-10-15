@@ -1,6 +1,7 @@
-import { router, useLocalSearchParams } from 'expo-router';
+import { router, useLocalSearchParams, useNavigation } from 'expo-router';
+import { usePreventRemove } from 'expo-router/react-navigation';
 import { type ReactNode, useState } from 'react';
-import { Linking, View } from 'react-native';
+import { Alert, Linking, Platform, View } from 'react-native';
 
 import { AppText } from '@/components/app-text';
 import { Button } from '@/components/button';
@@ -11,7 +12,7 @@ import { NavScreen } from '@/components/nav';
 import { StateView } from '@/components/state-view';
 import { Switch } from '@/components/switch';
 import { TextField } from '@/components/text-field';
-import { makeStyles, Radius, Spacing } from '@/constants/theme';
+import { makeStyles, Radius, Sizes, Spacing } from '@/constants/theme';
 import {
   type ListingLanguage,
   listingProblem,
@@ -53,6 +54,7 @@ const TEAM_WHATSAPP = (process.env.EXPO_PUBLIC_TEAM_WHATSAPP ?? '').replace(/\D/
  * at the field. Name, address and vendor types stay with the Wedded team.
  */
 export default function EditListingScreen() {
+  const styles = useStyles();
   const { t } = useLocale();
   const { section } = useLocalSearchParams<{ section?: string }>();
   const current = useCurrentBusiness();
@@ -61,9 +63,25 @@ export default function EditListingScreen() {
   const [draft, setDraft] = useState<ListingDraft | null>(null);
   const [problem, setProblem] = useState<{ field: string | null; message: string } | null>(null);
   const [saved, setSaved] = useState(false);
+  const navigation = useNavigation();
 
   // Start from the listing once it has loaded
   if (!draft && listing.data) setDraft(listingToDraft(listing.data));
+
+  // Leaving with changes not saved asks first
+  const dirty =
+    !!draft && !!listing.data && Object.keys(draftChanges(listing.data, draft).changes).length > 0;
+  usePreventRemove(dirty && !update.isPending, ({ data }) => {
+    const leave = () => navigation.dispatch(data.action);
+    if (Platform.OS === 'web') {
+      if (globalThis.confirm(t('business.listing.unsavedBody'))) leave();
+      return;
+    }
+    Alert.alert(t('business.listing.unsavedTitle'), t('business.listing.unsavedBody'), [
+      { text: t('business.listing.keepEditing'), style: 'cancel' },
+      { text: t('business.listing.leave'), style: 'destructive', onPress: leave },
+    ]);
+  });
 
   if (!draft || !listing.data) {
     return (
@@ -84,8 +102,6 @@ export default function EditListingScreen() {
     setProblem(null);
     setSaved(false);
   };
-  const { changes } = draftChanges(listing.data, draft);
-  const dirty = Object.keys(changes).length > 0;
   const errorFor = (...fields: (keyof EditableListing)[]) =>
     problem && fields.includes(problem.field as keyof EditableListing)
       ? problem.message
@@ -127,42 +143,57 @@ export default function EditListingScreen() {
     ),
   };
 
+  // Save stays pinned at the bottom once there's something to save (or just saved)
+  const showBar = dirty || saved || !!problem;
+
   return (
-    <NavScreen title={t('business.listing.title')} subtitle={listing.data.name}>
-      {order.map((s) => blocks[s])}
+    <View style={styles.fill}>
+      <NavScreen
+        title={t('business.listing.title')}
+        subtitle={listing.data.name}
+        // The box being typed in stays above the keyboard
+        automaticallyAdjustKeyboardInsets
+        keyboardDismissMode="interactive"
+        contentContainerStyle={showBar ? styles.roomForBar : undefined}
+      >
+        {order.map((s) => blocks[s])}
 
-      <TeamNote name={listing.data.name} />
-
-      {problem && problem.field === null && <FieldError message={problem.message} />}
-      {problem && problem.field !== null && (
-        <AppText color="error" weight={600}>
-          {t('business.listing.fixAbove')}
-        </AppText>
+        <TeamNote name={listing.data.name} />
+      </NavScreen>
+      {showBar && (
+        <View style={styles.bar}>
+          {problem && problem.field === null && <FieldError message={problem.message} />}
+          {problem && problem.field !== null && (
+            <AppText color="error" weight={600}>
+              {t('business.listing.fixAbove')}
+            </AppText>
+          )}
+          <Button
+            icon={saved && !dirty ? 'checkmark-circle' : undefined}
+            label={
+              saved && !dirty
+                ? t('business.listing.saved')
+                : dirty
+                  ? t('business.listing.save')
+                  : t('business.listing.noChanges')
+            }
+            loading={update.isPending}
+            disabled={!dirty && !saved}
+            onPress={save}
+          />
+          {saved && !dirty && listing.data.status === 'published' && (
+            <Button
+              variant="secondary"
+              icon="storefront-outline"
+              label={t('business.viewPage')}
+              onPress={() =>
+                router.push({ pathname: '/v/[slug]', params: { slug: listing.data.slug } })
+              }
+            />
+          )}
+        </View>
       )}
-      <Button
-        icon={saved && !dirty ? 'checkmark-circle' : undefined}
-        label={
-          saved && !dirty
-            ? t('business.listing.saved')
-            : dirty
-              ? t('business.listing.save')
-              : t('business.listing.noChanges')
-        }
-        loading={update.isPending}
-        disabled={!dirty && !saved}
-        onPress={save}
-      />
-      {saved && !dirty && listing.data.status === 'published' && (
-        <Button
-          variant="secondary"
-          icon="storefront-outline"
-          label={t('business.viewPage')}
-          onPress={() =>
-            router.push({ pathname: '/v/[slug]', params: { slug: listing.data.slug } })
-          }
-        />
-      )}
-    </NavScreen>
+    </View>
   );
 }
 
@@ -221,28 +252,11 @@ function AboutSection({ draft, change, errorFor }: SectionProps) {
         maxLength={TAGLINE_MAX + 20}
       />
       <TextField
-        label={t('business.listing.taglinePa')}
-        hint={count(draft.taglinePa, TAGLINE_MAX)}
-        value={draft.taglinePa}
-        onChangeText={(taglinePa) => change({ taglinePa })}
-        error={errorFor('taglinePa')}
-        maxLength={TAGLINE_MAX + 20}
-      />
-      <TextField
         label={t('business.listing.bio')}
         hint={count(draft.bio, BIO_MAX)}
         value={draft.bio}
         onChangeText={(bio) => change({ bio })}
         error={errorFor('bio')}
-        multiline
-        maxLength={BIO_MAX + 100}
-      />
-      <TextField
-        label={t('business.listing.bioPa')}
-        hint={count(draft.bioPa, BIO_MAX)}
-        value={draft.bioPa}
-        onChangeText={(bioPa) => change({ bioPa })}
-        error={errorFor('bioPa')}
         multiline
         maxLength={BIO_MAX + 100}
       />
@@ -398,6 +412,23 @@ function LanguagesSection({ draft, change, errorFor }: SectionProps) {
           />
         ))}
       </ChipField>
+      {/* Their usual area: shown on the page and used in search */}
+      <ChipField label={t('business.listing.radius')}>
+        {RADII.map((miles) => (
+          <Chip
+            key={miles}
+            role="radio"
+            label={
+              miles === 250
+                ? t('business.listing.allNorcal')
+                : t('business.listing.miles', { miles })
+            }
+            selected={draft.serviceRadiusMiles === miles}
+            onPress={() => change({ serviceRadiusMiles: miles })}
+          />
+        ))}
+      </ChipField>
+      {/* Beyond it, usually for a fee: search then finds them anywhere */}
       <View style={styles.switchRow}>
         <AppText weight={600} style={styles.grow}>
           {t('business.listing.willTravel')}
@@ -410,17 +441,6 @@ function LanguagesSection({ draft, change, errorFor }: SectionProps) {
       </View>
       {draft.willTravel && (
         <>
-          <ChipField label={t('business.listing.radius')}>
-            {RADII.map((miles) => (
-              <Chip
-                key={miles}
-                role="radio"
-                label={t('business.listing.miles', { miles })}
-                selected={draft.serviceRadiusMiles === miles}
-                onPress={() => change({ serviceRadiusMiles: miles })}
-              />
-            ))}
-          </ChipField>
           <TextField
             label={t('business.listing.travelNote')}
             hint={t('business.listing.travelNoteHint')}
@@ -499,6 +519,25 @@ const useStyles = makeStyles((Colors) => ({
   },
   grow: {
     flex: 1,
+  },
+  fill: {
+    flex: 1,
+  },
+  roomForBar: {
+    paddingBottom: 160,
+  },
+  bar: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
+    gap: Spacing.sm,
+    paddingHorizontal: Sizes.pageGutter,
+    paddingTop: Spacing.md,
+    paddingBottom: Spacing.xl,
+    borderTopWidth: 1,
+    borderTopColor: Colors.border,
+    backgroundColor: Colors.bg,
   },
   note: {
     gap: Spacing.xs,

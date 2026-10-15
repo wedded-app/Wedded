@@ -15,17 +15,16 @@ import type { Change } from './business-format';
 
 /** Every event's name in the app's language, from any tradition (a lead can be from any). */
 export function useEventNames(): (slug: string) => string {
-  const { locale } = useLocale();
   const traditions = useTraditions();
   return useMemo(() => {
     const names = new Map<string, string>();
     for (const tradition of traditions.data ?? []) {
       for (const event of tradition.events) {
-        if (!names.has(event.slug)) names.set(event.slug, localized(event.name, locale));
+        if (!names.has(event.slug)) names.set(event.slug, localized(event.name));
       }
     }
     return (slug: string) => names.get(slug) ?? slug;
-  }, [traditions.data, locale]);
+  }, [traditions.data]);
 }
 
 /**

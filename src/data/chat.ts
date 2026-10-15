@@ -1,3 +1,4 @@
+import { assertUploadFits } from './upload-limits';
 /**
  * Chat between families and vendors (the chat migration). One conversation
  * per family and vendor; every inquiry adds its booking details to it. Both
@@ -24,7 +25,8 @@ import type { Json } from '@/types/database';
 import { photoUrl } from './vendor-media';
 
 export type ChatSide = 'family' | 'vendor';
-export type MessageKind = 'text' | 'photo' | 'quote' | 'menu' | 'booking' | 'phone' | 'voice';
+export type MessageKind =
+  'text' | 'photo' | 'quote' | 'menu' | 'booking' | 'phone' | 'voice' | 'deposit' | 'proposal';
 
 export type Quote = {
   amount: number;
@@ -61,6 +63,16 @@ export type Message = {
   phone: string | null;
   /** A voice note (C5e): its chat-media path (play it from useChatPhotoUrl()) and length. */
   voice: { path: string; durationMs: number } | null;
+  /**
+   * A deposit (#209): the vendor's request, or the system's "paid" / "refunded"
+   * update to it. Find it with useDeposits() by depositId.
+   */
+  deposit: { depositId: string; update: 'paid' | 'refunded' | null } | null;
+  /**
+   * A proposal from Families looking (#218): the vendor's proposal as sent, or
+   * the family's "accepted" line (update 'accepted'). Its note is the body.
+   */
+  proposal: { proposalId: string; requestId: string; update: 'accepted' | null } | null;
   /** The earlier message this one replies to (swipe to reply), by id. */
   replyTo: string | null;
   createdAt: string;
@@ -129,7 +141,6 @@ type ConversationRow = {
   vendor_id: string;
   vendor_slug: string;
   vendor_name: string;
-  vendor_name_pa: string | null;
   vendor_cover_path: string | null;
   family_name: string | null;
   last_message_at: string;
@@ -147,9 +158,7 @@ export function toConversation(row: ConversationRow): Conversation {
     vendor: {
       id: row.vendor_id,
       slug: row.vendor_slug,
-      name: row.vendor_name_pa
-        ? { en: row.vendor_name, pa: row.vendor_name_pa }
-        : { en: row.vendor_name },
+      name: { en: row.vendor_name },
       photoUrl: row.vendor_cover_path ? photoUrl(row.vendor_cover_path, 'small') : null,
     },
     family: { firstName: row.family_name },
@@ -283,6 +292,21 @@ export function toMessage(
     voice:
       row.kind === 'voice' && typeof d.path === 'string' && typeof d.durationMs === 'number'
         ? { path: d.path, durationMs: d.durationMs }
+        : null,
+    deposit:
+      row.kind === 'deposit' && typeof d.depositId === 'string'
+        ? {
+            depositId: d.depositId,
+            update: d.update === 'paid' || d.update === 'refunded' ? d.update : null,
+          }
+        : null,
+    proposal:
+      row.kind === 'proposal' && typeof d.proposalId === 'string' && typeof d.requestId === 'string'
+        ? {
+            proposalId: d.proposalId,
+            requestId: d.requestId,
+            update: d.update === 'accepted' ? 'accepted' : null,
+          }
         : null,
     replyTo: row.reply_to ?? null,
     createdAt: row.created_at,
@@ -552,6 +576,7 @@ export async function uploadChatPhoto(
   bytes: ArrayBuffer,
   contentType: 'image/jpeg' | 'image/png' | 'image/webp' | 'image/heic' = 'image/jpeg',
 ): Promise<string> {
+  assertUploadFits('chat-media', bytes, contentType);
   const extension = contentType.split('/')[1].replace('jpeg', 'jpg');
   const path = `${conversationId}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${extension}`;
   const { error } = await supabase.storage
@@ -585,6 +610,7 @@ export async function uploadChatVoice(
   bytes: ArrayBuffer,
   contentType: VoiceContentType = 'audio/mp4',
 ): Promise<string> {
+  assertUploadFits('chat-media', bytes, contentType);
   const path = `${conversationId}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${VOICE_EXTENSIONS[contentType]}`;
   const { error } = await supabase.storage
     .from('chat-media')

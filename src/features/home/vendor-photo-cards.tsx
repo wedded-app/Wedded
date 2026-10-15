@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 
 import { AppText } from '@/components/app-text';
+import { SampleTag } from '@/components/sample-tag';
 import { GlassButton } from '@/components/glass-button';
 import { PressableScale } from '@/components/pressable-scale';
 import { distanceWords, priceWords } from '@/components/vendor-card';
@@ -118,17 +119,17 @@ function PhotoCard({
 }) {
   const Colors = useColors();
   const styles = useStyles();
-  const { t, locale } = useLocale();
+  const { t } = useLocale();
   const { toggleSave } = useSaveVendor();
   const savedFor = useSavedEventsFor(vendor.id);
   const saved = eventSlug ? savedFor.includes(eventSlug) : savedFor.length > 0;
-  const name = localized(vendor.name, locale);
+  const name = localized(vendor.name);
   const distance = distanceWords(vendor.distanceMiles, t);
   const price = priceWords(vendor.startingPrice, t);
   const facts = [vendor.city, distance?.shown].filter(Boolean).join(' · ');
   const spoken = [
     name,
-    vendor.category ? localized(vendor.category, locale) : null,
+    vendor.category ? localized(vendor.category) : null,
     vendor.city,
     distance?.spoken,
     price?.spoken,
@@ -171,6 +172,7 @@ function PhotoCard({
         />
         <View style={[StyleSheet.absoluteFill, shade]} />
         <View style={styles.words}>
+          <SampleTag show={vendor.isSample} onPhoto />
           <AppText variant="heading" weight={700} color="onPhoto" numberOfLines={2}>
             {name}
           </AppText>

@@ -24,7 +24,7 @@ import { selectionHaptic } from '@/lib/haptics';
  */
 export default function CompareScreen() {
   const styles = useStyles();
-  const { t, locale } = useLocale();
+  const { t } = useLocale();
   const { vendors: param = '' } = useLocalSearchParams<{ vendors?: string }>();
   const slugs = param.split(',').filter(Boolean).slice(0, 10);
   const [picked, setPicked] = useState<string[]>(slugs.slice(0, MAX_COMPARE));
@@ -85,7 +85,7 @@ export default function CompareScreen() {
               style={({ pressed }) => [styles.cell, styles.head, pressed && styles.pressed]}
             >
               <AppText weight={700} color="primary">
-                {localized(vendor.name, locale)}
+                {localized(vendor.name)}
               </AppText>
             </Pressable>
           ))}
@@ -100,7 +100,7 @@ export default function CompareScreen() {
                 <View key={shown[i].id} style={styles.cell}>
                   {stacked && (
                     <AppText variant="label" weight={600}>
-                      {localized(shown[i].name, locale)}
+                      {localized(shown[i].name)}
                     </AppText>
                   )}
                   <AppText color={value ? 'text' : 'text2'}>
@@ -124,7 +124,7 @@ export default function CompareScreen() {
             {profiles.map((vendor) => (
               <Chip
                 key={vendor.slug}
-                label={localized(vendor.name, locale)}
+                label={localized(vendor.name)}
                 selected={picked.includes(vendor.slug)}
                 onPress={() => toggle(vendor.slug)}
               />

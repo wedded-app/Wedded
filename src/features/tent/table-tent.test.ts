@@ -3,10 +3,9 @@ import { darkRuns, escapeHtml, qrMatrix, qrSvg, tableTentHtml, type TableTent } 
 const tent: TableTent = {
   url: 'https://weddingapp.example/v/royal-orchard-banquet-hall',
   name: 'Royal Orchard <Banquet> & Hall',
-  namePa: 'ਰਾਇਲ ਆਰਚਰਡ',
-  founding: { en: 'Founding vendor #1', pa: 'ਮੋਢੀ ਵੈਂਡਰ #1' },
-  scan: { en: 'Scan to see our photos', pa: 'ਸਕੈਨ ਕਰੋ' },
-  findUs: { en: 'Find us on the app', pa: 'ਸਾਨੂੰ ਲੱਭੋ' },
+  founding: 'Founding vendor #1',
+  scan: 'Scan to see our photos',
+  findUs: 'Find us on the app',
 };
 
 describe('qrMatrix', () => {
@@ -60,20 +59,18 @@ describe('tableTentHtml', () => {
     expect(html.match(/class="panel flipped"/g)).toHaveLength(1);
   });
 
-  it('escapes the vendor name and shows both scripts', () => {
+  it('escapes the vendor name and shows the founding number', () => {
     expect(html).toContain('Royal Orchard &lt;Banquet&gt; &amp; Hall');
     expect(html).not.toContain('<Banquet>');
-    expect(html).toContain('ਰਾਇਲ ਆਰਚਰਡ');
-    expect(html).toContain('ਮੋਢੀ ਵੈਂਡਰ #1');
+    expect(html).toContain('Founding vendor #1');
   });
 
   it('shows the link without https://', () => {
     expect(html).toContain('>weddingapp.example/v/royal-orchard-banquet-hall<');
   });
 
-  it('leaves out the founding line and Punjabi name when there are none', () => {
-    const plain = tableTentHtml({ ...tent, founding: null, namePa: null });
+  it('leaves out the founding line when there is no number', () => {
+    const plain = tableTentHtml({ ...tent, founding: null });
     expect(plain).not.toContain('class="founding"');
-    expect(plain).not.toContain('<h2');
   });
 });

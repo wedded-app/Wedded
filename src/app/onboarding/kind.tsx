@@ -24,7 +24,7 @@ import { useLocale } from '@/i18n/locale-context';
  * from?" comes next.
  */
 export default function KindStep() {
-  const { t, locale } = useLocale();
+  const { t } = useLocale();
   const answers = useAnswers();
   const traditions = useTraditions();
   const faiths = useFaiths();
@@ -64,11 +64,11 @@ export default function KindStep() {
                 key={faith.slug}
                 index={index}
                 role="checkbox"
-                label={localized(faith.name, locale)}
+                label={localized(faith.name)}
                 detail={
                   lead &&
                   signatureEvents(lead)
-                    .map((event) => localized(event.name, locale))
+                    .map((event) => localized(event.name))
                     .join(' · ')
                 }
                 selected={answers.faiths.includes(faith.slug)}

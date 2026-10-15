@@ -22,7 +22,7 @@ import { saveHaptic } from '@/lib/haptics';
 export type PriceUnit = 'event' | 'hour' | 'person' | 'plate' | 'hand' | 'turban' | 'day';
 
 export type VendorCardProps = {
-  /** The business name; `pa` is shown in Punjabi mode when the vendor has one. */
+  /** The business name. */
   name: LocalizedText;
   /** The vendor's main category, from the database. */
   category: LocalizedText;
@@ -36,6 +36,8 @@ export type VendorCardProps = {
   photoUrl?: string | null;
   /** Shows the "Founding vendor" badge. */
   foundingNumber?: number | null;
+  /** A demo sample: shows the "Sample" badge. */
+  isSample?: boolean;
   /** Shows "Travels to you": based outside your distance, but they cover your area. */
   travelsToYou?: boolean;
   /** Filled heart when true. */
@@ -100,6 +102,7 @@ export function VendorCard({
   startingPrice,
   photoUrl,
   foundingNumber,
+  isSample,
   travelsToYou = false,
   saved = false,
   onToggleSave,
@@ -108,14 +111,14 @@ export function VendorCard({
 }: VendorCardProps) {
   const Colors = useColors();
   const styles = useStyles();
-  const { locale, t } = useLocale();
+  const { t } = useLocale();
   const scale = Math.min(useFontScale('label'), 1.4);
 
   const distance = distanceWords(distanceMiles, t);
   const price = priceWords(startingPrice, t);
 
-  const vendorName = localized(name, locale);
-  const categoryName = localized(category, locale);
+  const vendorName = localized(name);
+  const categoryName = localized(category);
   // Non-breaking spaces keep "31 mi" together when the line wraps.
   const details = [categoryName, city, distance?.shown.replace(/ /g, ' ')]
     .filter(Boolean)
@@ -123,7 +126,14 @@ export function VendorCard({
   const saveLabel = saved
     ? t('vendorCard.unsave', { name: vendorName })
     : t('vendorCard.save', { name: vendorName });
-  const badges: { key: string; label: string; icon: 'ribbon-outline' | 'car-outline' }[] = [];
+  const badges: {
+    key: string;
+    label: string;
+    icon: 'ribbon-outline' | 'car-outline' | 'information-circle-outline';
+  }[] = [];
+  if (isSample) {
+    badges.push({ key: 'sample', label: t('sample.tag'), icon: 'information-circle-outline' });
+  }
   if (foundingNumber != null) {
     badges.push({ key: 'founding', label: t('vendorCard.founding'), icon: 'ribbon-outline' });
   }

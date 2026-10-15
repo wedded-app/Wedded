@@ -106,7 +106,7 @@ async function main() {
     }
     const { error } = await db
       .from('profiles')
-      .upsert({ id, full_name: name, city: 'Yuba City', phone: '+15305550199' });
+      .upsert({ id, full_name: name, city: 'Yuba City', phone: '+15305550199', is_sample: true });
     if (error) fail(`Couldn't save ${name}: ${error.message}`);
     return id;
   }
@@ -138,7 +138,8 @@ async function main() {
   const now = Date.now();
   const reelIds: string[] = [];
   for (const [i, clip] of CLIPS.entries()) {
-    const vendorId = 'vendorCategory' in clip.poster ? await vendorFor(clip.poster.vendorCategory) : null;
+    const vendorId =
+      'vendorCategory' in clip.poster ? await vendorFor(clip.poster.vendorCategory) : null;
     if ('vendorCategory' in clip.poster && !vendorId) {
       console.warn(`No ${clip.poster.vendorCategory} vendor; skipping ${clip.file}`);
       continue;

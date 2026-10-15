@@ -1,6 +1,5 @@
 import { router, useFocusEffect } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import * as WebBrowser from 'expo-web-browser';
 import { useCallback, useState } from 'react';
 import {
   BackHandler,
@@ -28,9 +27,9 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AppText, useTypeStyle } from '@/components/app-text';
 import { Icon } from '@/components/icon';
+import { LegalLine } from '@/components/legal-line';
 import { PressableScale } from '@/components/pressable-scale';
 import { WeddingReel } from '@/components/wedding-reel';
-import { SITE_URL_IS_PLACEHOLDER, siteLink } from '@/constants/links';
 import {
   makeStyles,
   Radius,
@@ -208,7 +207,7 @@ function Welcome() {
         ]}
       >
         <Animated.View entering={Motion.enter} style={styles.brand}>
-          <Image source={RIBBON} style={styles.ribbon} resizeMode="contain" />
+          <Image source={RIBBON} style={styles.ribbon} resizeMode="contain" accessible={false} />
           <AppText variant="heading" weight={800} color="onPhoto" style={styles.brandName}>
             {t('welcome.brand')}
           </AppText>
@@ -218,7 +217,7 @@ function Welcome() {
 
         <Animated.View style={[styles.lower, lower]}>
           <Phrases />
-          <Legal />
+          <LegalLine sentence="welcome.legal" color="onPhoto" style={styles.legal} />
           <Animated.View style={panels}>
             <Animated.View
               onLayout={measure(startHeight)}
@@ -342,50 +341,6 @@ function Phrases() {
   );
 }
 
-/**
- * "By tapping Create account or Sign in, you agree to our Terms of Service…",
- * with the two names as links once the website has them (until there's a
- * domain they're plain words rather than links to nowhere).
- */
-function Legal() {
-  const styles = useStyles();
-  const { t } = useLocale();
-  // The sentence with markers where the two names go, so each language
-  // keeps its own word order.
-  const sentence = t('welcome.legal', { terms: '{terms}', privacy: '{privacy}' });
-  const links = { '{terms}': 'terms', '{privacy}': 'privacy' } as const;
-
-  return (
-    <AppText variant="caption" color="onPhoto" style={styles.legal}>
-      {sentence.split(/(\{terms\}|\{privacy\})/).map((part, index) => {
-        const page = links[part as keyof typeof links];
-        if (!page) return part;
-        const label = t(page === 'terms' ? 'welcome.termsLink' : 'welcome.privacyLink');
-        if (SITE_URL_IS_PLACEHOLDER) {
-          return (
-            <AppText key={index} variant="caption" weight={700} color="onPhoto">
-              {label}
-            </AppText>
-          );
-        }
-        return (
-          <AppText
-            key={index}
-            variant="caption"
-            weight={700}
-            color="onPhoto"
-            accessibilityRole="link"
-            onPress={() => void WebBrowser.openBrowserAsync(siteLink(`/${page}`))}
-            style={styles.link}
-          >
-            {label}
-          </AppText>
-        );
-      })}
-    </AppText>
-  );
-}
-
 const PILL_HEIGHT = 56;
 
 const useStyles = makeStyles((Colors) => ({
@@ -449,12 +404,8 @@ const useStyles = makeStyles((Colors) => ({
     letterSpacing: -0.3,
   },
   legal: {
-    textAlign: 'center',
     paddingHorizontal: Spacing.sm,
     opacity: 0.92,
-  },
-  link: {
-    textDecorationLine: 'underline',
   },
   panel: {
     position: 'absolute',

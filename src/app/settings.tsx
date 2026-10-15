@@ -3,38 +3,44 @@ import { router } from 'expo-router';
 import { Linking, Pressable, View } from 'react-native';
 
 import { AppText } from '@/components/app-text';
-import { Icon } from '@/components/icon';
+import { Icon, type IconName } from '@/components/icon';
+import { type LegalPage, openLegalPage } from '@/components/legal-line';
 import { ListRow, ListSection } from '@/components/list';
 import { NavScreen } from '@/components/nav';
 import { Segmented } from '@/components/segmented';
 import { Switch } from '@/components/switch';
+import { SITE_URL_IS_PLACEHOLDER } from '@/constants/links';
 import { makeStyles, Palettes, Spacing, useColors, type Scheme } from '@/constants/theme';
+import { useIsVendor } from '@/data/chat';
 import { useSession } from '@/features/auth/session';
+import { usePlan } from '@/features/planner/plan';
 import { useEnablePush, usePushStatus } from '@/features/chat/push-ask';
 import { useSearchLocation } from '@/features/location/search-location';
 import { resetOnboarding } from '@/features/onboarding/onboarding-state';
 import { TEXT_SIZES, useSettings, type TextSize } from '@/features/settings/settings';
-import type { Locale } from '@/i18n';
 import { useLocale } from '@/i18n/locale-context';
 import { selectionHaptic } from '@/lib/haptics';
 
-const LANGUAGES: { locale: Locale; labelKey: string }[] = [
-  { locale: 'en', labelKey: 'profile.english' },
-  { locale: 'pa', labelKey: 'profile.punjabi' },
+const LEGAL_PAGES: { page: LegalPage; icon: IconName }[] = [
+  { page: 'terms', icon: 'reader-outline' },
+  { page: 'privacy', icon: 'lock-closed-outline' },
+  { page: 'refunds', icon: 'arrow-undo-outline' },
 ];
 
 /**
  * Settings (vision S16), laid out like the iPhone's own: appearance with
- * light and dark previews, text size, language, haptics, where to search,
- * then about and account. Everything is saved on this phone.
+ * light and dark previews, text size, haptics, where to search,
+ * then about, the legal pages and licences, and account. Everything is saved on this phone.
  */
 export default function SettingsScreen() {
   const Colors = useColors();
   const styles = useStyles();
-  const { t, locale, setLocale } = useLocale();
+  const { t } = useLocale();
   const settings = useSettings();
   const { place, maxMiles, openLocationSheet } = useSearchLocation();
   const { status, signOut } = useSession();
+  const { isVendor } = useIsVendor();
+  const planning = !!usePlan().syncedWeddingId;
   const version = Constants.expoConfig?.version ?? '1.0.0';
 
   const pickScheme = (scheme: Scheme) => {
@@ -92,22 +98,6 @@ export default function SettingsScreen() {
         </View>
       </ListSection>
 
-      <ListSection header={t('profile.language')}>
-        {LANGUAGES.map((language) => (
-          <ListRow
-            key={language.locale}
-            title={t(language.labelKey)}
-            titleLang={language.locale}
-            accessibilityRole="radio"
-            checked={language.locale === locale}
-            onPress={() => {
-              if (language.locale !== locale) selectionHaptic();
-              setLocale(language.locale);
-            }}
-          />
-        ))}
-      </ListSection>
-
       <ListSection inset header={t('settings.general')}>
         <ListRow
           icon="hand-left-outline"
@@ -130,13 +120,16 @@ export default function SettingsScreen() {
         <MessageAlertsRow />
       </ListSection>
 
-      <ListSection inset header={t('settings.planning')}>
-        <ListRow
-          icon="checkbox-outline"
-          title={t('planner.title')}
-          onPress={() => router.push('/plan')}
-        />
-      </ListSection>
+      {/* Vendor accounts see this only once they're planning a wedding too */}
+      {(!isVendor || planning) && (
+        <ListSection inset header={t('settings.planning')}>
+          <ListRow
+            icon="checkbox-outline"
+            title={t('planner.title')}
+            onPress={() => router.push('/plan')}
+          />
+        </ListSection>
+      )}
 
       <ListSection inset header={t('settings.about')}>
         <ListRow
@@ -145,12 +138,36 @@ export default function SettingsScreen() {
           title={t('home.foundingWall')}
           onPress={() => router.push('/founding')}
         />
-        <ListRow
-          icon="storefront-outline"
-          title={t('home.forVendors')}
-          onPress={() => router.push('/for-vendors')}
-        />
+        {!isVendor && (
+          <ListRow
+            icon="storefront-outline"
+            title={t('home.forVendors')}
+            onPress={() => router.push('/for-vendors')}
+          />
+        )}
         <ListRow icon="information-circle-outline" title={t('settings.version')} value={version} />
+      </ListSection>
+
+      <ListSection
+        inset
+        header={t('settings.legal')}
+        footer={SITE_URL_IS_PLACEHOLDER ? t('settings.legalSoon') : undefined}
+      >
+        {LEGAL_PAGES.map((page) => (
+          <ListRow
+            key={page.page}
+            icon={page.icon}
+            title={t(`settings.legalPages.${page.page}`)}
+            // Until the website is up there's nothing to open yet.
+            value={SITE_URL_IS_PLACEHOLDER ? t('settings.soon') : undefined}
+            onPress={SITE_URL_IS_PLACEHOLDER ? undefined : () => openLegalPage(page.page)}
+          />
+        ))}
+        <ListRow
+          icon="document-text-outline"
+          title={t('licences.title')}
+          onPress={() => router.push('/licences')}
+        />
       </ListSection>
 
       {status === 'signedIn' ? (

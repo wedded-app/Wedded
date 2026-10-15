@@ -67,8 +67,8 @@ function Inbox({ conversations }: { conversations: Conversation[] }) {
 
 function InboxRow({ conversation, divided }: { conversation: Conversation; divided: boolean }) {
   const styles = useStyles();
-  const { t, locale } = useLocale();
-  const vendorName = localized(conversation.vendor.name, locale);
+  const { t } = useLocale();
+  const vendorName = localized(conversation.vendor.name);
   const asVendor = conversation.side === 'vendor';
   const title = asVendor ? (conversation.family.firstName ?? t('chat.aFamily')) : vendorName;
   const unread = conversation.unreadCount > 0;

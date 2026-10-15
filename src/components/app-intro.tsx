@@ -132,7 +132,7 @@ function Intro({ onDone }: { onDone: () => void }) {
         />
       )}
       <Animated.View style={logo}>
-        <Image source={RIBBON[mode]} style={styles.image} />
+        <Image source={RIBBON[mode]} style={styles.image} accessible={false} />
       </Animated.View>
     </Animated.View>
   );

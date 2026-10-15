@@ -38,7 +38,6 @@ export function usePlanFromQuery(query: string): PlanHint | null {
       for (const event of tradition.events) {
         const set = names.get(event.slug) ?? new Set<string>();
         set.add(event.name.en);
-        if (event.name.pa) set.add(event.name.pa);
         names.set(event.slug, set);
       }
     }
@@ -66,7 +65,7 @@ export function usePlanFromQuery(query: string): PlanHint | null {
 export function PlanCard({ hint }: { hint: PlanHint }) {
   const Colors = useColors();
   const styles = useStyles();
-  const { t, locale } = useLocale();
+  const { t } = useLocale();
   const backgrounds = useBackgrounds();
   const faiths = useFaiths();
   const traditions = useTraditions();
@@ -76,7 +75,7 @@ export function PlanCard({ hint }: { hint: PlanHint }) {
   const eventName = (slug: string) => {
     for (const tradition of traditions.data ?? []) {
       const event = tradition.events.find((e) => e.slug === slug);
-      if (event) return localized(event.name, locale);
+      if (event) return localized(event.name);
     }
     return slug;
   };
@@ -85,7 +84,7 @@ export function PlanCard({ hint }: { hint: PlanHint }) {
     ...hint.faiths.map((slug) => faiths.data?.find((f) => f.slug === slug)?.name),
   ]
     .filter((name) => !!name)
-    .map((name) => localized(name!, locale))
+    .map((name) => localized(name!))
     .concat(hint.events.map(eventName));
   if (hint.guestBand) {
     understood.push(t('search.plan.guests', { band: t(`inquiry.guestBands.${hint.guestBand}`) }));

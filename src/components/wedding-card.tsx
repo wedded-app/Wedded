@@ -27,7 +27,7 @@ import { Motion } from '@/lib/motion';
 export function WeddingCard({ compact = false }: { compact?: boolean }) {
   const Colors = useColors();
   const styles = useStyles();
-  const { t, locale } = useLocale();
+  const { t } = useLocale();
   const { plan, wedding, loading, chosen, progress, next, isPending, canEdit, toggleBooked } =
     usePlanView();
   const openPlan = () => router.push('/plan');
@@ -80,7 +80,7 @@ export function WeddingCard({ compact = false }: { compact?: boolean }) {
             </Animated.View>
           )}
           {next.map(({ eventSlug, eventName, need }) => {
-            const name = localized(need.name, locale);
+            const name = localized(need.name);
             return (
               <Animated.View
                 key={`${eventSlug}:${need.categorySlug}`}
@@ -102,7 +102,7 @@ export function WeddingCard({ compact = false }: { compact?: boolean }) {
                 <View style={styles.grow}>
                   <AppText weight={500}>{name}</AppText>
                   <AppText variant="caption" color="text2">
-                    {localized(eventName, locale)}
+                    {localized(eventName)}
                   </AppText>
                 </View>
                 <Pressable

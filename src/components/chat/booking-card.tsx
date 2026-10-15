@@ -16,6 +16,7 @@ export function BookingCard({
   eventNames,
   guestLabel,
   answers = [],
+  message,
 }: {
   booking: ChatBooking;
   /** booking.eventSlugs as names in the app's language. */
@@ -24,6 +25,8 @@ export function BookingCard({
   guestLabel?: string | null;
   /** booking.details as labelled rows: each event's day, then the hall or caterer answers. */
   answers?: { label: string; value: string }[];
+  /** What the family wrote with the request. */
+  message?: string | null;
 }) {
   const styles = useStyles();
   const { t } = useLocale();
@@ -50,6 +53,12 @@ export function BookingCard({
           <AppText weight={600}>{row.value}</AppText>
         </View>
       ))}
+      {message?.trim() ? (
+        <View style={[styles.row, styles.divided]}>
+          <AppText color="text2">{t('chat.booking.message')}</AppText>
+          <AppText selectable>{message.trim()}</AppText>
+        </View>
+      ) : null}
     </View>
   );
 }

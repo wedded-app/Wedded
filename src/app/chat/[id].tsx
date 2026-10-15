@@ -46,10 +46,13 @@ import {
 } from '@/data/chat';
 import { useTyping } from '@/data/chat-typing';
 import { setOpenConversation } from '@/data/push';
+import { usePaymentAccount } from '@/data/deposits';
 import { useVendorMenus } from '@/data/vendor-menus';
 import { leadAnswerRows } from '@/features/business/business-format';
 import { useEventNames } from '@/features/business/business-parts';
 import { messageSnippet } from '@/features/chat/chat-format';
+import { ChatDeposit, DepositsProvider, useChatDeposits } from '@/features/chat/chat-deposits';
+import { ChatProposal } from '@/features/requests/chat-proposal';
 import { PushAskCard } from '@/features/chat/push-ask';
 import { sentPhotoUri } from '@/features/chat/chat-photo';
 import { nextReaction, type ReactionCode } from '@/features/chat/reactions';
@@ -80,7 +83,7 @@ export default function ChatScreen() {
   const styles = useStyles();
   const insets = useSafeAreaInsets();
   const { id = '' } = useLocalSearchParams<{ id: string }>();
-  const { t, locale } = useLocale();
+  const { t } = useLocale();
   const thread = useConversation(id);
   const send = useSendMessage(id);
   const react = useReactToMessage(id);
@@ -108,6 +111,9 @@ export default function ChatScreen() {
   const convo = thread.conversation;
   const side = convo?.side ?? 'family';
   const typing = useTyping(id, convo?.side ?? null);
+  const deposits = useChatDeposits(id, side, convo ? localized(convo.vendor.name) : '');
+  // Only a vendor families can pay asks for deposits
+  const payments = usePaymentAccount(side === 'vendor' ? (convo?.vendor.id ?? '') : '');
   // Alerts for this chat don't pop up while it's on screen
   useFocusEffect(
     useCallback(() => {
@@ -173,13 +179,13 @@ export default function ChatScreen() {
     (m) => m.senderRole === 'family' && m.kind === 'text',
   ).length;
 
-  let error: string | null = voice.notice ?? photos.notice;
+  let error: string | null = voice.notice ?? photos.notice ?? deposits.notice;
   if (send.isError) error = t(`chat.errors.${sendErrorKind(send.error)}`);
 
   const title = convo
     ? side === 'vendor'
       ? (convo.family.firstName ?? t('chat.aFamily'))
-      : localized(convo.vendor.name, locale)
+      : localized(convo.vendor.name)
     : '';
 
   // Who wrote a quoted message, and the messages a reply can point at
@@ -199,211 +205,220 @@ export default function ChatScreen() {
   };
 
   return (
-    <GestureHandlerRootView style={styles.root}>
-      <Screen edges={['top']}>
-        <View style={styles.bar}>
-          <BackButton />
-          {convo && (
-            <Pressable
-              accessibilityRole={side === 'family' ? 'link' : 'header'}
-              accessibilityLabel={
-                side === 'family' ? t('chat.openProfile', { name: title }) : title
-              }
-              disabled={side !== 'family'}
-              onPress={() =>
-                router.push({ pathname: '/v/[slug]', params: { slug: convo.vendor.slug } })
-              }
-              style={({ pressed }) => [styles.titleWrap, pressed && styles.pressed]}
-            >
-              <AppText variant="heading" weight={700} numberOfLines={1}>
-                {title}
-              </AppText>
-              <AppText
-                variant="caption"
-                color={side === 'family' ? 'primary' : 'text2'}
-                numberOfLines={1}
+    <DepositsProvider value={deposits.value}>
+      <GestureHandlerRootView style={styles.root}>
+        <Screen edges={['top']}>
+          <View style={styles.bar}>
+            <BackButton />
+            {convo && (
+              <Pressable
+                accessibilityRole={side === 'family' ? 'link' : 'header'}
+                accessibilityLabel={
+                  side === 'family' ? t('chat.openProfile', { name: title }) : title
+                }
+                disabled={side !== 'family'}
+                onPress={() =>
+                  router.push({ pathname: '/v/[slug]', params: { slug: convo.vendor.slug } })
+                }
+                style={({ pressed }) => [styles.titleWrap, pressed && styles.pressed]}
               >
-                {side === 'family'
-                  ? t('chat.viewProfile')
-                  : t('chat.forBusiness', { name: localized(convo.vendor.name, locale) })}
-              </AppText>
-            </Pressable>
-          )}
-        </View>
+                <AppText variant="heading" weight={700} numberOfLines={1}>
+                  {title}
+                </AppText>
+                <AppText
+                  variant="caption"
+                  color={side === 'family' ? 'primary' : 'text2'}
+                  numberOfLines={1}
+                >
+                  {side === 'family'
+                    ? t('chat.viewProfile')
+                    : t('chat.forBusiness', { name: localized(convo.vendor.name) })}
+                </AppText>
+              </Pressable>
+            )}
+          </View>
 
-        <KeyboardAvoidingView
-          style={styles.fill}
-          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-          keyboardVerticalOffset={0}
-        >
-          {thread.isPending ? (
-            <StateView state="loading" />
-          ) : thread.isError ? (
-            <StateView state="error" onRetry={() => void thread.refetch()} />
-          ) : (
-            <FlatList
-              ref={list}
-              inverted
-              data={items}
-              keyExtractor={(item) => item.key}
-              renderItem={({ item }) =>
-                item.type === 'upload' ? (
-                  <UploadRow
-                    upload={item.upload}
-                    quoted={
-                      item.upload.replyTo ? (byId.get(item.upload.replyTo) ?? null) : undefined
-                    }
-                    authorOf={authorOf}
-                    onShowOriginal={showOriginal}
-                    onRetry={() => photos.retry(item.upload)}
-                    onRemove={() => photos.remove(item.upload.id)}
-                  />
-                ) : (
-                  <ThreadRow
-                    item={item}
-                    conversation={convo}
-                    quoted={item.type === 'message' ? quotedFor(item.message, byId) : undefined}
-                    authorOf={authorOf}
-                    lit={item.type === 'message' && item.message.id === lit}
-                    onShowOriginal={showOriginal}
-                    onStartReply={startReply}
-                    onReply={setDraft}
-                    onSend={sendText}
-                    onHold={(message) => {
-                      selectionHaptic();
-                      setReactingTo(message);
-                    }}
-                    onToggleReaction={toggleReaction}
-                  />
-                )
-              }
-              contentContainerStyle={styles.list}
-              keyboardShouldPersistTaps="handled"
-              keyboardDismissMode="interactive"
-              // An older message far up isn't measured yet: get near it, then try again
-              onScrollToIndexFailed={({ index, averageItemLength }) => {
-                list.current?.scrollToOffset({
-                  offset: index * averageItemLength,
-                  animated: false,
-                });
-                setTimeout(
-                  () =>
-                    list.current?.scrollToIndex({
-                      index,
-                      viewPosition: 0.5,
-                      animated: !reduceMotion,
-                    }),
-                  100,
-                );
-              }}
-              ListFooterComponent={<View style={styles.top} />}
-              // Inverted, the header sits at the bottom, under the newest message
-              ListHeaderComponent={
-                typing.otherTyping && title ? (
-                  <TypingIndicator label={t('chat.typing', { name: title })} />
-                ) : null
-              }
-            />
-          )}
-
-          <View style={[styles.bottom, { paddingBottom: Math.max(insets.bottom, Spacing.md) }]}>
-            {error && (
-              <View style={styles.error}>
-                <FieldError message={error} />
-                {voice.failed && (
-                  <View style={styles.uploadActions}>
-                    <Button
-                      variant="text"
-                      label={t('chat.photos.tryAgain')}
-                      onPress={voice.retry}
+          <KeyboardAvoidingView
+            style={styles.fill}
+            behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+            keyboardVerticalOffset={0}
+          >
+            {thread.isPending ? (
+              <StateView state="loading" />
+            ) : thread.isError ? (
+              <StateView state="error" onRetry={() => void thread.refetch()} />
+            ) : (
+              <FlatList
+                ref={list}
+                inverted
+                data={items}
+                keyExtractor={(item) => item.key}
+                renderItem={({ item }) =>
+                  item.type === 'upload' ? (
+                    <UploadRow
+                      upload={item.upload}
+                      quoted={
+                        item.upload.replyTo ? (byId.get(item.upload.replyTo) ?? null) : undefined
+                      }
+                      authorOf={authorOf}
+                      onShowOriginal={showOriginal}
+                      onRetry={() => photos.retry(item.upload)}
+                      onRemove={() => photos.remove(item.upload.id)}
                     />
-                    <Button
-                      variant="text"
-                      label={t('chat.photos.remove')}
-                      onPress={voice.dismiss}
+                  ) : (
+                    <ThreadRow
+                      item={item}
+                      conversation={convo}
+                      quoted={item.type === 'message' ? quotedFor(item.message, byId) : undefined}
+                      authorOf={authorOf}
+                      lit={item.type === 'message' && item.message.id === lit}
+                      onShowOriginal={showOriginal}
+                      onStartReply={startReply}
+                      onReply={setDraft}
+                      onSend={sendText}
+                      onHold={(message) => {
+                        selectionHaptic();
+                        setReactingTo(message);
+                      }}
+                      onToggleReaction={toggleReaction}
                     />
-                  </View>
-                )}
-              </View>
-            )}
-            {side === 'vendor' && convo && (
-              <View style={styles.tools}>
-                <Chip
-                  role="button"
-                  label={t('chat.sendQuote')}
-                  onPress={() => router.push({ pathname: '/chat-quote', params: { id } })}
-                />
-                <Chip
-                  role="button"
-                  label={t('chat.sendMenu')}
-                  onPress={() =>
-                    router.push({
-                      pathname: '/chat-menu',
-                      params: { id, vendorId: convo.vendor.id },
-                    })
-                  }
-                />
-              </View>
-            )}
-            {side === 'family' && convo && profile?.phone && !sharedNumber && (
-              <View style={styles.tools}>
-                <Chip role="button" label={t('chat.phone.shareButton')} onPress={shareNumber} />
-              </View>
-            )}
-            {familyWrote && (
-              <View style={styles.error}>
-                <PushAskCard audience="family" />
-              </View>
-            )}
-            {replyingTo && (
-              <ReplyBar
-                title={t('chat.reply.replyingTo', { name: authorOf(replyingTo) })}
-                text={messageSnippet(replyingTo, t)}
-                cancelLabel={t('chat.reply.cancel')}
-                onCancel={() => setReplyingTo(null)}
+                  )
+                }
+                contentContainerStyle={styles.list}
+                keyboardShouldPersistTaps="handled"
+                keyboardDismissMode="interactive"
+                // An older message far up isn't measured yet: get near it, then try again
+                onScrollToIndexFailed={({ index, averageItemLength }) => {
+                  list.current?.scrollToOffset({
+                    offset: index * averageItemLength,
+                    animated: false,
+                  });
+                  setTimeout(
+                    () =>
+                      list.current?.scrollToIndex({
+                        index,
+                        viewPosition: 0.5,
+                        animated: !reduceMotion,
+                      }),
+                    100,
+                  );
+                }}
+                ListFooterComponent={<View style={styles.top} />}
+                // Inverted, the header sits at the bottom, under the newest message
+                ListHeaderComponent={
+                  typing.otherTyping && title ? (
+                    <TypingIndicator label={t('chat.typing', { name: title })} />
+                  ) : null
+                }
               />
             )}
-            <Composer
-              inputRef={input}
-              value={draft}
-              onChangeText={changeDraft}
-              onBlur={typing.stopped}
-              onSend={() => sendText(draft)}
-              onAddPhoto={convo ? sendPhoto : undefined}
-              voice={
-                convo
-                  ? {
-                      mode: voice.mode,
-                      elapsedMs: voice.elapsedMs,
-                      onHold: voice.hold,
-                      onRelease: voice.release,
-                      onTap: voice.tap,
-                      onCancel: voice.cancel,
-                      onSend: voice.sendNow,
+
+            <View style={[styles.bottom, { paddingBottom: Math.max(insets.bottom, Spacing.md) }]}>
+              {error && (
+                <View style={styles.error}>
+                  <FieldError message={error} />
+                  {voice.failed && (
+                    <View style={styles.uploadActions}>
+                      <Button
+                        variant="text"
+                        label={t('chat.photos.tryAgain')}
+                        onPress={voice.retry}
+                      />
+                      <Button
+                        variant="text"
+                        label={t('chat.photos.remove')}
+                        onPress={voice.dismiss}
+                      />
+                    </View>
+                  )}
+                </View>
+              )}
+              {side === 'vendor' && convo && (
+                <View style={styles.tools}>
+                  <Chip
+                    role="button"
+                    label={t('chat.sendQuote')}
+                    onPress={() => router.push({ pathname: '/chat-quote', params: { id } })}
+                  />
+                  <Chip
+                    role="button"
+                    label={t('chat.sendMenu')}
+                    onPress={() =>
+                      router.push({
+                        pathname: '/chat-menu',
+                        params: { id, vendorId: convo.vendor.id },
+                      })
                     }
-                  : undefined
-              }
-              sending={send.isPending}
-              quickReplies={
-                side === 'family' && familyTexts < 2
-                  ? QUICK_REPLIES.map((key) => t(`chat.quickReplies.${key}`))
-                  : undefined
-              }
-              onQuickReply={sendText}
-            />
-          </View>
-        </KeyboardAvoidingView>
-        <ReactionPicker
-          visible={reactingTo !== null}
-          current={reactingTo ? myReaction(reactingTo) : null}
-          onPick={(picked) => {
-            if (reactingTo) toggleReaction(reactingTo, picked);
-            setReactingTo(null);
-          }}
-          onClose={() => setReactingTo(null)}
-        />
-      </Screen>
-    </GestureHandlerRootView>
+                  />
+                  {payments.data === 'ready' && (
+                    <Chip
+                      role="button"
+                      label={t('chat.deposit.request')}
+                      onPress={() => router.push({ pathname: '/chat-deposit', params: { id } })}
+                    />
+                  )}
+                </View>
+              )}
+              {side === 'family' && convo && profile?.phone && !sharedNumber && (
+                <View style={styles.tools}>
+                  <Chip role="button" label={t('chat.phone.shareButton')} onPress={shareNumber} />
+                </View>
+              )}
+              {familyWrote && (
+                <View style={styles.error}>
+                  <PushAskCard audience="family" />
+                </View>
+              )}
+              {replyingTo && (
+                <ReplyBar
+                  title={t('chat.reply.replyingTo', { name: authorOf(replyingTo) })}
+                  text={messageSnippet(replyingTo, t)}
+                  cancelLabel={t('chat.reply.cancel')}
+                  onCancel={() => setReplyingTo(null)}
+                />
+              )}
+              <Composer
+                inputRef={input}
+                value={draft}
+                onChangeText={changeDraft}
+                onBlur={typing.stopped}
+                onSend={() => sendText(draft)}
+                onAddPhoto={convo ? sendPhoto : undefined}
+                voice={
+                  convo
+                    ? {
+                        mode: voice.mode,
+                        elapsedMs: voice.elapsedMs,
+                        onHold: voice.hold,
+                        onRelease: voice.release,
+                        onTap: voice.tap,
+                        onCancel: voice.cancel,
+                        onSend: voice.sendNow,
+                      }
+                    : undefined
+                }
+                sending={send.isPending}
+                quickReplies={
+                  side === 'family' && familyTexts < 2
+                    ? QUICK_REPLIES.map((key) => t(`chat.quickReplies.${key}`))
+                    : undefined
+                }
+                onQuickReply={sendText}
+              />
+            </View>
+          </KeyboardAvoidingView>
+          <ReactionPicker
+            visible={reactingTo !== null}
+            current={reactingTo ? myReaction(reactingTo) : null}
+            onPick={(picked) => {
+              if (reactingTo) toggleReaction(reactingTo, picked);
+              setReactingTo(null);
+            }}
+            onClose={() => setReactingTo(null)}
+          />
+        </Screen>
+      </GestureHandlerRootView>
+    </DepositsProvider>
   );
 }
 
@@ -533,7 +548,9 @@ function ThreadRow({
     message.kind === 'quote' ||
     message.kind === 'menu' ||
     message.kind === 'booking' ||
-    message.kind === 'phone';
+    message.kind === 'phone' ||
+    message.kind === 'deposit' ||
+    message.kind === 'proposal';
   const quotedName = quoted ? authorOf(quoted) : '';
   const quotedText = quoted ? messageSnippet(quoted, t) : t('chat.reply.unavailable');
   return (
@@ -654,10 +671,15 @@ function MessageContent({
             message.booking.guestBand ? t(`inquiry.guestBands.${message.booking.guestBand}`) : null
           }
           answers={leadAnswerRows(message.booking.details, t, eventName)}
+          message={message.body}
         />
       ) : null;
     case 'phone':
       return message.phone ? <PhoneCard phone={message.phone} mine={mine} /> : null;
+    case 'deposit':
+      return <ChatDeposit message={message} />;
+    case 'proposal':
+      return <ChatProposal message={message} conversation={conversation} />;
     default:
       return <TextBubble text={message.body ?? ''} mine={mine} first={first} last={last} />;
   }

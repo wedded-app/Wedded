@@ -2,12 +2,12 @@ import { guestBand, planFromQuery } from './plan-from-query';
 
 const data = {
   backgrounds: [
-    { slug: 'punjabi', name: { en: 'Punjab', pa: 'ਪੰਜਾਬ' } },
+    { slug: 'punjabi', name: { en: 'Punjab' } },
     { slug: 'pakistani', name: { en: 'Pakistan' } },
     { slug: 'arab', name: { en: 'Middle East' } },
   ],
   faiths: [
-    { slug: 'sikh', name: { en: 'Sikh', pa: 'ਸਿੱਖ' } },
+    { slug: 'sikh', name: { en: 'Sikh' } },
     { slug: 'muslim', name: { en: 'Muslim' } },
   ],
   events: [
@@ -36,9 +36,9 @@ describe('planFromQuery', () => {
     });
   });
 
-  it('knows the words for a wedding in Punjabi and Urdu spellings', () => {
+  it('knows the Punjabi and Urdu words for a wedding', () => {
     expect(planFromQuery('shaadi', data)).not.toBeNull();
-    expect(planFromQuery('ਵਿਆਹ', data)).not.toBeNull();
+    expect(planFromQuery('viah', data)).not.toBeNull();
     expect(planFromQuery('pakistani shadi sac', data)).toMatchObject({
       backgrounds: ['pakistani'],
       city: { slug: 'sacramento' },

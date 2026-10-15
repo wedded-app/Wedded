@@ -12,16 +12,13 @@ import { AppText } from '@/components/app-text';
 import { Icon, type IconName } from '@/components/icon';
 import { PressableScale } from '@/components/pressable-scale';
 import { makeStyles, Sizes, Spacing, useColors } from '@/constants/theme';
-import type { Locale } from '@/i18n';
 import { selectionHaptic } from '@/lib/haptics';
 import { Motion } from '@/lib/motion';
 
 export type OptionCardProps = {
   label: string;
-  labelLang?: Locale;
   /** A second line, e.g. a tradition's main events. */
   detail?: string;
-  detailLang?: Locale;
   icon?: IconName;
   selected: boolean;
   onPress: () => void;
@@ -39,9 +36,7 @@ const RADIUS = 24;
  */
 export function OptionCard({
   label,
-  labelLang,
   detail,
-  detailLang,
   icon,
   selected,
   onPress,
@@ -82,11 +77,11 @@ export function OptionCard({
             </View>
           )}
           <View style={styles.text}>
-            <AppText variant="bodyLg" weight={600} lang={labelLang}>
+            <AppText variant="bodyLg" weight={600}>
               {label}
             </AppText>
             {detail && (
-              <AppText variant="label" weight={400} color="text2" lang={detailLang}>
+              <AppText variant="label" weight={400} color="text2">
                 {detail}
               </AppText>
             )}

@@ -47,13 +47,12 @@ const SLUG = /^[a-z0-9]+(-[a-z0-9]+)*$/;
 
 /** The event's name for a slug, or the words as given. */
 function useWhere(where: string | null): string | null {
-  const { locale } = useLocale();
   const { data: sections } = useHomeEvents();
   if (!where) return null;
   const event = sections
     ?.flatMap((section) => section.events)
     .find((candidate) => candidate.slug === where);
-  if (event) return localized(event.name, locale);
+  if (event) return localized(event.name);
   // An event outside the family's traditions: its slug in plain words
   if (SLUG.test(where)) {
     const words = where.replace(/-/g, ' ');

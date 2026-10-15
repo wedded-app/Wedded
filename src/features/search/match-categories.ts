@@ -60,10 +60,9 @@ function score(term: string, query: string): number | null {
 }
 
 /**
- * Categories whose English name, Punjabi name or aliases match what was typed,
- * best matches first: exact, then starts with, then a word that starts with,
- * then contains. Works for Gurmukhi (the aliases include ਢੋਲ, ਮਹਿੰਦੀ and so on)
- * and ignores case and extra spaces. Empty text matches nothing. Only when
+ * Categories whose name or aliases match what was typed, best matches first:
+ * exact, then starts with, then a word that starts with, then contains. It
+ * ignores case and extra spaces. Empty text matches nothing. Only when
  * nothing matches does it try close spellings ("dhool", "photgrapher").
  */
 export function matchCategories<T extends Searchable>(categories: T[], text: string): T[] {
@@ -72,9 +71,7 @@ export function matchCategories<T extends Searchable>(categories: T[], text: str
 
   const scored: { category: T; best: number }[] = [];
   for (const category of categories) {
-    const terms = [category.name.en, category.name.pa ?? '', ...category.aliases]
-      .map(normalize)
-      .filter(Boolean);
+    const terms = [category.name.en, ...category.aliases].map(normalize).filter(Boolean);
     let best: number | null = null;
     for (const term of terms) {
       const s = score(term, query);
@@ -84,8 +81,8 @@ export function matchCategories<T extends Searchable>(categories: T[], text: str
   }
   if (scored.length === 0) {
     for (const category of categories) {
-      const termWords = [category.name.en, category.name.pa ?? '', ...category.aliases].flatMap(
-        (term) => words(normalize(term)),
+      const termWords = [category.name.en, ...category.aliases].flatMap((term) =>
+        words(normalize(term)),
       );
       if (closeSpelling(termWords, query)) scored.push({ category, best: 4 });
     }
