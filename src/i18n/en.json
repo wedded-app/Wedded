@@ -11,6 +11,14 @@
     "discover": "Reels",
     "wed": "Wed"
   },
+  "wedButton": {
+    "label": "Wed, your planning helper",
+    "waiting": {
+      "one": "Wed, 1 card needs your OK",
+      "other": "Wed, {{count}} cards need your OK"
+    },
+    "hint": "Opens Wed. Press and hold to talk to Wed."
+  },
   "home": {
     "phases": {
       "before": "Before the wedding",

@@ -7,6 +7,7 @@ import {
   useState,
   useSyncExternalStore,
   type ComponentProps,
+  type ReactNode,
 } from 'react';
 import { Keyboard, Platform, Pressable, View } from 'react-native';
 import Animated, {
@@ -111,10 +112,17 @@ export function GlassTabBar({
   navigation,
   tabs,
   accent = 'primary',
+  floating,
 }: TabBarProps & {
   tabs: TabSpec[];
   /** The selected tab's colour: saffron in business mode, so it's clear which side this is. */
   accent?: ColorToken;
+  /**
+   * A round button floating just above the bar's right end (Wed's), which
+   * hides with the bar. It's left out over Reels' videos, whose own buttons
+   * sit there, and on a route the bar has no tab for (the one it opens).
+   */
+  floating?: ReactNode;
 }) {
   const appColors = useColors();
   const styles = useStyles();
@@ -124,16 +132,19 @@ export function GlassTabBar({
   const Colors = overVideo ? Palettes.dark : appColors;
   const reduceMotion = useReducedMotion();
   const [width, setWidth] = useState(0);
-  const itemWidth = width > 0 ? (width - PADDING * 2) / state.routes.length : 0;
+  // Routes without a tab (Wed, opened by the floating button) stay off the bar
+  const shown = state.routes.filter((route) => tabs.some((tab) => tab.name === route.name));
+  const selected = shown.findIndex((route) => route.key === state.routes[state.index]?.key);
+  const itemWidth = width > 0 ? (width - PADDING * 2) / shown.length : 0;
   const x = useSharedValue(0);
   const keyboardShown = useKeyboardShown();
   const hidden = useSyncExternalStore(subscribeHidden, isHidden, neverHidden);
   const drop = useSharedValue(0);
 
   useEffect(() => {
-    const target = state.index * itemWidth;
+    const target = Math.max(selected, 0) * itemWidth;
     x.value = reduceMotion || itemWidth === 0 ? target : withSpring(target, Springs.snappy);
-  }, [state.index, itemWidth, reduceMotion, x]);
+  }, [selected, itemWidth, reduceMotion, x]);
 
   // Below the bottom edge, shadow and all
   useEffect(() => {
@@ -158,14 +169,17 @@ export function GlassTabBar({
       accessibilityElementsHidden={hidden}
       importantForAccessibility={hidden ? 'no-hide-descendants' : 'auto'}
     >
-      <Animated.View style={dropStyle}>
+      <Animated.View style={[styles.through, dropStyle]}>
+        {floating && !overVideo && selected >= 0 && (
+          <View style={[styles.floating, styles.through]}>{floating}</View>
+        )}
         <Glass interactive scheme={overVideo ? 'dark' : undefined} style={styles.bar}>
           <View
             style={styles.items}
             accessibilityRole="tablist"
             onLayout={(event) => setWidth(event.nativeEvent.layout.width)}
           >
-            {itemWidth > 0 && (
+            {itemWidth > 0 && selected >= 0 && (
               <Animated.View
                 style={[
                   styles.highlight,
@@ -174,8 +188,8 @@ export function GlassTabBar({
                 ]}
               />
             )}
-            {state.routes.map((route, index) => {
-              const focused = state.index === index;
+            {shown.map((route, index) => {
+              const focused = selected === index;
               const spec = tabs.find((tab) => tab.name === route.name);
               const label = spec?.label ?? descriptors[route.key].options.title ?? route.name;
               const color = focused ? Colors[accent] : Colors.text;
@@ -310,6 +324,10 @@ const useStyles = makeStyles((Colors) => ({
   },
   through: {
     pointerEvents: 'box-none',
+  },
+  floating: {
+    alignItems: 'flex-end',
+    marginBottom: Spacing.md,
   },
   gone: {
     pointerEvents: 'none',
