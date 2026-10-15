@@ -13,3 +13,17 @@ Wedded Pro is an optional recurring vendor subscription. Checkout must show its 
 You can request account deletion in the app. Deletion does not automatically cancel obligations to another person; founders must verify how active subscriptions and financial records are handled before finalizing this clause. See [Privacy draft](PRIVACY_DRAFT.md) for data handling.
 
 Founders and counsel must finalize support, reporting, service suspension, content removal, liability, warranties, governing law, dispute rights and notice of changes. This draft does not waive statutory consumer rights and is not a substitute for vendor service agreements.
+
+
+## Access, content and third-party services — draft for a lawyer
+
+Subject to these terms, you may use Wedded for its intended wedding-planning and vendor-service purposes. Do not bypass access controls, scrape private information, spam sign-in codes or misrepresent another person. Wedded and its licensors retain rights in the software and brand; you retain rights in content you submit. You grant the limited permission needed to store, process and display that content according to your sharing choices, subject to the final licence language approved by counsel. Third-party providers and vendor agreements have their own terms.
+
+We may restrict abusive accounts and respond to unlawful content, with any notice or review process required by law. Founders and counsel must approve warranties, any lawful liability limits, suspension/appeal procedures, governing law and dispute resolution. The template's optional arbitration, class-action waivers and AI-arbitration clauses are not adopted in this draft. No statement here removes mandatory consumer rights.
+
+
+## Template provenance
+
+Adapted from the account, acceptable-use, third-party-service and consumer-rights structure of General Legal's [Terms of Use](https://github.com/General-Legal/legal-templates/blob/6d6805425eabd41bed86fc1e2ec51612760f716c/templates/terms-of-use/template.md), verified at commit `6d6805425eabd41bed86fc1e2ec51612760f716c` under [CC0 1.0](https://github.com/General-Legal/legal-templates/blob/6d6805425eabd41bed86fc1e2ec51612760f716c/LICENSE). The repository has no standalone refund-policy template: Wedded's Pro and vendor-deposit refund provisions are product-specific additions for counsel to review, not General Legal-approved refund language.
+
+Template credit: General Legal, PC made the underlying templates publicly available for general reference. They are not legal advice and create no attorney-client relationship; General Legal has not reviewed this Wedded adaptation.
