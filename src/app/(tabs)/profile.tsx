@@ -15,6 +15,7 @@ import { useMyInquiries } from '@/data/inquiries';
 import { useIsVendor, useUnreadCount } from '@/data/chat';
 import { useSavedVendors, type SavedVendor } from '@/data/saved';
 import { useSession } from '@/features/auth/session';
+import { switchToBusiness } from '@/features/business/app-mode';
 import { SectionHeader } from '@/features/home/section-header';
 import { bookedCount, usePlan } from '@/features/planner/plan';
 import { useWed, type WedState } from '@/features/wed/wed-store';
@@ -26,9 +27,9 @@ import { formatPhone } from '@/lib/phone';
  * S16 Profile, shaped like an Instagram profile: the person, three counts
  * (saved, asked, booked), two buttons, the wedding countdown and a grid of
  * the vendors they've saved. Settings sit behind the gear, as in most apps.
- * Vendor accounts also get "My business" at the top of the list. Wed (the
- * planning helper) has its own short list: what it knows, the apps it can
- * use and how much it does on its own.
+ * Vendor accounts also get "Switch to business" (business mode, #252) at
+ * the top of the list. Wed (the planning helper) has its own short list:
+ * what it knows, the apps it can use and how much it does on its own.
  */
 export default function ProfileScreen() {
   const { t } = useLocale();
@@ -58,9 +59,10 @@ export default function ProfileScreen() {
         {isVendor && (
           <ListRow
             icon="storefront"
-            title={t('business.title')}
-            subtitle={t('business.profileHint')}
-            onPress={() => router.push('/business')}
+            iconColor="kesari"
+            title={t('businessMode.switchToBusiness')}
+            subtitle={t('businessMode.switchToBusinessHint')}
+            onPress={switchToBusiness}
           />
         )}
         {/* Saved left the tab bar for Wed: a plain row here too, not only the count */}

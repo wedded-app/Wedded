@@ -15,7 +15,6 @@ import { useIsVendor } from '@/data/chat';
 import { useFeed, type FeedPost } from '@/data/feed';
 import { useCategoryGroups, useHomeEvents } from '@/data/reference';
 import { useCategoryVendorCounts } from '@/data/vendors';
-import { BusinessHomeCard } from '@/features/business/business-home-card';
 import { ChatButton } from '@/features/chat/chat-button';
 import { EventCarousel } from '@/features/home/event-carousel';
 import { HomeCover, useCoverHeight } from '@/features/home/home-cover';
@@ -122,8 +121,6 @@ export default function HomeScreen() {
         {showCover && <HomeCover view={view} posts={posts} />}
 
         <View style={[styles.body, !showCover && { paddingTop: navTop + Spacing.lg }]}>
-          {/* Vendor accounts: their business first (families never see it) */}
-          <BusinessHomeCard />
           <View style={styles.find}>
             <SearchButton
               onPress={() => router.navigate({ pathname: '/search', params: { focus: '1' } })}

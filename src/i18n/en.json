@@ -432,7 +432,36 @@
     "signInWithEmail": "Sign in with email",
     "legal": "By continuing, you agree to our {{terms}}. Learn how we use your data in our {{privacy}}.",
     "captcha": "Checking you're a person",
-    "captchaWait": "One moment, we're checking this is really you. Try again in a second."
+    "captchaWait": "One moment, we're checking this is really you. Try again in a second.",
+    "join": {
+      "title": "What brings you to Wedded?",
+      "planning": "I'm planning a wedding",
+      "planningDetail": "Find vendors for every event and keep the plan in one place.",
+      "looking": "Just looking",
+      "lookingDetail": "Watch wedding reels and save the vendors you like.",
+      "business": "I run a wedding business",
+      "businessDetail": "Make a free listing so families can find you.",
+      "continue": "Continue"
+    },
+    "business": {
+      "title": "Your business",
+      "intro": "We'll make your listing. You can add photos and prices next. The Wedded team checks it before families see it.",
+      "name": "Business name",
+      "nameError": "Please type your business name.",
+      "type": "What do you do?",
+      "typeError": "Please pick what you do.",
+      "town": "Town you work from",
+      "townMatch": "We'll use {{city}}.",
+      "townError": "Type a town in Northern California, like Yuba City.",
+      "submit": "Make my listing",
+      "errors": {
+        "needsProfile": "Please fill in your details first.",
+        "tooMany": "You already have 3 listings waiting. Finish one in My business first.",
+        "invalid": "Check the name, what you do and the town, then try again.",
+        "offline": "You're offline. Check your internet and try again.",
+        "failed": "We couldn't make your listing. Please try again."
+      }
+    }
   },
   "saveVendor": {
     "title": "Save to which event?",
@@ -1517,7 +1546,6 @@
   },
   "business": {
     "title": "My business",
-    "profileHint": "Your numbers, the families who asked, menus and calendar",
     "notVendor": "This is for vendor accounts. If you run a wedding business, ask us to add you.",
     "yourListing": "Your page",
     "listingHint": "Families see these on your page. Keep them up to date so they ask about the right things.",
@@ -1705,13 +1733,6 @@
       "working": "Making your spreadsheet…",
       "failed": "Your spreadsheet didn't come through. Check your internet, then try again.",
       "cantShare": "This phone can't share files from the app. Try on another phone, or on a computer at the website."
-    },
-    "home": {
-      "week": {
-        "one": "This week: 1 person saw your page, {{asked}} asked about a date",
-        "other": "This week: {{count}} people saw your page, {{asked}} asked about a date"
-      },
-      "hint": "Opens My business"
     },
     "insights": {
       "period": {
@@ -2016,6 +2037,32 @@
       }
     }
   },
+  "businessMode": {
+    "label": "Business",
+    "labelA11y": "Business mode",
+    "tabs": {
+      "today": "Today",
+      "wanted": "Wanted",
+      "reels": "Reels",
+      "leads": "Leads",
+      "business": "Business"
+    },
+    "today": {
+      "title": "Today",
+      "waitingTitle": "Waiting for your reply",
+      "seeLeads": "See all your leads",
+      "weekTitle": "This week",
+      "allNumbers": "See all your numbers",
+      "comingUp": "Coming up",
+      "noDates": "No days booked yet. Mark the days you're busy, so families only ask about days you're free.",
+      "openCalendar": "Open your calendar"
+    },
+    "account": "Account",
+    "switchToBusiness": "Switch to business",
+    "switchToBusinessHint": "Your leads, the families looking and your page",
+    "switchToPlanning": "Switch to planning",
+    "switchToPlanningHint": "Plan your own family's wedding"
+  },
   "requests": {
     "headline": "{{category}} for the {{event}}",
     "miles": {
@@ -2137,7 +2184,7 @@
     "problems": {
       "failed": "Something went wrong. Try again.",
       "notAllowed": "You can't do that here.",
-      "proOnly": "Families looking is part of Wedded Pro.",
+      "proOnly": "Wanted is part of Wedded Pro.",
       "alreadyOpen": "You already have an open request for this. Look in Posted requests.",
       "tooManyOpen": "You have a lot of open requests. Close one first.",
       "rate": "That's a lot for one day. Try again tomorrow.",
@@ -2156,7 +2203,7 @@
     }
   },
   "looking": {
-    "title": "Families looking",
+    "title": "Wanted",
     "subtitle": "Families near you who need what you do.",
     "rowHint": "Send families your price",
     "reach": "How far",

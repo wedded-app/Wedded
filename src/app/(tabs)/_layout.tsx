@@ -11,6 +11,7 @@ import {
 import { Sizes, Spacing, useColors } from '@/constants/theme';
 import { useUnreadCount } from '@/data/chat';
 import { useSession } from '@/features/auth/session';
+import { useOpensInBusiness } from '@/features/business/app-mode';
 import { useOnboardingGate } from '@/features/onboarding/gate';
 import { SavedToastHost } from '@/features/saved/saved-toast';
 import { useWedNavigation } from '@/features/wed/open-wed';
@@ -71,8 +72,13 @@ export default function TabsLayout() {
   }));
   // The first time the app opens: the welcome screen, or the first questions.
   const gate = useOnboardingGate();
-  if (gate === 'wait') return <View style={{ flex: 1, backgroundColor: Colors.canvas }} />;
+  // Business mode has its own tabs (features/business/app-mode.ts)
+  const business = useOpensInBusiness();
+  if (gate === 'wait' || business === 'wait') {
+    return <View style={{ flex: 1, backgroundColor: Colors.canvas }} />;
+  }
   if (gate) return <Redirect href={gate} />;
+  if (business) return <Redirect href="/today" />;
 
   return (
     <TabBarSpaceProvider value={Sizes.tabBar + offset + Spacing.sm}>

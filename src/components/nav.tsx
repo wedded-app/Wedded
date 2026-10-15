@@ -171,6 +171,8 @@ type NavScreenProps = Omit<ScrollViewProps, 'onScroll' | 'children'> & {
   back?: boolean;
   /** Where Back goes with nothing to go back to, instead of Home. */
   backTo?: BackFallback;
+  /** A custom control on the left instead of Back, e.g. business mode's label. */
+  leading?: ReactNode;
   trailing?: ReactNode;
   children: ReactNode;
 };
@@ -187,6 +189,7 @@ export function NavScreen({
   eyebrow,
   back = true,
   backTo,
+  leading,
   trailing,
   children,
   contentContainerStyle,
@@ -220,6 +223,7 @@ export function NavScreen({
         title={navTitle ?? title}
         back={back}
         backTo={backTo}
+        leading={leading}
         trailing={trailing}
       />
     </View>

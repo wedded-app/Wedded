@@ -15,9 +15,22 @@ import { join } from 'node:path';
 
 import { connect, fail } from './connect';
 
-type Poster = { family: string } | { vendorCategory: string };
+type Poster = { family: string } | { vendorCategory: string } | { vendor: string };
 
-const FAMILIES = ['Simran Kaur', 'Ayesha Khan', 'Harpreet Sandhu', 'Neha Sharma'];
+const FAMILIES = [
+  'Simran Kaur',
+  'Ayesha Khan',
+  'Harpreet Sandhu',
+  'Neha Sharma',
+  'Gurleen Kaur',
+  'Jaspreet Dhillon',
+  'Mehak Gill',
+  'Arjun Mehta',
+  'Sana Malik',
+  'Ravinder Sidhu',
+  'Komal Brar',
+  'Imran Qureshi',
+];
 
 // Each clip: who posts it, the caption, the event, and the vendor types to tag
 const CLIPS: {
@@ -26,13 +39,70 @@ const CLIPS: {
   caption: string;
   event: string;
   tags: string[];
+  seconds?: number;
 }[] = [
+  {
+    file: 'baraat-ghori',
+    poster: { family: 'Harpreet Sandhu' },
+    caption: 'The ghori, the dhol and the whole family dancing 🐎🥁',
+    event: 'baraat',
+    tags: ['ghori', 'dhol'],
+    seconds: 6,
+  },
+  {
+    file: 'sangeet-dance',
+    poster: { vendor: 'naach-studio-choreography' },
+    caption: 'Six weekends of practice for this one 💃 Booking spring sangeets now.',
+    event: 'sangeet',
+    tags: [],
+    seconds: 6,
+  },
+  {
+    file: 'laavan',
+    poster: { vendor: 'frames-by-jas' },
+    caption: 'Laavan at the gurdwara this morning. So much love in one room 🙏',
+    event: 'anand-karaj',
+    tags: ['gurdwara', 'makeup'],
+    seconds: 6,
+  },
+  {
+    file: 'tandoor-naan',
+    poster: { vendor: 'saffron-tandoor-catering' },
+    caption: 'Fresh naan straight from the tandoor, all night long',
+    event: 'reception',
+    tags: [],
+    seconds: 6,
+  },
   {
     file: 'jaago-dhol',
     poster: { family: 'Simran Kaur' },
     caption: 'Our jaago went till 2am 🥁 the dhol crew did NOT stop',
     event: 'jaago',
     tags: ['dhol', 'photographer'],
+  },
+  {
+    file: 'bridal-glow',
+    poster: { vendor: 'glow-by-simran' },
+    caption: 'Ready by 8 for the Anand Karaj ✨ Soft glam, no rush.',
+    event: 'anand-karaj',
+    tags: ['bridal-boutique'],
+    seconds: 6,
+  },
+  {
+    file: 'dum-biryani',
+    poster: { vendor: 'deccan-dum-biryani' },
+    caption: 'Opening the dum for 600 guests tonight 🔥',
+    event: 'walima',
+    tags: [],
+    seconds: 6,
+  },
+  {
+    file: 'doli-goodbye',
+    poster: { family: 'Gurleen Kaur' },
+    caption: 'Doli. Not a dry eye anywhere 🥹',
+    event: 'doli',
+    tags: ['cars-limos', 'florist'],
+    seconds: 6,
   },
   {
     file: 'mehndi-hands',
@@ -49,11 +119,35 @@ const CLIPS: {
     tags: ['decorator', 'florist'],
   },
   {
+    file: 'stage-reveal',
+    poster: { vendor: 'marigold-stage-decor' },
+    caption: 'Stage ready for Saturday’s reception 🌸',
+    event: 'reception',
+    tags: ['lighting'],
+    seconds: 6,
+  },
+  {
+    file: 'zaffa-entrance',
+    poster: { vendor: 'al-farah-zaffa-band' },
+    caption: 'Bringing the couple in, zaffa style 🥁',
+    event: 'zaffa',
+    tags: [],
+    seconds: 6,
+  },
+  {
     file: 'mithai-table',
     poster: { vendorCategory: 'mithai' },
     caption: 'Fresh jalebi and besan ladoo for 400 guests',
     event: 'reception',
     tags: [],
+  },
+  {
+    file: 'jaago-night',
+    poster: { family: 'Simran Kaur' },
+    caption: 'Jaago night! The neighbours joined in 😂',
+    event: 'jaago',
+    tags: ['jaago-decor', 'dhol'],
+    seconds: 6,
   },
   {
     file: 'dance-floor',
@@ -77,6 +171,11 @@ const COMMENTS = [
   'Booking them for our wedding next summer!',
   'Vibes 🔥',
   'Congratulations to you both!',
+  'Saving this for my sister’s wedding',
+  'The energy!! 🙌',
+  'Are you free in May?',
+  'Mashallah, so beautiful',
+  'Waheguru mehar kare 🙏',
 ];
 
 async function main() {
@@ -129,6 +228,16 @@ async function main() {
     return data[0]?.vendor_id ?? null;
   }
 
+  async function vendorBySlug(slug: string): Promise<string | null> {
+    const { data } = await db
+      .from('vendors')
+      .select('id')
+      .eq('slug', slug)
+      .eq('status', 'published')
+      .maybeSingle();
+    return data?.id ?? null;
+  }
+
   // Start over ------------------------------------------------------------------------------
   const everyone = [...Object.values(families), vendorPoster];
   await db.from('reels').delete().in('author_id', everyone);
@@ -139,9 +248,13 @@ async function main() {
   const reelIds: string[] = [];
   for (const [i, clip] of CLIPS.entries()) {
     const vendorId =
-      'vendorCategory' in clip.poster ? await vendorFor(clip.poster.vendorCategory) : null;
-    if ('vendorCategory' in clip.poster && !vendorId) {
-      console.warn(`No ${clip.poster.vendorCategory} vendor; skipping ${clip.file}`);
+      'vendorCategory' in clip.poster
+        ? await vendorFor(clip.poster.vendorCategory)
+        : 'vendor' in clip.poster
+          ? await vendorBySlug(clip.poster.vendor)
+          : null;
+    if (!('family' in clip.poster) && !vendorId) {
+      console.warn(`No vendor to post ${clip.file}; skipping it`);
       continue;
     }
     const author = 'family' in clip.poster ? families[clip.poster.family] : vendorPoster;
@@ -171,7 +284,7 @@ async function main() {
         vendor_id: vendorId,
         video_path: videoPath,
         thumb_path: thumbPath,
-        duration_s: 5,
+        duration_s: clip.seconds ?? 5,
         width: 720,
         height: 1280,
         caption: clip.caption,
@@ -210,7 +323,7 @@ async function main() {
     const likers = people.filter((_, j) => (i + j) % 3 !== 0);
     await db.from('reel_likes').insert(likers.map((user_id) => ({ reel_id: reelId, user_id })));
     await db.from('reel_comments').insert(
-      likers.slice(0, 2).map((user_id, j) => ({
+      likers.slice(0, 2 + (i % 3)).map((user_id, j) => ({
         reel_id: reelId,
         user_id,
         body: COMMENTS[(i + j) % COMMENTS.length],

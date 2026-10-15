@@ -5,7 +5,6 @@ import { StyleSheet, View } from 'react-native';
 import { AppText } from '@/components/app-text';
 import { Button } from '@/components/button';
 import { Icon } from '@/components/icon';
-import { NavScreen } from '@/components/nav';
 import { Segmented } from '@/components/segmented';
 import { StateView } from '@/components/state-view';
 import { makeStyles, Spacing, useColors } from '@/constants/theme';
@@ -15,6 +14,7 @@ import {
   useFamiliesLooking,
   useProStatus,
 } from '@/data/requests';
+import { BusinessTabScreen } from '@/features/business/business-tab-screen';
 import { useCurrentBusiness } from '@/features/business/use-current-business';
 import { LookingPost, ProBadge } from '@/features/requests/request-parts';
 import { ProTeaser } from '@/features/requests/pro-teaser';
@@ -24,7 +24,7 @@ import { useLocale } from '@/i18n/locale-context';
 type Reach = '25' | '50' | 'any';
 
 /**
- * Families looking (#221): for vendors on Wedded Pro, requests from families
+ * Wanted (#221; business mode's tab, #252): for vendors on Wedded Pro, requests from families
  * near them in their vendor types, newest first, laid out like Threads. Each
  * says if the vendor is free that day and how many proposals it has; "Send a
  * proposal" opens the composer. Free vendors see the teaser instead.
@@ -82,7 +82,7 @@ export default function FamiliesLookingScreen() {
   }
 
   return (
-    <NavScreen title={t('looking.title')} subtitle={t('looking.subtitle')}>
+    <BusinessTabScreen title={t('looking.title')} subtitle={t('looking.subtitle')}>
       {isPro && (
         <View style={styles.filters}>
           <ProBadge />
@@ -99,7 +99,7 @@ export default function FamiliesLookingScreen() {
         </View>
       )}
       {content}
-    </NavScreen>
+    </BusinessTabScreen>
   );
 }
 
