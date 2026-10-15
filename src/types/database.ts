@@ -312,7 +312,6 @@ export type Database = {
           faith_slug: string | null;
           is_default: boolean;
           name: NonNullable<Json>;
-          script: string;
           shows_auspicious_dates: boolean;
           slug: string;
           sort_order: number;
@@ -324,7 +323,6 @@ export type Database = {
           faith_slug?: string | null;
           is_default?: boolean;
           name: NonNullable<Json>;
-          script: string;
           shows_auspicious_dates?: boolean;
           slug: string;
           sort_order: number;
@@ -336,7 +334,6 @@ export type Database = {
           faith_slug?: string | null;
           is_default?: boolean;
           name?: NonNullable<Json>;
-          script?: string;
           shows_auspicious_dates?: boolean;
           slug?: string;
           sort_order?: number;
