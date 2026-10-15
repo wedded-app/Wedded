@@ -82,6 +82,7 @@ function PostedRequests() {
               date={r.eventDate}
               facts={words.facts(r)}
               sealed={status === 'open'}
+              compact
               footer={
                 <View style={styles.footer}>
                   <View style={[styles.count, fresh && styles.countFresh]}>

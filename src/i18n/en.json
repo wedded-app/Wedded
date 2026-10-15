@@ -1966,11 +1966,23 @@
     },
     "gone": "This request isn't here anymore.",
     "ago": {
-      "now": "now",
-      "minutes": "{{count}}m",
-      "hours": "{{count}}h",
-      "days": "{{count}}d",
-      "weeks": "{{count}}w"
+      "now": "Just now",
+      "minutes": {
+        "one": "1 minute ago",
+        "other": "{{count}} minutes ago"
+      },
+      "hours": {
+        "one": "1 hour ago",
+        "other": "{{count}} hours ago"
+      },
+      "days": {
+        "one": "Yesterday",
+        "other": "{{count}} days ago"
+      },
+      "weeks": {
+        "one": "1 week ago",
+        "other": "{{count}} weeks ago"
+      }
     },
     "budget": {
       "upTo": "Up to {{amount}}",
@@ -2122,7 +2134,8 @@
       "away": {
         "one": "1 day away",
         "other": "{{count}} days away"
-      }
+      },
+      "dateAway": "{{date}} · {{away}}"
     },
     "nearby": "Nearby",
     "sent": {
@@ -2132,7 +2145,8 @@
     "match": {
       "title": "You chose {{vendor}}",
       "body": "Opening your chat…"
-    }
+    },
+    "guests": "{{band}} guests"
   },
   "looking": {
     "title": "Families looking",
