@@ -163,6 +163,8 @@ type NavScreenProps = Omit<ScrollViewProps, 'onScroll' | 'children'> & {
   subtitle?: string | null;
   eyebrow?: string | null;
   back?: boolean;
+  /** A custom control on the left instead of Back, e.g. business mode's label. */
+  leading?: ReactNode;
   trailing?: ReactNode;
   children: ReactNode;
 };
@@ -177,6 +179,7 @@ export function NavScreen({
   subtitle,
   eyebrow,
   back = true,
+  leading,
   trailing,
   children,
   contentContainerStyle,
@@ -205,7 +208,7 @@ export function NavScreen({
         ) : null}
         {children}
       </Animated.ScrollView>
-      <NavBar scroll={scroll} title={title} back={back} trailing={trailing} />
+      <NavBar scroll={scroll} title={title} back={back} leading={leading} trailing={trailing} />
     </View>
   );
 }

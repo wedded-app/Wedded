@@ -103,7 +103,8 @@ function AppShell() {
       <PushOpens />
       <WebFrame>
         <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: Colors.bg } }}>
-          <Stack.Screen name="(tabs)" />
+          <Stack.Screen name="(tabs)" options={{ animation: 'fade' }} />
+          <Stack.Screen name="(business)" options={{ animation: 'fade' }} />
           <Stack.Screen name="welcome" options={{ animation: 'fade', gestureEnabled: false }} />
           <Stack.Screen name="auth-callback" options={{ animation: 'none' }} />
           <Stack.Screen name="onboarding" options={{ animation: 'fade', gestureEnabled: false }} />
