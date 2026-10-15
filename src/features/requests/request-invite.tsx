@@ -1,6 +1,6 @@
 import { Image } from 'expo-image';
 import { useEffect, useState, type ReactNode } from 'react';
-import { Platform, View, type ViewStyle } from 'react-native';
+import { View } from 'react-native';
 import Animated, {
   Easing,
   useAnimatedStyle,
@@ -12,7 +12,7 @@ import Animated, {
 } from 'react-native-reanimated';
 
 import { AppText } from '@/components/app-text';
-import { makeStyles, Radius, Spacing } from '@/constants/theme';
+import { backgroundCss, makeStyles, Radius, Spacing } from '@/constants/theme';
 import { daysUntil } from '@/features/planner/plan-helpers';
 import { useLocale } from '@/i18n/locale-context';
 
@@ -121,11 +121,6 @@ function GoldBand() {
   );
 }
 
-const gold = (css: string) =>
-  (Platform.OS === 'web'
-    ? { backgroundImage: css }
-    : { experimental_backgroundImage: css }) as unknown as ViewStyle;
-
 const useStyles = makeStyles((Colors) => ({
   card: {
     gap: Spacing.md,
@@ -145,7 +140,7 @@ const useStyles = makeStyles((Colors) => ({
     right: 0,
     height: 4,
     overflow: 'hidden',
-    ...gold(
+    ...backgroundCss(
       `linear-gradient(90deg, rgba(233,201,139,0) 0%, ${Colors.champagne} 50%, rgba(233,201,139,0) 100%)`,
     ),
   },
@@ -158,7 +153,7 @@ const useStyles = makeStyles((Colors) => ({
     borderRadius: 26,
     padding: 4,
     transform: [{ rotate: '-12deg' }],
-    ...gold('radial-gradient(circle at 35% 30%, #C8405E 0%, #8A1C30 55%, #5A0F1E 100%)'),
+    ...backgroundCss('radial-gradient(circle at 35% 30%, #C8405E 0%, #8A1C30 55%, #5A0F1E 100%)'),
     boxShadow: '0px 6px 14px rgba(0, 0, 0, 0.45)',
   },
   sealRim: {
@@ -182,7 +177,7 @@ const useStyles = makeStyles((Colors) => ({
     top: 0,
     bottom: 0,
     width: 120,
-    ...gold(
+    ...backgroundCss(
       'linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,246,220,0.95) 50%, rgba(255,255,255,0) 100%)',
     ),
   },

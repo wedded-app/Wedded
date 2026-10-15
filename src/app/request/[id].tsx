@@ -1,15 +1,7 @@
 import { Image } from 'expo-image';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
-import {
-  Alert,
-  Platform,
-  ScrollView,
-  StyleSheet,
-  View,
-  useWindowDimensions,
-  type ViewStyle,
-} from 'react-native';
+import { Alert, Platform, ScrollView, StyleSheet, View, useWindowDimensions } from 'react-native';
 import Animated from 'react-native-reanimated';
 
 import { AppText } from '@/components/app-text';
@@ -18,6 +10,7 @@ import { Icon, type IconName } from '@/components/icon';
 import { PressableScale } from '@/components/pressable-scale';
 import { StateView } from '@/components/state-view';
 import {
+  backgroundCss,
   makeStyles,
   Radius,
   Sizes,
@@ -440,11 +433,6 @@ function ProposalCard({
   );
 }
 
-const gradient = (css: string) =>
-  (Platform.OS === 'web'
-    ? { backgroundImage: css }
-    : { experimental_backgroundImage: css }) as unknown as ViewStyle;
-
 const useStyles = makeStyles((Colors) => ({
   fill: {
     flex: 1,
@@ -497,7 +485,7 @@ const useStyles = makeStyles((Colors) => ({
   photoEmpty: {
     alignItems: 'center',
     justifyContent: 'center',
-    ...gradient(`linear-gradient(135deg, ${Colors.heroFrom} 0%, ${Colors.heroTo} 100%)`),
+    ...backgroundCss(`linear-gradient(135deg, ${Colors.heroFrom} 0%, ${Colors.heroTo} 100%)`),
   },
   initial: {
     fontSize: 72,
@@ -505,7 +493,7 @@ const useStyles = makeStyles((Colors) => ({
     color: 'rgba(255,255,255,0.35)',
   },
   scrim: {
-    ...gradient('linear-gradient(to top, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0) 65%)'),
+    ...backgroundCss('linear-gradient(to top, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0) 65%)'),
   },
   photoWords: {
     padding: Spacing.lg,

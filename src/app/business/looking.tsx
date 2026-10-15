@@ -12,11 +12,11 @@ import {
   type LookingCard,
   requestProblem,
   useFamiliesLooking,
-  useFamiliesLookingSummary,
   useProStatus,
 } from '@/data/requests';
 import { useCurrentBusiness } from '@/features/business/use-current-business';
 import { DateTile, GlassCard, GlowButton, NightScreen } from '@/features/requests/night';
+import { useLookingTeaser } from '@/features/requests/pro-teaser';
 import { FamilyAvatar } from '@/features/requests/request-parts';
 import { useRequestWords } from '@/features/requests/use-request-words';
 import { localized } from '@/i18n/localized';
@@ -223,18 +223,9 @@ function Post({ card }: { card: LookingCard }) {
 /** For vendors not on Pro: the real count, big, over blurred posts, and Wedded Pro. */
 function Teaser({ vendorId }: { vendorId: string }) {
   const styles = useStyles();
-  const { t, locale } = useLocale();
-  const summary = useFamiliesLookingSummary(vendorId);
-  const total = summary.data?.total ?? 0;
+  const { t } = useLocale();
+  const { total, what } = useLookingTeaser(vendorId);
   const shown = useCountUp(total, 1100);
-  const top = [...(summary.data?.byCategory ?? [])].sort((a, b) => b.count - a.count)[0];
-  const what =
-    top && summary.data?.byCategory.length === 1
-      ? t('looking.teaser.needCategory', {
-          count: total,
-          category: localized(top.categoryName, locale),
-        })
-      : t('looking.teaser.need', { count: total });
 
   return (
     <NightScreen
