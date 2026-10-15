@@ -384,7 +384,8 @@
     "signInWithApple": "Sign in with Apple",
     "signInWithGoogle": "Sign in with Google",
     "signInWithPhone": "Sign in with phone number",
-    "signInWithEmail": "Sign in with email"
+    "signInWithEmail": "Sign in with email",
+    "legal": "By continuing, you agree to our {{terms}}. Learn how we use your data in our {{privacy}}."
   },
   "saveVendor": {
     "title": "Save to which event?",
@@ -654,7 +655,15 @@
     "about": "About",
     "version": "Version",
     "account": "Account",
-    "madeIn": "Made in Northern California for Punjabi families"
+    "madeIn": "Made in Northern California for Punjabi families",
+    "legal": "Legal",
+    "legalSoon": "The Terms, Privacy and Refund pages open on the Wedded website once it's live.",
+    "soon": "Soon",
+    "legalPages": {
+      "terms": "Terms of Service",
+      "privacy": "Privacy Policy",
+      "refunds": "Refund Policy"
+    }
   },
   "planner": {
     "title": "My Wedding",
@@ -2244,5 +2253,17 @@
     "manage": "Manage or cancel Pro",
     "updateCard": "Update your card",
     "manageOnWebsite": "You change your card or cancel on the Wedded website."
+  },
+  "licences": {
+    "title": "Licences",
+    "fonts": "Fonts",
+    "fontsFooter": "Free to use under the SIL Open Font License.",
+    "pictures": "Video and icons",
+    "picturesFooter": "The welcome video is cut from free clips on Pexels, used under the Pexels License.",
+    "welcomeVideo": "Welcome video",
+    "by": "By {{name}}",
+    "software": "Software",
+    "softwareFooter": "Thank you to everyone who builds and shares these.",
+    "openSource": "Open-source software, under the MIT licence"
   }
 }
