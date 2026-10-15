@@ -3,7 +3,7 @@ import { StyleSheet, View } from 'react-native';
 
 import { AppText } from '@/components/app-text';
 import { GlassButton } from '@/components/glass-button';
-import { Sizes, Spacing } from '@/constants/theme';
+import { Sizes, Spacing, useColors } from '@/constants/theme';
 import type { Locale } from '@/i18n';
 import { useLocale } from '@/i18n/locale-context';
 
@@ -24,6 +24,7 @@ export type SheetHeaderProps = {
  */
 export function SheetHeader({ onClose, closeLabel, title, titleLang, leading }: SheetHeaderProps) {
   const { t } = useLocale();
+  const Colors = useColors();
 
   return (
     <View style={styles.bar}>
@@ -44,7 +45,7 @@ export function SheetHeader({ onClose, closeLabel, title, titleLang, leading }: 
       <View style={[styles.side, styles.end]}>
         <GlassButton
           icon="close"
-          color="#000000"
+          color={Colors.text}
           accessibilityLabel={closeLabel ?? t('signIn.close')}
           onPress={onClose}
           size={44}

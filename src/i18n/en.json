@@ -7,7 +7,8 @@
     "search": "Search",
     "saved": "Saved",
     "profile": "Profile",
-    "discover": "Reels"
+    "discover": "Reels",
+    "wed": "Wed"
   },
   "home": {
     "headline": "Vendors for every event of your wedding",
@@ -216,6 +217,10 @@
     "removeNamed": "Remove {{name}} from saved",
     "noLongerListed": "This vendor is no longer listed.",
     "saveFailed": "We couldn't save that. Check your internet and try again.",
+    "toast": "Saved",
+    "toastTo": "Saved to {{where}}",
+    "seeList": "See list",
+    "seeListHint": "Opens your saved vendors",
     "count": {
       "one": "1 vendor saved",
       "other": "{{count}} vendors saved"

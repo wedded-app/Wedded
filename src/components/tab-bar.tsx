@@ -1,5 +1,13 @@
+import { Image, type ImageProps } from 'expo-image';
 import type { Tabs } from 'expo-router';
-import { createContext, useContext, useEffect, useState, type ComponentProps } from 'react';
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  useSyncExternalStore,
+  type ComponentProps,
+} from 'react';
 import { Keyboard, Platform, Pressable, View } from 'react-native';
 import Animated, {
   useAnimatedStyle,
@@ -19,13 +27,48 @@ export type TabBarProps = Parameters<NonNullable<ComponentProps<typeof Tabs>['ta
 export type TabSpec = {
   name: string;
   label: string;
-  icon: IconName;
-  iconFilled: IconName;
+  icon?: IconName;
+  iconFilled?: IconName;
+  /** A one-colour picture instead of an icon (Wed's ribbon), tinted like the
+   * icons: a require()'d PNG, drawn 28 by 24. */
+  image?: ImageProps['source'];
   /** A count on the icon, e.g. unread messages on Profile. */
   badge?: number;
+  /** What a screen reader says for the count, e.g. "1 needs your OK". */
+  badgeLabel?: string;
 };
 
 const PADDING = 6;
+
+// Screens that cover the whole page for a moment (Wed's side menu) slide the
+// bar away while they're open. A count, so two of them can't fight.
+let hiders = 0;
+const hideListeners = new Set<() => void>();
+function subscribeHidden(listener: () => void) {
+  hideListeners.add(listener);
+  return () => {
+    hideListeners.delete(listener);
+  };
+}
+const isHidden = () => hiders > 0;
+const neverHidden = () => false;
+
+/**
+ * Slides the floating tab bar down out of sight while `hide` is true, e.g.
+ * while a full-height side menu is open over a tab. It comes back when
+ * `hide` turns false or the screen unmounts.
+ */
+export function useHideTabBar(hide: boolean) {
+  useEffect(() => {
+    if (!hide) return;
+    hiders += 1;
+    hideListeners.forEach((listener) => listener());
+    return () => {
+      hiders -= 1;
+      hideListeners.forEach((listener) => listener());
+    };
+  }, [hide]);
+}
 
 /** How far the floating tab bar sits above the bottom edge. */
 export function useTabBarOffset() {
@@ -50,8 +93,9 @@ export function useBottomSpace() {
 /**
  * The iOS 26 tab bar: a glass capsule floating over the content, with a
  * highlight that springs to the selected tab. Labels are always visible and
- * at least 13 point (vision §5); the selected tab also gets its filled icon,
- * so colour isn't the only signal.
+ * at least 13 point (vision §5); the selected tab also gets its filled icon
+ * (a picture tab grows a little instead) and the highlight, so colour isn't
+ * the only signal. Slides away while a screen asks with useHideTabBar().
  */
 export function GlassTabBar({
   state,
@@ -70,99 +114,164 @@ export function GlassTabBar({
   const itemWidth = width > 0 ? (width - PADDING * 2) / state.routes.length : 0;
   const x = useSharedValue(0);
   const keyboardShown = useKeyboardShown();
+  const hidden = useSyncExternalStore(subscribeHidden, isHidden, neverHidden);
+  const drop = useSharedValue(0);
 
   useEffect(() => {
     const target = state.index * itemWidth;
     x.value = reduceMotion || itemWidth === 0 ? target : withSpring(target, Springs.snappy);
   }, [state.index, itemWidth, reduceMotion, x]);
 
+  // Below the bottom edge, shadow and all
+  useEffect(() => {
+    const target = hidden ? Sizes.tabBar + bottom + Spacing.xl : 0;
+    drop.value = reduceMotion ? target : withSpring(target, Springs.smooth);
+  }, [hidden, bottom, reduceMotion, drop]);
+
   const highlight = useAnimatedStyle(() => ({ transform: [{ translateX: x.value }] }));
+  const dropStyle = useAnimatedStyle(() => ({ transform: [{ translateY: drop.value }] }));
 
   // Android lifts the whole screen above the keyboard; the bar would ride on it.
   if (keyboardShown) return null;
 
+  // Whether it takes taps sits on a plain View, as one of two stylesheet
+  // styles that swap. On the web an inline 'box-none' isn't valid CSS, so the
+  // browser would keep an earlier inline 'none' (and Reanimated's web style
+  // writer never removes a key that drops out of an animated view's style):
+  // either way a bar hidden once would stay untappable.
   return (
-    <View style={[styles.wrap, { bottom }]}>
-      <Glass interactive scheme={overVideo ? 'dark' : undefined} style={styles.bar}>
-        <View
-          style={styles.items}
-          accessibilityRole="tablist"
-          onLayout={(event) => setWidth(event.nativeEvent.layout.width)}
-        >
-          {itemWidth > 0 && (
-            <Animated.View
-              style={[
-                styles.highlight,
-                { width: itemWidth, backgroundColor: Colors.fillPressed },
-                highlight,
-              ]}
-            />
-          )}
-          {state.routes.map((route, index) => {
-            const focused = state.index === index;
-            const spec = tabs.find((tab) => tab.name === route.name);
-            const label = spec?.label ?? descriptors[route.key].options.title ?? route.name;
-            const color = focused ? Colors.primary : Colors.text;
+    <View
+      style={[styles.wrap, { bottom }, hidden ? styles.gone : styles.through]}
+      accessibilityElementsHidden={hidden}
+      importantForAccessibility={hidden ? 'no-hide-descendants' : 'auto'}
+    >
+      <Animated.View style={dropStyle}>
+        <Glass interactive scheme={overVideo ? 'dark' : undefined} style={styles.bar}>
+          <View
+            style={styles.items}
+            accessibilityRole="tablist"
+            onLayout={(event) => setWidth(event.nativeEvent.layout.width)}
+          >
+            {itemWidth > 0 && (
+              <Animated.View
+                style={[
+                  styles.highlight,
+                  { width: itemWidth, backgroundColor: Colors.fillPressed },
+                  highlight,
+                ]}
+              />
+            )}
+            {state.routes.map((route, index) => {
+              const focused = state.index === index;
+              const spec = tabs.find((tab) => tab.name === route.name);
+              const label = spec?.label ?? descriptors[route.key].options.title ?? route.name;
+              const color = focused ? Colors.primary : Colors.text;
 
-            const onPress = () => {
-              const event = navigation.emit({
-                type: 'tabPress',
-                target: route.key,
-                canPreventDefault: true,
-              });
-              if (!focused && !event.defaultPrevented) {
-                navigation.navigate(route.name, route.params);
-              }
-            };
+              const onPress = () => {
+                const event = navigation.emit({
+                  type: 'tabPress',
+                  target: route.key,
+                  canPreventDefault: true,
+                });
+                if (!focused && !event.defaultPrevented) {
+                  navigation.navigate(route.name, route.params);
+                }
+              };
 
-            return (
-              <Pressable
-                key={route.key}
-                accessibilityRole="tab"
-                accessibilityState={{ selected: focused }}
-                accessibilityLabel={spec?.badge ? `${label}, ${spec.badge}` : label}
-                onPress={onPress}
-                onLongPress={() => navigation.emit({ type: 'tabLongPress', target: route.key })}
-                style={styles.item}
-              >
-                {spec && (
-                  <View>
-                    <Icon
-                      name={focused ? spec.iconFilled : spec.icon}
-                      size={Sizes.tabIcon}
-                      color={color}
-                      weight={focused ? 'semibold' : 'regular'}
-                    />
-                    {!!spec.badge && (
-                      <View style={styles.badge}>
-                        <AppText
-                          variant="caption"
-                          weight={700}
-                          color="onPrimary"
-                          maxFontSizeMultiplier={1.2}
-                          style={styles.badgeText}
-                        >
-                          {spec.badge > 99 ? '99+' : String(spec.badge)}
-                        </AppText>
-                      </View>
-                    )}
-                  </View>
-                )}
-                <AppText
-                  variant="caption"
-                  weight={600}
-                  numberOfLines={1}
-                  maxFontSizeMultiplier={1.2}
-                  style={{ color }}
+              return (
+                <Pressable
+                  key={route.key}
+                  accessibilityRole="tab"
+                  accessibilityState={{ selected: focused }}
+                  accessibilityLabel={
+                    spec?.badge ? `${label}, ${spec.badgeLabel ?? spec.badge}` : label
+                  }
+                  onPress={onPress}
+                  onLongPress={() => navigation.emit({ type: 'tabLongPress', target: route.key })}
+                  style={styles.item}
                 >
-                  {label}
-                </AppText>
-              </Pressable>
-            );
-          })}
-        </View>
-      </Glass>
+                  {spec && (
+                    <View>
+                      {spec.image ? (
+                        <TabImage source={spec.image} color={color} focused={focused} />
+                      ) : (
+                        <Icon
+                          name={(focused ? spec.iconFilled : spec.icon) ?? spec.icon ?? 'ellipse'}
+                          size={Sizes.tabIcon}
+                          color={color}
+                          weight={focused ? 'semibold' : 'regular'}
+                        />
+                      )}
+                      {!!spec.badge && (
+                        <View style={[styles.badge, !!spec.image && styles.badgeOnImage]}>
+                          <AppText
+                            variant="caption"
+                            weight={700}
+                            color="onPrimary"
+                            maxFontSizeMultiplier={1.2}
+                            style={styles.badgeText}
+                          >
+                            {spec.badge > 99 ? '99+' : String(spec.badge)}
+                          </AppText>
+                        </View>
+                      )}
+                    </View>
+                  )}
+                  <AppText
+                    variant="caption"
+                    weight={600}
+                    numberOfLines={1}
+                    maxFontSizeMultiplier={1.2}
+                    style={{ color }}
+                  >
+                    {label}
+                  </AppText>
+                </Pressable>
+              );
+            })}
+          </View>
+        </Glass>
+      </Animated.View>
     </View>
+  );
+}
+
+const IMAGE_SIZE = { width: 28, height: 24 };
+
+/**
+ * A picture tab (Wed's ribbon): one flat colour tinted like the icons, that
+ * springs a little bigger while its tab is selected. It stays still with
+ * Reduce Motion, where the highlight alone marks it.
+ */
+function TabImage({
+  source,
+  color,
+  focused,
+}: {
+  source: ImageProps['source'];
+  color: string;
+  focused: boolean;
+}) {
+  const reduceMotion = useReducedMotion();
+  const scale = useSharedValue(1);
+
+  useEffect(() => {
+    const target = focused && !reduceMotion ? 1.08 : 1;
+    scale.value = reduceMotion ? target : withSpring(target, Springs.snappy);
+  }, [focused, reduceMotion, scale]);
+
+  const grow = useAnimatedStyle(() => ({ transform: [{ scale: scale.value }] }));
+
+  return (
+    <Animated.View style={grow}>
+      <Image
+        source={source}
+        tintColor={color}
+        contentFit="contain"
+        style={IMAGE_SIZE}
+        accessible={false}
+      />
+    </Animated.View>
   );
 }
 
@@ -182,10 +291,15 @@ function useKeyboardShown() {
 
 const useStyles = makeStyles((Colors) => ({
   wrap: {
-    pointerEvents: 'box-none',
     position: 'absolute',
     left: Sizes.tabBarInset,
     right: Sizes.tabBarInset,
+  },
+  through: {
+    pointerEvents: 'box-none',
+  },
+  gone: {
+    pointerEvents: 'none',
   },
   bar: {
     height: Sizes.tabBar,
@@ -218,6 +332,11 @@ const useStyles = makeStyles((Colors) => ({
     backgroundColor: Colors.errorFill,
     borderWidth: 2,
     borderColor: Colors.surface,
+  },
+  // Clear of the ribbon's right loop, so the mark never looks clipped
+  badgeOnImage: {
+    top: -9,
+    right: -18,
   },
   badgeText: {
     fontSize: 11,

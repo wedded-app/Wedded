@@ -20,7 +20,8 @@ type Section = { key: string; title: LocalizedText; data: SavedVendor[] };
 /**
  * Saved (vision S15): everything the family saved, grouped by event in
  * ceremony order, then "Not sure yet". Saving needs an account; logged out,
- * this tab explains that and offers sign-in.
+ * this page explains that and offers sign-in. It opens over the tabs (from
+ * Profile, the save toast, Wed's Lists and photos), since Wed took its tab.
  */
 export default function SavedScreen() {
   const Colors = useColors();
@@ -77,7 +78,6 @@ export default function SavedScreen() {
   return (
     <NavScreen
       title={t('tabs.saved')}
-      back={false}
       eyebrow={
         signedIn && saved.data && saved.data.length > 0
           ? t('saved.count', { count: saved.data.length })

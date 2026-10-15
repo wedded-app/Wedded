@@ -29,6 +29,7 @@ import { YourVendors } from '@/features/home/your-vendors';
 import { LocationChip } from '@/features/location/location-chip';
 import { findForPlan } from '@/features/planner/find-for-plan';
 import { usePlanView } from '@/features/planner/use-plan-view';
+import { WedHomeSection } from '@/features/wed/home-wed';
 import { localized } from '@/i18n/localized';
 import { useLocale } from '@/i18n/locale-context';
 
@@ -130,6 +131,8 @@ export default function HomeScreen() {
             />
             <LocationChip />
           </View>
+          {/* MOCKUP: Wed's cards waiting for a yes, what it's working on, or a way in */}
+          <WedHomeSection />
 
           {planning ? (
             <>
