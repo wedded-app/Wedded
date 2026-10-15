@@ -377,7 +377,36 @@
     "signInWithEmail": "Sign in with email",
     "legal": "By continuing, you agree to our {{terms}}. Learn how we use your data in our {{privacy}}.",
     "captcha": "Checking you're a person",
-    "captchaWait": "One moment, we're checking this is really you. Try again in a second."
+    "captchaWait": "One moment, we're checking this is really you. Try again in a second.",
+    "join": {
+      "title": "What brings you to Wedded?",
+      "planning": "I'm planning a wedding",
+      "planningDetail": "Find vendors for every event and keep the plan in one place.",
+      "looking": "Just looking",
+      "lookingDetail": "Watch wedding reels and save the vendors you like.",
+      "business": "I run a wedding business",
+      "businessDetail": "Make a free listing so families can find you.",
+      "continue": "Continue"
+    },
+    "business": {
+      "title": "Your business",
+      "intro": "We'll make your listing. You can add photos and prices next. The Wedded team checks it before families see it.",
+      "name": "Business name",
+      "nameError": "Please type your business name.",
+      "type": "What do you do?",
+      "typeError": "Please pick what you do.",
+      "town": "Town you work from",
+      "townMatch": "We'll use {{city}}.",
+      "townError": "Type a town in Northern California, like Yuba City.",
+      "submit": "Make my listing",
+      "errors": {
+        "needsProfile": "Please fill in your details first.",
+        "tooMany": "You already have 3 listings waiting. Finish one in My business first.",
+        "invalid": "Check the name, what you do and the town, then try again.",
+        "offline": "You're offline. Check your internet and try again.",
+        "failed": "We couldn't make your listing. Please try again."
+      }
+    }
   },
   "saveVendor": {
     "title": "Save to which event?",
