@@ -164,6 +164,55 @@
     "placeholder": "This QR code points to a placeholder address because there's no website yet. Don't print it for a vendor until the website address is set.",
     "qrLabel": "QR code for {{url}}"
   },
+  "cards": {
+    "title": "Invitation cards",
+    "subtitle": "Design a card for each event, then send it or print it",
+    "planEntry": "Invitation cards",
+    "planEntryBody": "Design a card for any of your events and send it on WhatsApp",
+    "design": "Look",
+    "designs": {
+      "ivory": "Ivory and gold",
+      "maroon": "Maroon and gold",
+      "garden": "Sage garden",
+      "night": "Midnight blue",
+      "blush": "Blush pink"
+    },
+    "words": "Words",
+    "names": "Your names",
+    "namesSample": "Simran & Arjun",
+    "whichEvent": "Which event is this card for?",
+    "whichEventHint": "Pick one to fill in its name and day from your plan.",
+    "event": "Event",
+    "eventSample": "Anand Karaj",
+    "date": "Day",
+    "datePick": "Pick the day",
+    "dateClear": "Leave the day off",
+    "time": "Time",
+    "timeSample": "10 in the morning",
+    "venue": "Place",
+    "venueSample": "Gurdwara Sahib, Fremont",
+    "note": "Note at the bottom",
+    "noteHint": "Optional: who to reply to, or a dress code.",
+    "noteSample": "Please reply to Harpreet by October 1",
+    "opening": "Top line",
+    "invite": "Invite line",
+    "defaults": {
+      "opening": "Together with their families",
+      "invite": "invite you to celebrate their"
+    },
+    "needNames": "Type your names to save or send the card.",
+    "save": "Save to Photos",
+    "share": "Share",
+    "shareTitle": "Invitation card",
+    "print": "Print or save as PDF",
+    "saved": "Saved to your Photos.",
+    "failed": {
+      "save": "That didn't save. Let Wedded add to your Photos in the phone's Settings, then try again.",
+      "share": "Sharing didn't open. Try again, or save the card to Photos and send it from there.",
+      "print": "That didn't print. Check the printer, or allow pop-ups on the web, then try again."
+    },
+    "private": "Your card stays on this phone until you send it."
+  },
   "forVendors": {
     "title": "List your business, free",
     "intro": "Listing your business on Wedded is free. Families browsing find you for exactly what you do. Leave your details and we'll call or text you to set up your page.",

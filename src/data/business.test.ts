@@ -2,6 +2,7 @@ import {
   californiaToday,
   orderLeads,
   percentChange,
+  startBusinessErrorKind,
   statsPeriods,
   toLead,
   toStats,
@@ -155,5 +156,15 @@ describe('trackReelView', () => {
   it('never throws when counting fails', () => {
     mockRpc.mockRejectedValue(new Error('offline'));
     expect(() => trackReelView('r3')).not.toThrow();
+  });
+});
+
+describe('startBusinessErrorKind', () => {
+  it('names each server error', () => {
+    expect(startBusinessErrorKind('needs_profile')).toBe('needsProfile');
+    expect(startBusinessErrorKind('too_many_drafts')).toBe('tooMany');
+    expect(startBusinessErrorKind('invalid_city')).toBe('invalid');
+    expect(startBusinessErrorKind('TypeError: Network request failed')).toBe('offline');
+    expect(startBusinessErrorKind('boom')).toBe('failed');
   });
 });

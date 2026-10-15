@@ -866,6 +866,7 @@ export type Database = {
           full_name: string;
           id: string;
           is_sample: boolean;
+          joined_as: string | null;
           phone: string;
           updated_at: string;
         };
@@ -876,6 +877,7 @@ export type Database = {
           full_name: string;
           id: string;
           is_sample?: boolean;
+          joined_as?: string | null;
           phone: string;
           updated_at?: string;
         };
@@ -886,6 +888,7 @@ export type Database = {
           full_name?: string;
           id?: string;
           is_sample?: boolean;
+          joined_as?: string | null;
           phone?: string;
           updated_at?: string;
         };
@@ -2886,6 +2889,10 @@ export type Database = {
         Returns: undefined;
       };
       start_conversation: { Args: { p_vendor_id: string }; Returns: string };
+      start_my_business: {
+        Args: { p_category_slug: string; p_city_slug: string; p_name: string };
+        Returns: Json;
+      };
       suggest_vendor: {
         Args: {
           p_category_slug: string;
