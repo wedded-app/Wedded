@@ -1,7 +1,7 @@
-import { Platform, View, type ViewStyle } from 'react-native';
+import { View } from 'react-native';
 
 import { AppText } from '@/components/app-text';
-import { useColors } from '@/constants/theme';
+import { backgroundCss, useColors } from '@/constants/theme';
 
 import { initials } from './requests-format';
 
@@ -29,9 +29,7 @@ export function FamilyAvatar({ name, size = 44 }: { name: string; size?: number 
           justifyContent: 'center',
           backgroundColor: Colors.heroFrom,
         },
-        (Platform.OS === 'web'
-          ? { backgroundImage: image }
-          : { experimental_backgroundImage: image }) as unknown as ViewStyle,
+        backgroundCss(image),
       ]}
     >
       <AppText

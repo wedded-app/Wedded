@@ -367,6 +367,15 @@ export function fontStyle(script: 'en' | 'pa', weight: FontWeight) {
  * Springs for Reanimated's withSpring, after SwiftUI's presets. Nothing
  * bounces except the Save heart (vision §4: short motion, no bounces).
  */
+/**
+ * A CSS gradient (or several) as a view's background: `backgroundImage` on
+ * the web, `experimental_backgroundImage` on phones.
+ */
+export const backgroundCss = (css: string) =>
+  (Platform.OS === 'web'
+    ? { backgroundImage: css }
+    : { experimental_backgroundImage: css }) as unknown as ViewStyle;
+
 export const Springs = {
   /** Presses and toggles: quick, settles without overshoot. */
   snappy: { mass: 1, stiffness: 520, damping: 46 },

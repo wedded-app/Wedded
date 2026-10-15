@@ -1,10 +1,17 @@
 import { router } from 'expo-router';
-import { Platform, View, type ViewStyle } from 'react-native';
+import { View } from 'react-native';
 
 import { AppText } from '@/components/app-text';
 import { Icon } from '@/components/icon';
 import { PressableScale } from '@/components/pressable-scale';
-import { makeStyles, Radius, SchemeContext, Spacing, useColors } from '@/constants/theme';
+import {
+  backgroundCss,
+  makeStyles,
+  Radius,
+  SchemeContext,
+  Spacing,
+  useColors,
+} from '@/constants/theme';
 import { useFamiliesLookingSummary } from '@/data/requests';
 import { localized } from '@/i18n/localized';
 import { useLocale } from '@/i18n/locale-context';
@@ -23,21 +30,32 @@ export function ProTeaser({ vendorId }: { vendorId: string }) {
   );
 }
 
-function TeaserCard({ vendorId }: { vendorId: string }) {
-  const Colors = useColors();
-  const styles = useStyles();
+/**
+ * How many families near a vendor are looking, and what they need in words:
+ * "3 families need a Dhol player" when it's all one kind, else "3 families
+ * are looking". Counts only, never a family's details.
+ */
+export function useLookingTeaser(vendorId: string) {
   const { t, locale } = useLocale();
   const summary = useFamiliesLookingSummary(vendorId);
   const total = summary.data?.total ?? 0;
-  const shown = useCountUp(total, 1000);
-  const top = [...(summary.data?.byCategory ?? [])].sort((a, b) => b.count - a.count)[0];
+  const kinds = summary.data?.byCategory ?? [];
   const what =
-    top && summary.data?.byCategory.length === 1
+    kinds.length === 1
       ? t('looking.teaser.needCategory', {
           count: total,
-          category: localized(top.categoryName, locale),
+          category: localized(kinds[0].categoryName, locale),
         })
       : t('looking.teaser.need', { count: total });
+  return { total, what };
+}
+
+function TeaserCard({ vendorId }: { vendorId: string }) {
+  const Colors = useColors();
+  const styles = useStyles();
+  const { t } = useLocale();
+  const { total, what } = useLookingTeaser(vendorId);
+  const shown = useCountUp(total, 1000);
 
   return (
     <PressableScale
@@ -72,9 +90,7 @@ function TeaserCard({ vendorId }: { vendorId: string }) {
 
 const glow = (a: string, b: string) => {
   const css = `radial-gradient(circle at 85% 0%, ${a} 0%, rgba(0,0,0,0) 55%), radial-gradient(circle at 0% 100%, ${b} 0%, rgba(0,0,0,0) 50%)`;
-  return (Platform.OS === 'web'
-    ? { backgroundImage: css }
-    : { experimental_backgroundImage: css }) as unknown as ViewStyle;
+  return backgroundCss(css);
 };
 
 const useStyles = makeStyles((Colors) => ({

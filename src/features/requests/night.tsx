@@ -3,7 +3,6 @@ import { StatusBar } from 'expo-status-bar';
 import type { ReactNode } from 'react';
 import {
   ActivityIndicator,
-  Platform,
   ScrollView,
   StyleSheet,
   View,
@@ -17,15 +16,18 @@ import { AppText } from '@/components/app-text';
 import { BackButton } from '@/components/back-button';
 import { Icon, type IconName } from '@/components/icon';
 import { PressableScale } from '@/components/pressable-scale';
-import { makeStyles, Radius, Sizes, Spacing, SchemeContext, useColors } from '@/constants/theme';
+import {
+  backgroundCss,
+  makeStyles,
+  Radius,
+  Sizes,
+  Spacing,
+  SchemeContext,
+  useColors,
+} from '@/constants/theme';
 import { formatDate } from '@/features/inquiry/inquiry-helpers';
 
 import { initials } from './requests-format';
-
-const image = (css: string) =>
-  (Platform.OS === 'web'
-    ? { backgroundImage: css }
-    : { experimental_backgroundImage: css }) as unknown as ViewStyle;
 
 /**
  * The "wedding night" page for Requests and Wedded Pro: plum black with soft
@@ -161,7 +163,7 @@ export function GlowButton({
       pressedScale={0.97}
       style={[
         styles.button,
-        glass ? styles.buttonGlass : [image(Colors.nightButton), styles.buttonGlow],
+        glass ? styles.buttonGlass : [backgroundCss(Colors.nightButton), styles.buttonGlow],
         off && styles.off,
       ]}
     >
@@ -290,7 +292,7 @@ const useStyles = makeStyles((Colors) => ({
     paddingTop: Spacing.xxl,
     paddingHorizontal: Sizes.pageGutter,
     // Solid behind the button and its note, then a short fade to the page.
-    ...image(
+    ...backgroundCss(
       'linear-gradient(to top, rgba(18,6,10,1) 0%, rgba(18,6,10,1) 62%, rgba(18,6,10,0) 100%)',
     ),
   },

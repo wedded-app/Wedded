@@ -1,7 +1,7 @@
 import { Image } from 'expo-image';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
-import { Platform, Pressable, ScrollView, StyleSheet, View, type ViewStyle } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import Animated, { FadeInDown, FadeInRight } from 'react-native-reanimated';
 
 import { AppText } from '@/components/app-text';
@@ -11,7 +11,14 @@ import { groupIcon } from '@/components/group-icon';
 import { Icon } from '@/components/icon';
 import { PressableScale } from '@/components/pressable-scale';
 import { TextField } from '@/components/text-field';
-import { makeStyles, Radius, Spacing, useColors, SchemeContext } from '@/constants/theme';
+import {
+  backgroundCss,
+  makeStyles,
+  Radius,
+  Spacing,
+  useColors,
+  SchemeContext,
+} from '@/constants/theme';
 import { matchCities, useCities } from '@/data/places';
 import { useCategories } from '@/data/reference';
 import { useVendorSearch } from '@/data/search';
@@ -418,11 +425,6 @@ function IconCircle({
   );
 }
 
-const gradient = (css: string) =>
-  (Platform.OS === 'web'
-    ? { backgroundImage: css }
-    : { experimental_backgroundImage: css }) as unknown as ViewStyle;
-
 const useStyles = makeStyles((Colors) => ({
   fill: {
     flex: 1,
@@ -489,7 +491,7 @@ const useStyles = makeStyles((Colors) => ({
     boxShadow: Colors.roseGlow,
   },
   tileScrim: {
-    ...gradient(
+    ...backgroundCss(
       'linear-gradient(to top, rgba(10,2,6,0.92) 0%, rgba(10,2,6,0.35) 55%, rgba(10,2,6,0.1) 100%)',
     ),
   },
@@ -503,7 +505,7 @@ const useStyles = makeStyles((Colors) => ({
     borderRadius: 30,
     alignItems: 'center',
     justifyContent: 'center',
-    ...gradient('linear-gradient(135deg, #D4506F 0%, #8A1C30 55%, #C9A063 100%)'),
+    ...backgroundCss('linear-gradient(135deg, #D4506F 0%, #8A1C30 55%, #C9A063 100%)'),
     boxShadow: '0px 8px 24px rgba(214, 70, 110, 0.35)',
   },
   stack: {
