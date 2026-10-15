@@ -15,6 +15,8 @@ import {
   useFamiliesLooking,
   useProStatus,
 } from '@/data/requests';
+import { BusinessLabel } from '@/features/business/business-tab-screen';
+import { ChatButton } from '@/features/chat/chat-button';
 import { useCurrentBusiness } from '@/features/business/use-current-business';
 import { DateTile, GlassCard, GlowButton, NightScreen } from '@/features/requests/night';
 import { useLookingTeaser } from '@/features/requests/pro-teaser';
@@ -104,6 +106,12 @@ function FamiliesLooking() {
       eyebrow={t('pro.eyebrow')}
       title={t('looking.title')}
       subtitle={t('looking.subtitle')}
+      top={
+        <View style={styles.businessTop}>
+          <BusinessLabel />
+          <ChatButton />
+        </View>
+      }
     >
       <Segmented<Reach>
         accessibilityLabel={t('looking.reach')}
@@ -276,6 +284,11 @@ function Teaser({ vendorId }: { vendorId: string }) {
 }
 
 const useStyles = makeStyles((Colors) => ({
+  businessTop: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
   grow: {
     flex: 1,
   },

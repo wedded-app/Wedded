@@ -2,15 +2,15 @@ import { router } from 'expo-router';
 import { RefreshControl } from 'react-native';
 
 import { AppText } from '@/components/app-text';
-import { NavScreen } from '@/components/nav';
 import { StateView } from '@/components/state-view';
 import { useBusinessLeads, waitingCount } from '@/data/business';
 import { LeadRow } from '@/features/business/business-parts';
+import { BusinessTabScreen } from '@/features/business/business-tab-screen';
 import { useCurrentBusiness } from '@/features/business/use-current-business';
 import { useLocale } from '@/i18n/locale-context';
 
 /**
- * My business → the families who asked about price and date, or to tour:
+ * Business mode's Leads tab: the families who asked about price and date, or to tour:
  * the ones still waiting for a reply first, newest first. Each opens the
  * request with its answers and the ways to reply. Pull to refresh; it also
  * refreshes on its own every minute.
@@ -54,13 +54,13 @@ export default function BusinessLeadsScreen() {
   }
 
   return (
-    <NavScreen
+    <BusinessTabScreen
       title={t('business.leads.title')}
       refreshControl={
         <RefreshControl refreshing={leads.isRefetching} onRefresh={() => void leads.refetch()} />
       }
     >
       {content}
-    </NavScreen>
+    </BusinessTabScreen>
   );
 }

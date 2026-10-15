@@ -7,7 +7,7 @@ import { useLocale } from '@/i18n/locale-context';
 import { ProTeaser } from './pro-teaser';
 
 /**
- * On My business (#221): Pro vendors get a row into Families looking with
+ * On Today (#221, #252): Pro vendors get a row into Wanted with
  * how many are looking; everyone else gets the teaser card with Go Pro.
  */
 export function FamiliesLookingEntry({ vendorId }: { vendorId: string }) {
@@ -23,7 +23,7 @@ export function FamiliesLookingEntry({ vendorId }: { vendorId: string }) {
         title={t('looking.title')}
         subtitle={t('looking.rowHint')}
         value={summary.data ? String(summary.data.total) : undefined}
-        onPress={() => router.push('/business/looking')}
+        onPress={() => router.navigate('/wanted')}
       />
     </ListSection>
   );

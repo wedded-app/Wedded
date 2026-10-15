@@ -139,6 +139,7 @@ const SF_SYMBOLS: Partial<Record<IconName, SFSymbol>> = {
   'arrow-back': 'arrow.left',
   'cash-outline': 'banknote',
   'megaphone-outline': 'megaphone',
+  megaphone: 'megaphone.fill',
   'arrow-forward': 'arrow.right',
   'pencil-outline': 'pencil',
   'person-outline': 'person',
