@@ -6,6 +6,7 @@
     "home": "Home",
     "search": "Search",
     "saved": "Saved",
+    "requests": "Requests",
     "profile": "Profile",
     "discover": "Reels"
   },
@@ -2055,9 +2056,8 @@
       "hour": "Hour",
       "day": "Day"
     },
-    "home": {
-      "title": "Let vendors come to you",
-      "body": "Post what you need. Vendors send you their prices."
+    "tab": {
+      "signIn": "Post what you need, like a DJ for the reception, and vendors near you send you their prices. Sign in to post one."
     },
     "post": {
       "title": "Post a request",
@@ -2083,9 +2083,6 @@
       "needsPlan": "Start your wedding plan first, so vendors know your date and events."
     },
     "mine": {
-      "title": "Posted requests",
-      "subtitle": "What you asked vendors for, and their prices.",
-      "rowHint": "Vendors send you prices",
       "empty": "Post what you need, like a DJ for the reception, and vendors send you their prices.",
       "proposals": {
         "zero": "No proposals yet",
