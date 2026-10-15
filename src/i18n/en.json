@@ -166,7 +166,7 @@
   },
   "forVendors": {
     "title": "List your business, free",
-    "intro": "Free listings for our first 50 founding vendors. Families browsing find you for exactly what you do. Leave your details and we'll call or text you to set up your page.",
+    "intro": "Listing your business on Wedded is free. Families browsing find you for exactly what you do. Leave your details and we'll call or text you to set up your page.",
     "claimTitle": "Claim your profile",
     "claimIntro": "Is this your business? Leave your details and we'll call or text you to check it's you and hand the page over.",
     "businessName": "Business name",
@@ -486,7 +486,7 @@
     "sent": {
       "title": "Sent to {{vendor}}",
       "queuedTitle": "We'll send it to {{vendor}} first thing tomorrow",
-      "next": "Most vendors reply within 1 to 2 days by call or text. A copy is in your email.",
+      "next": "The vendor has your request and will reply by call or text. A copy is in your email.",
       "faster": "Want a faster answer?",
       "callNow": "Call now",
       "textNow": "Text now",
@@ -496,7 +496,7 @@
       "chatTitle": "Keep talking here",
       "chatBody": "Your inquiry is now a chat with {{vendor}}. Their reply shows up in Messages, and we'll email you too.",
       "chatButton": "Continue in chat",
-      "nextNoEmail": "Most vendors reply within 1 to 2 days by call or text.",
+      "nextNoEmail": "The vendor has your request and will reply by call or text.",
       "seeRequests": "See all my requests"
     },
     "tourTitle": "Book a tour",
@@ -1151,7 +1151,7 @@
     "privacyLink": "Privacy Policy",
     "phrases": {
       "plan": "Plan your family's wedding, together.",
-      "events": "Every event, every vendor, one plan.",
+      "events": "Every event, all in one plan.",
       "vendors": "Find vendors your family will love.",
       "ask": "Ask for prices and dates in one tap.",
       "countdown": "Your countdown to the big day.",
@@ -1789,7 +1789,7 @@
         },
         "contact": {
           "title": "A phone or WhatsApp number",
-          "gain": "Most families want to call or WhatsApp before they book."
+          "gain": "Many families like to call or WhatsApp before they book."
         },
         "instagram": {
           "title": "Your Instagram",
