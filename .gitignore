@@ -66,6 +66,7 @@ example
 /vendor-data/
 # Sample reel clips for npm run reels:samples (videos stay out of git)
 /reel-samples/
+/sample-photos/
 
 # AWS CDK output (cd infra && npx cdk synth)
 cdk.out/
