@@ -6,6 +6,7 @@
     "home": "Home",
     "search": "Search",
     "saved": "Saved",
+    "requests": "Requests",
     "profile": "Profile",
     "discover": "Reels",
     "wed": "Wed"
@@ -164,6 +165,55 @@
     "printFailed": "That didn't print. Check the printer, or allow pop-ups on the web, then try again.",
     "placeholder": "This QR code points to a placeholder address because there's no website yet. Don't print it for a vendor until the website address is set.",
     "qrLabel": "QR code for {{url}}"
+  },
+  "cards": {
+    "title": "Invitation cards",
+    "subtitle": "Design a card for each event, then send it or print it",
+    "planEntry": "Invitation cards",
+    "planEntryBody": "Design a card for any of your events and send it on WhatsApp",
+    "design": "Look",
+    "designs": {
+      "ivory": "Ivory and gold",
+      "maroon": "Maroon and gold",
+      "garden": "Sage garden",
+      "night": "Midnight blue",
+      "blush": "Blush pink"
+    },
+    "words": "Words",
+    "names": "Your names",
+    "namesSample": "Simran & Arjun",
+    "whichEvent": "Which event is this card for?",
+    "whichEventHint": "Pick one to fill in its name and day from your plan.",
+    "event": "Event",
+    "eventSample": "Anand Karaj",
+    "date": "Day",
+    "datePick": "Pick the day",
+    "dateClear": "Leave the day off",
+    "time": "Time",
+    "timeSample": "10 in the morning",
+    "venue": "Place",
+    "venueSample": "Gurdwara Sahib, Fremont",
+    "note": "Note at the bottom",
+    "noteHint": "Optional: who to reply to, or a dress code.",
+    "noteSample": "Please reply to Harpreet by October 1",
+    "opening": "Top line",
+    "invite": "Invite line",
+    "defaults": {
+      "opening": "Together with their families",
+      "invite": "invite you to celebrate their"
+    },
+    "needNames": "Type your names to save or send the card.",
+    "save": "Save to Photos",
+    "share": "Share",
+    "shareTitle": "Invitation card",
+    "print": "Print or save as PDF",
+    "saved": "Saved to your Photos.",
+    "failed": {
+      "save": "That didn't save. Let Wedded add to your Photos in the phone's Settings, then try again.",
+      "share": "Sharing didn't open. Try again, or save the card to Photos and send it from there.",
+      "print": "That didn't print. Check the printer, or allow pop-ups on the web, then try again."
+    },
+    "private": "Your card stays on this phone until you send it."
   },
   "forVendors": {
     "title": "List your business, free",
@@ -383,7 +433,36 @@
     "signInWithEmail": "Sign in with email",
     "legal": "By continuing, you agree to our {{terms}}. Learn how we use your data in our {{privacy}}.",
     "captcha": "Checking you're a person",
-    "captchaWait": "One moment, we're checking this is really you. Try again in a second."
+    "captchaWait": "One moment, we're checking this is really you. Try again in a second.",
+    "join": {
+      "title": "What brings you to Wedded?",
+      "planning": "I'm planning a wedding",
+      "planningDetail": "Find vendors for every event and keep the plan in one place.",
+      "looking": "Just looking",
+      "lookingDetail": "Watch wedding reels and save the vendors you like.",
+      "business": "I run a wedding business",
+      "businessDetail": "Make a free listing so families can find you.",
+      "continue": "Continue"
+    },
+    "business": {
+      "title": "Your business",
+      "intro": "We'll make your listing. You can add photos and prices next. The Wedded team checks it before families see it.",
+      "name": "Business name",
+      "nameError": "Please type your business name.",
+      "type": "What do you do?",
+      "typeError": "Please pick what you do.",
+      "town": "Town you work from",
+      "townMatch": "We'll use {{city}}.",
+      "townError": "Type a town in Northern California, like Yuba City.",
+      "submit": "Make my listing",
+      "errors": {
+        "needsProfile": "Please fill in your details first.",
+        "tooMany": "You already have 3 listings waiting. Finish one in My business first.",
+        "invalid": "Check the name, what you do and the town, then try again.",
+        "offline": "You're offline. Check your internet and try again.",
+        "failed": "We couldn't make your listing. Please try again."
+      }
+    }
   },
   "saveVendor": {
     "title": "Save to which event?",
@@ -2049,6 +2128,9 @@
     "home": {
       "title": "Let vendors come to you",
       "body": "Ask once. Vendors near you send their prices."
+    },
+    "tab": {
+      "signIn": "Post what you need, like a DJ for the reception, and vendors near you send you their prices. Sign in to post one."
     },
     "post": {
       "title": "Ask vendors",

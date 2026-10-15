@@ -43,3 +43,32 @@ export function FamilyAvatar({ name, size = 44 }: { name: string; size?: number 
     </View>
   );
 }
+
+/** A small status pill: main's, kept here for the Requests tab in this demo build. */
+export function StatusPill({
+  tone,
+  children,
+}: {
+  tone: 'open' | 'done' | 'quiet';
+  children: string;
+}) {
+  const Colors = useColors();
+  const color = tone === 'open' ? 'primary' : tone === 'done' ? 'success' : 'text2';
+  const backgroundColor =
+    tone === 'open' ? Colors.primaryTint : tone === 'done' ? Colors.successTint : Colors.fill;
+  return (
+    <View
+      style={{
+        alignSelf: 'flex-start',
+        paddingHorizontal: 8,
+        paddingVertical: 3,
+        borderRadius: 999,
+        backgroundColor,
+      }}
+    >
+      <AppText variant="caption" weight={700} color={color}>
+        {children}
+      </AppText>
+    </View>
+  );
+}

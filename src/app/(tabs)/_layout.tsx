@@ -28,6 +28,12 @@ const TABS: (Omit<TabSpec, 'label'> & { labelKey: string })[] = [
     iconFilled: 'play-circle',
   },
   { name: '(search)', labelKey: 'tabs.search', icon: 'search-outline', iconFilled: 'search' },
+  {
+    name: 'requests',
+    labelKey: 'tabs.requests',
+    icon: 'megaphone-outline',
+    iconFilled: 'megaphone',
+  },
   // The ribbon, in a bolder cut that holds together at tab size
   { name: 'wed', labelKey: 'tabs.wed', image: require('../../../assets/images/ribbon-glyph.png') },
   {
@@ -45,10 +51,10 @@ const WED_LISTENERS = {
 };
 
 /**
- * Bottom tabs: Home, Reels (the discover route), Search, Wed (the ribbon:
- * the planning helper, with a count of cards waiting for a yes) and Profile,
- * in a floating glass bar (the iOS 26 tab bar) that content scrolls under.
- * Saved lives at /saved, over the tabs. Labels are always visible and
+ * Bottom tabs: Home, Reels (the discover route), Search, Requests, Wed (the
+ * ribbon: the planning helper, with a count of cards waiting for a yes) and
+ * Profile, in a floating glass bar (the iOS 26 tab bar) that content scrolls
+ * under. Saved lives at /saved, over the tabs. Labels are always visible and
  * come from i18n. Expo Router's JS tabs draw it the same on iPhone,
  * Android and the web; the glass itself is the system material on iOS 26.
  */

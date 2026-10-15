@@ -12,6 +12,7 @@ import { StateView } from '@/components/state-view';
 import { TextField } from '@/components/text-field';
 import { Spacing, useColors } from '@/constants/theme';
 import { useIsVendor } from '@/data/chat';
+import { markOnboarding } from '@/features/onboarding/onboarding-state';
 import { useLocale } from '@/i18n/locale-context';
 
 import { type Captcha, useCaptcha } from './captcha';
@@ -23,6 +24,7 @@ import { supabase } from '@/lib/supabase';
 import { AboutYouForm, type AboutYouValues } from './about-you-form';
 import { isValidEmail, normalizePhone, toLatinDigits } from './about-you-validation';
 import { authErrorKey } from './auth-helpers';
+import { BusinessStep, JoinChoiceStep, type JoinedAs } from './join-steps';
 import { formatPhoneDigits, nextPhoneDigits } from './phone-entry';
 import { useSession } from './session';
 import { SignInOptions } from './sign-in-options';
@@ -58,7 +60,7 @@ function sendCode({ kind, to }: CodeTarget, captcha: Captcha) {
 export function SignInFlow({ mode, method }: { mode: SignInMode; method?: SignInMethod }) {
   const Colors = useColors();
   const { t } = useLocale();
-  const { status, session, reloadProfile, finishSignIn, cancelSignIn } = useSession();
+  const { status, session, profile, reloadProfile, finishSignIn, cancelSignIn } = useSession();
   const [step, setStep] = useState<Step>(method ?? 'choose');
   const [target, setTarget] = useState<CodeTarget | null>(null);
   // What they typed, kept when they go back to fix it.
@@ -67,6 +69,9 @@ export function SignInFlow({ mode, method }: { mode: SignInMode; method?: SignIn
   const finished = useRef(false);
   // One bot check for the whole flow, so a resend gets a fresh token (#234)
   const captcha = useCaptcha();
+  // What someone new came for, asked before About you (R5, #222)
+  const [joinedAs, setJoinedAs] = useState<JoinedAs | null>(null);
+  const [businessStep, setBusinessStep] = useState(false);
 
   // Signed in without a profile (a code was just accepted, Apple or Google
   // just finished, or they came from Profile to finish setting up), or
@@ -90,16 +95,36 @@ export function SignInFlow({ mode, method }: { mode: SignInMode; method?: SignIn
   // Signed in with a profile, i.e. a returning person: nothing more to ask.
   useEffect(() => {
     if (mode === 'edit' || finished.current) return;
-    if (status === 'signedIn') done();
-  }, [mode, status, done]);
+    // A new business still names its listing after About you
+    if (status === 'signedIn' && joinedAs !== 'business') done();
+  }, [mode, status, done, joinedAs]);
 
   // Closing the sheet without finishing forgets the action that was waiting.
   useEffect(() => () => cancelSignIn(), [cancelSignIn]);
 
   let content;
   let back: (() => void) | undefined;
-  if (showAboutYou) {
-    content = <AboutYouStep onDone={done} />;
+  if (businessStep) {
+    content = (
+      <BusinessStep
+        initialTown={profile?.city ?? ''}
+        onDone={() => {
+          // Their draft makes them a vendor: no wedding questions, even before that's refetched
+          markOnboarding('done');
+          done();
+        }}
+      />
+    );
+  } else if (status === 'needsProfile' && mode !== 'edit' && !joinedAs) {
+    content = <JoinChoiceStep onChoose={setJoinedAs} />;
+  } else if (showAboutYou) {
+    back = mode === 'edit' || !joinedAs ? undefined : () => setJoinedAs(null);
+    content = (
+      <AboutYouStep
+        joinedAs={joinedAs}
+        onDone={joinedAs === 'business' ? () => setBusinessStep(true) : done}
+      />
+    );
   } else if (status === 'error') {
     content = <StateView state="error" onRetry={reloadProfile} />;
   } else if (status === 'signedIn' || status === 'loading') {
@@ -451,12 +476,12 @@ function CodeStep({
   );
 }
 
-function AboutYouStep({ onDone }: { onDone: () => void }) {
+function AboutYouStep({ joinedAs, onDone }: { joinedAs: JoinedAs | null; onDone: () => void }) {
   const { t } = useLocale();
   const { session, email, phone, nameHint, profile, profileSaved } = useSession();
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string>();
-  // Someone the team added to a business sees the form in a business's words
+  // Someone the team added to a business, or signing one up, sees the form in a business's words
   const { isVendor } = useIsVendor();
 
   if (!session) {
@@ -471,7 +496,13 @@ function AboutYouStep({ onDone }: { onDone: () => void }) {
     setSaving(true);
     const { data, error: saveError } = await supabase
       .from('profiles')
-      .upsert({ id: userId, full_name: values.name, city: values.city, phone: values.phone })
+      .upsert({
+        id: userId,
+        full_name: values.name,
+        city: values.city,
+        phone: values.phone,
+        ...(joinedAs && { joined_as: joinedAs }),
+      })
       .select()
       .single();
     setSaving(false);
@@ -495,7 +526,7 @@ function AboutYouStep({ onDone }: { onDone: () => void }) {
       }}
       emailLocked
       emailHidden={!email}
-      forBusiness={isVendor}
+      forBusiness={isVendor || joinedAs === 'business'}
       confirmedAdult={!!profile}
       submitLabel={profile ? t('aboutYou.save') : undefined}
       submitting={saving}
