@@ -299,15 +299,13 @@ export function ReelsPager({
           .map((g) => `${g.key}${tray.seen(g) ? '-' : '+'}`)
           .join()}`}
       />
-      {hint && active === 0 && list.length > 1 && (
-        <SwipeHint label={t('reels.swipeHint')} bottom={bottomSpace + 200} />
-      )}
+      {hint && active === 0 && list.length > 1 && <SwipeHint label={t('reels.swipeHint')} />}
     </View>
   );
 }
 
 /** A bouncing "Swipe up for more" the first time someone opens Reels. */
-function SwipeHint({ label, bottom }: { label: string; bottom: number }) {
+function SwipeHint({ label }: { label: string }) {
   const reduceMotion = useReducedMotion();
   const lift = useSharedValue(0);
   useEffect(() => {
@@ -321,7 +319,7 @@ function SwipeHint({ label, bottom }: { label: string; bottom: number }) {
   }, [lift, reduceMotion]);
   const style = useAnimatedStyle(() => ({ transform: [{ translateY: lift.value }] }));
   return (
-    <View pointerEvents="none" style={[styles.hint, { bottom }]}>
+    <View pointerEvents="none" style={styles.hint}>
       <Animated.View style={style}>
         <Icon name="chevron-up" size={36} color={REEL_INK} />
       </Animated.View>
@@ -340,6 +338,7 @@ const styles = StyleSheet.create({
   },
   hint: {
     position: 'absolute',
+    top: '40%',
     left: 0,
     right: 0,
     alignItems: 'center',
