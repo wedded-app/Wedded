@@ -7,6 +7,7 @@ import {
   useState,
   useSyncExternalStore,
   type ComponentProps,
+  type ReactNode,
 } from 'react';
 import { Keyboard, Platform, Pressable, View } from 'react-native';
 import Animated, {
@@ -111,10 +112,17 @@ export function GlassTabBar({
   navigation,
   tabs,
   accent = 'primary',
+  floating,
 }: TabBarProps & {
   tabs: TabSpec[];
   /** The selected tab's colour: saffron in business mode, so it's clear which side this is. */
   accent?: ColorToken;
+  /**
+   * A round button floating just above the bar's right end (Wed's), which
+   * hides with the bar. It's left out over Reels' videos, whose own buttons
+   * sit there, and on a route the bar has no tab for (the one it opens).
+   */
+  floating?: ReactNode;
 }) {
   const appColors = useColors();
   const styles = useStyles();
@@ -161,7 +169,10 @@ export function GlassTabBar({
       accessibilityElementsHidden={hidden}
       importantForAccessibility={hidden ? 'no-hide-descendants' : 'auto'}
     >
-      <Animated.View style={dropStyle}>
+      <Animated.View style={[styles.through, dropStyle]}>
+        {floating && !overVideo && selected >= 0 && (
+          <View style={[styles.floating, styles.through]}>{floating}</View>
+        )}
         <Glass interactive scheme={overVideo ? 'dark' : undefined} style={styles.bar}>
           <View
             style={styles.items}
@@ -313,6 +324,10 @@ const useStyles = makeStyles((Colors) => ({
   },
   through: {
     pointerEvents: 'box-none',
+  },
+  floating: {
+    alignItems: 'flex-end',
+    marginBottom: Spacing.md,
   },
   gone: {
     pointerEvents: 'none',
