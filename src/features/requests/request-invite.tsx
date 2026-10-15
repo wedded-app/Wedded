@@ -13,6 +13,7 @@ import Animated, {
 
 import { AppText } from '@/components/app-text';
 import { backgroundCss, makeStyles, Radius, Spacing } from '@/constants/theme';
+import { fromDateString } from '@/features/inquiry/inquiry-helpers';
 import { daysUntil } from '@/features/planner/plan-helpers';
 import { useLocale } from '@/i18n/locale-context';
 
@@ -34,6 +35,7 @@ export function RequestInvite({
   note,
   footer,
   sealed = false,
+  compact = false,
 }: {
   eventName?: string | null;
   headline: string;
@@ -43,10 +45,30 @@ export function RequestInvite({
   footer?: ReactNode;
   /** A wax seal in the corner: the request is out with vendors. */
   sealed?: boolean;
+  /** For a list: the date in words under the headline instead of the big calendar page. */
+  compact?: boolean;
 }) {
   const styles = useStyles();
   const { t } = useLocale();
   const days = date ? daysUntil(date) : null;
+  const away =
+    days === null || days < 0
+      ? null
+      : days === 0
+        ? t('requests.invite.today')
+        : t('requests.invite.away', { count: days });
+  // "Apr 24 · 191 days away" fits on one line next to the seal
+  const shortDate =
+    compact && date
+      ? new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric' }).format(
+          fromDateString(date),
+        )
+      : null;
+  const when = shortDate
+    ? away
+      ? t('requests.invite.dateAway', { date: shortDate, away })
+      : shortDate
+    : away;
   const details = [facts.guests, facts.budget].filter(Boolean).join(' · ');
 
   return (
@@ -54,7 +76,7 @@ export function RequestInvite({
       <GoldBand />
       {sealed && <WaxSeal />}
       <View style={styles.row}>
-        {date ? <DateTile date={date} size="lg" /> : null}
+        {date && !compact ? <DateTile date={date} size="lg" /> : null}
         <View style={[styles.words, sealed && styles.roomForSeal]}>
           {eventName ? (
             <AppText variant="label" weight={700} color="champagne">
@@ -64,9 +86,9 @@ export function RequestInvite({
           <AppText variant={headline.length > 11 ? 'section' : 'title'} serif weight={600}>
             {headline}
           </AppText>
-          {days !== null && days >= 0 ? (
+          {when ? (
             <AppText weight={600} color="text2">
-              {days === 0 ? t('requests.invite.today') : t('requests.invite.away', { count: days })}
+              {when}
             </AppText>
           ) : null}
         </View>

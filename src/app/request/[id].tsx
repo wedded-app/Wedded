@@ -9,6 +9,7 @@ import { Button } from '@/components/button';
 import { Icon, type IconName } from '@/components/icon';
 import { PressableScale } from '@/components/pressable-scale';
 import { StateView } from '@/components/state-view';
+import { SampleTag } from '@/components/sample-tag';
 import {
   backgroundCss,
   makeStyles,
@@ -334,6 +335,7 @@ function ProposalCard({
         )}
         <View style={[StyleSheet.absoluteFill, styles.scrim]} />
         <View style={styles.photoWords}>
+          <SampleTag show={p.vendor.isSample} onPhoto />
           <AppText variant="heading" weight={700} color="onHero" numberOfLines={2}>
             {name}
           </AppText>
