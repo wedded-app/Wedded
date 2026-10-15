@@ -285,6 +285,7 @@ function Teaser({ vendorId }: { vendorId: string }) {
 
 const useStyles = makeStyles((Colors) => ({
   businessTop: {
+    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
