@@ -118,10 +118,7 @@ export default function AskSentScreen() {
           <Button
             variant="text"
             label={t('inquiry.sent.viewSaved')}
-            onPress={() => {
-              router.back();
-              router.navigate('/saved');
-            }}
+            onPress={() => router.replace('/saved')}
           />
         </Card>
 

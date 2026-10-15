@@ -1,5 +1,5 @@
 import { router } from 'expo-router';
-import { View } from 'react-native';
+import { RefreshControl, View } from 'react-native';
 
 import { AppText } from '@/components/app-text';
 import { Button } from '@/components/button';
@@ -9,59 +9,83 @@ import { PressableScale } from '@/components/pressable-scale';
 import { StateView } from '@/components/state-view';
 import { makeStyles, Radius, Spacing, useColors } from '@/constants/theme';
 import { useMyRequests } from '@/data/requests';
+import { useSession } from '@/features/auth/session';
+import { useStartPlanning } from '@/features/onboarding/start';
 import { usePlanView } from '@/features/planner/use-plan-view';
 import { StatusPill } from '@/features/requests/request-parts';
 import { useRequestWords } from '@/features/requests/use-request-words';
 import { useLocale } from '@/i18n/locale-context';
 
 /**
- * My requests (#219): everything the family has asked vendors for, newest
- * first, each with how many proposals came in. "Post a request" starts a new
- * one. /requests
+ * The Requests tab (#219, #253): a big "Post a request", then everything the
+ * family has asked vendors for, newest first, each with how many proposals
+ * came in. Signed out, or before there's a plan, it says what requests are
+ * and offers the next step: sign in, or start the plan. /requests
  */
-export default function MyRequestsScreen() {
+export default function RequestsScreen() {
   const Colors = useColors();
   const styles = useStyles();
   const { t } = useLocale();
+  const { status, requireSignIn, reloadProfile } = useSession();
+  const startPlanning = useStartPlanning();
   const view = usePlanView();
   const requests = useMyRequests(view.wedding?.id ?? '');
   const words = useRequestWords();
   const postNew = () => router.push('/request-new');
 
   let content;
-  if (view.loading || (view.wedding && requests.isPending)) {
-    content = <StateView state="loading" />;
-  } else if (requests.isError) {
-    content = <StateView state="error" onRetry={() => void requests.refetch()} />;
-  } else if ((requests.data ?? []).length === 0) {
+  if (status === 'signedOut' || status === 'needsProfile') {
     content = (
       <StateView
         state="empty"
         icon="megaphone-outline"
-        message={t('requests.mine.empty')}
-        action={{ label: t('requests.post.title'), onPress: postNew }}
+        message={t('requests.tab.signIn')}
+        action={{
+          label:
+            status === 'needsProfile' ? t('profile.account.finish') : t('profile.account.signIn'),
+          onPress: () => requireSignIn(),
+        }}
       />
+    );
+  } else if (status === 'error') {
+    content = <StateView state="error" onRetry={reloadProfile} />;
+  } else if (view.loading || (view.wedding && requests.isPending)) {
+    content = <StateView state="loading" />;
+  } else if (!view.wedding) {
+    content = (
+      <StateView
+        state="empty"
+        icon="megaphone-outline"
+        message={t('requests.post.needsPlan')}
+        action={{ label: t('planner.startPlanning'), onPress: startPlanning }}
+      />
+    );
+  } else if (requests.isError) {
+    content = <StateView state="error" onRetry={() => void requests.refetch()} />;
+  } else if ((requests.data ?? []).length === 0) {
+    content = (
+      <StateView state="empty" icon="megaphone-outline" message={t('requests.mine.empty')} />
     );
   } else {
     content = (requests.data ?? []).map((r) => {
       const facts = words.facts(r);
-      const status = r.status === 'open' && r.expired ? 'expired' : r.status;
-      const fresh = status === 'open' && r.proposalCount > 0;
+      const state = r.status === 'open' && r.expired ? 'expired' : r.status;
+      const fresh = state === 'open' && r.proposalCount > 0;
       return (
         <PressableScale
           key={r.id}
           accessibilityRole="button"
           accessibilityLabel={[
             words.headline(r),
-            t(`requests.status.${status}`),
+            t(`requests.status.${state}`),
             t('requests.mine.proposals', { count: r.proposalCount }),
           ].join(', ')}
           onPress={() => router.push({ pathname: '/request/[id]', params: { id: r.id } })}
           style={styles.card}
         >
           <View style={styles.top}>
-            <StatusPill tone={status === 'open' ? 'open' : status === 'booked' ? 'done' : 'quiet'}>
-              {t(`requests.status.${status}`)}
+            <StatusPill tone={state === 'open' ? 'open' : state === 'booked' ? 'done' : 'quiet'}>
+              {t(`requests.status.${state}`)}
             </StatusPill>
             <AppText variant="label" weight={400} color="text2">
               {words.ago(r.createdAt)}
@@ -92,11 +116,23 @@ export default function MyRequestsScreen() {
   }
 
   return (
-    <NavScreen title={t('requests.mine.title')} subtitle={t('requests.mine.subtitle')}>
+    <NavScreen
+      title={t('tabs.requests')}
+      subtitle={t('requests.post.body')}
+      back={false}
+      refreshControl={
+        view.wedding ? (
+          <RefreshControl
+            refreshing={requests.isRefetching}
+            onRefresh={() => void requests.refetch()}
+            tintColor={Colors.chevron}
+            colors={[Colors.primary]}
+          />
+        ) : undefined
+      }
+    >
+      {view.wedding && <Button icon="add" label={t('requests.post.title')} onPress={postNew} />}
       {content}
-      {requests.data && requests.data.length > 0 && (
-        <Button icon="add" label={t('requests.post.title')} onPress={postNew} />
-      )}
     </NavScreen>
   );
 }
