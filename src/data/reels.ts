@@ -1,3 +1,4 @@
+import { assertUploadFits, REEL_VIDEO_TYPES, STORAGE_LIMITS } from './upload-limits';
 /**
  * Reels (DECISIONS.md, 2026-10-05): wedding clips from families and vendors,
  * in a Following and a For you feed, with vendor tags, likes, comments,
@@ -447,7 +448,7 @@ export function useDeleteReel() {
 
 /** Longest clip and biggest file a reel can be (the bucket's limit is 50 MB). */
 export const REEL_MAX_SECONDS = 60;
-export const REEL_MAX_BYTES = 50 * 1024 * 1024;
+export const REEL_MAX_BYTES = STORAGE_LIMITS.reels;
 
 export type ClipProblem = 'tooLong' | 'tooBig' | 'notVideo';
 
@@ -457,7 +458,7 @@ export function clipProblem(clip: {
   fileSize: number | null;
   mimeType: string | null;
 }): ClipProblem | null {
-  if (clip.mimeType && !clip.mimeType.startsWith('video/')) return 'notVideo';
+  if (clip.mimeType && !REEL_VIDEO_TYPES.some((type) => type === clip.mimeType)) return 'notVideo';
   if (clip.durationMs && clip.durationMs > (REEL_MAX_SECONDS + 1) * 1000) return 'tooLong';
   if (clip.fileSize && clip.fileSize > REEL_MAX_BYTES) return 'tooBig';
   return null;
@@ -517,6 +518,11 @@ export function usePostReel() {
       const me = auth.session?.user.id;
       if (!me) throw new Error('not_signed_in');
       const stem = `${me}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+      assertUploadFits('reels', draft.video.bytes, draft.video.mimeType);
+      if (!REEL_VIDEO_TYPES.some((type) => type === draft.video.mimeType)) {
+        throw new Error('Unsupported video content type');
+      }
+      if (draft.thumb) assertUploadFits('reels', draft.thumb, 'image/jpeg');
       const ext = draft.video.mimeType.includes('quicktime') ? 'mov' : 'mp4';
       const videoPath = `${stem}.${ext}`;
       const bucket = supabase.storage.from('reels');

@@ -137,6 +137,7 @@ describe('reels', () => {
     expect(clipProblem({ ...ok, durationMs: 75_000 })).toBe('tooLong');
     expect(clipProblem({ ...ok, fileSize: REEL_MAX_BYTES + 1 })).toBe('tooBig');
     expect(clipProblem({ ...ok, mimeType: 'image/jpeg' })).toBe('notVideo');
+    expect(clipProblem({ ...ok, mimeType: 'video/webm' })).toBe('notVideo');
     expect(
       clipProblem({ durationMs: null, fileSize: null, mimeType: 'video/quicktime' }),
     ).toBeNull();
