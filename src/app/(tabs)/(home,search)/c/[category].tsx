@@ -172,6 +172,7 @@ export default function ResultsScreen() {
             startingPrice={item.startingPrice}
             photoUrl={item.photoUrl}
             foundingNumber={item.foundingNumber}
+            isSample={item.isSample}
             travelsToYou={item.withinSearchRadius === false}
             saved={savedIds.has(item.id)}
             onToggleSave={() => toggleSave(item.id, eventSlug)}

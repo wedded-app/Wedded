@@ -20,6 +20,8 @@ export type FeedPost = {
   caption: string | null;
   city: string;
   foundingNumber: number | null;
+  /** A demo sample, not a real business: show the Sample tag. */
+  isSample: boolean;
   category: { slug: string; name: LocalizedText; groupSlug: string } | null;
   price: VendorPrice | null;
   photos: VendorPhoto[];
@@ -44,6 +46,7 @@ type Row = {
     bio: string | null;
     city: string;
     founding_number: number | null;
+    is_sample: boolean;
     price_display: string;
     price_from: number | null;
     price_to: number | null;
@@ -76,7 +79,7 @@ async function fetchFeed(): Promise<FeedPost[]> {
     .select(
       `id, storage_path, width, height, blurhash, is_cover, sort_order, event_slug, credit_text, created_at,
        vendor:vendors!vendor_media_vendor_id_fkey!inner(id, slug, name, tagline, bio, city,
-         founding_number, price_display, price_from, price_to, price_unit, status,
+         founding_number, is_sample, price_display, price_from, price_to, price_unit, status,
          vendor_categories(position, category:categories(slug, name, group_slug)))`,
     )
     .eq('vendor.status', 'published')
@@ -97,6 +100,7 @@ async function fetchFeed(): Promise<FeedPost[]> {
         caption: v.tagline ?? v.bio,
         city: v.city,
         foundingNumber: v.founding_number,
+        isSample: v.is_sample,
         category: primary
           ? {
               slug: primary.category.slug,

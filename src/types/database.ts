@@ -865,6 +865,7 @@ export type Database = {
           created_at: string;
           full_name: string;
           id: string;
+          is_sample: boolean;
           phone: string;
           updated_at: string;
         };
@@ -874,6 +875,7 @@ export type Database = {
           created_at?: string;
           full_name: string;
           id: string;
+          is_sample?: boolean;
           phone: string;
           updated_at?: string;
         };
@@ -883,6 +885,7 @@ export type Database = {
           created_at?: string;
           full_name?: string;
           id?: string;
+          is_sample?: boolean;
           phone?: string;
           updated_at?: string;
         };
@@ -2614,6 +2617,7 @@ export type Database = {
           family_name: string;
           guest_band: string;
           id: string;
+          is_sample: boolean;
           miles: number;
           note: string;
           proposal_count: number;
@@ -2737,6 +2741,7 @@ export type Database = {
           height: number;
           id: string;
           is_mine: boolean;
+          is_sample: boolean;
           like_count: number;
           liked: boolean;
           platform: string;
@@ -2838,6 +2843,7 @@ export type Database = {
           distance_miles: number;
           founding_number: number;
           id: string;
+          is_sample: boolean;
           latitude: number;
           longitude: number;
           name: string;

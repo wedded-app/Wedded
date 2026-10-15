@@ -23,6 +23,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { ActionButton } from '@/components/action-button';
 import { AppText, useFontScale } from '@/components/app-text';
+import { SampleTag } from '@/components/sample-tag';
 import { Button } from '@/components/button';
 import { Card } from '@/components/card';
 import { Glass } from '@/components/glass';
@@ -475,6 +476,7 @@ export default function VendorProfileScreen() {
           <AppText variant="title" accessibilityRole="header">
             {name}
           </AppText>
+          <SampleTag show={v.isSample} />
           <AppText color="text2">{[categoryNames.join(', '), v.city].join(' · ')}</AppText>
           {/* Quiet trust lines, shown only once 5+ families are behind each. */}
           {stats.data?.bookedBy != null && (
