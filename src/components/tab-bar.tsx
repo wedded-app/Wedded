@@ -12,7 +12,15 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AppText } from '@/components/app-text';
 import { Glass } from '@/components/glass';
 import { Icon, type IconName } from '@/components/icon';
-import { makeStyles, Palettes, Sizes, Spacing, Springs, useColors } from '@/constants/theme';
+import {
+  type ColorToken,
+  makeStyles,
+  Palettes,
+  Sizes,
+  Spacing,
+  Springs,
+  useColors,
+} from '@/constants/theme';
 
 export type TabBarProps = Parameters<NonNullable<ComponentProps<typeof Tabs>['tabBar']>>[0];
 
@@ -58,12 +66,17 @@ export function GlassTabBar({
   descriptors,
   navigation,
   tabs,
-}: TabBarProps & { tabs: TabSpec[] }) {
+  accent = 'primary',
+}: TabBarProps & {
+  tabs: TabSpec[];
+  /** The selected tab's colour: saffron in business mode, so it's clear which side this is. */
+  accent?: ColorToken;
+}) {
   const appColors = useColors();
   const styles = useStyles();
   const bottom = useTabBarOffset();
   // Over the Reels videos the bar is always dark glass with light labels
-  const overVideo = state.routes[state.index]?.name === 'discover';
+  const overVideo = ['discover', 'reels'].includes(state.routes[state.index]?.name ?? '');
   const Colors = overVideo ? Palettes.dark : appColors;
   const reduceMotion = useReducedMotion();
   const [width, setWidth] = useState(0);
@@ -102,7 +115,7 @@ export function GlassTabBar({
             const focused = state.index === index;
             const spec = tabs.find((tab) => tab.name === route.name);
             const label = spec?.label ?? descriptors[route.key].options.title ?? route.name;
-            const color = focused ? Colors.primary : Colors.text;
+            const color = focused ? Colors[accent] : Colors.text;
 
             const onPress = () => {
               const event = navigation.emit({

@@ -1,5 +1,5 @@
 import { router } from 'expo-router';
-import { View } from 'react-native';
+import { RefreshControl, View } from 'react-native';
 import Animated from 'react-native-reanimated';
 
 import { AppText } from '@/components/app-text';
@@ -8,6 +8,8 @@ import { PressableScale } from '@/components/pressable-scale';
 import { StateView } from '@/components/state-view';
 import { makeStyles, SchemeContext, Spacing, useColors } from '@/constants/theme';
 import { useMyRequests } from '@/data/requests';
+import { useSession } from '@/features/auth/session';
+import { useStartPlanning } from '@/features/onboarding/start';
 import { usePlanView } from '@/features/planner/use-plan-view';
 import { GlassCard, GlowButton, NightScreen } from '@/features/requests/night';
 import { RequestInvite } from '@/features/requests/request-invite';
@@ -17,22 +19,25 @@ import { useLocale } from '@/i18n/locale-context';
 import { Motion } from '@/lib/motion';
 
 /**
- * Posted requests (#219): everything the family asked vendors for, each as
- * an invitation card with how many proposals came in. "Ask vendors" starts a
- * new one. /requests
+ * The Requests tab (#219, #253): "Ask vendors", then everything the family has
+ * asked vendors for, newest first, each as an invitation card with how many
+ * proposals came in. Signed out, or before there's a plan, it says what
+ * requests are and offers the next step: sign in, or start the plan. /requests
  */
-export default function PostedRequestsScreen() {
+export default function RequestsScreen() {
   return (
     <SchemeContext.Provider value="dark">
-      <PostedRequests />
+      <Requests />
     </SchemeContext.Provider>
   );
 }
 
-function PostedRequests() {
+function Requests() {
   const Colors = useColors();
   const styles = useStyles();
   const { t } = useLocale();
+  const { status, requireSignIn, reloadProfile } = useSession();
+  const startPlanning = useStartPlanning();
   const view = usePlanView();
   const requests = useMyRequests(view.wedding?.id ?? '');
   const words = useRequestWords();
@@ -40,8 +45,32 @@ function PostedRequests() {
   const list = requests.data ?? [];
 
   let content;
-  if (view.loading || (view.wedding && requests.isPending)) {
+  if (status === 'signedOut' || status === 'needsProfile') {
+    content = (
+      <StateView
+        state="empty"
+        icon="megaphone-outline"
+        message={t('requests.tab.signIn')}
+        action={{
+          label:
+            status === 'needsProfile' ? t('profile.account.finish') : t('profile.account.signIn'),
+          onPress: () => requireSignIn(),
+        }}
+      />
+    );
+  } else if (status === 'error') {
+    content = <StateView state="error" onRetry={reloadProfile} />;
+  } else if (view.loading || (view.wedding && requests.isPending)) {
     content = <StateView state="loading" />;
+  } else if (!view.wedding) {
+    content = (
+      <StateView
+        state="empty"
+        icon="megaphone-outline"
+        message={t('requests.post.needsPlan')}
+        action={{ label: t('planner.startPlanning'), onPress: startPlanning }}
+      />
+    );
   } else if (requests.isError) {
     content = <StateView state="error" onRetry={() => void requests.refetch()} />;
   } else if (list.length === 0) {
@@ -58,9 +87,9 @@ function PostedRequests() {
     );
   } else {
     content = list.map((r, i) => {
-      const status = r.status === 'open' && r.expired ? 'expired' : r.status;
+      const state = r.status === 'open' && r.expired ? 'expired' : r.status;
       const event = view.chosen.find((e) => e.slug === r.eventSlug);
-      const fresh = status === 'open' && r.proposalCount > 0;
+      const fresh = state === 'open' && r.proposalCount > 0;
       return (
         <Animated.View key={r.id} entering={Motion.stagger(i)}>
           <PressableScale
@@ -68,7 +97,7 @@ function PostedRequests() {
             accessibilityLabel={[
               words.headline(r),
               words.facts(r).date,
-              t(`requests.status.${status}`),
+              t(`requests.status.${state}`),
               t('requests.mine.proposals', { count: r.proposalCount }),
             ]
               .filter(Boolean)
@@ -81,7 +110,7 @@ function PostedRequests() {
               headline={words.category(r.categorySlug)}
               date={r.eventDate}
               facts={words.facts(r)}
-              sealed={status === 'open'}
+              sealed={state === 'open'}
               compact
               footer={
                 <View style={styles.footer}>
@@ -95,9 +124,9 @@ function PostedRequests() {
                     </AppText>
                   </View>
                   <AppText weight={600} style={styles.grow}>
-                    {status === 'open'
+                    {state === 'open'
                       ? t('requests.mine.proposals', { count: r.proposalCount })
-                      : t(`requests.status.${status}`)}
+                      : t(`requests.status.${state}`)}
                   </AppText>
                   <AppText variant="label" weight={400} color="text2">
                     {words.ago(r.createdAt)}
@@ -114,11 +143,24 @@ function PostedRequests() {
 
   return (
     <NightScreen
+      // A tab: nothing to go back to
+      top={false}
       eyebrow={t('requests.mine.eyebrow')}
       title={t('requests.mine.title')}
       subtitle={t('requests.mine.subtitle')}
-      footer={<GlowButton icon="add" label={t('requests.post.title')} onPress={ask} />}
+      refreshControl={
+        view.wedding ? (
+          <RefreshControl
+            refreshing={requests.isRefetching}
+            onRefresh={() => void requests.refetch()}
+            tintColor={Colors.champagne}
+            colors={[Colors.primary]}
+          />
+        ) : undefined
+      }
     >
+      {/* Above the list, not pinned to the bottom, where the floating tab bar sits */}
+      {view.wedding && <GlowButton icon="add" label={t('requests.post.title')} onPress={ask} />}
       {content}
     </NightScreen>
   );

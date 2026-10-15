@@ -1,11 +1,12 @@
 import { Image } from 'expo-image';
 import { StatusBar } from 'expo-status-bar';
-import type { ReactNode } from 'react';
+import type { ReactElement, ReactNode } from 'react';
 import {
   ActivityIndicator,
   ScrollView,
   StyleSheet,
   View,
+  type RefreshControlProps,
   type StyleProp,
   type ViewStyle,
 } from 'react-native';
@@ -16,6 +17,7 @@ import { AppText } from '@/components/app-text';
 import { BackButton } from '@/components/back-button';
 import { Icon, type IconName } from '@/components/icon';
 import { PressableScale } from '@/components/pressable-scale';
+import { useBottomSpace } from '@/components/tab-bar';
 import {
   backgroundCss,
   makeStyles,
@@ -43,18 +45,27 @@ export function NightScreen({
   children,
   footer,
   top,
+  refreshControl,
 }: {
   eyebrow?: string;
   title?: string;
   subtitle?: string;
   children: ReactNode;
   footer?: ReactNode;
-  /** In place of the Back button: a close button for sheets, or a progress line. */
+  /** In place of the Back button: a close button for sheets, or a progress line; false for none (a tab). */
   top?: ReactNode;
+  refreshControl?: ReactElement<RefreshControlProps>;
 }) {
   return (
     <SchemeContext.Provider value="dark">
-      <NightBody eyebrow={eyebrow} title={title} subtitle={subtitle} footer={footer} top={top}>
+      <NightBody
+        eyebrow={eyebrow}
+        title={title}
+        subtitle={subtitle}
+        footer={footer}
+        top={top}
+        refreshControl={refreshControl}
+      >
         {children}
       </NightBody>
     </SchemeContext.Provider>
@@ -68,9 +79,12 @@ function NightBody({
   children,
   footer,
   top,
+  refreshControl,
 }: Parameters<typeof NightScreen>[0]) {
   const styles = useStyles();
   const insets = useSafeAreaInsets();
+  // Clears the floating tab bar inside the tabs, or the home indicator elsewhere
+  const bottom = useBottomSpace();
   return (
     <View style={styles.page}>
       <StatusBar style="light" />
@@ -78,11 +92,15 @@ function NightBody({
       <ScrollView
         contentContainerStyle={[
           styles.content,
-          { paddingTop: insets.top + Spacing.sm, paddingBottom: footer ? 180 : insets.bottom + 48 },
+          {
+            paddingTop: insets.top + Spacing.sm,
+            paddingBottom: footer ? 180 : bottom + Spacing.lg,
+          },
         ]}
         keyboardShouldPersistTaps="handled"
         automaticallyAdjustKeyboardInsets
         showsVerticalScrollIndicator={false}
+        refreshControl={refreshControl}
       >
         <View style={styles.top}>{top ?? <BackButton />}</View>
         {(eyebrow || title) && (
