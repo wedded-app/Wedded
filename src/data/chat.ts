@@ -22,6 +22,7 @@ import type { LocalizedText } from '@/i18n/localized';
 import { supabase } from '@/lib/supabase';
 import type { Json } from '@/types/database';
 
+import { queryClient as appQueryClient } from './query-client';
 import { photoUrl } from './vendor-media';
 
 export type ChatSide = 'family' | 'vendor';
@@ -229,6 +230,26 @@ export function useStartConversation() {
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: chatKeys.all }),
   });
+}
+
+/**
+ * Wed sending for the family once they've said yes: their chat with the
+ * vendor (opened if it's new) gets the message as if they'd typed it there,
+ * so it's in Messages to carry on. Signed in only; returns the conversation id.
+ */
+export async function sendToVendor(vendorSlug: string, text: string): Promise<string> {
+  const vendor = await supabase.from('vendors').select('id').eq('slug', vendorSlug).single();
+  if (vendor.error) throw new Error(vendor.error.message);
+  const started = await supabase.rpc('start_conversation', { p_vendor_id: vendor.data.id });
+  if (started.error) throw new Error(started.error.message);
+  const sent = await supabase.rpc('send_message', {
+    p_conversation_id: started.data,
+    p_kind: 'text',
+    p_body: text,
+  });
+  if (sent.error) throw new Error(sent.error.message);
+  void appQueryClient.invalidateQueries({ queryKey: chatKeys.all });
+  return started.data;
 }
 
 // Messages --------------------------------------------------------------------------------------

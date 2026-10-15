@@ -32,6 +32,7 @@ import { PlanTogether } from '@/features/planner/plan-together';
 import { Suggestions } from '@/features/planner/suggestions';
 import { StartPlanCard } from '@/features/planner/start-plan-card';
 import { usePlanView } from '@/features/planner/use-plan-view';
+import { AskWedButton } from '@/features/wed/ask-wed-button';
 import { localized } from '@/i18n/localized';
 import { useLocale } from '@/i18n/locale-context';
 import { selectionHaptic, successHaptic } from '@/lib/haptics';
@@ -97,7 +98,19 @@ export default function PlanScreen() {
   }
 
   return (
-    <NavScreen title={t('planner.title')} subtitle={t('planner.subtitle')}>
+    <NavScreen
+      title={t('planner.title')}
+      subtitle={t('planner.subtitle')}
+      trailing={
+        // Wed (mockup): the plan's next step, asked in the chat. Never sends.
+        <AskWedButton
+          variant="round"
+          a11y="Ask Wed"
+          about={{ kind: 'plan', label: 'My Wedding' }}
+          ask="What should we book next?"
+        />
+      }
+    >
       {/* A plan belongs to an account: signed out, or not started yet, offer to start one. */}
       {!wedding && !view.loading && (
         <Animated.View entering={Motion.rise}>
@@ -438,6 +451,17 @@ function EventPlan({
               />
             </Pressable>
           )}
+          {/* Wed (mockup): hand the rest of this event's essentials to Wed. */}
+          {done < essential.length && (
+            <View style={styles.wedRow}>
+              <AskWedButton
+                variant="row"
+                label={`Let Wed find the rest for the ${event.name.en}`}
+                about={{ kind: 'event', id: event.slug, label: event.name.en }}
+                ask={`Find the vendors we still need for the ${event.name.en}`}
+              />
+            </View>
+          )}
           {canEdit && (
             <Pressable
               accessibilityRole="button"
@@ -687,5 +711,10 @@ const useStyles = makeStyles((Colors) => ({
   },
   findPressed: {
     opacity: 0.6,
+  },
+  wedRow: {
+    paddingHorizontal: Spacing.lg,
+    borderTopWidth: 1,
+    borderTopColor: Colors.separator,
   },
 }));

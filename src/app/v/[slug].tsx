@@ -45,11 +45,13 @@ import { useRealWeddingsAt, useVendorPhotos, type VendorPhoto } from '@/data/ven
 import { useVendor } from '@/data/vendors';
 import { useMyWeddings } from '@/data/wedding';
 import { useSession } from '@/features/auth/session';
+import { SavedToastHost } from '@/features/saved/saved-toast';
 import { trackVendorActivity, useVendorPublicStats } from '@/data/vendor-stats';
 import { useStartConversation } from '@/data/chat';
 import { useVendorMenus } from '@/data/vendor-menus';
 import { ALL_NORCAL_MILES, factLabels, priceLine } from '@/features/vendors/profile-format';
 import { shareVendor } from '@/features/vendors/share';
+import { AskWedButton } from '@/features/wed/ask-wed-button';
 import { localized } from '@/i18n/localized';
 import { useLocale } from '@/i18n/locale-context';
 import { saveHaptic } from '@/lib/haptics';
@@ -552,6 +554,16 @@ export default function VendorProfileScreen() {
           />
         )}
 
+        {/* Wed (mockup): the composer starts with this vendor and a date question.
+            A short label, so it stays on one line whatever the name. */}
+        <AskWedButton
+          variant="pill"
+          label="Ask Wed about this vendor"
+          a11y={`Ask Wed about ${v.name.en}`}
+          about={{ kind: 'vendor', id: v.slug, label: v.name.en, thumb: cover?.url.small }}
+          ask={`Is ${v.name.en} free on Jun 13, and what do they charge?`}
+        />
+
         <ListSection inset>
           <ListRow
             icon="location-outline"
@@ -795,6 +807,8 @@ export default function VendorProfileScreen() {
           </Glass>
         </View>
       )}
+      {/* "Saved to Jaago · See list", rising from behind the Save bar */}
+      {vendor.data && barHeight > 0 ? <SavedToastHost bottom={barBottom + barHeight} /> : null}
     </View>
   );
 }

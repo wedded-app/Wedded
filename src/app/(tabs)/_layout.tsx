@@ -13,6 +13,10 @@ import { useUnreadCount } from '@/data/chat';
 import { useSession } from '@/features/auth/session';
 import { useOpensInBusiness } from '@/features/business/app-mode';
 import { useOnboardingGate } from '@/features/onboarding/gate';
+import { SavedToastHost } from '@/features/saved/saved-toast';
+import { useWedNavigation } from '@/features/wed/open-wed';
+import { WED_BUTTON_SPACE, WedButton } from '@/features/wed/wed-button';
+import { useWed, waitingCount } from '@/features/wed/wed-store';
 import { useLocale } from '@/i18n/locale-context';
 
 const TABS: (Omit<TabSpec, 'label'> & { labelKey: string })[] = [
@@ -39,9 +43,13 @@ const TABS: (Omit<TabSpec, 'label'> & { labelKey: string })[] = [
 ];
 
 /**
- * Bottom tabs: Home, Reels (the discover route), Search, Requests, Profile, in a floating glass bar (the iOS
- * 26 tab bar) that content scrolls under. Labels are always visible and
- * come from i18n. Expo Router's JS tabs draw it the same on iPhone,
+ * Bottom tabs: Home, Reels (the discover route), Search, Requests, Profile,
+ * in a floating glass bar (the iOS 26 tab bar) that content scrolls under.
+ * Wed's pages are in this group, so its chat sits above the bar, but get no
+ * tab (href: null): Wed's round button floats above the bar's right end
+ * (WedButton, with how many of its cards wait for a yes), and its buttons
+ * around the app open it too. Labels are always
+ * visible and come from i18n. Expo Router's JS tabs draw it the same on iPhone,
  * Android and the web; the glass itself is the system material on iOS 26.
  */
 export default function TabsLayout() {
@@ -59,6 +67,10 @@ export default function TabsLayout() {
     setSeenUser(userId);
     if (seenUser !== null) setGeneration((g) => g + 1);
   }
+  useWedNavigation();
+  // Only someone who can say yes gets a count to clear
+  const waiting = useWed(waitingCount);
+  const canApprove = useWed((s) => s.role === 'owner');
   // Unread messages show on Profile, where Messages lives.
   const tabs = TABS.map(({ labelKey, ...tab }) => ({
     ...tab,
@@ -76,10 +88,16 @@ export default function TabsLayout() {
   if (business) return <Redirect href="/today" />;
 
   return (
-    <TabBarSpaceProvider value={Sizes.tabBar + offset + Spacing.sm}>
+    <TabBarSpaceProvider value={Sizes.tabBar + offset + Spacing.sm + WED_BUTTON_SPACE}>
       <Tabs
         key={generation}
-        tabBar={(props) => <GlassTabBar {...props} tabs={tabs} />}
+        tabBar={(props) => (
+          <GlassTabBar
+            {...props}
+            tabs={tabs}
+            floating={<WedButton count={canApprove ? waiting : 0} />}
+          />
+        )}
         screenOptions={{
           headerShown: false,
           sceneStyle: { backgroundColor: Colors.bg },
@@ -88,7 +106,9 @@ export default function TabsLayout() {
         {tabs.map((tab) => (
           <Tabs.Screen key={tab.name} name={tab.name} options={{ title: tab.label }} />
         ))}
+        <Tabs.Screen name="wed" options={{ href: null }} />
       </Tabs>
+      <SavedToastHost />
     </TabBarSpaceProvider>
   );
 }
