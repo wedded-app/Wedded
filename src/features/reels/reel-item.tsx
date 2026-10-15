@@ -31,6 +31,7 @@ import { Radius, Spacing, Springs } from '@/constants/theme';
 import { trackReelView } from '@/data/business';
 import { compactCount, type Reel, reelVendors } from '@/data/reels';
 import { initials } from '@/features/planner/plan-together';
+import { AskWedButton } from '@/features/wed/ask-wed-button';
 import { useLocale } from '@/i18n/locale-context';
 import { saveHaptic } from '@/lib/haptics';
 
@@ -378,6 +379,17 @@ export function ReelItem({
             onPress={onToggleMute}
           />
         )}
+        {/* Wed (mockup): find vendors like this, with the reel's still in the chip */}
+        <AskWedButton
+          variant="rail"
+          about={{
+            kind: 'reel',
+            id: reel.id,
+            label: `Reel by ${poster}`,
+            thumb: reel.thumbUrl ?? undefined,
+          }}
+          ask="Find vendors like this for our Mehndi"
+        />
         <RailButton
           icon="ellipsis-horizontal"
           label=""

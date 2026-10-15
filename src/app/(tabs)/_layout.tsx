@@ -13,6 +13,8 @@ import { useUnreadCount } from '@/data/chat';
 import { useSession } from '@/features/auth/session';
 import { useOpensInBusiness } from '@/features/business/app-mode';
 import { useOnboardingGate } from '@/features/onboarding/gate';
+import { SavedToastHost } from '@/features/saved/saved-toast';
+import { useWedNavigation } from '@/features/wed/open-wed';
 import { useLocale } from '@/i18n/locale-context';
 
 const TABS: (Omit<TabSpec, 'label'> & { labelKey: string })[] = [
@@ -39,9 +41,11 @@ const TABS: (Omit<TabSpec, 'label'> & { labelKey: string })[] = [
 ];
 
 /**
- * Bottom tabs: Home, Reels (the discover route), Search, Requests, Profile, in a floating glass bar (the iOS
- * 26 tab bar) that content scrolls under. Labels are always visible and
- * come from i18n. Expo Router's JS tabs draw it the same on iPhone,
+ * Bottom tabs: Home, Reels (the discover route), Search, Requests, Profile,
+ * in a floating glass bar (the iOS 26 tab bar) that content scrolls under.
+ * Wed's pages are in this group, so its chat sits above the bar, but get no
+ * tab (href: null); its buttons around the app open them. Labels are always
+ * visible and come from i18n. Expo Router's JS tabs draw it the same on iPhone,
  * Android and the web; the glass itself is the system material on iOS 26.
  */
 export default function TabsLayout() {
@@ -59,6 +63,7 @@ export default function TabsLayout() {
     setSeenUser(userId);
     if (seenUser !== null) setGeneration((g) => g + 1);
   }
+  useWedNavigation();
   // Unread messages show on Profile, where Messages lives.
   const tabs = TABS.map(({ labelKey, ...tab }) => ({
     ...tab,
@@ -88,7 +93,9 @@ export default function TabsLayout() {
         {tabs.map((tab) => (
           <Tabs.Screen key={tab.name} name={tab.name} options={{ title: tab.label }} />
         ))}
+        <Tabs.Screen name="wed" options={{ href: null }} />
       </Tabs>
+      <SavedToastHost />
     </TabBarSpaceProvider>
   );
 }
