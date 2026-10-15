@@ -59,6 +59,7 @@ export default function FamiliesLookingScreen() {
             {index > 0 && <View style={styles.hairline} />}
             <LookingPost
               familyName={card.familyName}
+              isSample={card.isSample}
               city={card.city}
               ago={words.ago(card.postedAt)}
               headline={words.headline(card)}

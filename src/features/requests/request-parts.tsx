@@ -3,6 +3,7 @@ import type { ReactNode } from 'react';
 import { Platform, View, type ViewStyle } from 'react-native';
 
 import { AppText } from '@/components/app-text';
+import { SampleTag } from '@/components/sample-tag';
 import { Icon, type IconName } from '@/components/icon';
 import { makeStyles, Radius, Spacing, useColors } from '@/constants/theme';
 import { useLocale } from '@/i18n/locale-context';
@@ -109,6 +110,7 @@ export function LookingPost({
   facts,
   note,
   footer,
+  isSample = false,
 }: {
   familyName: string;
   city: string;
@@ -117,6 +119,8 @@ export function LookingPost({
   facts: PostFacts;
   note?: string | null;
   footer?: ReactNode;
+  /** A demo sample family: shows the Sample tag. */
+  isSample?: boolean;
 }) {
   const styles = useStyles();
   const byline = [city, ago].filter(Boolean).join(' · ');
@@ -132,6 +136,7 @@ export function LookingPost({
             </AppText>
           ) : null}
         </View>
+        <SampleTag show={isSample} />
         <AppText variant="bodyLg" weight={600}>
           {headline}
         </AppText>

@@ -167,6 +167,7 @@ const post = (slug: string, groupSlug: string, photos = 1): FeedPost => ({
   caption: null,
   city: 'Yuba City',
   foundingNumber: null,
+  isSample: false,
   category: { slug: 'x', name: { en: 'X' }, groupSlug },
   price: null,
   photos: Array.from({ length: photos }, (_, i) => ({

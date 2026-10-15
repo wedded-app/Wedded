@@ -57,6 +57,8 @@ export type Reel = {
   platform: ReelPlatform | null;
   sourceUrl: string | null;
   creditName: string | null;
+  /** Posted by a demo sample account or about a sample vendor: show the Sample tag. */
+  isSample: boolean;
 };
 
 /** A public file in the reels bucket. */
@@ -89,6 +91,7 @@ type FeedRow = {
   platform?: string | null;
   source_url?: string | null;
   credit_name?: string | null;
+  is_sample?: boolean | null;
 };
 
 function toTags(value: unknown): ReelTag[] {
@@ -133,6 +136,7 @@ export function toReel(row: FeedRow): Reel {
     platform: row.platform === 'tiktok' || row.platform === 'instagram' ? row.platform : null,
     sourceUrl: row.source_url ?? null,
     creditName: row.credit_name ?? null,
+    isSample: row.is_sample ?? false,
   };
 }
 

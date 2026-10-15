@@ -2192,5 +2192,9 @@
     "software": "Software",
     "softwareFooter": "Thank you to everyone who builds and shares these.",
     "openSource": "Open-source software, under the MIT licence"
+  },
+  "sample": {
+    "tag": "Sample",
+    "label": "Sample listing for the demo, not a real business"
   }
 }

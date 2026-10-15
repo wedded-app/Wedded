@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 
 import { AppText } from '@/components/app-text';
+import { SampleTag } from '@/components/sample-tag';
 import { GlassButton } from '@/components/glass-button';
 import { PressableScale } from '@/components/pressable-scale';
 import { distanceWords, priceWords } from '@/components/vendor-card';
@@ -171,6 +172,7 @@ function PhotoCard({
         />
         <View style={[StyleSheet.absoluteFill, shade]} />
         <View style={styles.words}>
+          <SampleTag show={vendor.isSample} onPhoto />
           <AppText variant="heading" weight={700} color="onPhoto" numberOfLines={2}>
             {name}
           </AppText>

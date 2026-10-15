@@ -29,6 +29,7 @@ function vendor(overrides: Partial<VendorProfile>): VendorProfile {
     price: null,
     priceNote: null,
     foundingNumber: null,
+    isSample: false,
     facts: {},
     categories: [],
     ...overrides,

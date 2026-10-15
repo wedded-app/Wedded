@@ -328,6 +328,8 @@ export type LookingCard = {
   /** From the vendor's calendar on the event date */
   dateStatus: 'open' | 'booked' | 'held' | 'partly' | 'unknown';
   postedAt: string;
+  /** Posted by a demo sample family: show the Sample tag. */
+  isSample: boolean;
 };
 
 type LookingRow = {
@@ -349,6 +351,7 @@ type LookingRow = {
   already_proposed: boolean;
   date_status: string;
   created_at: string;
+  is_sample?: boolean | null;
 };
 
 const DATE_STATUSES: LookingCard['dateStatus'][] = ['open', 'booked', 'held', 'partly', 'unknown'];
@@ -373,6 +376,7 @@ export function toLookingCard(row: LookingRow): LookingCard {
     alreadyProposed: row.already_proposed,
     dateStatus: DATE_STATUSES.find((s) => s === row.date_status) ?? 'unknown',
     postedAt: row.created_at,
+    isSample: row.is_sample ?? false,
   };
 }
 
