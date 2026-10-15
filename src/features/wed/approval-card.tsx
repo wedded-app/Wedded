@@ -1,4 +1,5 @@
 import { Image } from 'expo-image';
+import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Pressable, TextInput, View } from 'react-native';
 import Animated from 'react-native-reanimated';
@@ -7,11 +8,12 @@ import { AppText, useFontScale, useTypeStyle } from '@/components/app-text';
 import { Button } from '@/components/button';
 import { Icon, type IconName } from '@/components/icon';
 import { makeStyles, Radius, Sizes, Spacing, useColors } from '@/constants/theme';
+import { useSession } from '@/features/auth/session';
 import { Motion } from '@/lib/motion';
 
 import { FAMILY } from './mock';
 import { openWed } from './open-wed';
-import { receiptText, useWed, wed, type Approval, type Role } from './wed-store';
+import { receiptText, SENDS, useWed, wed, type Approval, type Role } from './wed-store';
 import { WedMark } from './wed-mark';
 
 export type ApprovalCardProps = {
@@ -81,6 +83,9 @@ export function ApprovalCard({ id, variant = 'full', on = 'canvas' }: ApprovalCa
             }
           />
         )}
+        {approval.stage === 'done' && approval.chats?.length ? (
+          <OpenChats chats={approval.chats} />
+        ) : null}
       </Animated.View>
     </Animated.View>
   );
@@ -96,6 +101,7 @@ function Full({
   on: 'canvas' | 'grouped';
 }) {
   const styles = useStyles();
+  const approve = useApprove(approval);
   return (
     <>
       {/* On Updates the section title already says it: just Coming later */}
@@ -120,7 +126,7 @@ function Full({
       <View style={styles.buttons}>
         {role === 'owner' ? (
           <>
-            <Button label={approval.verb} onPress={() => wed.approve(approval.id)} />
+            <Button label={approval.verb} onPress={approve} />
             {approval.altLabel ? (
               <Button
                 label={approval.altLabel}
@@ -163,6 +169,7 @@ function Full({
  */
 function Compact({ approval, role }: { approval: Approval; role: Role }) {
   const styles = useStyles();
+  const approve = useApprove(approval);
   // Two buttons side by side until the text gets big, then one above the other
   const stack = useFontScale('button') > 1.3;
   const lookFirst = (
@@ -192,11 +199,7 @@ function Compact({ approval, role }: { approval: Approval; role: Role }) {
       <AppText color="text2">{`${approval.sharesShort} · ${approval.cost}`}</AppText>
       <View style={[styles.pair, stack && styles.stacked]}>
         {role === 'owner' ? (
-          <Button
-            label={approval.verb}
-            style={!stack && styles.half}
-            onPress={() => wed.approve(approval.id)}
-          />
+          <Button label={approval.verb} style={!stack && styles.half} onPress={approve} />
         ) : role === 'suggester' ? (
           <Button
             label={approval.suggested ? 'Suggested' : `Suggest to ${FAMILY.owner}`}
@@ -286,6 +289,31 @@ export function ReceiptLine({
         </Pressable>
       ) : null}
     </View>
+  );
+}
+
+/** The yes. A card that sends a message asks the family to sign in first, as it goes from them. */
+function useApprove(approval: Approval) {
+  const { requireSignIn } = useSession();
+  return () =>
+    SENDS.includes(approval.kind) && !approval.preview
+      ? requireSignIn(() => wed.approve(approval.id))
+      : wed.approve(approval.id);
+}
+
+/** Once sent, the way into the real chat in Messages, to carry on there. */
+function OpenChats({ chats }: { chats: string[] }) {
+  return (
+    <Button
+      variant="text"
+      icon="chatbubbles-outline"
+      label={chats.length === 1 ? 'Open the chat' : `Open Messages (${chats.length} chats)`}
+      onPress={() =>
+        router.push(
+          chats.length === 1 ? { pathname: '/chat/[id]', params: { id: chats[0] } } : '/messages',
+        )
+      }
+    />
   );
 }
 

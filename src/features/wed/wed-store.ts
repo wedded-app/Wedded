@@ -1,6 +1,7 @@
 import { useRef, useSyncExternalStore } from 'react';
 
 import type { IconName } from '@/components/icon';
+import { sendToVendor } from '@/data/chat';
 import { selectionHaptic, successHaptic } from '@/lib/haptics';
 
 import { FLOWS, matchFlow, type FlowKey, type Op } from './flows';
@@ -111,7 +112,8 @@ export type ApprovalSpec = {
   title: string;
   /** The primary button, naming the action: "Ask all 3", "Book tour". */
   verb: string;
-  to: { name: string; photo?: string; blurhash?: string }[];
+  /** `slug`: the vendor on Wedded the message really goes to; without one nothing is sent. */
+  to: { name: string; photo?: string; blurhash?: string; slug?: string }[];
   /** "Jaago · Fri, Jun 12, 2027" */
   forLine: string;
   /** The exact message, shown in full; the family can change it. */
@@ -155,6 +157,8 @@ export type Approval = ApprovalSpec & {
   suggested?: boolean;
   /** A viewer reminded the owner. */
   reminded?: boolean;
+  /** The chats the message went to, once it's really sent. */
+  chats?: string[];
   createdAt: number;
 };
 
@@ -483,6 +487,7 @@ function settle(id: string) {
   const approval = state.approvals.find((a) => a.id === id);
   if (!approval || approval.stage !== 'held') return;
   patchApproval(id, { stage: 'done', doneAt: Date.now(), heldUntil: undefined });
+  deliver(approval);
   const waitId = `wait-${id}`;
   if (approval.waiting) startWaiting(waitId, approval.receipt, approval.waiting);
   const then = approval.then;
@@ -491,6 +496,30 @@ function settle(id: string) {
       endWaiting(waitId);
       play(then.flow);
     });
+  }
+}
+
+/** The cards whose yes sends the family's message to a vendor. */
+export const SENDS: ApprovalKind[] = ['ask', 'message', 'tour'];
+
+// A final yes really sends: each vendor's chat with the family gets the
+// message, so it's in Messages like anything they typed, to carry on there.
+function deliver(approval: Approval) {
+  const text = approval.message;
+  if (!text || approval.preview || !SENDS.includes(approval.kind)) return;
+  for (const vendor of approval.to) {
+    if (!vendor.slug) continue;
+    sendToVendor(vendor.slug, text).then(
+      (chat) => {
+        const chats = state.approvals.find((a) => a.id === approval.id)?.chats ?? [];
+        patchApproval(approval.id, { chats: [...chats, chat] });
+      },
+      () =>
+        push({
+          kind: 'receipt',
+          text: `Couldn't send to ${vendor.name}. Check your connection, then message them from their page.`,
+        }),
+    );
   }
 }
 
@@ -802,7 +831,9 @@ function seed(): WedState {
     // One idea in the title; when it is goes in the For line
     title: 'Book a tasting at Saffron Tandoor',
     verb: 'Book tasting',
-    to: [{ name: CATERER.name, photo: CATERER.photo, blurhash: CATERER.blurhash }],
+    to: [
+      { name: CATERER.name, photo: CATERER.photo, blurhash: CATERER.blurhash, slug: CATERER.slug },
+    ],
     // The time held together, so it never breaks across lines
     forLine: 'Mehndi · tasting Sat,\u00A0Oct\u00A024,\u00A01\u00A0PM',
     message: `Sat Sri Akal! Could we come for a tasting on Sat, Oct 24 at 1 PM? We'll be 4 people, for our Mehndi on June 10, 2027. –\u2060\u00A0${FAMILY.signature}`,

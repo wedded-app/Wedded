@@ -89,7 +89,12 @@ export type Flow = {
 
 const say = (text: string): Op => ({ op: 'say', text });
 
-const GURPREET = { name: 'Gurpreet · Royal Orchard', photo: HALL.photo, blurhash: HALL.blurhash };
+const GURPREET = {
+  name: 'Gurpreet · Royal Orchard',
+  photo: HALL.photo,
+  blurhash: HALL.blurhash,
+  slug: HALL.slug,
+};
 const FIRST_CONTACT = "Your first name, phone, date, city and guest count. That's all.";
 // How a signature follows a message: the dash stays with the name (a line
 // may break after a dash, even before a no-break space, so a word joiner)
@@ -154,7 +159,7 @@ const ASK_DHOL: ApprovalSpec = {
   kind: 'ask',
   title: "Ask 3 dhol players if they're free on Friday, June 12",
   verb: 'Ask all 3',
-  to: DHOL.map((vendor) => ({ name: vendor.name, photo: vendor.photo, blurhash: vendor.blurhash })),
+  to: DHOL.map(({ name, photo, blurhash, slug }) => ({ name, photo, blurhash, slug })),
   forLine: 'Jaago · Fri, Jun 12, 2027',
   message: `Sat Sri Akal! We're looking for a dhol player for our Jaago on Friday, June 12, 2027 in Yuba City, about 150 guests. Are you free, and what do you charge for two hours? ${SIGNED}`,
   shares: FIRST_CONTACT,
