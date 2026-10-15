@@ -141,6 +141,7 @@ function AppShell() {
           <Stack.Screen name="settings" />
           <Stack.Screen name="plan" />
           <Stack.Screen name="plan-events" options={{ presentation: 'modal' }} />
+          <Stack.Screen name="cards" />
           <Stack.Screen
             name="gallery"
             options={{ presentation: 'fullScreenModal', animation: 'fade' }}
