@@ -1,0 +1,40 @@
+# Wedded's settings on top of Supabase's official self-hosting files. deploy.sh
+# copies this next to their docker-compose.yml and adds it to COMPOSE_FILE.
+# ${…} values come from the server's .env, which deploy.sh keeps up to date.
+services:
+  auth:
+    environment:
+      # Refuse every password sign-in (docs/HOSTED_SETUP.md, step 3)
+      GOTRUE_HOOK_CUSTOM_ACCESS_TOKEN_ENABLED: 'true'
+      GOTRUE_HOOK_CUSTOM_ACCESS_TOKEN_URI: pg-functions://postgres/public/refuse_password_sign_in
+      # Sign-in emails carry a 6-digit code, not a link
+      GOTRUE_MAILER_OTP_LENGTH: '6'
+      GOTRUE_MAILER_OTP_EXP: '900'
+      GOTRUE_MAILER_SUBJECTS_MAGIC_LINK: Your sign-in code
+      GOTRUE_MAILER_SUBJECTS_CONFIRMATION: Your sign-in code
+      GOTRUE_MAILER_TEMPLATES_MAGIC_LINK: http://email-templates/sign-in-code.html
+      GOTRUE_MAILER_TEMPLATES_CONFIRMATION: http://email-templates/sign-in-code.html
+      # Sign in with Apple; host.exp.Exponent is Expo Go (HOSTED_SETUP.md, step 10)
+      GOTRUE_EXTERNAL_APPLE_ENABLED: 'true'
+      GOTRUE_EXTERNAL_APPLE_CLIENT_ID: ${APPLE_CLIENT_IDS:-host.exp.Exponent}
+
+  functions:
+    env_file: functions.env
+    environment:
+      # Inside the server SUPABASE_URL is the internal address; emails need the public one
+      EMAIL_LINKS_URL: ${SUPABASE_PUBLIC_URL}/functions/v1
+
+  storage:
+    environment:
+      # Files go to the S3 bucket from the CDK stack, with the server's own AWS role
+      STORAGE_BACKEND: ${STORAGE_BACKEND:-s3}
+      ENABLE_IMAGE_TRANSFORMATION: 'false'
+
+  # GoTrue reads email templates from a URL, so serve supabase/templates inside the server
+  email-templates:
+    container_name: supabase-email-templates
+    image: caddy:2.10.2
+    restart: unless-stopped
+    command: caddy file-server --root /srv --listen :80
+    volumes:
+      - ./volumes/email-templates:/srv:ro
