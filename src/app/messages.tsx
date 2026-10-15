@@ -10,6 +10,9 @@ import { makeStyles, Radius, Sizes, Spacing } from '@/constants/theme';
 import { useConversations, useIsVendor, type Conversation } from '@/data/chat';
 import { useSession } from '@/features/auth/session';
 import { inboxTime, lastMessagePreview } from '@/features/chat/chat-format';
+import { PreviewInbox } from '@/features/wed/preview-inbox';
+import { previewConversations } from '@/features/wed/preview-chats';
+import { useWed } from '@/features/wed/wed-store';
 import { PushAskCard } from '@/features/chat/push-ask';
 import { localized } from '@/i18n/localized';
 import { useLocale } from '@/i18n/locale-context';
@@ -22,25 +25,30 @@ import { useLocale } from '@/i18n/locale-context';
 export default function MessagesScreen() {
   const { t } = useLocale();
   const { status } = useSession();
+  const approvals = useWed((s) => s.approvals);
+  const items = useWed((s) => s.items);
+  const previews = previewConversations(approvals, items);
   const conversations = useConversations();
   const { isVendor } = useIsVendor();
 
   let body;
   if (status === 'loading') {
-    body = <StateView state="loading" />;
+    body = previews.length ? null : <StateView state="loading" />;
   } else if (status !== 'signedIn') {
-    body = (
+    body = previews.length ? null : (
       <View>
         <StateView state="empty" icon="chatbubbles-outline" message={t('chat.signIn')} />
         <Button label={t('profile.account.signIn')} onPress={() => router.push('/sign-in')} />
       </View>
     );
   } else if (conversations.isPending) {
-    body = <StateView state="loading" />;
+    body = previews.length ? null : <StateView state="loading" />;
   } else if (conversations.isError) {
     body = <StateView state="error" onRetry={() => void conversations.refetch()} />;
   } else if (conversations.data.length === 0) {
-    body = <StateView state="empty" icon="chatbubbles-outline" message={t('chat.empty')} />;
+    body = previews.length ? null : (
+      <StateView state="empty" icon="chatbubbles-outline" message={t('chat.empty')} />
+    );
   } else {
     body = <Inbox conversations={conversations.data} />;
   }
@@ -49,6 +57,7 @@ export default function MessagesScreen() {
     <NavScreen title={t('chat.title')}>
       {/* Vendors: a buzz when a family writes, so no one waits on them */}
       {isVendor && status === 'signedIn' && <PushAskCard audience="vendor" />}
+      <PreviewInbox conversations={previews} />
       {body}
     </NavScreen>
   );
