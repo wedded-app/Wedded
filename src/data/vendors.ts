@@ -66,7 +66,6 @@ export type VendorProfile = {
   id: string;
   slug: string;
   name: LocalizedText;
-  /** Vendor-written pairs: show with vendorText(en, pa, locale). */
   tagline: string | null;
   bio: string | null;
   city: string;
