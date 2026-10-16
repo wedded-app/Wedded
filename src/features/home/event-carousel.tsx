@@ -172,7 +172,7 @@ const useStyles = makeStyles((Colors) => ({
     paddingHorizontal: Sizes.pageGutter,
   },
   card: {
-    height: 236,
+    height: 168,
     justifyContent: 'space-between',
     padding: Spacing.lg,
     borderRadius: Radius.card + 4,

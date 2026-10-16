@@ -52,19 +52,17 @@ export function LocationChip({ style }: { style?: StyleProp<ViewStyle> }) {
 }
 
 const useStyles = makeStyles((Colors) => ({
+  // A quiet line as wide as its words, not another full-width box; still 48 tall to tap
   chip: {
     minHeight: Sizes.tapTarget,
+    alignSelf: 'flex-start',
     flexDirection: 'row',
     alignItems: 'center',
-    gap: Spacing.sm,
-    paddingHorizontal: Spacing.lg,
-    paddingVertical: Spacing.sm,
+    gap: Spacing.xs + 2,
+    paddingHorizontal: Spacing.sm,
     borderRadius: Radius.chip,
-    backgroundColor: Colors.surface,
   },
-  unset: {
-    backgroundColor: Colors.primaryTint,
-  },
+  unset: {},
   pressed: {
     backgroundColor: Colors.rowPressed,
   },
@@ -72,6 +70,6 @@ const useStyles = makeStyles((Colors) => ({
     backgroundColor: Colors.fillPressed,
   },
   label: {
-    flex: 1,
+    flexShrink: 1,
   },
 }));

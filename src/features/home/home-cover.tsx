@@ -34,7 +34,8 @@ import { heroPhoto } from './home-feed';
 /** Most of the first screen, never cramped and never all of it on a tall phone. */
 export function useCoverHeight() {
   const { height } = useWindowDimensions();
-  return Math.round(Math.min(Math.max(height * 0.6, 440), 640));
+  // About half the screen, so what's under it shows without scrolling
+  return Math.round(Math.min(Math.max(height * 0.5, 380), 540));
 }
 
 // Dark at the top for the clock and the glass buttons, clear through the
