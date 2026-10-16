@@ -30,10 +30,11 @@ import { Button } from '@/components/button';
 import { Icon } from '@/components/icon';
 import { StateView } from '@/components/state-view';
 import { makeStyles, Radius, Sizes, Spacing, Springs } from '@/constants/theme';
-import { useFeed } from '@/data/feed';
 import { useToggleBlock } from '@/data/reels';
 import { useSavedVendors, useSaveVendor } from '@/data/saved';
 import { type Story, type StoryGroup, useDeleteStory, useStories } from '@/data/stories';
+import { useVendorPhotos } from '@/data/vendor-media';
+import { useVendor } from '@/data/vendors';
 import { useSession } from '@/features/auth/session';
 import { initials } from '@/features/planner/plan-together';
 import { timeAgo } from '@/features/requests/requests-format';
@@ -123,7 +124,8 @@ function fromGroup(group: StoryGroup, someone: string): Teller {
  *
  * /story?group={key}: posted stories (the Reels tab's rings), starting at
  * the first one not yet watched. /story?vendor={slug}&photo={id}: a vendor's
- * photos (their page's highlights), then the next vendor's.
+ * own photos from their page's highlights, closing after the last, as an
+ * Instagram highlight does.
  */
 export default function StoryScreen() {
   const styles = useStyles();
@@ -134,14 +136,16 @@ export default function StoryScreen() {
   const { requireSignIn } = useSession();
   const params = useLocalSearchParams<{ group?: string; vendor?: string; photo?: string }>();
   const live = params.group !== undefined;
-  const feed = useFeed({ enabled: !live });
+  // Already loaded by the vendor's page, so a highlight opens at once
+  const vendorPage = useVendor(live ? '' : (params.vendor ?? ''));
+  const photos = useVendorPhotos(vendorPage.data?.id ?? '');
   const stories = useStories();
   const isSeen = useStorySeen();
   const saves = useSavedVendors();
   const { toggleSave } = useSaveVendor();
   const remove = useDeleteStory();
   const block = useToggleBlock();
-  const source = live ? stories : feed;
+  const source = live ? stories : vendorPage.data ? photos : vendorPage;
 
   // Who plays in which order, fixed when the viewer opens so rings turning
   // grey don't reshuffle it
@@ -153,20 +157,22 @@ export default function StoryScreen() {
   const someone = t('reels.someone');
   const tellers = useMemo((): Teller[] => {
     if (!live) {
-      return (feed.data ?? []).map((post) => {
-        const category = post.category ? localized(post.category.name) : null;
-        const caption = post.caption?.trim() || null;
-        return {
-          key: post.slug,
-          name: localized(post.name),
-          place: [category, post.city].filter(Boolean).join(' · '),
-          avatarUrl: post.photos[0]?.url.small ?? null,
-          vendor: { id: post.vendorId, slug: post.slug, category, city: post.city },
+      const v = vendorPage.data;
+      if (!v || !photos.data?.length) return [];
+      const category = v.categories[0] ? localized(v.categories[0].name) : null;
+      const caption = (v.tagline ?? v.bio)?.trim() || null;
+      return [
+        {
+          key: v.slug,
+          name: localized(v.name),
+          place: [category, v.city].filter(Boolean).join(' · '),
+          avatarUrl: photos.data[0].url.small,
+          vendor: { id: v.id, slug: v.slug, category, city: v.city },
           personId: null,
           isMine: false,
-          isSample: post.isSample,
+          isSample: v.isSample,
           live: false,
-          slides: post.photos.map((photo) => ({
+          slides: photos.data.map((photo) => ({
             id: photo.id,
             kind: 'photo',
             url: photo.url.large,
@@ -175,15 +181,15 @@ export default function StoryScreen() {
             postedAt: null,
             story: null,
           })),
-        };
-      });
+        },
+      ];
     }
     const byKey = new Map((stories.data ?? []).map((group) => [group.key, group]));
     return (order ?? []).flatMap((key) => {
       const group = byKey.get(key);
       return group ? [fromGroup(group, someone)] : [];
     });
-  }, [live, feed.data, stories.data, order, someone]);
+  }, [live, vendorPage.data, photos.data, stories.data, order, someone]);
 
   // A poster's stories start at the first one not yet watched
   const firstUnseen = (teller: Teller) =>
