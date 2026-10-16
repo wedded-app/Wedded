@@ -1,7 +1,7 @@
 import { Image } from 'expo-image';
-import type { ReactNode } from 'react';
+import { type ReactNode, useState } from 'react';
 import { router } from 'expo-router';
-import { Linking, View } from 'react-native';
+import { Linking, Pressable, View } from 'react-native';
 
 import { AppText, useFontScale } from '@/components/app-text';
 import { Button } from '@/components/button';
@@ -388,16 +388,21 @@ export function PageChecklist({
   doneCount,
   total,
   businessName,
+  limit,
 }: {
   items: ChecklistItem[];
   doneCount: number;
   total: number;
   businessName: string;
+  /** Show only this many of the missing items, with "Show all" for the rest. */
+  limit?: number;
 }) {
   const Colors = useColors();
   const styles = useStyles();
   const { t } = useLocale();
+  const [showAll, setShowAll] = useState(false);
   const missing = items.filter((item) => !item.done);
+  const shown = limit === undefined || showAll ? missing : missing.slice(0, limit);
   const done = items.filter((item) => item.done);
   const askTeam = (what: string) =>
     void Linking.openURL(
@@ -417,36 +422,63 @@ export function PageChecklist({
         trackColor={Colors.fill}
         height={10}
       />
-      {missing.map((item) => {
+      {/* One tappable row each, not a button under every item */}
+      {shown.map((item) => {
         const target = fixTarget(item.key);
         const what = t(`business.checklist.items.${item.key}.title`);
+        const gain = t(`business.checklist.items.${item.key}.gain`, { count: item.count ?? 0 });
+        const onPress =
+          target !== 'team'
+            ? () => router.push(target)
+            : TEAM_WHATSAPP
+              ? () => askTeam(what)
+              : undefined;
         return (
-          <View key={item.key} style={[styles.todo, styles.divided]}>
-            <AppText weight={700}>{what}</AppText>
-            <AppText color="text2">
-              {t(`business.checklist.items.${item.key}.gain`, { count: item.count ?? 0 })}
-            </AppText>
-            {target !== 'team' ? (
-              <Button
-                variant="secondary"
-                label={t('business.checklist.fix')}
-                onPress={() => router.push(target)}
+          <Pressable
+            key={item.key}
+            accessibilityRole={onPress ? 'button' : undefined}
+            accessibilityLabel={[
+              what,
+              gain,
+              target === 'team' && onPress && t('business.checklist.askTeam'),
+            ]
+              .filter(Boolean)
+              .join('. ')}
+            disabled={!onPress}
+            onPress={onPress}
+            style={({ pressed }) => [styles.todo, styles.divided, pressed && styles.todoPressed]}
+          >
+            <View style={styles.grow}>
+              <AppText weight={700}>{what}</AppText>
+              <AppText color="text2">{gain}</AppText>
+              {target === 'team' && !TEAM_WHATSAPP && (
+                <AppText variant="label" weight={400} color="text2">
+                  {t('business.checklist.tellTeam')}
+                </AppText>
+              )}
+            </View>
+            {onPress && (
+              <Icon
+                name={target === 'team' ? 'logo-whatsapp' : 'chevron-forward'}
+                size={18}
+                color={Colors.chevron}
               />
-            ) : TEAM_WHATSAPP ? (
-              <Button
-                variant="secondary"
-                icon="logo-whatsapp"
-                label={t('business.checklist.askTeam')}
-                onPress={() => askTeam(what)}
-              />
-            ) : (
-              <AppText variant="label" weight={400} color="text2">
-                {t('business.checklist.tellTeam')}
-              </AppText>
             )}
-          </View>
+          </Pressable>
         );
       })}
+      {shown.length < missing.length && (
+        <Pressable
+          accessibilityRole="button"
+          onPress={() => setShowAll(true)}
+          hitSlop={12}
+          style={({ pressed }) => [styles.divided, pressed && styles.todoPressed]}
+        >
+          <AppText weight={600} color="primary">
+            {t('business.checklist.showAll', { count: missing.length })}
+          </AppText>
+        </Pressable>
+      )}
       {done.length > 0 && (
         <View style={[styles.doneList, styles.divided]}>
           <Icon name="checkmark-circle" size={20} color={Colors.success} />
@@ -566,7 +598,12 @@ const useStyles = makeStyles((Colors) => ({
     backgroundColor: Colors.primaryTint,
   },
   todo: {
-    gap: Spacing.xs,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.md,
+  },
+  todoPressed: {
+    opacity: 0.6,
   },
   doneList: {
     flexDirection: 'row',

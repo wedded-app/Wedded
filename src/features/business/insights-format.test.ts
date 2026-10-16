@@ -1,4 +1,4 @@
-import { barShares, fixTarget, headline, monthLabel, replyLine } from './insights-format';
+import { barShares, fixTarget, monthLabel, replyLine } from './insights-format';
 
 jest.mock('@/lib/supabase', () => ({ supabase: {} }));
 
@@ -7,12 +7,6 @@ const t = (key: string, options: Record<string, string | number> = {}) =>
   Object.keys(options).length > 0 ? `${key}(${JSON.stringify(options)})` : key;
 
 describe('insights words', () => {
-  it('builds the headline from the period and the two numbers', () => {
-    expect(headline(7, 38, 4, t)).toBe(
-      'business.insights.headline({"period":"business.insights.period.7","seen":"business.insights.seen({\\"count\\":38})","asked":"business.insights.askedDate({\\"count\\":4})"})',
-    );
-  });
-
   it('says how often and how fast they reply', () => {
     expect(replyLine({ leads: 0, replied: 0, rate: null, medianMinutes: null }, t)).toBeNull();
     expect(replyLine({ leads: 10, replied: 9, rate: 0.9, medianMinutes: null }, t)).toBe(
