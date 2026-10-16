@@ -210,7 +210,7 @@ Add ideas any time during Phases 1 to 4. No checking or buying until Phase 5.
 ## Phase 7: Public Launch
 
 ### Quality
-- [ ] Set up crash and error monitoring (Sentry)
+- [x] Set up crash and error monitoring (Sentry) (2026-10-16, #273: JavaScript errors from Expo Go now; native crashes once there's a real build)
 - [ ] Set up analytics: which categories and vendors get viewed and contacted (started 2026-09-30: vendor profile views and contact taps are counted anonymously in `vendor_activity_daily`, and `npm run report` prints the week; category views still to add)
 - [ ] Test on multiple iPhone models and screen sizes
 - [ ] Test on multiple Android models and screen sizes
