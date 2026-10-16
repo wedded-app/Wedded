@@ -2,7 +2,7 @@
  * The Discover feed: vendors' photos as posts, newest first, the way people
  * already scroll Instagram. One post per vendor holds all their photos (a
  * swipeable carousel), with the vendor's name, type, city, a line about them
- * and their price. A vendor page's story highlights play these photos.
+ * and their price. Home picks its cover and event card photos from it.
  */
 import { useQuery } from '@tanstack/react-query';
 
@@ -139,11 +139,10 @@ async function fetchFeed(): Promise<FeedPost[]> {
 }
 
 /** Every vendor with photos, as feed posts. Fresh for five minutes. */
-export function useFeed({ enabled = true }: { enabled?: boolean } = {}) {
+export function useFeed() {
   return useQuery({
     queryKey: ['feed'],
     queryFn: fetchFeed,
     staleTime: 5 * 60 * 1000,
-    enabled,
   });
 }
