@@ -26,7 +26,7 @@ import { selectionHaptic } from '@/lib/haptics';
  * Stories are one ring at the top left that opens the Stories page
  * (DECISIONS.md 2026-10-16), so they never cover the video.
  */
-export default function ReelsScreen() {
+export default function ReelsScreen({ business = false }: { business?: boolean }) {
   const { t } = useLocale();
   const router = useRouter();
   const insets = useSafeAreaInsets();
@@ -116,6 +116,7 @@ export default function ReelsScreen() {
           feed={{ mode, eventSlug }}
           height={height}
           swipeHint
+          business={business}
           empty={
             mode === 'following' && status !== 'signedIn'
               ? emptyFollowing
