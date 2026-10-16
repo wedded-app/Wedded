@@ -30,6 +30,8 @@ export type GroupThread = {
   lastBody: string | null;
   lastSenderRole: GroupSenderRole | null;
   lastSenderName: string | null;
+  /** The last message is mine: the list says "You: …". */
+  lastSenderIsMe: boolean;
   unreadCount: number;
 };
 
@@ -104,6 +106,7 @@ export function useGroupThreads() {
         lastBody: row.last_body,
         lastSenderRole: row.last_sender_role as GroupSenderRole | null,
         lastSenderName: row.last_sender_name,
+        lastSenderIsMe: row.last_sender_is_me,
         unreadCount: row.unread_count,
       }));
     },
