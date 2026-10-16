@@ -8,21 +8,33 @@ import {
 } from '@expo-google-fonts/inter';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { useFonts } from 'expo-font';
-import { DarkTheme, DefaultTheme, type Href, router, Stack, ThemeProvider } from 'expo-router';
+import {
+  DarkTheme,
+  DefaultTheme,
+  type ErrorBoundaryProps,
+  type Href,
+  router,
+  Stack,
+  ThemeProvider,
+} from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useCallback, useEffect } from 'react';
-import { Platform } from 'react-native';
+import { Platform, View } from 'react-native';
 
 import { AppIntro } from '@/components/app-intro';
+import { AppText } from '@/components/app-text';
+import { Button } from '@/components/button';
+import { OfflineBanner } from '@/components/offline-banner';
 import { WebFrame } from '@/components/web-frame';
-import { Radius, useColors, useScheme } from '@/constants/theme';
+import { Radius, Spacing, useColors, useScheme } from '@/constants/theme';
 import { configurePushHandling, usePushOpens } from '@/data/push';
 import { queryClient } from '@/data/query-client';
 import { WeddingSync } from '@/data/wedding';
 import { SessionProvider } from '@/features/auth/session';
 import { SearchLocationProvider } from '@/features/location/search-location';
 import { SettingsProvider } from '@/features/settings/settings';
+import { i18n } from '@/i18n';
 import { LocaleProvider } from '@/i18n/locale-context';
 
 SplashScreen.preventAutoHideAsync();
@@ -68,6 +80,35 @@ export default function RootLayout() {
         </SettingsProvider>
       </LocaleProvider>
     </QueryClientProvider>
+  );
+}
+
+/**
+ * A page that crashed shows this instead of a blank screen: what happened in
+ * plain words, and Try again, which draws it again. It stands in for the
+ * whole app, so it uses no provider (the strings come straight from i18n).
+ */
+export function ErrorBoundary({ retry }: ErrorBoundaryProps) {
+  const Colors = useColors();
+  return (
+    <View
+      style={{
+        flex: 1,
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: Spacing.lg,
+        padding: Spacing.xl,
+        backgroundColor: Colors.bg,
+      }}
+    >
+      <AppText variant="title" accessibilityRole="header" style={{ textAlign: 'center' }}>
+        {i18n.t('crash.title')}
+      </AppText>
+      <AppText color="text2" style={{ textAlign: 'center' }}>
+        {i18n.t('crash.body')}
+      </AppText>
+      <Button label={i18n.t('states.tryAgain')} onPress={() => void retry()} />
+    </View>
   );
 }
 
@@ -160,6 +201,7 @@ function AppShell() {
           />
         </Stack>
       </WebFrame>
+      <OfflineBanner />
       <AppIntro />
     </ThemeProvider>
   );
