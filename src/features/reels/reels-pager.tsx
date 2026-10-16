@@ -23,7 +23,7 @@ import Animated, {
 
 import { AppText } from '@/components/app-text';
 import { Icon } from '@/components/icon';
-import { useBottomSpace } from '@/components/tab-bar';
+import { useTabBarTop } from '@/components/tab-bar';
 import { Radius, Spacing } from '@/constants/theme';
 import { useTraditions } from '@/data/reference';
 import {
@@ -77,7 +77,8 @@ export function ReelsPager({
   const router = useRouter();
   const { t } = useLocale();
   const { requireSignIn, session } = useSession();
-  const bottomSpace = useBottomSpace();
+  // The progress line sits just above the tab bar, the words just above it
+  const bottomSpace = useTabBarTop() + Spacing.xs;
   const reels = useReelsFeed(feed);
   const traditions = useTraditions();
   const like = useToggleLike();
