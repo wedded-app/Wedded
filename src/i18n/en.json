@@ -961,6 +961,96 @@
     "editorExplain": "You'll see the plan and can change it: tick off vendors as they're booked, and add events.",
     "suggesterExplain": "You'll see the plan and can suggest vendors for each event. The family decides."
   },
+  "groupChat": {
+    "title": "Family chats",
+    "planBody": "Chat with family and friends about the wedding, all in one place. Write @Wed to ask Wed for help.",
+    "start": "Start a family chat",
+    "noMessages": "No messages yet",
+    "unavailable": "This chat isn't available. You may have left it, or it was removed.",
+    "people": {
+      "one": "1 person",
+      "other": "{{count}} people"
+    },
+    "openInfo": "Shows who's in the chat",
+    "you": "You",
+    "wed": "Wed",
+    "formerMember": "Someone who left",
+    "joined": "{{name}} joined",
+    "left": "{{name}} left",
+    "preview": {
+      "photo": "{{name}}: Photo",
+      "text": "{{name}}: {{text}}",
+      "joined": "{{name}} joined",
+      "left": "{{name}} left"
+    },
+    "askWed": "Ask Wed",
+    "wedThinking": "Wed is looking…",
+    "wedFailed": "Wed couldn't answer that one. Try asking again.",
+    "placeholder": "Write to everyone",
+    "new": {
+      "title": "New family chat",
+      "name": "Chat name",
+      "nameHint": "Like Family, or Jaago crew",
+      "defaultName": "Family",
+      "who": "Who's in it",
+      "whoHint": "Pick people from your wedding plan. Friends can join later with a link.",
+      "create": "Start the chat"
+    },
+    "info": {
+      "title": "Chat info",
+      "members": "People in this chat",
+      "inWedding": "Plans the wedding",
+      "friend": "Friend",
+      "manages": "Can add and remove people",
+      "invite": "Invite with a link",
+      "inviteBody": "Anyone with the link can join this chat for 14 days. They won't see the wedding plan.",
+      "inviteMessage": "Join our wedding chat on Wedded App: {{link}}",
+      "copied": "Link copied. Paste it into a message.",
+      "add": "Add from the wedding plan",
+      "addOne": "Add",
+      "rename": "Chat name",
+      "save": "Save name",
+      "saved": "Saved",
+      "leave": "Leave this chat",
+      "leaveTitle": "Leave this chat?",
+      "leaveConfirm": "You'll stop getting its messages. Someone can add you back.",
+      "removeTitle": "Remove from the chat?",
+      "removeConfirm": "{{name}} will stop getting this chat's messages.",
+      "remove": "Remove",
+      "removeHint": "Removes this person from the chat",
+      "keep": "Keep"
+    },
+    "join": {
+      "title": "Join the chat",
+      "pageTitle": "Join our wedding chat · Wedded App",
+      "pageDescription": "You're invited to a wedding chat on Wedded App.",
+      "invitedBy": "{{name}} invited you to",
+      "invited": "You're invited to",
+      "forWedding": "For {{title}}",
+      "explain": "You'll see the messages and can write to everyone. The wedding plan stays with the family.",
+      "join": "Join the chat",
+      "askForNewLink": "Ask the person who sent it for a new link.",
+      "status": {
+        "expired": "This link has expired",
+        "used_up": "This link has been used up",
+        "revoked": "This link was cancelled",
+        "not_found": "This link doesn't work"
+      }
+    },
+    "errors": {
+      "not_allowed": "Only the people planning the wedding can do that.",
+      "empty": "Please write something first.",
+      "rate": "You're sending very fast. Wait a minute, then send again.",
+      "revoked": "This link was cancelled. Ask for a new one.",
+      "expired": "This link has expired. Ask for a new one.",
+      "used_up": "This link has been used up. Ask for a new one.",
+      "not_found": "This link doesn't work. Ask for a new one.",
+      "full": "This chat already has the most people it can (50).",
+      "too_many": "You're in 30 chats already. Leave one to join this.",
+      "thread_limit": "This wedding already has 10 chats. Use one of those.",
+      "failed": "That didn't work. Check your internet, then try again."
+    }
+  },
   "vendorStats": {
     "savedBy": {
       "one": "Saved by {{count}} family",

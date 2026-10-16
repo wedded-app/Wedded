@@ -330,3 +330,32 @@ export function useAcceptGroupInvite() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: groupKeys.all }),
   });
 }
+
+export type GroupError =
+  | 'not_allowed'
+  | 'empty'
+  | 'rate'
+  | 'revoked'
+  | 'expired'
+  | 'used_up'
+  | 'not_found'
+  | 'full'
+  | 'too_many'
+  | 'thread_limit'
+  | 'failed';
+
+/** Which plain-words message (groupChat.errors.*) a group chat error gets. */
+export function groupErrorKind(error: unknown): GroupError {
+  const message = error instanceof Error ? error.message : String(error ?? '');
+  if (message.includes('not_allowed')) return 'not_allowed';
+  if (message.includes('empty_message') || message.includes('invalid_name')) return 'empty';
+  if (message.includes('message_rate')) return 'rate';
+  if (message.includes('invite_revoked')) return 'revoked';
+  if (message.includes('invite_expired')) return 'expired';
+  if (message.includes('invite_used_up')) return 'used_up';
+  if (message.includes('invite_not_found')) return 'not_found';
+  if (message.includes('group_full')) return 'full';
+  if (message.includes('too_many_groups')) return 'too_many';
+  if (message.includes('thread_limit')) return 'thread_limit';
+  return 'failed';
+}

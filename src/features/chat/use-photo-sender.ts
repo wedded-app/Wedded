@@ -2,7 +2,7 @@ import * as ImagePicker from 'expo-image-picker';
 import { useState } from 'react';
 import { Alert, Linking, Platform } from 'react-native';
 
-import { uploadChatPhoto, type useSendMessage } from '@/data/chat';
+import { uploadChatPhoto } from '@/data/chat';
 import { askMediaAccess } from '@/features/reels/media-access';
 import { useLocale } from '@/i18n/locale-context';
 
@@ -23,7 +23,16 @@ export type PhotoUpload = {
   replyTo?: string | null;
 };
 
-type Send = ReturnType<typeof useSendMessage>;
+/** useSendMessage, or anything that sends a photo message the same way (group chat). */
+type Send = {
+  mutateAsync: (photo: {
+    kind: 'photo';
+    path: string;
+    width: number;
+    height: number;
+    replyTo?: string | null;
+  }) => Promise<unknown>;
+};
 
 /** iOS drops a permission question asked while an alert is still closing. */
 const afterAlert = () => new Promise((resolve) => setTimeout(resolve, 400));
@@ -49,7 +58,7 @@ function ask(title: string, body: string, no: string, yes: string): Promise<bool
  * as "Sending…" while it's shrunk, uploaded and sent. A failure stays in the
  * thread with Try again and Remove.
  */
-export function usePhotoSender(conversationId: string, send: Send) {
+export function usePhotoSender(folderId: string, send: Send) {
   const { t } = useLocale();
   const [uploads, setUploads] = useState<PhotoUpload[]>([]);
   const [notice, setNotice] = useState<string | null>(null);
@@ -95,7 +104,7 @@ export function usePhotoSender(conversationId: string, send: Send) {
     try {
       if (!path) {
         const ready = await preparePhoto(upload);
-        path = await uploadChatPhoto(conversationId, ready.bytes, 'image/jpeg');
+        path = await uploadChatPhoto(folderId, ready.bytes, 'image/jpeg');
         rememberSentPhoto(path, ready.uri);
         ({ width, height } = ready);
         update(upload.id, { path, width, height });
