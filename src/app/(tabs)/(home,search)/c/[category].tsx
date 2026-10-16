@@ -105,8 +105,11 @@ export default function ResultsScreen() {
           eyebrow={event.data ? t('results.savingTo', { event: localized(event.data.name) }) : null}
         />
       )}
-      <LocationChip />
-      <FiltersButton groupSlug={category?.groupSlug} />
+      {/* One line, not two full-width boxes */}
+      <View style={styles.tools}>
+        <LocationChip style={styles.location} />
+        <FiltersButton groupSlug={category?.groupSlug} />
+      </View>
       {vendors.isSuccess && vendors.data.length > 0 && (
         <AppText variant="label" weight={400} color="text2" style={styles.count}>
           {t('counts.vendors', { count: vendors.data.length })}
@@ -212,6 +215,15 @@ const useStyles = makeStyles((Colors) => ({
   },
   header: {
     gap: Spacing.md,
+  },
+  tools: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: Spacing.sm,
+  },
+  location: {
+    flexShrink: 1,
   },
   count: {
     paddingHorizontal: Spacing.xs,
