@@ -6,8 +6,7 @@ import { View } from 'react-native';
 import { AppText } from '@/components/app-text';
 import { Icon } from '@/components/icon';
 import { ListRow, ListSection } from '@/components/list';
-import { PressableScale } from '@/components/pressable-scale';
-import { makeStyles, Radius, Sizes, Spacing, useColors } from '@/constants/theme';
+import { makeStyles, Spacing, useColors } from '@/constants/theme';
 import { useConversations } from '@/data/chat';
 import type { AccountWedding } from '@/data/wedding';
 import { inboxTime } from '@/features/chat/chat-format';
@@ -24,19 +23,16 @@ const SHOWN = 4;
  * booked, so Home is worth opening every day. New replies first (with the
  * unread count), then replies, then the ones still to answer, then booked.
  * A row opens the chat, or the vendor's page for one booked without a chat.
- * Before they've asked anyone it says what will show here, with Find vendors.
+ * Hidden until they've asked someone.
  */
 export function YourVendors({
   wedding,
   eventName,
-  onFind,
 }: {
   wedding: AccountWedding | null;
   /** An event's name in the family's language, for "Booked for Jaago". */
   eventName: (slug: string) => string;
-  onFind: () => void;
 }) {
-  const Colors = useColors();
   const styles = useStyles();
   const { t } = useLocale();
   const conversations = useConversations();
@@ -45,7 +41,8 @@ export function YourVendors({
     [conversations.data, wedding?.bookedVendors],
   );
 
-  if (conversations.isPending && rows.length === 0) return null;
+  // Nothing to show until they've asked someone: Next up already offers vendors
+  if (rows.length === 0) return null;
 
   const subtitle = (row: VendorStatusRow) => {
     const time = row.at ? inboxTime(row.at, t) : '';
@@ -70,34 +67,22 @@ export function YourVendors({
         link={rows.length > 0 ? t('home.seeAll') : undefined}
         onLink={() => router.push('/messages')}
       />
-      {rows.length === 0 ? (
-        <View style={styles.empty}>
-          <AppText color="text2">{t('home.vendorsEmpty')}</AppText>
-          <PressableScale accessibilityRole="button" onPress={onFind} style={styles.findButton}>
-            <Icon name="search" size={18} color={Colors.onPrimary} />
-            <AppText variant="label" weight={700} color="onPrimary">
-              {t('home.findVendors')}
-            </AppText>
-          </PressableScale>
-        </View>
-      ) : (
-        <ListSection>
-          {rows.slice(0, SHOWN).map((row) => (
-            <ListRow
-              key={row.key}
-              title={localized(row.vendor.name)}
-              subtitle={subtitle(row)}
-              leading={<VendorAvatar row={row} />}
-              trailing={<StatusMark row={row} />}
-              onPress={() =>
-                row.conversationId
-                  ? router.push({ pathname: '/chat/[id]', params: { id: row.conversationId } })
-                  : router.push({ pathname: '/v/[slug]', params: { slug: row.vendor.slug } })
-              }
-            />
-          ))}
-        </ListSection>
-      )}
+      <ListSection>
+        {rows.slice(0, SHOWN).map((row) => (
+          <ListRow
+            key={row.key}
+            title={localized(row.vendor.name)}
+            subtitle={subtitle(row)}
+            leading={<VendorAvatar row={row} />}
+            trailing={<StatusMark row={row} />}
+            onPress={() =>
+              row.conversationId
+                ? router.push({ pathname: '/chat/[id]', params: { id: row.conversationId } })
+                : router.push({ pathname: '/v/[slug]', params: { slug: row.vendor.slug } })
+            }
+          />
+        ))}
+      </ListSection>
     </View>
   );
 }
@@ -146,23 +131,6 @@ const AVATAR = 44;
 const useStyles = makeStyles((Colors) => ({
   block: {
     gap: Spacing.md,
-  },
-  empty: {
-    gap: Spacing.md,
-    padding: Spacing.lg,
-    borderRadius: Radius.card,
-    borderCurve: 'continuous',
-    backgroundColor: Colors.surface,
-  },
-  findButton: {
-    flexDirection: 'row',
-    alignSelf: 'flex-start',
-    alignItems: 'center',
-    gap: Spacing.sm,
-    minHeight: Sizes.tapTarget,
-    paddingHorizontal: Spacing.xl,
-    borderRadius: Radius.button,
-    backgroundColor: Colors.primaryFill,
   },
   avatar: {
     width: AVATAR,

@@ -138,7 +138,7 @@ export default function HomeScreen() {
           {planning ? (
             <>
               <NextUp view={view} />
-              <YourVendors wedding={wedding} eventName={eventName} onFind={findFirst} />
+              <YourVendors wedding={wedding} eventName={eventName} />
               {first ? (
                 <VendorPhotoCards
                   title={
