@@ -106,10 +106,12 @@ export function useStartMyBusiness() {
       if (error) throw new Error(error.message);
       return data as { vendorId: string; slug: string };
     },
-    onSettled: () => {
-      void queryClient.invalidateQueries({ queryKey: businessKeys.all });
-      void queryClient.invalidateQueries({ queryKey: chatKeys.vendor(session?.user.id ?? '') });
-    },
+    // Awaited, so the business tabs open knowing about the new listing
+    onSettled: () =>
+      Promise.all([
+        queryClient.invalidateQueries({ queryKey: businessKeys.all }),
+        queryClient.invalidateQueries({ queryKey: chatKeys.vendor(session?.user.id ?? '') }),
+      ]),
   });
 }
 

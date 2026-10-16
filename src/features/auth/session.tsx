@@ -16,6 +16,7 @@ import { supabase } from '@/lib/supabase';
 import type { Database } from '@/types/database';
 
 import { nameFromMetadata, phoneFromAuth } from './auth-helpers';
+import type { JoinedAs } from './join-steps';
 import { setNameHint, useNameHint } from './name-hint';
 
 export type Profile = Database['public']['Tables']['profiles']['Row'];
@@ -51,11 +52,16 @@ type SessionContextValue = {
   /**
    * Run `action` now if they're signed in with a profile; otherwise open
    * sign-in and run it once they finish (vision §8, "pending action after
-   * login"). Kept in memory only.
+   * login"). Kept in memory only. `planning` marks an action that opens the
+   * wedding questions, which a new account that came for something else skips.
    */
-  requireSignIn: (action?: () => void) => void;
-  /** Called by the sign-in screen when it's done: closes it, then runs the pending action. */
-  finishSignIn: () => void;
+  requireSignIn: (action?: () => void, options?: { planning?: boolean }) => void;
+  /**
+   * Called by the sign-in screen when it's done: closes it, then runs the
+   * pending action, unless that's planning and a new account joined as
+   * `business` or `looking`.
+   */
+  finishSignIn: (joinedAs?: JoinedAs | null) => void;
   /** Called when the sign-in screen closes without finishing. */
   cancelSignIn: () => void;
 };
@@ -79,7 +85,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   const [sessionChecked, setSessionChecked] = useState(false);
   const [lookup, setLookup] = useState<ProfileLookup | null>(null);
   const [attempt, setAttempt] = useState(0);
-  const pendingAction = useRef<(() => void) | null>(null);
+  const pendingAction = useRef<{ run?: () => void; planning?: boolean } | null>(null);
 
   const userId = session?.user.id ?? null;
   const appleHint = useNameHint();
@@ -144,24 +150,26 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const requireSignIn = useCallback(
-    (action?: () => void) => {
+    (action?: () => void, options?: { planning?: boolean }) => {
       if (status === 'signedIn') {
         action?.();
         return;
       }
-      pendingAction.current = action ?? null;
+      pendingAction.current = { run: action, planning: options?.planning };
       router.push('/sign-in');
     },
     [status],
   );
 
-  const finishSignIn = useCallback(() => {
+  const finishSignIn = useCallback((joinedAs?: JoinedAs | null) => {
     const action = pendingAction.current;
     pendingAction.current = null;
     if (router.canGoBack()) {
       router.back();
     }
-    action?.();
+    // They said they run a business or are just looking: no wedding questions
+    if (action?.planning && joinedAs && joinedAs !== 'planning') return;
+    action?.run?.();
   }, []);
 
   const cancelSignIn = useCallback(() => {

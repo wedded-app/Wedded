@@ -12,6 +12,7 @@ import { StateView } from '@/components/state-view';
 import { TextField } from '@/components/text-field';
 import { Spacing, useColors } from '@/constants/theme';
 import { useIsVendor } from '@/data/chat';
+import { switchToBusiness } from '@/features/business/app-mode';
 import { markOnboarding } from '@/features/onboarding/onboarding-state';
 import { useLocale } from '@/i18n/locale-context';
 
@@ -88,9 +89,9 @@ export function SignInFlow({ mode, method }: { mode: SignInMode; method?: SignIn
   const done = useCallback(() => {
     finished.current = true;
     const canGoBack = router.canGoBack();
-    finishSignIn();
+    finishSignIn(joinedAs);
     if (!canGoBack) router.replace('/');
-  }, [finishSignIn]);
+  }, [finishSignIn, joinedAs]);
 
   // Signed in with a profile, i.e. a returning person: nothing more to ask.
   useEffect(() => {
@@ -109,9 +110,11 @@ export function SignInFlow({ mode, method }: { mode: SignInMode; method?: SignIn
       <BusinessStep
         initialTown={profile?.city ?? ''}
         onDone={() => {
-          // Their draft makes them a vendor: no wedding questions, even before that's refetched
+          // Their draft makes them a vendor: no wedding questions, even before that's refetched,
+          // and the business side, even if this phone was last on the planning side
           markOnboarding('done');
           done();
+          switchToBusiness();
         }}
       />
     );
