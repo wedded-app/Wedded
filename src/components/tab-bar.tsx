@@ -100,6 +100,20 @@ export function useBottomSpace() {
 }
 
 /**
+ * How far the floating tab bar's top edge sits above the bottom of the
+ * screen, or the home indicator's outside the tabs: for full-screen media
+ * like Reels, whose words and progress line sit right on it. Unlike
+ * useBottomSpace it leaves no room for Wed's floating button, which isn't
+ * shown over Reels.
+ */
+export function useTabBarTop() {
+  const inTabs = useContext(TabBarSpaceContext) > 0;
+  const insets = useSafeAreaInsets();
+  const offset = useTabBarOffset();
+  return inTabs ? Sizes.tabBar + offset : insets.bottom;
+}
+
+/**
  * The iOS 26 tab bar: a glass capsule floating over the content, with a
  * highlight that springs to the selected tab. Labels are always visible and
  * at least 13 point (vision §5); the selected tab also gets its filled icon
