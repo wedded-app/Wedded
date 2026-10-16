@@ -355,7 +355,8 @@ export function useRemoveComment(reelId: string) {
 
 export type ReportReason =
   'inappropriate' | 'not_mine' | 'privacy' | 'spam' | 'harassment' | 'other';
-export type ReportTarget = { reelId: string } | { commentId: string } | { userId: string };
+export type ReportTarget =
+  { reelId: string } | { commentId: string } | { userId: string } | { storyId: string };
 
 export function useReport() {
   return useMutation({
@@ -372,6 +373,7 @@ export function useReport() {
         p_reel_id: 'reelId' in target ? target.reelId : undefined,
         p_comment_id: 'commentId' in target ? target.commentId : undefined,
         p_user_id: 'userId' in target ? target.userId : undefined,
+        p_story_id: 'storyId' in target ? target.storyId : undefined,
         p_reason: reason,
         p_note: note?.trim() || undefined,
       });
@@ -380,7 +382,7 @@ export function useReport() {
   });
 }
 
-/** Block or unblock a person: their reels and comments disappear both ways. */
+/** Block or unblock a person: their reels, stories and comments disappear both ways. */
 export function useToggleBlock() {
   const queryClient = useQueryClient();
   const { session } = useSession();
@@ -395,7 +397,12 @@ export function useToggleBlock() {
             .eq('blocked_id', userId);
       if (error && error.code !== '23505') throw error;
     },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: reelKeys.all }),
+    onSuccess: () =>
+      Promise.all([
+        queryClient.invalidateQueries({ queryKey: reelKeys.all }),
+        // Their stories go too (storyKeys.all in ./stories)
+        queryClient.invalidateQueries({ queryKey: ['stories'] }),
+      ]),
   });
 }
 
