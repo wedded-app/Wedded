@@ -3,7 +3,7 @@ import { View } from 'react-native';
 
 import { AppText } from '@/components/app-text';
 import { PressableScale } from '@/components/pressable-scale';
-import { makeStyles, Spacing } from '@/constants/theme';
+import { makeStyles } from '@/constants/theme';
 import { useLocale } from '@/i18n/locale-context';
 import { selectionHaptic } from '@/lib/haptics';
 
@@ -12,12 +12,9 @@ import { WedMark } from './wed-mark';
 
 const SIZE = 60;
 
-/** How much taller the tab bar's area is with the button above it, for content to clear. */
-export const WED_BUTTON_SPACE = SIZE + Spacing.md;
-
 /**
- * Wed's floating button, just above the right end of the planning tabs'
- * bar (it took Wed's tab, so Requests could have one). A tap opens the Wed
+ * Wed's round button in the middle of the planning tabs' bar (TabBar's
+ * `center`), raised out of it except over Reels. A tap opens the Wed
  * chat; press and hold opens Wed's voice screen. The red count is how many
  * of Wed's cards wait for the family's OK.
  */
