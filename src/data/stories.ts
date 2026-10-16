@@ -4,15 +4,12 @@
  * in the public `reels` bucket, like reels.
  */
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useEffect } from 'react';
 
 import { useSession } from '@/features/auth/session';
 import { supabase } from '@/lib/supabase';
 
 import { reelFileUrl } from './reels';
 import { assertUploadFits, REEL_VIDEO_TYPES } from './upload-limits';
-
-const DAY_MS = 24 * 60 * 60 * 1000;
 
 export type Story = {
   id: string;
@@ -110,37 +107,13 @@ export function groupStories(rows: FeedRow[]): StoryGroup[] {
 
 export const storyKeys = { all: ['stories'] as const };
 
-// Once a session: your own stories over a day old, and their files, go for good.
-let clearedFor: string | null = null;
-async function clearExpired(me: string) {
-  if (clearedFor === me) return;
-  clearedFor = me;
-  const { data } = await supabase
-    .from('stories')
-    .select('id, media_path, thumb_path')
-    .eq('author_id', me)
-    .lt('created_at', new Date(Date.now() - DAY_MS).toISOString());
-  if (!data?.length) return;
-  const { error } = await supabase
-    .from('stories')
-    .delete()
-    .in(
-      'id',
-      data.map((s) => s.id),
-    );
-  if (error) return;
-  await supabase.storage
-    .from('reels')
-    .remove(data.flatMap((s) => [s.media_path, ...(s.thumb_path ? [s.thumb_path] : [])]));
-}
-
-/** Everyone's stories from the last day, one group per poster. */
+/**
+ * Everyone's stories from the last day, one group per poster. Older ones are
+ * deleted, files and all, by the hourly clear-stories job.
+ */
 export function useStories() {
   const { session } = useSession();
   const me = session?.user.id ?? '';
-  useEffect(() => {
-    if (me) void clearExpired(me).catch(() => {});
-  }, [me]);
   return useQuery({
     queryKey: [...storyKeys.all, me],
     queryFn: async (): Promise<StoryGroup[]> => {

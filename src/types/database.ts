@@ -2892,6 +2892,14 @@ export type Database = {
           vendor_name: string;
         }[];
       };
+      expired_stories: {
+        Args: { p_limit?: number };
+        Returns: {
+          id: string;
+          media_path: string;
+          thumb_path: string;
+        }[];
+      };
       families_looking: {
         Args: {
           p_before?: string;
