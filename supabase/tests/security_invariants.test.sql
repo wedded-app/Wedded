@@ -8,7 +8,7 @@ select is_empty($$ select n.nspname || '.' || c.relname from pg_class c
 select is_empty($$ select p.proname from pg_proc p join pg_namespace n on n.oid=p.pronamespace
   where n.nspname='public' and p.proname in ('claim_chat_notifications','claim_push_messages',
   'deposit_for_payment','attach_payment_intent','record_deposit_payment','save_payment_account',
-  'update_payment_account','create_inquiry','inquiry_emails_left_today','claim_wed_asks','post_wed_reply','claim_group_push','claim_group_notifications')
+  'update_payment_account','create_inquiry','inquiry_emails_left_today','claim_wed_asks','post_wed_reply','claim_group_push','claim_group_notifications','expired_stories')
   and (has_function_privilege('anon',p.oid,'execute') or has_function_privilege('authenticated',p.oid,'execute')) $$,
   'Privileged mail, push, payment and Wed RPCs stay service-only');
 select is_empty($$ select p.proname from pg_proc p join pg_namespace n on n.oid=p.pronamespace

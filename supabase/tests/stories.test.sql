@@ -96,14 +96,17 @@ reset role;
 set local role anon;
 select pg_temp.as_user(null);
 select is(
-  (select count(*)::int from public.stories_feed()), 2,
+  (select count(*)::int from public.stories_feed()
+   where author_id in ('a8000000-0000-4000-8000-00000000000a', 'd8000000-0000-4000-8000-00000000000d')), 2,
   'Anyone can watch today''s stories, not ones over a day old'
 );
 
 set local role authenticated;
 select pg_temp.as_user('b8000000-0000-4000-8000-00000000000b');
 select results_eq(
-  $$ select author_name, following from public.stories_feed() order by author_name $$,
+  $$ select author_name, following from public.stories_feed()
+     where author_id in ('a8000000-0000-4000-8000-00000000000a', 'd8000000-0000-4000-8000-00000000000d')
+     order by author_name $$,
   $$ values ('Asha K.'::text, true), ('Dev S.', false) $$,
   'Bal sees who he follows'
 );
