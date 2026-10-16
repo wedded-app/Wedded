@@ -638,6 +638,7 @@ export type Database = {
         Row: {
           added_by: string | null;
           joined_at: string;
+          notified_at: string | null;
           read_at: string | null;
           thread_id: string;
           user_id: string;
@@ -645,6 +646,7 @@ export type Database = {
         Insert: {
           added_by?: string | null;
           joined_at?: string;
+          notified_at?: string | null;
           read_at?: string | null;
           thread_id: string;
           user_id: string;
@@ -652,6 +654,7 @@ export type Database = {
         Update: {
           added_by?: string | null;
           joined_at?: string;
+          notified_at?: string | null;
           read_at?: string | null;
           thread_id?: string;
           user_id?: string;
@@ -673,6 +676,7 @@ export type Database = {
           data: NonNullable<Json>;
           id: string;
           kind: string;
+          pushed_at: string | null;
           reply_to: string | null;
           sender_role: string;
           sender_user_id: string | null;
@@ -685,6 +689,7 @@ export type Database = {
           data?: NonNullable<Json>;
           id?: string;
           kind?: string;
+          pushed_at?: string | null;
           reply_to?: string | null;
           sender_role: string;
           sender_user_id?: string | null;
@@ -697,6 +702,7 @@ export type Database = {
           data?: NonNullable<Json>;
           id?: string;
           kind?: string;
+          pushed_at?: string | null;
           reply_to?: string | null;
           sender_role?: string;
           sender_user_id?: string | null;
@@ -2739,6 +2745,33 @@ export type Database = {
           vendor_slug: string;
         }[];
       };
+      claim_group_notifications: {
+        Args: { p_quiet_minutes?: number };
+        Returns: {
+          last_body: string;
+          last_kind: string;
+          last_sender_name: string;
+          notified_at: string;
+          recipient: string;
+          thread_id: string;
+          thread_name: string;
+          unread_count: number;
+          user_id: string;
+          wedding_title: string;
+        }[];
+      };
+      claim_group_push: {
+        Args: Record<PropertyKey, never>;
+        Returns: {
+          body: string;
+          kind: string;
+          message_id: string;
+          sender_name: string;
+          thread_id: string;
+          thread_name: string;
+          tokens: string[];
+        }[];
+      };
       claim_push_messages: {
         Args: Record<PropertyKey, never>;
         Returns: {
@@ -3171,7 +3204,7 @@ export type Database = {
         }[];
       };
       send_group_message: {
-        Args: { p_body: string; p_reply_to?: string; p_thread_id: string };
+        Args: { p_body?: string; p_photo?: Json; p_reply_to?: string; p_thread_id: string };
         Returns: string;
       };
       send_message: {

@@ -4,6 +4,11 @@
  * Only a thread's members read it; owners and editors of the wedding who are
  * in it manage it (rename, add, remove, links). Messages arrive live through
  * Supabase Realtime. The screen is A2 (#125); Wed's brain is A1 (#124).
+ *
+ * Photos use the chat's helpers with the thread's id as the folder:
+ * uploadChatPhoto(threadId, bytes) then useSendGroupMessage's `photo`, and
+ * useChatPhotoUrl(message.data.path) to show one (src/data/chat.ts).
+ * Push alerts and emails are sent by the server (push-chat, notify-chat).
  */
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import * as Linking from 'expo-linking';
@@ -29,10 +34,13 @@ export type GroupThread = {
 };
 
 export type GroupSenderRole = 'member' | 'wed' | 'system';
-export type GroupMessageKind = 'text' | 'joined' | 'left';
+export type GroupMessageKind = 'text' | 'photo' | 'joined' | 'left';
 export type WedAsk = 'waiting' | 'working' | 'answered' | 'failed';
 
-/** A row of group_messages. `data.vendorIds` on Wed's answers are its vendor cards. */
+/**
+ * A row of group_messages. `data` is {path, width, height} on a photo (body is
+ * its caption, if any) and {vendorIds} on Wed's answers (its vendor cards).
+ */
 export type GroupMessage = Omit<
   Database['public']['Tables']['group_messages']['Row'],
   'sender_role' | 'kind' | 'wed_ask'
@@ -154,15 +162,26 @@ export function useGroupMessages(threadId: string) {
   });
 }
 
-/** Send a message; tagging @Wed asks Wed. */
+export type GroupPhoto = { path: string; width?: number; height?: number };
+
+/** Send a text, or a photo already uploaded with uploadChatPhoto(threadId, …) and an optional caption. Tagging @Wed asks Wed. */
 export function useSendGroupMessage(threadId: string) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async ({ body, replyTo }: { body: string; replyTo?: string }): Promise<string> => {
+    mutationFn: async ({
+      body,
+      replyTo,
+      photo,
+    }: {
+      body?: string;
+      replyTo?: string;
+      photo?: GroupPhoto;
+    }): Promise<string> => {
       const { data, error } = await supabase.rpc('send_group_message', {
         p_thread_id: threadId,
         p_body: body,
         p_reply_to: replyTo,
+        p_photo: photo,
       });
       if (error) throw new Error(error.message);
       return data;
