@@ -98,17 +98,20 @@ export function PlanCard({ hint }: { hint: PlanHint }) {
   function build() {
     selectionHaptic();
     const kinds = traditionsForSearch(hint.backgrounds, hint.faiths, traditions.data ?? []);
-    requireSignIn(() => {
-      resetAnswers();
-      setAnswers({
-        ...answersForTraditions(kinds),
-        extraEvents: hint.events,
-        guestBand: hint.guestBand,
-        citySlug: hint.city?.slug ?? null,
-        weddingDate: hint.date,
-      });
-      router.push('/onboarding/who');
-    });
+    requireSignIn(
+      () => {
+        resetAnswers();
+        setAnswers({
+          ...answersForTraditions(kinds),
+          extraEvents: hint.events,
+          guestBand: hint.guestBand,
+          citySlug: hint.city?.slug ?? null,
+          weddingDate: hint.date,
+        });
+        router.push('/onboarding/who');
+      },
+      { planning: true },
+    );
   }
 
   return (
