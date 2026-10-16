@@ -12,7 +12,7 @@ import type { FeedMode } from '@/data/reels';
 import { useSession } from '@/features/auth/session';
 import { REEL_DIM, REEL_INK } from '@/features/reels/reel-item';
 import { ReelsPager } from '@/features/reels/reels-pager';
-import { StoriesButton, StoriesRow } from '@/features/stories/stories-bar';
+import { StoriesButton } from '@/features/stories/stories-bar';
 import { localized } from '@/i18n/localized';
 import { useLocale } from '@/i18n/locale-context';
 import { selectionHaptic } from '@/lib/haptics';
@@ -23,8 +23,8 @@ import { selectionHaptic } from '@/lib/haptics';
  * shows the people and vendors you follow; For you shows everything. Chips
  * under them narrow either feed to one of the family's main events (Jaago,
  * Mehndi…), from the database. The vendors in each clip are one tap away.
- * Stories sit at the top left as a small stack of rings that opens into a
- * row (DECISIONS.md 2026-10-16), so they never cover the video unasked.
+ * Stories are one ring at the top left that opens the Stories page
+ * (DECISIONS.md 2026-10-16), so they never cover the video.
  */
 export default function ReelsScreen() {
   const { t } = useLocale();
@@ -34,7 +34,6 @@ export default function ReelsScreen() {
   const { status, requireSignIn } = useSession();
   const [mode, setMode] = useState<FeedMode>('for_you');
   const [eventSlug, setEventSlug] = useState<string | null>(null);
-  const [storiesOpen, setStoriesOpen] = useState(false);
   const scheme = useScheme();
   const homeEvents = useHomeEvents();
 
@@ -126,7 +125,7 @@ export default function ReelsScreen() {
 
       <View style={[styles.top, { paddingTop: insets.top + Spacing.xs }]} pointerEvents="box-none">
         <View style={[styles.stories, { top: insets.top + Spacing.xs }]}>
-          <StoriesButton open={storiesOpen} onPress={() => setStoriesOpen((open) => !open)} />
+          <StoriesButton />
         </View>
         {/* Post a reel: top right, where Instagram's Reels camera sits */}
         <Pressable
@@ -163,9 +162,7 @@ export default function ReelsScreen() {
             </Pressable>
           ))}
         </View>
-        {/* The rings take the event chips' place while they're open */}
-        {storiesOpen && <StoriesRow />}
-        {!storiesOpen && events.length > 0 && (
+        {events.length > 0 && (
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}

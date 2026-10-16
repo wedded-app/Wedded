@@ -1,24 +1,21 @@
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
-import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
-import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
+import { Pressable, StyleSheet, View } from 'react-native';
 
 import { AppText } from '@/components/app-text';
 import { Icon } from '@/components/icon';
-import { StoryRing, storyRingStyle } from '@/components/story-ring';
-import { Spacing } from '@/constants/theme';
+import { storyRingStyle } from '@/components/story-ring';
 import { type StoryGroup, useStories } from '@/data/stories';
-import { useSession } from '@/features/auth/session';
 import { initials } from '@/features/planner/plan-together';
 import { useLocale } from '@/i18n/locale-context';
 import { selectionHaptic } from '@/lib/haptics';
 
 import { groupSeen, trayOrder, useStorySeen } from './seen-stories';
 
-const MINI = 30;
+const RING = 40;
 
-/** The poster's newest still for their ring. */
-const latestThumb = (group: StoryGroup) =>
+/** The poster's newest still: a photo, or a clip's still. */
+export const latestThumb = (group: StoryGroup) =>
   [...group.stories].reverse().find((story) => story.thumbUrl)?.thumbUrl ?? null;
 
 /** Everyone's stories in ring order, with which are watched. */
@@ -27,185 +24,137 @@ export function useStoryTray() {
   const isSeen = useStorySeen();
   const groups = trayOrder(stories.data ?? [], isSeen);
   const seen = (group: StoryGroup) => groupSeen(group, isSeen);
-  return { groups, seen, fresh: groups.filter((g) => !g.isMine && !seen(g)).length };
+  return {
+    query: stories,
+    groups,
+    seen,
+    fresh: groups.filter((g) => !g.isMine && !seen(g)).length,
+  };
 }
 
 /**
- * Stories on the Reels tab, kept out of the video's way: a small stack of the
- * newest rings at the top left (where the camera sits on the right), with a
- * chevron that says it opens. Tapping it drops the row of rings below
- * Following and For you; tapping again folds it away.
+ * A poster's face for a ring: their newest still (`photo`), else their
+ * initials or a shop for a business.
  */
-export function StoriesButton({ open, onPress }: { open: boolean; onPress: () => void }) {
+export function StoryFace({
+  group,
+  size,
+  photo = false,
+}: {
+  group: StoryGroup;
+  size: number;
+  photo?: boolean;
+}) {
+  const thumb = photo ? latestThumb(group) : null;
+  if (thumb) {
+    return <Image source={{ uri: thumb }} contentFit="cover" style={StyleSheet.absoluteFill} />;
+  }
+  return group.vendor ? (
+    <Icon name="storefront-outline" size={size * 0.45} color="#FFFFFF" />
+  ) : (
+    <AppText variant="caption" weight={700} color="onPhoto" maxFontSizeMultiplier={1}>
+      {initials(group.name)}
+    </AppText>
+  );
+}
+
+/**
+ * Stories on the Reels tab: one ring at the top left, mirroring the camera,
+ * with the newest story's face and a count of the people with new ones. It
+ * opens the Stories page; nothing else covers the video. With no stories
+ * yet it's a coloured ring with a plus, an invitation rather than a grey dot.
+ */
+export function StoriesButton() {
+  const router = useRouter();
   const { t } = useLocale();
   const { groups, seen, fresh } = useStoryTray();
-  const faces = groups.filter((g) => !g.isMine).slice(0, 3);
+  const others = groups.filter((g) => !g.isMine);
+  // Someone with something new, else whoever posted last
+  const face = others.find((g) => !seen(g)) ?? others[0];
 
   return (
     <Pressable
       accessibilityRole="button"
       accessibilityLabel={fresh > 0 ? t('stories.button', { count: fresh }) : t('stories.title')}
-      accessibilityState={{ expanded: open }}
       onPress={() => {
         selectionHaptic();
-        onPress();
+        router.push('/stories');
       }}
-      hitSlop={8}
+      hitSlop={4}
       style={({ pressed }) => [styles.button, pressed && styles.pressed]}
     >
-      <View style={styles.stack}>
-        {faces.length === 0 ? (
-          <View style={[styles.mini, styles.miniSeen]}>
-            <View style={styles.miniInner}>
-              <Icon name="add" size={18} color="#FFFFFF" weight="bold" />
-            </View>
-          </View>
-        ) : (
-          faces.map((group, i) => (
-            <View
-              key={group.key}
-              style={[
-                styles.mini,
-                seen(group) ? styles.miniSeen : storyRingStyle,
-                i > 0 && styles.overlap,
-                { zIndex: faces.length - i },
-              ]}
-            >
-              <Face group={group} />
-            </View>
-          ))
-        )}
+      <View style={[styles.ring, face && fresh === 0 ? styles.ringSeen : storyRingStyle]}>
+        <View style={styles.inner}>
+          {face ? (
+            <StoryFace group={face} size={RING} photo />
+          ) : (
+            <Icon name="add" size={20} color="#FFFFFF" weight="bold" />
+          )}
+        </View>
       </View>
-      <Icon name={open ? 'chevron-up' : 'chevron-down'} size={14} color="#FFFFFF" />
-    </Pressable>
-  );
-}
-
-function Face({ group }: { group: StoryGroup }) {
-  const thumb = latestThumb(group);
-  return (
-    <View style={styles.miniInner}>
-      {thumb ? (
-        <Image source={{ uri: thumb }} contentFit="cover" style={styles.miniPhoto} />
-      ) : group.vendor ? (
-        <Icon name="storefront-outline" size={14} color="#FFFFFF" />
-      ) : (
-        <AppText variant="caption" weight={700} color="onPhoto" maxFontSizeMultiplier={1}>
-          {initials(group.name)}
-        </AppText>
+      {fresh > 0 && (
+        <View style={styles.badge}>
+          <AppText
+            variant="caption"
+            weight={700}
+            color="onPhoto"
+            maxFontSizeMultiplier={1}
+            style={styles.badgeText}
+          >
+            {fresh > 9 ? '9+' : fresh}
+          </AppText>
+        </View>
       )}
-    </View>
-  );
-}
-
-/** The row of rings: Your story first (add one, or watch yours), then everyone. */
-export function StoriesRow() {
-  const router = useRouter();
-  const { t } = useLocale();
-  const { requireSignIn } = useSession();
-  const { groups, seen } = useStoryTray();
-  const mine = groups.find((g) => g.isMine);
-  const others = groups.filter((g) => !g.isMine);
-  const watch = (group: StoryGroup) =>
-    router.push({ pathname: '/story', params: { group: group.key } });
-
-  return (
-    <Animated.View entering={FadeIn.duration(180)} exiting={FadeOut.duration(120)}>
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        style={styles.row}
-        contentContainerStyle={styles.rings}
-      >
-        {mine ? (
-          <StoryRing
-            onVideo
-            size={60}
-            photoUrl={latestThumb(mine)}
-            icon="person-outline"
-            label={t('stories.yours')}
-            seen={seen(mine)}
-            accessibilityLabel={t('stories.watchYours')}
-            onPress={() => watch(mine)}
-          />
-        ) : (
-          <StoryRing
-            onVideo
-            size={60}
-            icon="add"
-            label={t('stories.yours')}
-            seen
-            accessibilityLabel={t('stories.add')}
-            onPress={() => requireSignIn(() => router.push('/post-story'))}
-          />
-        )}
-        {others.map((group) => {
-          const name = group.name ?? t('reels.someone');
-          return (
-            <StoryRing
-              key={group.key}
-              onVideo
-              size={60}
-              photoUrl={latestThumb(group)}
-              icon={group.vendor ? 'storefront-outline' : 'person-outline'}
-              label={name}
-              seen={seen(group)}
-              accessibilityLabel={t('stories.watch', { name })}
-              onPress={() => watch(group)}
-            />
-          );
-        })}
-      </ScrollView>
-    </Animated.View>
+    </Pressable>
   );
 }
 
 const styles = StyleSheet.create({
   button: {
-    minHeight: 48,
-    minWidth: 48,
-    flexDirection: 'row',
+    width: 48,
+    height: 48,
     alignItems: 'center',
-    gap: 2,
+    justifyContent: 'center',
   },
   pressed: {
     opacity: 0.6,
   },
-  stack: {
-    flexDirection: 'row',
+  ring: {
+    width: RING,
+    height: RING,
+    borderRadius: RING / 2,
+    padding: 2.5,
   },
-  mini: {
-    width: MINI,
-    height: MINI,
-    borderRadius: MINI / 2,
-    padding: 2,
-  },
-  miniSeen: {
+  ringSeen: {
     backgroundColor: 'rgba(255,255,255,0.55)',
   },
-  overlap: {
-    marginLeft: -12,
-  },
-  miniInner: {
+  inner: {
     flex: 1,
-    borderRadius: MINI / 2,
-    borderWidth: 1.5,
+    borderRadius: RING / 2,
+    borderWidth: 2,
     borderColor: '#000000',
     overflow: 'hidden',
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: 'rgba(138,28,51,0.95)',
   },
-  miniPhoto: {
-    ...StyleSheet.absoluteFill,
+  // The count sits on the ring's top right, like an unread badge
+  badge: {
+    position: 'absolute',
+    top: 0,
+    right: 0,
+    minWidth: 20,
+    height: 20,
+    paddingHorizontal: 4,
+    borderRadius: 10,
+    borderWidth: 1.5,
+    borderColor: '#000000',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#FF3B5C',
   },
-  row: {
-    alignSelf: 'stretch',
-    flexGrow: 0,
-    marginTop: Spacing.sm,
-  },
-  rings: {
-    gap: Spacing.sm,
-    paddingHorizontal: Spacing.md,
+  badgeText: {
+    fontSize: 11,
+    lineHeight: 14,
   },
 });
