@@ -10,14 +10,19 @@ import { AppText, useFontScale } from '@/components/app-text';
 import { Icon, type IconName } from '@/components/icon';
 import { type ColorToken, makeStyles, Radius, Sizes, Spacing, useColors } from '@/constants/theme';
 
-export type ButtonVariant = 'primary' | 'secondary' | 'text' | 'danger';
+export type ButtonVariant = 'primary' | 'secondary' | 'text' | 'danger' | 'neutral' | 'plain';
 
 export type ButtonProps = Omit<PressableProps, 'children' | 'style' | 'disabled'> & {
   label: string;
   /** primary: the one main action on a screen, a filled capsule. secondary: a
    * tinted capsule (iOS "bordered"). text: a plain link-style action.
-   * danger: red, for actions that can't be undone (delete account). */
+   * danger: red, for actions that can't be undone (delete account).
+   * neutral: a grey capsule in the text colour, for a second choice where
+   * maroon should stay on the one main action (Wed). plain: a link-style
+   * action in the text colour (Wed's Not now, Change, Pause). */
   variant?: ButtonVariant;
+  /** The label's colour instead of the variant's, e.g. text2 for a dismissive plain action. */
+  labelColor?: ColorToken;
   /** Optional icon before the label. */
   icon?: IconName;
   /** Shows a spinner and ignores taps, e.g. while sending. */
@@ -31,6 +36,8 @@ const LABEL_COLOR: Record<ButtonVariant, ColorToken> = {
   secondary: 'primary',
   text: 'primary',
   danger: 'onPrimary',
+  neutral: 'text',
+  plain: 'text',
 };
 
 /**
@@ -46,12 +53,15 @@ export function Button({
   disabled = false,
   style,
   accessibilityLabel,
+  labelColor: labelColorProp,
   ...rest
 }: ButtonProps) {
   const Colors = useColors();
   const styles = useStyles();
   const pressedStyles = usePressedStyles();
-  const labelColor: ColorToken = disabled ? 'textDisabled' : LABEL_COLOR[variant];
+  const labelColor: ColorToken = disabled
+    ? 'textDisabled'
+    : (labelColorProp ?? LABEL_COLOR[variant]);
   const scale = useFontScale('button');
 
   return (
@@ -65,7 +75,7 @@ export function Button({
         styles.base,
         styles[variant],
         pressed && pressedStyles[variant],
-        disabled && variant !== 'text' && styles.disabled,
+        disabled && variant !== 'text' && variant !== 'plain' && styles.disabled,
         style,
       ]}
     >
@@ -111,6 +121,12 @@ const useStyles = makeStyles((Colors) => ({
   danger: {
     backgroundColor: Colors.errorFill,
   },
+  neutral: {
+    backgroundColor: Colors.fill,
+  },
+  plain: {
+    paddingHorizontal: Spacing.lg,
+  },
   disabled: {
     backgroundColor: Colors.fill,
   },
@@ -132,5 +148,11 @@ const usePressedStyles = makeStyles((Colors) => ({
   },
   danger: {
     backgroundColor: Colors.errorFillPressed,
+  },
+  neutral: {
+    backgroundColor: Colors.fillPressed,
+  },
+  plain: {
+    opacity: 0.5,
   },
 }));

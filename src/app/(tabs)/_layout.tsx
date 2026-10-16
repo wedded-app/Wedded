@@ -3,7 +3,8 @@ import { useState } from 'react';
 import { View } from 'react-native';
 
 import {
-  GlassTabBar,
+  CENTER_RISE,
+  TabBar,
   TabBarSpaceProvider,
   useTabBarOffset,
   type TabSpec,
@@ -11,19 +12,35 @@ import {
 import { Sizes, Spacing, useColors } from '@/constants/theme';
 import { useUnreadCount } from '@/data/chat';
 import { useSession } from '@/features/auth/session';
+import { useOpensInBusiness } from '@/features/business/app-mode';
 import { useOnboardingGate } from '@/features/onboarding/gate';
+import { SavedToastHost } from '@/features/saved/saved-toast';
+import { useWedNavigation } from '@/features/wed/open-wed';
+import { WedButton } from '@/features/wed/wed-button';
+import { useWed, waitingCount } from '@/features/wed/wed-store';
 import { useLocale } from '@/i18n/locale-context';
 
 const TABS: (Omit<TabSpec, 'label'> & { labelKey: string })[] = [
-  { name: '(home)', labelKey: 'tabs.home', icon: 'home-outline', iconFilled: 'home' },
+  // Search opens from Home's search box, so Home stays lit while it's open
+  {
+    name: '(home)',
+    labelKey: 'tabs.home',
+    icon: 'home-outline',
+    iconFilled: 'home',
+    alsoFor: ['(search)'],
+  },
   {
     name: 'discover',
     labelKey: 'tabs.discover',
     icon: 'play-circle-outline',
     iconFilled: 'play-circle',
   },
-  { name: '(search)', labelKey: 'tabs.search', icon: 'search-outline', iconFilled: 'search' },
-  { name: 'saved', labelKey: 'tabs.saved', icon: 'heart-outline', iconFilled: 'heart' },
+  {
+    name: 'requests',
+    labelKey: 'tabs.requests',
+    icon: 'megaphone-outline',
+    iconFilled: 'megaphone',
+  },
   {
     name: 'profile',
     labelKey: 'tabs.profile',
@@ -33,10 +50,13 @@ const TABS: (Omit<TabSpec, 'label'> & { labelKey: string })[] = [
 ];
 
 /**
- * Bottom tabs: Home, Reels (the discover route), Search, Saved, Profile, in a floating glass bar (the iOS
- * 26 tab bar) that content scrolls under. Labels are always visible and
- * bilingual through i18n. Expo Router's JS tabs draw it the same on iPhone,
- * Android and the web; the glass itself is the system material on iOS 26.
+ * Bottom tabs: Home, Reels (the discover route), Wed's round button in the
+ * middle (WedButton, with how many of its cards wait for a yes), Requests and
+ * Profile, in a floating bar that content scrolls under (TabBar: the selected
+ * tab grows into a pill with its name). Search and Wed's pages are in this
+ * group without a tab (href: null): Search opens from Home's search box, Wed
+ * from its button and the Wed buttons around the app. Expo Router's JS tabs
+ * draw it the same on iPhone, Android and the web.
  */
 export default function TabsLayout() {
   const Colors = useColors();
@@ -53,6 +73,10 @@ export default function TabsLayout() {
     setSeenUser(userId);
     if (seenUser !== null) setGeneration((g) => g + 1);
   }
+  useWedNavigation();
+  // Only someone who can say yes gets a count to clear
+  const waiting = useWed(waitingCount);
+  const canApprove = useWed((s) => s.role === 'owner');
   // Unread messages show on Profile, where Messages lives.
   const tabs = TABS.map(({ labelKey, ...tab }) => ({
     ...tab,
@@ -61,14 +85,21 @@ export default function TabsLayout() {
   }));
   // The first time the app opens: the welcome screen, or the first questions.
   const gate = useOnboardingGate();
-  if (gate === 'wait') return <View style={{ flex: 1, backgroundColor: Colors.canvas }} />;
+  // Business mode has its own tabs (features/business/app-mode.ts)
+  const business = useOpensInBusiness();
+  if (gate === 'wait' || business === 'wait') {
+    return <View style={{ flex: 1, backgroundColor: Colors.canvas }} />;
+  }
   if (gate) return <Redirect href={gate} />;
+  if (business) return <Redirect href="/today" />;
 
   return (
-    <TabBarSpaceProvider value={Sizes.tabBar + offset + Spacing.sm}>
+    <TabBarSpaceProvider value={Sizes.tabBar + offset + Spacing.sm + CENTER_RISE}>
       <Tabs
         key={generation}
-        tabBar={(props) => <GlassTabBar {...props} tabs={tabs} />}
+        tabBar={(props) => (
+          <TabBar {...props} tabs={tabs} center={<WedButton count={canApprove ? waiting : 0} />} />
+        )}
         screenOptions={{
           headerShown: false,
           sceneStyle: { backgroundColor: Colors.bg },
@@ -77,7 +108,10 @@ export default function TabsLayout() {
         {tabs.map((tab) => (
           <Tabs.Screen key={tab.name} name={tab.name} options={{ title: tab.label }} />
         ))}
+        <Tabs.Screen name="(search)" options={{ href: null }} />
+        <Tabs.Screen name="wed" options={{ href: null }} />
       </Tabs>
+      <SavedToastHost />
     </TabBarSpaceProvider>
   );
 }

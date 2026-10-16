@@ -5,7 +5,7 @@ import { DietChips } from '@/components/diet-chips';
 import { makeStyles, Radius, Spacing } from '@/constants/theme';
 import { menuMinimum, menuPrice } from '@/features/menus/menu-format';
 import type { Menu } from '@/features/menus/menu-types';
-import { localized, vendorText } from '@/i18n/localized';
+import { localized } from '@/i18n/localized';
 import { useLocale } from '@/i18n/locale-context';
 
 /**
@@ -15,17 +15,15 @@ import { useLocale } from '@/i18n/locale-context';
  */
 export function MenuDetails({ menu }: { menu: Menu }) {
   const styles = useStyles();
-  const { locale, t } = useLocale();
-  const description = menu.description
-    ? vendorText(menu.description.en, menu.description.pa, locale)
-    : null;
+  const { t } = useLocale();
+  const description = menu.description?.en.trim() || null;
   const facts = [menuPrice(menu, t), menuMinimum(menu, t), menu.cuisine].filter(Boolean);
 
   return (
     <View style={styles.wrap}>
       <View style={styles.head}>
         <AppText variant="title" accessibilityRole="header">
-          {localized(menu.name, locale)}
+          {localized(menu.name)}
         </AppText>
         {facts.length > 0 && (
           <AppText weight={600} color="primary">
@@ -39,12 +37,12 @@ export function MenuDetails({ menu }: { menu: Menu }) {
       {menu.sections.map((section, s) => (
         <View key={s} style={styles.section}>
           <AppText variant="section" accessibilityRole="header">
-            {localized(section.name, locale)}
+            {localized(section.name)}
           </AppText>
           <View style={styles.group}>
             {section.items.map((item, i) => (
               <View key={i} style={[styles.item, i > 0 && styles.divided]}>
-                <AppText weight={600}>{localized(item.name, locale)}</AppText>
+                <AppText weight={600}>{localized(item.name)}</AppText>
                 {item.description && (
                   <AppText variant="label" weight={400} color="text2">
                     {item.description}

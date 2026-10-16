@@ -1,3 +1,4 @@
+import { assertUploadFits } from './upload-limits';
 /**
  * Chat between families and vendors (the chat migration). One conversation
  * per family and vendor; every inquiry adds its booking details to it. Both
@@ -21,6 +22,7 @@ import type { LocalizedText } from '@/i18n/localized';
 import { supabase } from '@/lib/supabase';
 import type { Json } from '@/types/database';
 
+import { queryClient as appQueryClient } from './query-client';
 import { photoUrl } from './vendor-media';
 
 export type ChatSide = 'family' | 'vendor';
@@ -140,7 +142,6 @@ type ConversationRow = {
   vendor_id: string;
   vendor_slug: string;
   vendor_name: string;
-  vendor_name_pa: string | null;
   vendor_cover_path: string | null;
   family_name: string | null;
   last_message_at: string;
@@ -158,9 +159,7 @@ export function toConversation(row: ConversationRow): Conversation {
     vendor: {
       id: row.vendor_id,
       slug: row.vendor_slug,
-      name: row.vendor_name_pa
-        ? { en: row.vendor_name, pa: row.vendor_name_pa }
-        : { en: row.vendor_name },
+      name: { en: row.vendor_name },
       photoUrl: row.vendor_cover_path ? photoUrl(row.vendor_cover_path, 'small') : null,
     },
     family: { firstName: row.family_name },
@@ -231,6 +230,26 @@ export function useStartConversation() {
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: chatKeys.all }),
   });
+}
+
+/**
+ * Wed sending for the family once they've said yes: their chat with the
+ * vendor (opened if it's new) gets the message as if they'd typed it there,
+ * so it's in Messages to carry on. Signed in only; returns the conversation id.
+ */
+export async function sendToVendor(vendorSlug: string, text: string): Promise<string> {
+  const vendor = await supabase.from('vendors').select('id').eq('slug', vendorSlug).single();
+  if (vendor.error) throw new Error(vendor.error.message);
+  const started = await supabase.rpc('start_conversation', { p_vendor_id: vendor.data.id });
+  if (started.error) throw new Error(started.error.message);
+  const sent = await supabase.rpc('send_message', {
+    p_conversation_id: started.data,
+    p_kind: 'text',
+    p_body: text,
+  });
+  if (sent.error) throw new Error(sent.error.message);
+  void appQueryClient.invalidateQueries({ queryKey: chatKeys.all });
+  return started.data;
 }
 
 // Messages --------------------------------------------------------------------------------------
@@ -578,6 +597,7 @@ export async function uploadChatPhoto(
   bytes: ArrayBuffer,
   contentType: 'image/jpeg' | 'image/png' | 'image/webp' | 'image/heic' = 'image/jpeg',
 ): Promise<string> {
+  assertUploadFits('chat-media', bytes, contentType);
   const extension = contentType.split('/')[1].replace('jpeg', 'jpg');
   const path = `${conversationId}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${extension}`;
   const { error } = await supabase.storage
@@ -611,6 +631,7 @@ export async function uploadChatVoice(
   bytes: ArrayBuffer,
   contentType: VoiceContentType = 'audio/mp4',
 ): Promise<string> {
+  assertUploadFits('chat-media', bytes, contentType);
   const path = `${conversationId}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${VOICE_EXTENSIONS[contentType]}`;
   const { error } = await supabase.storage
     .from('chat-media')

@@ -9,6 +9,7 @@ import { router } from 'expo-router';
 
 import type { PriceUnit } from '@/components/vendor-card';
 import { useSession } from '@/features/auth/session';
+import { showSavedToast } from '@/features/saved/saved-toast-store';
 import { asLocalizedText, type LocalizedText } from '@/i18n/localized';
 import { supabase } from '@/lib/supabase';
 
@@ -30,6 +31,8 @@ export type SavedVendor = {
     slug: string;
     name: LocalizedText;
     city: string;
+    /** A demo sample, not a real business. */
+    isSample: boolean;
     category: LocalizedText | null;
     startingPrice: { amount: number; unit?: PriceUnit } | null;
     /** Small cover photo, or null when they have none. */
@@ -63,7 +66,7 @@ async function fetchSaved(): Promise<SavedVendor[]> {
   const { data, error } = await supabase
     .from('saved_vendors')
     .select(
-      'id, vendor_id, event_slug, vendor:vendors(slug, name, name_pa, city, price_display, price_from, price_unit, vendor_categories(position, category:categories(name)), vendor_media!vendor_media_vendor_id_fkey(storage_path, is_cover, sort_order))',
+      'id, vendor_id, event_slug, vendor:vendors(slug, name, city, is_sample, price_display, price_from, price_unit, vendor_categories(position, category:categories(name)), vendor_media!vendor_media_vendor_id_fkey(storage_path, is_cover, sort_order))',
     )
     .order('created_at', { ascending: false });
   if (error) throw error;
@@ -84,8 +87,9 @@ async function fetchSaved(): Promise<SavedVendor[]> {
       vendor: {
         slug: vendor.slug,
         photoUrl: coverOf(vendor.vendor_media),
-        name: vendor.name_pa ? { en: vendor.name, pa: vendor.name_pa } : { en: vendor.name },
+        name: { en: vendor.name },
         city: vendor.city,
+        isSample: vendor.is_sample,
         category: primary ? asLocalizedText(primary.category?.name) : null,
         startingPrice: showsPrice
           ? { amount: from, unit: isPriceUnit(vendor.price_unit) ? vendor.price_unit : undefined }
@@ -135,6 +139,8 @@ export function useSaveVendor() {
       // 23505: already saved for that event (a double tap). Nothing to do.
       if (error && error.code !== '23505') throw error;
     },
+    // Saved has no tab, so a toast says where it went: "Saved to Jaago · See list"
+    onSuccess: (_, { eventSlug }) => showSavedToast(eventSlug),
     onSettled: refresh,
   });
 

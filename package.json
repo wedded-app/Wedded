@@ -5,10 +5,11 @@
   "dependencies": {
     "@expo-google-fonts/fraunces": "^0.4.1",
     "@expo-google-fonts/inter": "^0.4.2",
-    "@expo-google-fonts/mukta-mahee": "^0.4.1",
-    "@expo/ui": "~57.0.21",
     "@expo/vector-icons": "^15.0.2",
     "@react-native-community/datetimepicker": "9.1.0",
+    "@react-native-community/netinfo": "12.0.1",
+    "@react-native-masked-view/masked-view": "0.3.2",
+    "@sentry/react-native": "~7.11.0",
     "@stripe/stripe-react-native": "0.64.0",
     "@supabase/supabase-js": "^2.117.2",
     "@tanstack/react-query": "^5.104.0",
@@ -26,7 +27,6 @@
     "expo-image-manipulator": "~57.0.21",
     "expo-image-picker": "~57.0.20",
     "expo-linking": "~57.0.11",
-    "expo-localization": "~57.0.2",
     "expo-location": "~57.0.20",
     "expo-media-library": "~57.0.5",
     "expo-notifications": "~57.0.22",
@@ -52,6 +52,7 @@
     "react-native-safe-area-context": "~5.7.0",
     "react-native-screens": "~4.26.0",
     "react-native-svg": "15.15.4",
+    "react-native-view-shot": "5.1.0",
     "react-native-web": "~0.21.0",
     "react-native-webview": "13.16.1",
     "react-native-worklets": "0.10.1"
@@ -88,14 +89,18 @@
     "db:status": "supabase status",
     "db:reset": "supabase db reset",
     "db:test": "supabase test db",
+    "backend": "bash scripts/backend.sh",
     "photos:upload": "tsx scripts/upload-vendor-photos.ts",
     "photos:samples": "tsx scripts/upload-vendor-photos.ts --samples --local",
     "photos:to-aws": "tsx scripts/copy-photos-to-aws.ts",
+    "storage:copy": "tsx scripts/copy-storage.ts",
     "reels:samples": "tsx scripts/reel-samples.ts",
+    "stories:samples": "tsx scripts/story-samples.ts",
+    "requests:samples": "tsx scripts/request-samples.ts",
     "vendors:import": "tsx scripts/import-vendors.ts",
     "vendors:invite": "tsx scripts/invite-vendor.ts",
-    "i18n:review": "tsx scripts/punjabi-review.ts",
     "demo:check": "tsx scripts/demo-check.ts",
+    "demo:samples": "tsx scripts/demo-samples.ts",
     "report": "tsx scripts/founders-report.ts",
     "db:types": "supabase gen types typescript --local > src/types/database.ts && prettier --write src/types/database.ts",
     "format": "prettier --write \"src/**/*.{ts,tsx,js,jsx,json}\"",
@@ -107,7 +112,8 @@
   "jest": {
     "preset": "jest-expo",
     "moduleNameMapper": {
-      "^@/(.*)$": "<rootDir>/src/$1"
+      "^@/(.*)$": "<rootDir>/src/$1",
+      "^@react-native-community/netinfo$": "<rootDir>/node_modules/@react-native-community/netinfo/jest/netinfo-mock.js"
     },
     "testPathIgnorePatterns": [
       "/node_modules/",

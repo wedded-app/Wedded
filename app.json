@@ -35,15 +35,6 @@
           }
         }
       ],
-      [
-        "expo-localization",
-        {
-          "supportedLocales": {
-            "ios": ["en", "pa"],
-            "android": ["en", "pa"]
-          }
-        }
-      ],
       "expo-sqlite",
       "expo-apple-authentication",
       "@react-native-community/datetimepicker",

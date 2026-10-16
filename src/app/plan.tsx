@@ -9,7 +9,6 @@ import Animated, {
 } from 'react-native-reanimated';
 
 import { AppText } from '@/components/app-text';
-import { BilingualName } from '@/components/bilingual-name';
 import { Button } from '@/components/button';
 import { CheckCircle } from '@/components/check-circle';
 import { Chip } from '@/components/chip';
@@ -17,7 +16,7 @@ import { DateField } from '@/components/date-field';
 import { eventIcon } from '@/components/event-icon';
 import { groupIcon } from '@/components/group-icon';
 import { Icon } from '@/components/icon';
-import { SectionTitle } from '@/components/list';
+import { ListRow, ListSection, SectionTitle } from '@/components/list';
 import { NavScreen } from '@/components/nav';
 import { ProgressBar } from '@/components/progress-bar';
 import { StateView } from '@/components/state-view';
@@ -26,6 +25,7 @@ import type { EventNeed, EventNeedsSection, TraditionEvent } from '@/data/refere
 import { formatDate, GUEST_BANDS } from '@/features/inquiry/inquiry-helpers';
 import { CountdownCard } from '@/features/planner/countdown-card';
 import { openCounts, useWeddingSuggestions } from '@/data/wedding-suggestions';
+import { FamilyChats } from '@/features/group-chat/family-chats';
 import { FamilyShortlist } from '@/features/planner/family-shortlist';
 import { findForPlan } from '@/features/planner/find-for-plan';
 import { essentialNeeds } from '@/features/planner/plan';
@@ -33,6 +33,7 @@ import { PlanTogether } from '@/features/planner/plan-together';
 import { Suggestions } from '@/features/planner/suggestions';
 import { StartPlanCard } from '@/features/planner/start-plan-card';
 import { usePlanView } from '@/features/planner/use-plan-view';
+import { AskWedButton } from '@/features/wed/ask-wed-button';
 import { localized } from '@/i18n/localized';
 import { useLocale } from '@/i18n/locale-context';
 import { selectionHaptic, successHaptic } from '@/lib/haptics';
@@ -51,7 +52,7 @@ type BookedVendors = Record<string, { slug: string; name: string }>;
 export default function PlanScreen() {
   const Colors = useColors();
   const styles = useStyles();
-  const { t, locale } = useLocale();
+  const { t } = useLocale();
   const view = usePlanView();
   const { plan, wedding, canEdit, saveFailed, active, chosen, needsByEvent, progress } = view;
   const suggestions = useWeddingSuggestions(wedding?.id ?? null);
@@ -91,14 +92,26 @@ export default function PlanScreen() {
     );
     successHaptic();
     setCheer({
-      done: done ? localized(done.name, locale) : '',
-      next: next ? localized(next.name, locale) : null,
+      done: done ? localized(done.name) : '',
+      next: next ? localized(next.name) : null,
     });
     setTimeout(() => setOpen(next ? [next.slug] : []), 700);
   }
 
   return (
-    <NavScreen title={t('planner.title')} subtitle={t('planner.subtitle')}>
+    <NavScreen
+      title={t('planner.title')}
+      subtitle={t('planner.subtitle')}
+      trailing={
+        // Wed (mockup): the plan's next step, asked in the chat. Never sends.
+        <AskWedButton
+          variant="round"
+          a11y="Ask Wed"
+          about={{ kind: 'plan', label: 'My Wedding' }}
+          ask="What should we book next?"
+        />
+      }
+    >
       {/* A plan belongs to an account: signed out, or not started yet, offer to start one. */}
       {!wedding && !view.loading && (
         <Animated.View entering={Motion.rise}>
@@ -164,7 +177,7 @@ export default function PlanScreen() {
             </View>
             <AppText variant="label" weight={400} color="text2" style={styles.pad}>
               {[
-                ...active.map((tradition) => localized(tradition.name, locale)),
+                ...active.map((tradition) => localized(tradition.name)),
                 t('planner.eventsCount', { count: chosen.length }),
               ].join(' · ')}
             </AppText>
@@ -216,8 +229,20 @@ export default function PlanScreen() {
         </View>
       )}
 
+      {!view.loading && (
+        <ListSection>
+          <ListRow
+            icon="mail-outline"
+            title={t('cards.planEntry')}
+            subtitle={t('cards.planEntryBody')}
+            onPress={() => router.push('/cards')}
+          />
+        </ListSection>
+      )}
+
       {wedding && <Suggestions wedding={wedding} events={chosen} />}
       {wedding && <PlanTogether wedding={wedding} />}
+      {wedding && <FamilyChats wedding={wedding} />}
       {wedding && <FamilyShortlist weddingId={wedding.id} />}
     </NavScreen>
   );
@@ -260,14 +285,14 @@ function EventPlan({
 }) {
   const Colors = useColors();
   const styles = useStyles();
-  const { t, locale } = useLocale();
+  const { t } = useLocale();
   const reduceMotion = useReducedMotion();
   const [showNice, setShowNice] = useState(false);
   const essential = essentialNeeds(sections);
   const extras = sections.filter((s) => s.importance !== 'essential').flatMap((s) => s.needs);
   const done = essential.filter((need) => booked.includes(need.categorySlug)).length;
   const complete = essential.length > 0 && done === essential.length;
-  const name = localized(event.name, locale);
+  const name = localized(event.name);
 
   const wasComplete = useRef(complete);
   useEffect(() => {
@@ -323,7 +348,9 @@ function EventPlan({
           />
         </View>
         <View style={styles.grow}>
-          <BilingualName name={event.name} variant="bodyLg" weight={600} />
+          <AppText variant="bodyLg" weight={600}>
+            {localized(event.name)}
+          </AppText>
           {date ? (
             <AppText variant="label" weight={600} color="primary">
               {formatDate(date)}
@@ -331,7 +358,7 @@ function EventPlan({
           ) : (
             event.timing && (
               <AppText variant="caption" color="text2">
-                {localized(event.timing, locale)}
+                {localized(event.timing)}
               </AppText>
             )
           )}
@@ -426,6 +453,32 @@ function EventPlan({
               />
             </Pressable>
           )}
+          {/* Wed (mockup): hand the rest of this event's essentials to Wed. */}
+          {done < essential.length && (
+            <View style={styles.wedRow}>
+              <AskWedButton
+                variant="row"
+                label={`Let Wed find the rest for the ${event.name.en}`}
+                about={{ kind: 'event', id: event.slug, label: event.name.en }}
+                ask={`Find the vendors we still need for the ${event.name.en}`}
+              />
+            </View>
+          )}
+          {canEdit && (
+            <Pressable
+              accessibilityRole="button"
+              accessibilityHint={t('requests.post.hint')}
+              onPress={() =>
+                router.push({ pathname: '/request-new', params: { event: event.slug } })
+              }
+              style={({ pressed }) => [styles.more, pressed && styles.headPressed]}
+            >
+              <Icon name="megaphone-outline" size={17} color={Colors.primary} />
+              <AppText weight={600} color="primary">
+                {t('requests.post.fromPlan')}
+              </AppText>
+            </Pressable>
+          )}
         </Animated.View>
       )}
     </Animated.View>
@@ -459,8 +512,8 @@ function NeedRow({
 }) {
   const Colors = useColors();
   const styles = useStyles();
-  const { t, locale } = useLocale();
-  const name = localized(need.name, locale);
+  const { t } = useLocale();
+  const name = localized(need.name);
 
   return (
     <Animated.View layout={Motion.layout} style={styles.need}>
@@ -660,5 +713,10 @@ const useStyles = makeStyles((Colors) => ({
   },
   findPressed: {
     opacity: 0.6,
+  },
+  wedRow: {
+    paddingHorizontal: Spacing.lg,
+    borderTopWidth: 1,
+    borderTopColor: Colors.separator,
   },
 }));

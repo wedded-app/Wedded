@@ -5,7 +5,7 @@
 begin;
 create extension if not exists pgtap with schema extensions;
 
-select plan(26);
+select plan(27);
 
 -- Security ----------------------------------------------------------------
 
@@ -37,14 +37,13 @@ select is(
 
 select is(
   (
-    select count(*)::int
-    from public.events e
-    join public.culture_events ce on ce.event_slug = e.slug
-    join public.cultures c on c.slug = ce.culture_slug
-    where c.is_default and not (e.name ? 'pa')
-  ),
+    select (select count(*) from public.events where name ? 'pa' or summary ? 'pa' or timing ? 'pa')
+      + (select count(*) from public.categories where name ? 'pa' or array_to_string(aliases, ' ') ~ '[\u0A00-\u0A7F]')
+      + (select count(*) from public.cultures where name ? 'pa')
+      + (select count(*) from public.culture_events where local_name ? 'pa')
+  )::int,
   0,
-  'Every event of the default culture has a Punjabi name (the November demo flips Home to Punjabi)'
+  'English only (2026-10-15): no Punjabi names or Gurmukhi search words are left'
 );
 
 select is(
@@ -190,6 +189,13 @@ select throws_ok(
   '23514',
   null,
   'A guest range with max below min is rejected'
+);
+
+select throws_ok(
+  $$ insert into public.category_groups (slug, name, sort_order) values ('test', '{"en": "Test", "pa": "x"}', 99) $$,
+  '23514',
+  null,
+  'A name with Punjabi is rejected (English only)'
 );
 
 select throws_ok(

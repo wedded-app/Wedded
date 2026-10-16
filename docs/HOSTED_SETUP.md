@@ -29,11 +29,13 @@ supabase db push --include-seed               # runs them, plus the 25 sample ve
 In the dashboard, **Authentication**:
 
 1. **Emails → Templates**: paste the contents of `supabase/templates/sign-in-code.html` into both **Magic link** and **Confirm signup**. Subject: `Your sign-in code`. This is what makes the email a 6-digit code instead of a link.
-2. **Sign In / Providers → Email**: email provider on, **Confirm email** off, **Email OTP length** 6.
+2. **Sign In / Providers → Email**: email provider on, **Confirm email** on, **Email OTP length** 6, **Email OTP Expiration** 900 (15 minutes, what the email says). Confirm email must be on before step 4: with it off, Supabase signs a new person up with a hidden password before sending their code, the hook refuses that, and new families can't sign up. (The code they type is the confirmation, so nothing changes for them.) The same goes for **Phone → Confirm phone** once phone is on.
 3. **URL Configuration**: nothing needed yet (we don't use links).
-4. **Auth Hooks → Add hook → Customize Access Token**: Postgres, schema `public`, function `refuse_password_sign_in` (from the migrations). It refuses every password sign-in. The app never uses passwords, but with **Confirm email** off, anyone calling Supabase's sign-up directly could otherwise claim a family's email or phone with a password, with no code, and keep a back door into their account.
+4. **Auth Hooks → Add hook → Customize Access Token**: Postgres, schema `public`, function `refuse_password_sign_in` (from the migrations). It refuses every password sign-in. The app never uses passwords, but anyone calling Supabase's sign-up directly could otherwise set a password on a family's email or phone and keep a back door into their account.
 
 Supabase's built-in email only sends to members of the Supabase organization and only a few an hour. That's fine while only the two founders sign in. **Before the hall owner or anyone else signs in**, set **Emails → SMTP settings** to Resend (host `smtp.resend.com`, port `465`, user `resend`, password: a Resend API key). That needs the verified domain (Phase 5).
+
+Until then, the demo sends codes through the founders' Gmail, `weddedapp.team@gmail.com` (2026-10-15): **SMTP settings** host `smtp.gmail.com`, port `465`, that address as sender and username, sender name `Wedded`, and a Google app password (Google Account → Security → App passwords, with 2-Step Verification on). **Rate Limits → emails sent per hour**: 30 (custom SMTP lifts the built-in 2). Gmail allows about 500 a day.
 
 ## 4. Email for inquiries (you, then Claude)
 
@@ -74,7 +76,7 @@ npm run vendors:import -- vendor-data/<hall>.json
 npm run photos:upload -- photos
 ```
 
-Sample-vendor placeholder photos (`photos:samples`) are local only; on the hosted project, sample vendors show their category icon until they get photos.
+Sample vendors get their photos from `npm run photos:upload -- --samples` (the generated `sample-photos/` folder, or labelled placeholders without it). To fill the rest of the demo (reels, requests, a planned wedding, chats, leads and numbers), run the commands in the README's "The whole demo" without `--local`.
 
 ## 8. Point the app at it
 
@@ -134,7 +136,7 @@ Every text costs money, and US carriers have rules for business texting. Needs t
 2. Create the Twilio account with the founders' email and upgrade it (a trial account only texts numbers you've verified). For Verify, create a **Verify Service** and note its SID (`VA…`); for Messaging, a **Messaging Service** (`MG…`). Note the Account SID and Auth Token (a secret: password manager only).
 3. In Twilio, **Messaging → Settings → Geo permissions**: allow only the US and Canada (add India or others only if families need them). This blocks "SMS pumping" fraud, where bots request codes to expensive foreign numbers. Set a usage alert in Billing.
 4. Supabase dashboard, **Authentication → Sign In / Providers → Phone**: turn it on, pick Twilio Verify or Twilio, and paste the SIDs and token. OTP length 6. Message: `Your Wedded App code is {{ .Code }}` (Twilio Verify uses its own wording).
-5. **Authentication → Rate Limits**: "SMS messages sent per hour" is for the whole project (30 by default). Raise it as families sign up; each number can already only ask once a minute. If bots show up, turn on the CAPTCHA option there.
+5. Before enabling paid SMS, complete **OTP abuse protection** below: project-wide caps, 60-second resend limits, provider geo restrictions and Turnstile on every code-send path. Do not wait for bots to run up charges.
 6. **Test numbers** (same page as step 4): add `15305550100=123456`. Apple's App Review needs a way to sign in; give them that number and code in App Store Connect's review notes. It never sends a text.
 
 ## 11. Deposits through Stripe (test mode, free)
@@ -184,3 +186,30 @@ Everything added since this guide was written (Plan together, the family shortli
 
 - Decided 2026-10-06: the phone opens the app as an EAS Update in Expo Go, published on every merge to `main` by `.github/workflows/demo.yml` (see CLAUDE.md, "Shared demo"). A development build is only needed once a library Expo Go doesn't include comes in.
 - A separate development project (Phase 1, "separate development and production environments") can wait until after the demo. Until then, the local database is development.
+
+## Email preference links (#228)
+
+Deploy `email-unsubscribe` alongside `notify-chat`, `send-inquiry` and `send-queued-inquiries` after the opt-out migration. It uses signed links without a login (`verify_jwt = false`). GET only displays confirmation; POST stops or resumes optional application emails. Test a real email link, a scanner GET, stop, repeat stop, and resume on the hosted project.
+
+Optional `EMAIL_LINK_SECRET`: a strong random server-only signing secret; otherwise links use `SUPABASE_SERVICE_ROLE_KEY` (or `SUPABASE_SECRET_KEY`). Rotating the signing key invalidates older links, so prefer a dedicated stable secret. Never put it in an `EXPO_PUBLIC_` value. `EMAIL_LINKS_URL` optionally overrides the functions base URL; normally `${SUPABASE_URL}/functions/v1` is used. If a proxy is used, forward the query string and POST body unchanged.
+
+Set `BUSINESS_NAME` to the legal business name and `BUSINESS_ADDRESS` to the complete postal address once the LLC exists, before commercial mail. The fallback city is not a complete postal address. Founders and counsel own these values. Supabase Auth’s sign-in/security emails are configured separately; these optional-notification preferences do not suppress authentication mail.
+
+Policy source drafts and remaining launch gates: [LEGAL_CHECKLIST.md](LEGAL_CHECKLIST.md). Tab 2 owns public policy routes; drafts require counsel approval before publication.
+
+## OTP abuse protection — required before paid SMS launch
+
+Local `supabase/config.toml` now uses a 60-second minimum interval for email/SMS (and phone MFA), 10 sign-up/sign-in requests and 10 code verifications per IP per five minutes, 10 SMS messages per project per hour and two emails per hour. Email/SMS send quotas are project-wide, not per recipient. The two-email default is intentionally low for local/default SMTP; founders must choose a small measured custom-SMTP quota for launch, then monitor it. Local dummy Twilio credentials and fixed test codes are development-only.
+
+**Never run `supabase config push`** to copy local values into the hosted project. Set hosted values manually in the Supabase dashboard or apply a separately reviewed production-only configuration. This PR does not change hosted Auth settings.
+
+1. Before purchasing/enabling SMS, keep the hosted phone provider off until its guardrails pass. In Supabase **Authentication → Rate Limits**, start with 10 SMS sends/hour project-wide, 10 sign-in/sign-up requests and 10 verification attempts per IP per five minutes. Set email and SMS resend intervals to 60 seconds in their provider settings. Retain the existing refresh-token quota. Adjust limits only after observing real traffic and provider cost.
+2. In Twilio (or the chosen SMS provider), allow only the required destination countries, use Verify's fraud protection where available, set low spending/usage thresholds, alert both founders and document how to disable sending. A billing alert is not necessarily a hard spending cap; verify the provider's enforcement. Review delivery/fraud/cost dashboards daily during launch.
+3. Create a **free Cloudflare Turnstile widget** restricted to the actual HTTPS web/challenge hostnames. Keep the secret in the server/provider settings or a password manager, never in `EXPO_PUBLIC_*`, Git or a shipped mobile bundle. The public site key may be shipped to clients. Use separate development and production widgets/keys.
+4. **Client integration is a release gate, still pending:** implement the Turnstile challenge in both web and a hosted-HTTPS WebView flow on iOS/Android. Cloudflare's mobile guide requires correct allowed origins/hostname and WebView handling. Pass each fresh returned token as `options.captchaToken` to `supabase.auth.signInWithOtp` for both email and phone. Cover initial send, resend, account deletion reauthentication and any alternate sign-in screen. Tokens are short-lived and single-use: reset/rechallenge after every attempt, expiry or error; never reuse a token for resend. Keep Apple/Google sign-in behavior separate.
+5. Only after client integration passes on all three platforms, open Supabase **Authentication → Bot and Abuse Protection → CAPTCHA**, choose **Turnstile**, set the widget secret and enable it. Supabase verifies the token server-side; a client-only challenge does not protect the public Auth API. The local `[auth.captcha]` section stays disabled so test numbers work without production keys. Do not turn on hosted CAPTCHA before the clients send tokens: doing so locks out email/phone sign-in.
+6. Verify directly against the hosted Auth API that a missing, invalid, expired or reused token is refused without sending a code; a fresh valid token sends at most one code. Verify repeated requests hit 429 at the configured per-recipient/project/IP limits, and verify SMS geographic restrictions. Use test numbers/sandbox delivery to avoid real charge-generating load tests. Test email and phone initial send, resend and deletion reauthentication on iOS, Android and web. Save results with the launch checklist.
+
+App side (wired 2026-10-15, #234): `useCaptcha()` and `TurnstileBox` (`src/features/auth/`) put one Turnstile widget in each code flow (the sign-in sheet's email, phone and code steps, the phone sign-in screen, and Delete my account's proof-it's-you), in "interaction-only" mode so it shows only when Cloudflare wants a tap. Each `signInWithOtp` sends a fresh single-use `captchaToken` and the widget restarts for the next one; a send before the check finishes says "One moment". Phones run it in a web view whose page address is `EXPO_PUBLIC_SITE_URL`, so add that hostname (and the web app's) to the widget's allowed hostnames. With no `EXPO_PUBLIC_TURNSTILE_SITE_KEY` nothing changes. Turn it on in this order: (1) set `EXPO_PUBLIC_TURNSTILE_SITE_KEY` in the Expo `preview` environment and publish, so clients send tokens (Supabase ignores them while CAPTCHA is off); (2) check sign-in still works on iPhone, Android and the web; (3) only then enable CAPTCHA in Supabase with the secret (step 5). Cloudflare's test keys (site key `1x00000000000000000000AA`, secret `1x0000000000000000000000000000000AA`) always pass, for trying it locally.
+
+References: [Supabase Auth rate limits](https://supabase.com/docs/guides/auth/rate-limits), [Supabase CAPTCHA](https://supabase.com/docs/guides/auth/auth-captcha), [Cloudflare mobile Turnstile](https://developers.cloudflare.com/turnstile/get-started/mobile-implementation/). Recheck dashboard wording and limits before rollout.

@@ -1,6 +1,6 @@
 // deno test supabase/functions/push-chat (not run in CI; CI type-checks,
 // lints and format-checks the function).
-import { buildPushes, pushBody, type PushClaim } from './push.ts';
+import { buildGroupPushes, buildPushes, pushBody, type PushClaim } from './push.ts';
 
 function expectEqual(actual: unknown, expected: unknown, what: string) {
   const a = JSON.stringify(actual);
@@ -83,4 +83,26 @@ Deno.test('one alert per phone, opening the chat', () => {
   expectEqual(pushes.map((p) => p.to), claim.tokens, 'tokens');
   expectEqual(pushes[0].data, { conversationId: 'c1', url: '/chat/c1' }, 'data');
   expectEqual(pushes[0].title, 'Harjit K.', 'title');
+});
+
+Deno.test('a group message names the thread, then who wrote it', () => {
+  const group = {
+    message_id: 'g1',
+    thread_id: 't1',
+    tokens: ['ExponentPushToken[a]'],
+    thread_name: 'Family',
+    sender_name: 'Harjit K.',
+    kind: 'text',
+    body: 'Dhol is booked!',
+  };
+  const [push] = buildGroupPushes(group);
+  expectEqual(push.title, 'Family', 'title');
+  expectEqual(push.body, 'Harjit K.: Dhol is booked!', 'body');
+  expectEqual(push.data, { threadId: 't1', url: '/group/t1' }, 'data');
+  expectEqual(
+    buildGroupPushes({ ...group, kind: 'photo', body: null })[0].body,
+    'Harjit K.: 📷 Photo',
+    'photo',
+  );
+  expectEqual(buildGroupPushes({ ...group, tokens: [] }), [], 'nobody to buzz');
 });

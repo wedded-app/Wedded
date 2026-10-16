@@ -1,7 +1,7 @@
 import { useFocusEffect, useRouter } from 'expo-router';
 import { setStatusBarStyle } from 'expo-status-bar';
 import { useCallback, useMemo, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, useWindowDimensions, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AppText } from '@/components/app-text';
@@ -12,6 +12,7 @@ import type { FeedMode } from '@/data/reels';
 import { useSession } from '@/features/auth/session';
 import { REEL_DIM, REEL_INK } from '@/features/reels/reel-item';
 import { ReelsPager } from '@/features/reels/reels-pager';
+import { useStoryTray } from '@/features/stories/stories-bar';
 import { localized } from '@/i18n/localized';
 import { useLocale } from '@/i18n/locale-context';
 import { selectionHaptic } from '@/lib/haptics';
@@ -22,17 +23,21 @@ import { selectionHaptic } from '@/lib/haptics';
  * shows the people and vendors you follow; For you shows everything. Chips
  * under them narrow either feed to one of the family's main events (Jaago,
  * Mehndi…), from the database. The vendors in each clip are one tap away.
+ * Stories sit beside them in the top bar: one tap plays everyone's stories
+ * full screen, from the first person with something new (DECISIONS.md
+ * 2026-10-16), so they never cover the video.
  */
-export default function ReelsScreen() {
-  const { t, locale } = useLocale();
+export default function ReelsScreen({ business = false }: { business?: boolean }) {
+  const { t } = useLocale();
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { height } = useWindowDimensions();
+  const [height, setHeight] = useState(0);
   const { status, requireSignIn } = useSession();
   const [mode, setMode] = useState<FeedMode>('for_you');
   const [eventSlug, setEventSlug] = useState<string | null>(null);
   const scheme = useScheme();
   const homeEvents = useHomeEvents();
+  const tray = useStoryTray();
 
   // The family's main events in ceremony order, as on Home
   const events = useMemo(
@@ -40,8 +45,8 @@ export default function ReelsScreen() {
       (homeEvents.data ?? [])
         .flatMap((section) => section.events)
         .filter((event) => event.isCore)
-        .map((event) => ({ slug: event.slug, name: localized(event.name, locale) })),
-    [homeEvents.data, locale],
+        .map((event) => ({ slug: event.slug, name: localized(event.name) })),
+    [homeEvents.data],
   );
   const eventName = events.find((event) => event.slug === eventSlug)?.name;
 
@@ -57,6 +62,16 @@ export default function ReelsScreen() {
     if (next === mode) return;
     selectionHaptic();
     setMode(next);
+  };
+
+  // Everyone's stories in a row, from the first person with something new;
+  // with none from anyone else, the Stories page (add yours, or see it's empty)
+  const watchStories = () => {
+    selectionHaptic();
+    const others = tray.groups.filter((g) => !g.isMine);
+    const first = others.find((g) => !tray.seen(g)) ?? others[0];
+    if (first) router.push({ pathname: '/story', params: { group: first.key } });
+    else router.push('/stories');
   };
 
   const filter = (next: string | null) => {
@@ -103,22 +118,28 @@ export default function ReelsScreen() {
   );
 
   return (
-    <View style={styles.screen}>
-      <ReelsPager
-        key={`${mode}:${eventSlug ?? ''}`}
-        feed={{ mode, eventSlug }}
-        height={height}
-        swipeHint
-        empty={
-          mode === 'following' && status !== 'signedIn'
-            ? emptyFollowing
-            : eventSlug
-              ? emptyEvent
-              : mode === 'following'
-                ? emptyFollowing
-                : emptyForYou
-        }
-      />
+    <View
+      style={styles.screen}
+      onLayout={({ nativeEvent }) => setHeight(nativeEvent.layout.height)}
+    >
+      {height > 0 && (
+        <ReelsPager
+          key={`${mode}:${eventSlug ?? ''}`}
+          feed={{ mode, eventSlug }}
+          height={height}
+          swipeHint
+          business={business}
+          empty={
+            mode === 'following' && status !== 'signedIn'
+              ? emptyFollowing
+              : eventSlug
+                ? emptyEvent
+                : mode === 'following'
+                  ? emptyFollowing
+                  : emptyForYou
+          }
+        />
+      )}
 
       <View style={[styles.top, { paddingTop: insets.top + Spacing.xs }]} pointerEvents="box-none">
         {/* Post a reel: top right, where Instagram's Reels camera sits */}
@@ -155,6 +176,23 @@ export default function ReelsScreen() {
               <View style={[styles.underline, mode !== m && styles.hidden]} />
             </Pressable>
           ))}
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={
+              tray.fresh > 0 ? t('stories.button', { count: tray.fresh }) : t('stories.title')
+            }
+            onPress={watchStories}
+            hitSlop={8}
+            style={styles.tab}
+          >
+            <View style={styles.storiesLabel}>
+              <AppText variant="bodyLg" weight={600} style={[styles.tabText, styles.tabDim]}>
+                {t('stories.title')}
+              </AppText>
+              {tray.fresh > 0 && <View style={styles.newDot} />}
+            </View>
+            <View style={[styles.underline, styles.hidden]} />
+          </Pressable>
         </View>
         {events.length > 0 && (
           <ScrollView
@@ -242,9 +280,24 @@ const styles = StyleSheet.create({
     right: 0,
     alignItems: 'center',
   },
+  // From the left, like Instagram's Reels, so three fit beside the camera on any phone
   tabs: {
     flexDirection: 'row',
-    gap: Spacing.xl,
+    gap: Spacing.lg,
+    alignSelf: 'flex-start',
+    marginLeft: Spacing.lg,
+  },
+  storiesLabel: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.xs,
+  },
+  // Someone has a story you haven't watched
+  newDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#FF3B5C',
   },
   create: {
     position: 'absolute',

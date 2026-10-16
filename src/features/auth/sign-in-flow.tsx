@@ -5,13 +5,19 @@ import { AccessibilityInfo, ScrollView, StyleSheet } from 'react-native';
 import { AppText } from '@/components/app-text';
 import { Button } from '@/components/button';
 import { GlassButton } from '@/components/glass-button';
+import { LegalLine } from '@/components/legal-line';
 import { Screen } from '@/components/screen';
 import { SheetHeader } from '@/components/sheet-header';
 import { StateView } from '@/components/state-view';
 import { TextField } from '@/components/text-field';
 import { Spacing, useColors } from '@/constants/theme';
 import { useIsVendor } from '@/data/chat';
+import { switchToBusiness } from '@/features/business/app-mode';
+import { markOnboarding } from '@/features/onboarding/onboarding-state';
 import { useLocale } from '@/i18n/locale-context';
+
+import { type Captcha, useCaptcha } from './captcha';
+import { TurnstileBox } from './turnstile-box';
 import { successHaptic } from '@/lib/haptics';
 import { formatPhone } from '@/lib/phone';
 import { supabase } from '@/lib/supabase';
@@ -19,6 +25,7 @@ import { supabase } from '@/lib/supabase';
 import { AboutYouForm, type AboutYouValues } from './about-you-form';
 import { isValidEmail, normalizePhone, toLatinDigits } from './about-you-validation';
 import { authErrorKey } from './auth-helpers';
+import { BusinessStep, JoinChoiceStep, type JoinedAs } from './join-steps';
 import { formatPhoneDigits, nextPhoneDigits } from './phone-entry';
 import { useSession } from './session';
 import { SignInOptions } from './sign-in-options';
@@ -36,10 +43,11 @@ type CodeTarget = { kind: SignInMethod; to: string };
 type Step = 'choose' | SignInMethod | 'code';
 
 /** Send a sign-in code by email or text. New people get an account. */
-function sendCode({ kind, to }: CodeTarget) {
+function sendCode({ kind, to }: CodeTarget, captcha: Captcha) {
+  const options = { shouldCreateUser: true, ...captcha.take() };
   return kind === 'email'
-    ? supabase.auth.signInWithOtp({ email: to, options: { shouldCreateUser: true } })
-    : supabase.auth.signInWithOtp({ phone: to, options: { shouldCreateUser: true } });
+    ? supabase.auth.signInWithOtp({ email: to, options })
+    : supabase.auth.signInWithOtp({ phone: to, options });
 }
 
 /**
@@ -53,13 +61,18 @@ function sendCode({ kind, to }: CodeTarget) {
 export function SignInFlow({ mode, method }: { mode: SignInMode; method?: SignInMethod }) {
   const Colors = useColors();
   const { t } = useLocale();
-  const { status, session, reloadProfile, finishSignIn, cancelSignIn } = useSession();
+  const { status, session, profile, reloadProfile, finishSignIn, cancelSignIn } = useSession();
   const [step, setStep] = useState<Step>(method ?? 'choose');
   const [target, setTarget] = useState<CodeTarget | null>(null);
   // What they typed, kept when they go back to fix it.
   const [typedEmail, setTypedEmail] = useState('');
   const [typedPhone, setTypedPhone] = useState('');
   const finished = useRef(false);
+  // One bot check for the whole flow, so a resend gets a fresh token (#234)
+  const captcha = useCaptcha();
+  // What someone new came for, asked before About you (R5, #222)
+  const [joinedAs, setJoinedAs] = useState<JoinedAs | null>(null);
+  const [businessStep, setBusinessStep] = useState(false);
 
   // Signed in without a profile (a code was just accepted, Apple or Google
   // just finished, or they came from Profile to finish setting up), or
@@ -76,23 +89,45 @@ export function SignInFlow({ mode, method }: { mode: SignInMode; method?: SignIn
   const done = useCallback(() => {
     finished.current = true;
     const canGoBack = router.canGoBack();
-    finishSignIn();
+    finishSignIn(joinedAs);
     if (!canGoBack) router.replace('/');
-  }, [finishSignIn]);
+  }, [finishSignIn, joinedAs]);
 
   // Signed in with a profile, i.e. a returning person: nothing more to ask.
   useEffect(() => {
     if (mode === 'edit' || finished.current) return;
-    if (status === 'signedIn') done();
-  }, [mode, status, done]);
+    // A new business still names its listing after About you
+    if (status === 'signedIn' && joinedAs !== 'business') done();
+  }, [mode, status, done, joinedAs]);
 
   // Closing the sheet without finishing forgets the action that was waiting.
   useEffect(() => () => cancelSignIn(), [cancelSignIn]);
 
   let content;
   let back: (() => void) | undefined;
-  if (showAboutYou) {
-    content = <AboutYouStep onDone={done} />;
+  if (businessStep) {
+    content = (
+      <BusinessStep
+        initialTown={profile?.city ?? ''}
+        onDone={() => {
+          // Their draft makes them a vendor: no wedding questions, even before that's refetched,
+          // and the business side, even if this phone was last on the planning side
+          markOnboarding('done');
+          done();
+          switchToBusiness();
+        }}
+      />
+    );
+  } else if (status === 'needsProfile' && mode !== 'edit' && !joinedAs) {
+    content = <JoinChoiceStep onChoose={setJoinedAs} />;
+  } else if (showAboutYou) {
+    back = mode === 'edit' || !joinedAs ? undefined : () => setJoinedAs(null);
+    content = (
+      <AboutYouStep
+        joinedAs={joinedAs}
+        onDone={joinedAs === 'business' ? () => setBusinessStep(true) : done}
+      />
+    );
   } else if (status === 'error') {
     content = <StateView state="error" onRetry={reloadProfile} />;
   } else if (status === 'signedIn' || status === 'loading') {
@@ -105,6 +140,7 @@ export function SignInFlow({ mode, method }: { mode: SignInMode; method?: SignIn
     back = () => setStep('choose');
     content = (
       <EmailStep
+        captcha={captcha}
         initialEmail={typedEmail}
         onSent={(sentTo) => {
           setTypedEmail(sentTo);
@@ -118,6 +154,7 @@ export function SignInFlow({ mode, method }: { mode: SignInMode; method?: SignIn
     back = () => setStep('choose');
     content = (
       <PhoneStep
+        captcha={captcha}
         initialPhone={typedPhone}
         onSent={(sentTo, typed) => {
           setTypedPhone(typed);
@@ -129,7 +166,7 @@ export function SignInFlow({ mode, method }: { mode: SignInMode; method?: SignIn
     );
   } else if (target) {
     back = () => setStep(target.kind);
-    content = <CodeStep target={target} onChange={back} />;
+    content = <CodeStep target={target} captcha={captcha} onChange={back} />;
   } else {
     content = <ChooseStep onChoose={setStep} />;
   }
@@ -151,6 +188,9 @@ export function SignInFlow({ mode, method }: { mode: SignInMode; method?: SignIn
         }
       />
       {content}
+      {(step === 'email' || step === 'phone' || step === 'code') && !showAboutYou && (
+        <TurnstileBox captcha={captcha} />
+      )}
     </Screen>
   );
 }
@@ -166,15 +206,18 @@ function ChooseStep({ onChoose }: { onChoose: (method: SignInMethod) => void }) 
         {t('signIn.why')}
       </AppText>
       <SignInOptions onChoose={onChoose} />
+      <LegalLine sentence="signIn.legal" />
     </ScrollView>
   );
 }
 
 function EmailStep({
+  captcha,
   initialEmail,
   onSent,
   onOtherWays,
 }: {
+  captcha: Captcha;
   initialEmail: string;
   onSent: (email: string) => void;
   onOtherWays: () => void;
@@ -191,8 +234,12 @@ function EmailStep({
       return;
     }
     setError(undefined);
+    if (!captcha.ready) {
+      setError(t('signIn.captchaWait'));
+      return;
+    }
     setSending(true);
-    const { error: authError } = await sendCode({ kind: 'email', to: clean });
+    const { error: authError } = await sendCode({ kind: 'email', to: clean }, captcha);
     setSending(false);
     if (authError) {
       setError(t(authErrorKey(authError, 'email')));
@@ -232,10 +279,12 @@ function EmailStep({
 }
 
 function PhoneStep({
+  captcha,
   initialPhone,
   onSent,
   onOtherWays,
 }: {
+  captcha: Captcha;
   initialPhone: string;
   /** The number in E.164, and as they typed it. */
   onSent: (phone: string, typed: string) => void;
@@ -253,8 +302,12 @@ function PhoneStep({
       return;
     }
     setError(undefined);
+    if (!captcha.ready) {
+      setError(t('signIn.captchaWait'));
+      return;
+    }
     setSending(true);
-    const { error: authError } = await sendCode({ kind: 'phone', to: e164 });
+    const { error: authError } = await sendCode({ kind: 'phone', to: e164 }, captcha);
     setSending(false);
     if (authError) {
       setError(t(authErrorKey(authError, 'phone')));
@@ -307,7 +360,15 @@ function PhoneStep({
   );
 }
 
-function CodeStep({ target, onChange }: { target: CodeTarget; onChange: () => void }) {
+function CodeStep({
+  target,
+  captcha,
+  onChange,
+}: {
+  target: CodeTarget;
+  captcha: Captcha;
+  onChange: () => void;
+}) {
   const { t } = useLocale();
   const { kind, to } = target;
   const [code, setCode] = useState('');
@@ -355,8 +416,12 @@ function CodeStep({ target, onChange }: { target: CodeTarget; onChange: () => vo
 
   async function resend() {
     setError(undefined);
+    if (!captcha.ready) {
+      setError(t('signIn.captchaWait'));
+      return;
+    }
     setResending(true);
-    const { error: authError } = await sendCode(target);
+    const { error: authError } = await sendCode(target, captcha);
     setResending(false);
     if (authError) {
       setError(t(authErrorKey(authError, kind)));
@@ -414,12 +479,12 @@ function CodeStep({ target, onChange }: { target: CodeTarget; onChange: () => vo
   );
 }
 
-function AboutYouStep({ onDone }: { onDone: () => void }) {
+function AboutYouStep({ joinedAs, onDone }: { joinedAs: JoinedAs | null; onDone: () => void }) {
   const { t } = useLocale();
   const { session, email, phone, nameHint, profile, profileSaved } = useSession();
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string>();
-  // Someone the team added to a business sees the form in a business's words
+  // Someone the team added to a business, or signing one up, sees the form in a business's words
   const { isVendor } = useIsVendor();
 
   if (!session) {
@@ -434,7 +499,13 @@ function AboutYouStep({ onDone }: { onDone: () => void }) {
     setSaving(true);
     const { data, error: saveError } = await supabase
       .from('profiles')
-      .upsert({ id: userId, full_name: values.name, city: values.city, phone: values.phone })
+      .upsert({
+        id: userId,
+        full_name: values.name,
+        city: values.city,
+        phone: values.phone,
+        ...(joinedAs && { joined_as: joinedAs }),
+      })
       .select()
       .single();
     setSaving(false);
@@ -458,7 +529,7 @@ function AboutYouStep({ onDone }: { onDone: () => void }) {
       }}
       emailLocked
       emailHidden={!email}
-      forBusiness={isVendor}
+      forBusiness={isVendor || joinedAs === 'business'}
       confirmedAdult={!!profile}
       submitLabel={profile ? t('aboutYou.save') : undefined}
       submitting={saving}

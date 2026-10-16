@@ -4,26 +4,32 @@ import { Pressable, View } from 'react-native';
 
 import { AppText } from '@/components/app-text';
 import { Button } from '@/components/button';
+import { SectionTitle } from '@/components/list';
 import { NavScreen } from '@/components/nav';
 import { StateView } from '@/components/state-view';
 import { makeStyles, Radius, Sizes, Spacing } from '@/constants/theme';
 import { useConversations, useIsVendor, type Conversation } from '@/data/chat';
+import { useGroupThreads, type GroupThread } from '@/data/group-chat';
 import { useSession } from '@/features/auth/session';
 import { inboxTime, lastMessagePreview } from '@/features/chat/chat-format';
 import { PushAskCard } from '@/features/chat/push-ask';
+import { groupPreview } from '@/features/group-chat/group-format';
 import { localized } from '@/i18n/localized';
 import { useLocale } from '@/i18n/locale-context';
 
 /**
- * Messages: every conversation, newest first. Families see the vendors they
- * wrote to; a vendor account sees its families too, marked with the business
- * name. Unread ones are bold with a count. /messages
+ * Messages: the family's group chats first (A2, #125), then every conversation
+ * with a vendor, newest first. Families see the vendors they wrote to; a
+ * vendor account sees its families too, marked with the business name.
+ * Unread ones are bold with a count. /messages
  */
 export default function MessagesScreen() {
   const { t } = useLocale();
   const { status } = useSession();
   const conversations = useConversations();
+  const groups = useGroupThreads();
   const { isVendor } = useIsVendor();
+  const groupList = groups.data ?? [];
 
   let body;
   if (status === 'loading') {
@@ -39,10 +45,15 @@ export default function MessagesScreen() {
     body = <StateView state="loading" />;
   } else if (conversations.isError) {
     body = <StateView state="error" onRetry={() => void conversations.refetch()} />;
-  } else if (conversations.data.length === 0) {
+  } else if (conversations.data.length === 0 && groupList.length === 0) {
     body = <StateView state="empty" icon="chatbubbles-outline" message={t('chat.empty')} />;
   } else {
-    body = <Inbox conversations={conversations.data} />;
+    body = (
+      <>
+        {groupList.length > 0 && <Groups threads={groupList} />}
+        {conversations.data.length > 0 && <Inbox conversations={conversations.data} />}
+      </>
+    );
   }
 
   return (
@@ -65,34 +76,91 @@ function Inbox({ conversations }: { conversations: Conversation[] }) {
   );
 }
 
-function InboxRow({ conversation, divided }: { conversation: Conversation; divided: boolean }) {
+/** The family's group chats, with the vendor conversations' look. */
+function Groups({ threads }: { threads: GroupThread[] }) {
   const styles = useStyles();
-  const { t, locale } = useLocale();
-  const vendorName = localized(conversation.vendor.name, locale);
+  const { t } = useLocale();
+  return (
+    <View style={styles.section}>
+      <SectionTitle>{t('groupChat.title')}</SectionTitle>
+      <View style={styles.group}>
+        {threads.map((thread, i) => (
+          <Row
+            key={thread.id}
+            divided={i > 0}
+            title={thread.name}
+            subtitle={t('groupChat.people', { count: thread.memberCount })}
+            preview={groupPreview(thread, t)}
+            time={inboxTime(thread.lastMessageAt, t)}
+            unreadCount={thread.unreadCount}
+            onPress={() => router.push({ pathname: '/group/[id]', params: { id: thread.id } })}
+          />
+        ))}
+      </View>
+    </View>
+  );
+}
+
+function InboxRow({ conversation, divided }: { conversation: Conversation; divided: boolean }) {
+  const { t } = useLocale();
+  const vendorName = localized(conversation.vendor.name);
   const asVendor = conversation.side === 'vendor';
-  const title = asVendor ? (conversation.family.firstName ?? t('chat.aFamily')) : vendorName;
-  const unread = conversation.unreadCount > 0;
-  const preview = lastMessagePreview(conversation, t);
-  const time = inboxTime(conversation.updatedAt, t);
+  return (
+    <Row
+      divided={divided}
+      title={asVendor ? (conversation.family.firstName ?? t('chat.aFamily')) : vendorName}
+      subtitle={asVendor ? t('chat.forBusiness', { name: vendorName }) : null}
+      photoUrl={asVendor ? null : conversation.vendor.photoUrl}
+      preview={lastMessagePreview(conversation, t)}
+      time={inboxTime(conversation.updatedAt, t)}
+      unreadCount={conversation.unreadCount}
+      onPress={() => router.push({ pathname: '/chat/[id]', params: { id: conversation.id } })}
+    />
+  );
+}
+
+/** One row of the inbox: a photo or initial, the name, the last message, the time and an unread count. */
+function Row({
+  divided,
+  title,
+  subtitle,
+  photoUrl,
+  preview,
+  time,
+  unreadCount,
+  onPress,
+}: {
+  divided: boolean;
+  title: string;
+  subtitle: string | null;
+  photoUrl?: string | null;
+  preview: string;
+  time: string;
+  unreadCount: number;
+  onPress: () => void;
+}) {
+  const styles = useStyles();
+  const { t } = useLocale();
+  const unread = unreadCount > 0;
 
   return (
     <Pressable
       accessibilityRole="button"
       accessibilityLabel={[
         title,
-        asVendor ? t('chat.forBusiness', { name: vendorName }) : null,
-        unread ? t('chat.unread', { count: conversation.unreadCount }) : null,
+        subtitle,
+        unread ? t('chat.unread', { count: unreadCount }) : null,
         preview,
         time,
       ]
         .filter(Boolean)
         .join(', ')}
-      onPress={() => router.push({ pathname: '/chat/[id]', params: { id: conversation.id } })}
+      onPress={onPress}
       style={({ pressed }) => [styles.row, divided && styles.divided, pressed && styles.pressed]}
     >
-      {conversation.vendor.photoUrl && !asVendor ? (
+      {photoUrl ? (
         <Image
-          source={{ uri: conversation.vendor.photoUrl }}
+          source={{ uri: photoUrl }}
           contentFit="cover"
           accessible={false}
           style={styles.avatar}
@@ -117,9 +185,9 @@ function InboxRow({ conversation, divided }: { conversation: Conversation; divid
             {time}
           </AppText>
         </View>
-        {asVendor && (
+        {subtitle && (
           <AppText variant="caption" color="text2" numberOfLines={1}>
-            {t('chat.forBusiness', { name: vendorName })}
+            {subtitle}
           </AppText>
         )}
         <View style={styles.top}>
@@ -134,7 +202,7 @@ function InboxRow({ conversation, divided }: { conversation: Conversation; divid
           {unread && (
             <View style={styles.badge}>
               <AppText variant="caption" weight={700} color="onPrimary">
-                {String(conversation.unreadCount)}
+                {String(unreadCount)}
               </AppText>
             </View>
           )}
@@ -147,6 +215,11 @@ function InboxRow({ conversation, divided }: { conversation: Conversation; divid
 const AVATAR = 52;
 
 const useStyles = makeStyles((Colors) => ({
+  // SectionTitle's negative margin expects a gap under it
+  section: {
+    gap: Spacing.md,
+    marginBottom: Spacing.lg,
+  },
   group: {
     borderRadius: Radius.card,
     borderCurve: 'continuous',

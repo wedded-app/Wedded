@@ -202,6 +202,8 @@ export type Proposal = {
     city: string;
     photoUrl: string | null;
     foundingNumber: number | null;
+    /** A demo sample vendor: show the Sample tag. */
+    isSample: boolean;
   };
   priceCents: number | null;
   priceUnit: ProposalUnit | null;
@@ -219,7 +221,6 @@ type ProposalRow = {
   vendor_id: string;
   vendor_slug: string;
   vendor_name: string;
-  vendor_name_pa: string | null;
   vendor_city: string;
   cover_path: string | null;
   founding_number: number | null;
@@ -231,6 +232,7 @@ type ProposalRow = {
   status: string;
   conversation_id: string | null;
   created_at: string;
+  vendor_is_sample?: boolean | null;
 };
 
 const UNITS: ProposalUnit[] = ['event', 'hour', 'person', 'plate', 'day'];
@@ -242,10 +244,11 @@ export function toProposal(row: ProposalRow): Proposal {
     vendor: {
       id: row.vendor_id,
       slug: row.vendor_slug,
-      name: { en: row.vendor_name, ...(row.vendor_name_pa ? { pa: row.vendor_name_pa } : {}) },
+      name: { en: row.vendor_name },
       city: row.vendor_city,
       photoUrl: row.cover_path ? photoUrl(row.cover_path, 'medium') : null,
       foundingNumber: row.founding_number,
+      isSample: row.vendor_is_sample ?? false,
     },
     priceCents: row.price_cents,
     priceUnit: UNITS.find((u) => u === row.price_unit) ?? null,
@@ -329,6 +332,8 @@ export type LookingCard = {
   /** From the vendor's calendar on the event date */
   dateStatus: 'open' | 'booked' | 'held' | 'partly' | 'unknown';
   postedAt: string;
+  /** Posted by a demo sample family: show the Sample tag. */
+  isSample: boolean;
 };
 
 type LookingRow = {
@@ -350,6 +355,7 @@ type LookingRow = {
   already_proposed: boolean;
   date_status: string;
   created_at: string;
+  is_sample?: boolean | null;
 };
 
 const DATE_STATUSES: LookingCard['dateStatus'][] = ['open', 'booked', 'held', 'partly', 'unknown'];
@@ -374,6 +380,7 @@ export function toLookingCard(row: LookingRow): LookingCard {
     alreadyProposed: row.already_proposed,
     dateStatus: DATE_STATUSES.find((s) => s === row.date_status) ?? 'unknown',
     postedAt: row.created_at,
+    isSample: row.is_sample ?? false,
   };
 }
 

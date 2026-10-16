@@ -17,8 +17,10 @@
 // with pgTAP and can't be skipped by calling the table directly.
 
 import { createClient } from '@supabase/supabase-js';
+import { limitedBody } from '../_shared/body.ts';
 
-import { buildInquiryEmail, sendEmail } from '../_shared/inquiry-email.ts';
+import { inquiryEmailFor } from '../_shared/email-links.ts';
+import { sendEmail } from '../_shared/inquiry-email.ts';
 import { parseInquiry } from '../_shared/inquiry-input.ts';
 
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL') ?? '';
@@ -67,9 +69,11 @@ Deno.serve(async (request) => {
   if (userError || !userData.user) return json({ error: 'unauthorized' }, 401);
   const user = userData.user;
 
+  const raw = await limitedBody(request, 32768);
+  if (raw === null) return json({ error: 'body_too_large' }, 413);
   let body: unknown;
   try {
-    body = await request.json();
+    body = JSON.parse(raw);
   } catch {
     return json({ error: 'invalid', field: 'body' }, 400);
   }
@@ -144,7 +148,7 @@ Deno.serve(async (request) => {
   });
 
   try {
-    const email = buildInquiryEmail({
+    const email = await inquiryEmailFor(admin, {
       inquiryId: id,
       channel: result.channel,
       vendorName: result.vendor_name,

@@ -62,7 +62,7 @@ function StatusBar() {
   const styles = useStyles();
   return (
     <View style={styles.statusBar} aria-hidden>
-      <AppText variant="button" lang="en" style={styles.time}>
+      <AppText variant="button" style={styles.time}>
         9:41
       </AppText>
       <View style={styles.island} />

@@ -9,7 +9,7 @@ import { SheetHeader } from '@/components/sheet-header';
 import { StateView } from '@/components/state-view';
 import { Spacing } from '@/constants/theme';
 import { useVendors } from '@/data/vendors';
-import { bilingual, localized } from '@/i18n/localized';
+import { localized } from '@/i18n/localized';
 import { useLocale } from '@/i18n/locale-context';
 
 /**
@@ -17,16 +17,22 @@ import { useLocale } from '@/i18n/locale-context';
  * more than one vendor (the one who posted it and the ones tagged). Picking
  * one opens the Ask screen in its place, with the reel's event, so a family
  * is two taps from asking. `?vendors=` is their slugs, poster first, and
- * `?event=` the reel's event.
+ * `?event=` the reel's event. With `?see=1` (the reel's vendors chip) it is
+ * "Vendors in this reel" instead, and picking one opens their page.
  */
 export default function ReelBookScreen() {
-  const { t, locale } = useLocale();
-  const { vendors = '', event } = useLocalSearchParams<{ vendors?: string; event?: string }>();
+  const { t } = useLocale();
+  const {
+    vendors = '',
+    event,
+    see,
+  } = useLocalSearchParams<{ vendors?: string; event?: string; see?: string }>();
   const slugs = useMemo(() => vendors.split(',').filter(Boolean), [vendors]);
   const profiles = useVendors(slugs);
 
   const ask = (vendorId: string) =>
     router.replace({ pathname: '/ask', params: event ? { vendorId, event } : { vendorId } });
+  const open = (slug: string) => router.replace({ pathname: '/v/[slug]', params: { slug } });
 
   let content;
   if (slugs.length === 0 || profiles.some((p) => p.isError)) {
@@ -49,30 +55,33 @@ export default function ReelBookScreen() {
       <ScrollView contentContainerStyle={styles.content}>
         <View style={styles.intro}>
           <AppText variant="title" accessibilityRole="header">
-            {t('reels.bookWhich')}
+            {see ? t('reels.seeWhich') : t('reels.bookWhich')}
           </AppText>
-          <AppText color="text2">{t('reels.bookWhichBody')}</AppText>
+          <AppText color="text2">
+            {see ? t('reels.seeWhichBody') : t('reels.bookWhichBody')}
+          </AppText>
         </View>
         {found.length === 0 ? (
           <AppText color="text2">{t('reels.bookNone')}</AppText>
         ) : (
           <ListSection>
             {found.map((vendor) => {
-              const { primary } = bilingual(vendor.name, locale);
+              const name = localized(vendor.name);
               const category = vendor.categories[0];
-              const about = [category && localized(category.name, locale), vendor.city]
+              const about = [category && localized(category.name), vendor.city]
                 .filter(Boolean)
                 .join(' · ');
               return (
                 <ListRow
                   key={vendor.id}
                   icon="storefront-outline"
-                  title={primary.text}
-                  titleLang={primary.lang}
+                  title={name}
                   titleVariant="bodyLg"
                   subtitle={about}
-                  onPress={() => ask(vendor.id)}
-                  accessibilityLabel={t('reels.bookVendor', { name: primary.text })}
+                  onPress={() => (see ? open(vendor.slug) : ask(vendor.id))}
+                  accessibilityLabel={
+                    see ? t('reels.taggedVendor', { name }) : t('reels.bookVendor', { name })
+                  }
                 />
               );
             })}

@@ -42,7 +42,7 @@ const light = {
   accent: '#F0A030', // marigold: fills only, never text
   kesari: '#A8500A', // text-safe saffron, "Founding vendor" text
   kesariTint: '#FBEFE3', // saffron at about 10 percent, behind founding numbers
-  success: '#248A3D', // systemGreen as iOS draws it with Increase Contrast, 4.6:1
+  success: '#1E7B34', // a deeper systemGreen: 4.6:1 on grouped grey and fills, 5.3:1 on white (WCAG AA)
   successTint: 'rgba(36, 138, 61, 0.14)', // behind a green word, e.g. the Veg tag
   pink: '#B4335C',
   verified: '#1F6F5F',
@@ -61,6 +61,13 @@ const light = {
   // iOS 26's scroll edge effect behind the nav bar: the page colour fading out.
   scrollEdge:
     'linear-gradient(to bottom, rgba(242, 242, 247, 0.97) 0%, rgba(242, 242, 247, 0.9) 72%, rgba(242, 242, 247, 0) 100%)',
+  // The same edge over a `canvas` page (the Wed thread): white fading out.
+  canvasEdge:
+    'linear-gradient(to bottom, rgba(255, 255, 255, 0.97) 0%, rgba(255, 255, 255, 0.9) 72%, rgba(255, 255, 255, 0) 100%)',
+  // The same, rising from the bottom: solid behind the Wed composer and tab
+  // bar, fading out above them, so the thread never shows between the two.
+  canvasEdgeUp:
+    'linear-gradient(to top, rgba(255, 255, 255, 1) 0%, rgba(255, 255, 255, 1) 68%, rgba(255, 255, 255, 0.9) 82%, rgba(255, 255, 255, 0) 100%)',
   onPhoto: '#FFFFFF', // text and glyphs on photos, over a scrim
   photoScrim: 'rgba(0, 0, 0, 0.45)',
   viewer: '#000000', // full-screen photo viewer background (vision S10)
@@ -89,6 +96,22 @@ const light = {
   glowRose: 'rgba(196, 120, 160, 0.32)',
   // Text fields floating on the glow: white, a little see-through.
   canvasField: 'rgba(255, 255, 255, 0.82)',
+  // Celebrations (PetalBurst): rose petals and gold dust.
+  petalRose: '#E58FA6',
+  petalBlush: '#F6C9D3',
+  petalMaroon: '#A3243F',
+  petalGold: '#E2B25C',
+  // The "wedding night" screens (Requests, Wedded Pro): plum black like the
+  // promo video, glass cards, champagne gold and a rose glow. The same in
+  // light and dark; those screens always draw in dark.
+  night: '#12060A',
+  nightCard: 'rgba(255, 255, 255, 0.06)',
+  nightCardStrong: 'rgba(255, 255, 255, 0.1)',
+  nightRaised: '#2A1F22', // nightCardStrong over night, but opaque
+  nightLine: 'rgba(255, 255, 255, 0.12)',
+  champagne: '#E9C98B',
+  roseGlow: '0px 10px 34px rgba(214, 70, 110, 0.45)',
+  nightButton: 'linear-gradient(135deg, #C8385C 0%, #8A1C30 100%)',
 };
 
 export type Palette = Record<keyof typeof light, string>;
@@ -134,6 +157,11 @@ const dark: Palette = {
   glassShadow: 'rgba(0, 0, 0, 0.5)',
   scrollEdge:
     'linear-gradient(to bottom, rgba(0, 0, 0, 0.95) 0%, rgba(0, 0, 0, 0.85) 72%, rgba(0, 0, 0, 0) 100%)',
+  // canvas and bg are both black in dark mode, so the edges match.
+  canvasEdge:
+    'linear-gradient(to bottom, rgba(0, 0, 0, 0.95) 0%, rgba(0, 0, 0, 0.85) 72%, rgba(0, 0, 0, 0) 100%)',
+  canvasEdgeUp:
+    'linear-gradient(to top, rgba(0, 0, 0, 1) 0%, rgba(0, 0, 0, 1) 68%, rgba(0, 0, 0, 0.85) 82%, rgba(0, 0, 0, 0) 100%)',
   onPhoto: '#FFFFFF',
   photoScrim: 'rgba(0, 0, 0, 0.5)',
   viewer: '#000000',
@@ -153,6 +181,18 @@ const dark: Palette = {
   glowGold: 'rgba(240, 160, 75, 0.22)',
   glowRose: 'rgba(150, 70, 130, 0.28)',
   canvasField: 'rgba(44, 44, 46, 0.82)',
+  petalRose: '#E58FA6',
+  petalBlush: '#F6C9D3',
+  petalMaroon: '#A3243F',
+  petalGold: '#E2B25C',
+  night: '#12060A',
+  nightCard: 'rgba(255, 255, 255, 0.06)',
+  nightCardStrong: 'rgba(255, 255, 255, 0.1)',
+  nightRaised: '#2A1F22', // nightCardStrong over night, but opaque
+  nightLine: 'rgba(255, 255, 255, 0.12)',
+  champagne: '#E9C98B',
+  roseGlow: '0px 10px 34px rgba(214, 70, 110, 0.45)',
+  nightButton: 'linear-gradient(135deg, #C8385C 0%, #8A1C30 100%)',
 };
 
 export type Scheme = 'light' | 'dark';
@@ -261,32 +301,27 @@ export const BorderWidth = {
 /**
  * Type scale, mirroring iOS Dynamic Type at the default size (Large Title 34,
  * Title 1 28, Title 3 20, Body 17, Subheadline 15, Footnote 13), with a 19
- * point body for the names elders scan for. Gurmukhi letterforms hang from
- * the headline and read smaller at the same nominal size, so Punjabi text
- * renders ~8% bigger with taller line height (vowel marks stack above and
- * below and clip when line height is tight).
+ * point body for the names elders scan for.
  */
 export const Typography = {
-  display: { size: 34, weight: 700, lineHeight: 1.2, lineHeightPa: 1.35, maxScale: 1.6 },
-  title: { size: 28, weight: 700, lineHeight: 1.2, lineHeightPa: 1.35, maxScale: 1.8 },
-  section: { size: 22, weight: 700, lineHeight: 1.25, lineHeightPa: 1.4, maxScale: 1.8 },
-  heading: { size: 20, weight: 600, lineHeight: 1.25, lineHeightPa: 1.45, maxScale: 2 },
-  bodyLg: { size: 19, weight: 400, lineHeight: 1.3, lineHeightPa: 1.6, maxScale: 2 },
-  body: { size: 17, weight: 400, lineHeight: 1.33, lineHeightPa: 1.6, maxScale: 2 },
-  label: { size: 15, weight: 500, lineHeight: 1.33, lineHeightPa: 1.55, maxScale: 1.6 },
-  button: { size: 17, weight: 600, lineHeight: 1.3, lineHeightPa: 1.5, maxScale: 1.6 },
-  caption: { size: 13, weight: 400, lineHeight: 1.35, lineHeightPa: 1.55, maxScale: 1.5 },
+  display: { size: 34, weight: 700, lineHeight: 1.2, maxScale: 1.6 },
+  title: { size: 28, weight: 700, lineHeight: 1.2, maxScale: 1.8 },
+  section: { size: 22, weight: 700, lineHeight: 1.25, maxScale: 1.8 },
+  heading: { size: 20, weight: 600, lineHeight: 1.25, maxScale: 2 },
+  bodyLg: { size: 19, weight: 400, lineHeight: 1.3, maxScale: 2 },
+  body: { size: 17, weight: 400, lineHeight: 1.33, maxScale: 2 },
+  label: { size: 15, weight: 500, lineHeight: 1.33, maxScale: 1.6 },
+  button: { size: 17, weight: 600, lineHeight: 1.3, maxScale: 1.6 },
+  caption: { size: 13, weight: 400, lineHeight: 1.35, maxScale: 1.5 },
 } as const;
 
 export type TypographyVariant = keyof typeof Typography;
 export type FontWeight = 400 | 500 | 600 | 700 | 800;
 
-export const GURMUKHI_SIZE_MULTIPLIER = 1.08;
-
 /**
  * Latin text is San Francisco on iPhone (the system font), and Inter on
  * Android and the web, the closest free match, loaded at runtime so it works
- * in Expo Go. Gurmukhi is Mukta Mahee everywhere. Loaded fonts carry their
+ * in Expo Go. Loaded fonts carry their
  * weight in the family name; adding a fontWeight to them makes Android and
  * browsers draw a fake bold, so only the system font gets one.
  */
@@ -300,36 +335,19 @@ const INTER = {
 
 const latin = (weight: FontWeight) => (Platform.OS === 'ios' ? 'System' : INTER[weight]);
 
-export const FontFamilies: Record<'en' | 'pa', Record<FontWeight, string>> = {
-  en: {
-    400: latin(400),
-    500: latin(500),
-    600: latin(600),
-    700: latin(700),
-    800: latin(800),
-  },
-  pa: {
-    400: 'MuktaMahee_400Regular',
-    500: 'MuktaMahee_500Medium',
-    600: 'MuktaMahee_600SemiBold',
-    700: 'MuktaMahee_700Bold',
-    800: 'MuktaMahee_800ExtraBold',
-  },
-};
-
 /**
  * Fraunces, a soft and lively serif, for the few big display lines (the
  * welcome phrases, "What's your phone number?"). Loaded at runtime with the
  * other fonts, in two weights, so it carries its weight in the family name
- * like Inter. Latin only; Gurmukhi keeps Mukta Mahee.
+ * like Inter.
  */
 export function serifFamily(weight: FontWeight): string {
   return weight >= 600 ? 'Fraunces_600SemiBold' : 'Fraunces_500Medium';
 }
 
-/** The style that draws `weight` in `script`: family, plus fontWeight for the system font. */
-export function fontStyle(script: 'en' | 'pa', weight: FontWeight) {
-  const fontFamily = FontFamilies[script][weight];
+/** The style that draws `weight`: family, plus fontWeight for the system font. */
+export function fontStyle(weight: FontWeight) {
+  const fontFamily = latin(weight);
   return fontFamily === 'System'
     ? { fontFamily, fontWeight: String(weight) as `${FontWeight}` }
     : { fontFamily };
@@ -339,6 +357,15 @@ export function fontStyle(script: 'en' | 'pa', weight: FontWeight) {
  * Springs for Reanimated's withSpring, after SwiftUI's presets. Nothing
  * bounces except the Save heart (vision §4: short motion, no bounces).
  */
+/**
+ * A CSS gradient (or several) as a view's background: `backgroundImage` on
+ * the web, `experimental_backgroundImage` on phones.
+ */
+export const backgroundCss = (css: string) =>
+  (Platform.OS === 'web'
+    ? { backgroundImage: css }
+    : { experimental_backgroundImage: css }) as unknown as ViewStyle;
+
 export const Springs = {
   /** Presses and toggles: quick, settles without overshoot. */
   snappy: { mass: 1, stiffness: 520, damping: 46 },

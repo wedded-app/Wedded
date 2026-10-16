@@ -3,8 +3,7 @@ import { StyleSheet, View } from 'react-native';
 
 import { AppText } from '@/components/app-text';
 import { GlassButton } from '@/components/glass-button';
-import { Sizes, Spacing } from '@/constants/theme';
-import type { Locale } from '@/i18n';
+import { Sizes, Spacing, useColors } from '@/constants/theme';
 import { useLocale } from '@/i18n/locale-context';
 
 export type SheetHeaderProps = {
@@ -13,7 +12,6 @@ export type SheetHeaderProps = {
   closeLabel?: string;
   /** A small centred title, for sheets whose big title is in the content. */
   title?: string;
-  titleLang?: Locale;
   /** Another glass button on the left, e.g. Back inside a multi-step sheet. */
   leading?: ReactNode;
 };
@@ -22,8 +20,9 @@ export type SheetHeaderProps = {
  * The top of a sheet (a modal screen), iOS 26 style: a round glass close
  * button on the right and an optional small title between.
  */
-export function SheetHeader({ onClose, closeLabel, title, titleLang, leading }: SheetHeaderProps) {
+export function SheetHeader({ onClose, closeLabel, title, leading }: SheetHeaderProps) {
   const { t } = useLocale();
+  const Colors = useColors();
 
   return (
     <View style={styles.bar}>
@@ -32,7 +31,6 @@ export function SheetHeader({ onClose, closeLabel, title, titleLang, leading }: 
         {title ? (
           <AppText
             variant="button"
-            lang={titleLang}
             numberOfLines={1}
             maxFontSizeMultiplier={1.3}
             accessibilityRole="header"
@@ -44,7 +42,7 @@ export function SheetHeader({ onClose, closeLabel, title, titleLang, leading }: 
       <View style={[styles.side, styles.end]}>
         <GlassButton
           icon="close"
-          color="#000000"
+          color={Colors.text}
           accessibilityLabel={closeLabel ?? t('signIn.close')}
           onPress={onClose}
           size={44}

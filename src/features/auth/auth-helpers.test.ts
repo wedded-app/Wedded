@@ -82,6 +82,10 @@ describe('enabledProviders', () => {
 });
 
 describe('authErrorKey', () => {
+  it('explains a failed bot check', () => {
+    expect(authErrorKey({ code: 'captcha_failed', status: 400 })).toBe('signIn.errors.captcha');
+  });
+
   it('says to wait for either kind of rate limit', () => {
     expect(authErrorKey({ code: 'over_sms_send_rate_limit', status: 429 }, 'phone')).toBe(
       'signIn.errors.tooMany',

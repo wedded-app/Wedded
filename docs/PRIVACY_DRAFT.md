@@ -1,0 +1,53 @@
+# Wedded privacy policy — draft for a lawyer
+
+Not approved for publication. Proposed policy date: to be set at launch. Founders must supply the legal business name, postal address, privacy/support contact, launch regions and retention periods before approval.
+
+Wedded helps families plan weddings and contact vendors. We process sign-in details (email, phone or Apple/provider identity), name, town, phone number and your confirmation that you are at least 18. We also process the wedding plans, cultural or religious preferences, guest ranges, budgets, inquiries, messages, media, reactions and requests you choose to provide. Vendor accounts include business contacts, listings, media, availability, team membership and payment/subscription references. Device push tokens support optional chat notifications. See [the field inventory](LEGAL_CHECKLIST.md#data-inventory) for the implementation record.
+
+We use this information to operate your account, save and share your plan with invited members, deliver inquiries and chats, display vendor listings, facilitate deposits and subscriptions, prevent abuse and maintain the service. Public listings, reels and comments are visible to others. Wedding plans are shared with invited members according to their roles. When you ask a vendor about an event, we share the contact details and event information you submit with that vendor. Where a vendor does not receive email, founders may relay the inquiry by phone, text or WhatsApp. Do not send information you do not want the recipient to receive.
+
+Supabase provides data storage, authentication and other backend services. Stripe processes payments, vendor verification and Pro subscriptions; Wedded does not store full card numbers. Resend delivers application mail. Apple/Google and Expo deliver push notifications and Apple may provide sign-in. AWS/hosting providers serve media and the website. TikTok and Instagram provide social metadata and embedded content; loading those services may expose your IP address, browser/device details and their cookies. Providers may process data in other countries; founders and counsel must verify applicable transfer arrangements.
+
+We currently have no analytics or advertising SDK and do not offer personal data for sale or targeted advertising. Essential local storage supports sign-in, preferences and drafts. Third-party embeds have their own policies; counsel must approve the final cookie explanation and any controls required by launch region and provider behavior.
+
+Use the email footer to stop optional inquiry copies and chat alerts or start them again. This choice does not disable sign-in or necessary security messages. You can manage push permissions through your device and leave shared plans through the app.
+
+You can request account deletion in the app. Deletion removes account-linked information according to database rules; shared plans may continue for remaining members. Payment records, backups, legal/security records and the email suppression record may require separate retention. Founders must define retention periods, provider cleanup, support requests, identity verification and any legally required exceptions before publication. No deletion deadline is promised by this draft.
+
+The service is intended for adults 18 and older. We request an adult confirmation rather than a birthdate. Contact the approved support address (pending) to report a minor’s data, request access/correction/deletion, or ask a privacy question. Applicable rights and complaint options depend on jurisdiction and must be finalized by counsel. We will publish material policy changes with an updated date and provide any required notice.
+
+
+## California notice at collection and privacy rights — draft for a lawyer
+
+This notice covers the categories below, including collection during the preceding 12 months where applicable. We receive data directly from you, your invited planning members, vendors you contact, public vendor/social sources, sign-in providers and service providers. The detailed field and service inventories are in [LEGAL_CHECKLIST.md](LEGAL_CHECKLIST.md).
+
+| Category collected | Purpose | Recipients |
+| --- | --- | --- |
+| Identifiers and contact information: name, account/provider ID, email, phone, town and device push token | Sign-in, account support, requested introductions, messaging and optional notifications | Supabase; Resend for email; Expo/Apple/Google for push; your chosen vendor/family recipients and founders relaying inquiries |
+| Wedding plans, guest ranges, budgets, shortlist choices and relationship to the couple | Save and share plans and match requested vendor services | Supabase; invited plan members; chosen vendors for submitted inquiries or requests |
+| Messages, photos, voice recordings, comments and other submitted content | Deliver conversations and publish the content you choose to make public | Supabase/hosting; conversation participants; public viewers for public listings/reels/comments |
+| Commercial information: deposits, payment references, Pro subscription state and billing periods | Process payments and manage subscriptions | Stripe; Supabase; the relevant family and vendor |
+| Vendor business contacts, listings, media, staff roles and availability | Operate listings, business accounts and service requests | Supabase/hosting; listing viewers; authorized vendor staff |
+| Device/network information, IP address and security/delivery logs where processed by providers | Deliver and secure the service, diagnose errors and prevent abuse | Hosting, Supabase and the provider delivering the relevant service |
+| Sensitive information you choose to provide: religious/cultural preferences, precise device location when permitted, and private communications | Provide the planning, nearby-search and messaging features you request | Relevant hosting/service providers and the people you choose to share it with |
+
+Stripe collects card details and any vendor identity-verification documents directly; Wedded does not store full card numbers or government ID documents in its application tables. We record adult confirmation, not a birthdate. We do not require sensitive information for advertising or infer advertising profiles from it.
+
+**No sale or advertising sharing.** We do not sell personal information, share it for cross-context behavioral advertising, or operate targeted-advertising SDKs. We do not knowingly sell or share information about minors. Sharing an inquiry with your selected vendor is part of the service you request. A Global Privacy Control signal does not enable any selling or advertising sharing; if practices change, founders must implement the required opt-out controls and update this notice first.
+
+**Your rights.** California residents may have the right to know/access the categories and specific pieces of personal information collected, their sources, business purposes and recipients; obtain a portable copy where required; request deletion, subject to lawful exceptions; correct inaccurate information; opt out of sale or advertising sharing; limit qualifying uses/disclosures of sensitive personal information; and exercise these rights without unlawful discrimination. Counsel must determine CCPA applicability and any additional state rights before publication. This draft does not make you waive statutory rights.
+
+**How to request access or deletion.** Account deletion can be requested through the app's deletion flow, which requires recent sign-in. For access, a copy, correction, sensitive-information requests, authorized-agent requests or deletion assistance, contact **[PRIVACY EMAIL — founders must supply and monitor before launch]**. We verify identity proportionately using account information already held, protect other people's information and verify an agent's authority where required. We will explain any lawful exception or denial and provide applicable review/appeal information. Founders must establish the request log, export process, provider deletion workflow and response deadlines before publishing this policy; no self-service data export is claimed to exist today.
+
+**Retention.** Retain each category only as reasonably necessary for its disclosed purpose, legal obligations, fraud/security handling and disputes. Account deletion follows database rules, including shared-plan continuity; payment records, independent email suppression and backups may require separate retention. Founders and counsel must approve category-specific periods and backup/provider erasure procedures before publication. Do not promise that deletion erases a recipient's copy of messages or a vendor's legally required transaction records.
+
+**Storage and tracking.** We use essential sign-in, preference and cache storage. No first-party analytics or advertising tracking is enabled, so no tracking-consent banner is planned for the current product. Third-party social embeds can use their own cookies and expose IP/browser information; founders must verify or gate those embeds before claiming that no nonessential tracking occurs. If analytics are added later, require an explicit consent toggle before loading them and use a cookieless configuration, for example PostHog with persistence and automatic capture disabled until consent. Cookieless operation alone is not a blanket consent exemption.
+
+Review the [California Attorney General's CCPA guidance](https://oag.ca.gov/privacy/ccpa) when finalizing the rights workflow. Legal entity, postal address, privacy contact, launch regions and effective date remain required launch inputs.
+
+
+## Template provenance
+
+Adapted in structure and selected concepts from General Legal's [U.S. privacy policy](https://github.com/General-Legal/legal-templates/blob/6d6805425eabd41bed86fc1e2ec51612760f716c/templates/privacy-policy-us/template.md) and [cookie notice](https://github.com/General-Legal/legal-templates/blob/6d6805425eabd41bed86fc1e2ec51612760f716c/templates/cookie-notice/template.md), verified at commit `6d6805425eabd41bed86fc1e2ec51612760f716c` under [CC0 1.0](https://github.com/General-Legal/legal-templates/blob/6d6805425eabd41bed86fc1e2ec51612760f716c/LICENSE). Removed template analytics, ad-tech, government-ID and financial-data collection claims that do not describe Wedded.
+
+Template credit: General Legal, PC made the underlying templates publicly available for general reference. They are not legal advice and create no attorney-client relationship; General Legal has not reviewed this Wedded adaptation.

@@ -9,6 +9,7 @@
 //   401 unauthorized · 403 not_allowed · 409 not_payable · 400 invalid · 503 not_set_up · 502 stripe_error
 
 import { createClient } from '@supabase/supabase-js';
+import { jsonBody, limitedBody } from '../_shared/body.ts';
 
 import {
   canReusePayment,
@@ -59,9 +60,13 @@ Deno.serve(async (request) => {
   const { data: userData, error: userError } = await admin.auth.getUser(token);
   if (userError || !userData.user) return json({ error: 'unauthorized' }, 401);
 
-  const body = await request.json().catch(() => null) as { depositId?: unknown } | null;
+  const raw = await limitedBody(request, 2048);
+  if (raw === null) return json({ error: 'body_too_large' }, 413);
+  const body = jsonBody(raw) as { depositId?: unknown } | null;
   const depositId = typeof body?.depositId === 'string' ? body.depositId : '';
-  if (!/^[0-9a-f-]{36}$/.test(depositId)) return json({ error: 'invalid' }, 400);
+  if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(depositId)) {
+    return json({ error: 'invalid' }, 400);
+  }
 
   const { data, error } = await admin.rpc('deposit_for_payment', {
     p_deposit_id: depositId,

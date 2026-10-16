@@ -26,7 +26,9 @@
  * SUPABASE_URL and SUPABASE_SECRET_KEY (the service role key; never commit it).
  * --samples makes labelled placeholder photos for the sample vendors, with
  * some tagged at a venue for its "Real weddings here": Royal Orchard, or
- * --venue=<slug> (e.g. the real hall for the demo).
+ * --venue=<slug> (e.g. the real hall for the demo). A vendor with
+ * sample-photos/<slug>/sample-{1,2,3}.jpg (gitignored; the demo's generated
+ * photos) gets those instead.
  */
 import { createHash } from 'node:crypto';
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
@@ -238,7 +240,7 @@ async function uploadSamples(supabase: SupabaseClient, aws: AwsMedia | null, ven
 
   const { data: vendors, error } = await supabase
     .from('vendors')
-    .select('slug, name')
+    .select('id, slug, name')
     .eq('is_sample', true)
     .order('slug');
   if (error) fail(`Could not read sample vendors: ${error.message}`);
@@ -254,16 +256,30 @@ async function uploadSamples(supabase: SupabaseClient, aws: AwsMedia | null, ven
     const photos: Photo[] = [];
     for (let n = 1; n <= 3; n += 1) {
       const venueTags = n === 2 ? atVenue[vendor.slug as string] : undefined;
+      // Real-looking sample photos when someone has them (sample-photos/ is gitignored),
+      // under new names so phones and the CDN don't keep showing a cached placeholder
+      const file = join('sample-photos', vendor.slug as string, `sample-${n}.jpg`);
+      const real = existsSync(file);
       photos.push({
-        fileName: `sample-${n}.jpg`,
-        data: await placeholder(
-          vendor.name as string,
-          venueTags ? `At ${venue.name as string}` : `Photo ${n}`,
-          index + n,
-        ),
+        fileName: real ? `photo-${n}.jpg` : `sample-${n}.jpg`,
+        data: real
+          ? readFileSync(file)
+          : await placeholder(
+              vendor.name as string,
+              venueTags ? `At ${venue.name as string}` : `Photo ${n}`,
+              index + n,
+            ),
         tags: venueTags ?? {},
         isCover: n === 1,
       });
+    }
+    if (photos.some((photo) => photo.fileName.startsWith('photo-'))) {
+      // The placeholders these replace
+      const stale = [1, 2, 3].map((n) => stableId(`${vendor.id as string}/sample-${n}.jpg`));
+      await supabase.from('vendor_media').delete().in('id', stale);
+      await supabase.storage
+        .from(BUCKET)
+        .remove(stale.flatMap((id) => WIDTHS.map((w) => `${vendor.id as string}/${id}/${w}.webp`)));
     }
     await uploadVendorPhotos(supabase, aws, vendor.slug as string, photos);
   }
@@ -282,7 +298,7 @@ async function main() {
   if (aws) console.log(`Sending photos through AWS (${aws.uploadsBucket})…`);
 
   if (samples) {
-    console.log('Uploading placeholder photos for the sample vendors…');
+    console.log('Uploading photos for the sample vendors (placeholders where sample-photos/ has none)…');
     await uploadSamples(supabase, aws, venueSlug);
   } else {
     if (!folder) fail('Usage: npm run photos:upload -- <folder> [--local] [--aws]');

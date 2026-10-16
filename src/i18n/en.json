@@ -6,12 +6,20 @@
     "home": "Home",
     "search": "Search",
     "saved": "Saved",
+    "requests": "Requests",
     "profile": "Profile",
-    "discover": "Reels"
+    "discover": "Reels",
+    "wed": "Wed"
+  },
+  "wedButton": {
+    "label": "Wed, your planning helper",
+    "waiting": {
+      "one": "Wed, 1 card needs your OK",
+      "other": "Wed, {{count}} cards need your OK"
+    },
+    "hint": "Opens Wed. Press and hold to talk to Wed."
   },
   "home": {
-    "headline": "Every vendor for every event of your wedding",
-    "subtitle": "Roka to reception. Northern California.",
     "phases": {
       "before": "Before the wedding",
       "weddingDay": "Wedding day",
@@ -24,7 +32,6 @@
     "seeAll": "See all",
     "whatDoYouNeed": "What do you need?",
     "seeAllTypes": "All types",
-    "myEvents": "My events",
     "nextUp": "Next up",
     "booked": "booked",
     "seePlan": "See plan",
@@ -138,7 +145,6 @@
     "workedWith": "Has worked with",
     "claim": "Are you this vendor? Claim your profile",
     "photos": "Photos",
-    "photo": "Photo",
     "realWeddings": "Real weddings here",
     "photoBy": "Photo by {{name}}",
     "bookTour": "Book a tour",
@@ -168,9 +174,65 @@
     "placeholder": "This QR code points to a placeholder address because there's no website yet. Don't print it for a vendor until the website address is set.",
     "qrLabel": "QR code for {{url}}"
   },
+  "crash": {
+    "title": "Something went wrong",
+    "body": "This page stopped working. Tap Try again. If it happens again, close the app and open it again."
+  },
+  "offline": {
+    "banner": "You're offline. Pages will update when you're back online."
+  },
+  "cards": {
+    "title": "Invitation cards",
+    "subtitle": "Design a card for each event, then send it or print it",
+    "planEntry": "Invitation cards",
+    "planEntryBody": "Design a card for any of your events and send it on WhatsApp",
+    "design": "Look",
+    "designs": {
+      "ivory": "Ivory and gold",
+      "maroon": "Maroon and gold",
+      "garden": "Sage garden",
+      "night": "Midnight blue",
+      "blush": "Blush pink"
+    },
+    "words": "Words",
+    "names": "Your names",
+    "namesSample": "Simran & Arjun",
+    "whichEvent": "Which event is this card for?",
+    "whichEventHint": "Pick one to fill in its name and day from your plan.",
+    "event": "Event",
+    "eventSample": "Anand Karaj",
+    "date": "Day",
+    "datePick": "Pick the day",
+    "dateClear": "Leave the day off",
+    "time": "Time",
+    "timeSample": "10 in the morning",
+    "venue": "Place",
+    "venueSample": "Gurdwara Sahib, Fremont",
+    "note": "Note at the bottom",
+    "noteHint": "Optional: who to reply to, or a dress code.",
+    "noteSample": "Please reply to Harpreet by October 1",
+    "opening": "Top line",
+    "invite": "Invite line",
+    "defaults": {
+      "opening": "Together with their families",
+      "invite": "invite you to celebrate their"
+    },
+    "needNames": "Type your names to save or send the card.",
+    "save": "Save to Photos",
+    "share": "Share",
+    "shareTitle": "Invitation card",
+    "print": "Print or save as PDF",
+    "saved": "Saved to your Photos.",
+    "failed": {
+      "save": "That didn't save. Let Wedded add to your Photos in the phone's Settings, then try again.",
+      "share": "Sharing didn't open. Try again, or save the card to Photos and send it from there.",
+      "print": "That didn't print. Check the printer, or allow pop-ups on the web, then try again."
+    },
+    "private": "Your card stays on this phone until you send it."
+  },
   "forVendors": {
     "title": "List your business, free",
-    "intro": "Free listings for our first 50 founding vendors. Families browsing find you for exactly what you do. Leave your details and we'll call or text you to set up your page.",
+    "intro": "Listing your business on Wedded is free. Families browsing find you for exactly what you do. Leave your details and we'll call or text you to set up your page.",
     "claimTitle": "Claim your profile",
     "claimIntro": "Is this your business? Leave your details and we'll call or text you to check it's you and hand the page over.",
     "businessName": "Business name",
@@ -216,16 +278,16 @@
     "removeNamed": "Remove {{name}} from saved",
     "noLongerListed": "This vendor is no longer listed.",
     "saveFailed": "We couldn't save that. Check your internet and try again.",
+    "toast": "Saved",
+    "toastTo": "Saved to {{where}}",
+    "seeList": "See list",
+    "seeListHint": "Opens your saved vendors",
     "count": {
       "one": "1 vendor saved",
       "other": "{{count}} vendors saved"
     }
   },
   "profile": {
-    "language": "Language",
-    "english": "English",
-    "punjabi": "ਪੰਜਾਬੀ",
-    "textSize": "Text size",
     "account": {
       "signInTitle": "Save vendors and ask about prices",
       "signInBody": "Make a free account with Apple, Google, your phone or your email. You can keep browsing without one.",
@@ -235,9 +297,7 @@
       "finish": "Continue",
       "edit": "Edit my details",
       "signOut": "Sign out",
-      "deleteAccount": "Delete my account",
-      "myInquiries": "My inquiries",
-      "myInquiriesCount": "My inquiries ({{count}})"
+      "deleteAccount": "Delete my account"
     },
     "editShort": "Edit details",
     "stats": {
@@ -253,7 +313,8 @@
   "common": {
     "comingSoon": "Coming soon",
     "back": "Back",
-    "goHome": "Go to Home"
+    "goHome": "Go to Home",
+    "close": "Close"
   },
   "states": {
     "loading": "Loading…",
@@ -362,7 +423,8 @@
       "appleFailed": "We couldn't sign you in with Apple. Please try again, or use another way.",
       "googleFailed": "We couldn't sign you in with Google. Please try again, or use another way.",
       "appleOff": "Sign in with Apple isn't ready yet. Please use another way for now.",
-      "googleOff": "Sign in with Google isn't ready yet. Please use another way for now."
+      "googleOff": "Sign in with Google isn't ready yet. Please use another way for now.",
+      "captcha": "We couldn't check this is really you. Wait a moment and try again."
     },
     "why": "Save vendors, ask for prices and plan with family.",
     "withApple": "Continue with Apple",
@@ -383,7 +445,41 @@
     "signInWithApple": "Sign in with Apple",
     "signInWithGoogle": "Sign in with Google",
     "signInWithPhone": "Sign in with phone number",
-    "signInWithEmail": "Sign in with email"
+    "signInWithEmail": "Sign in with email",
+    "legal": "By continuing, you agree to our {{terms}}. Learn how we use your data in our {{privacy}}.",
+    "captcha": "Checking you're a person",
+    "captchaWait": "One moment, we're checking this is really you. Try again in a second.",
+    "join": {
+      "title": "What brings you to Wedded?",
+      "planning": "I'm planning a wedding",
+      "planningDetail": "Find vendors for every event and keep the plan in one place.",
+      "looking": "Just looking",
+      "lookingDetail": "Watch wedding reels and save the vendors you like.",
+      "business": "I run a wedding business",
+      "businessDetail": "Make a free listing so families can find you.",
+      "continue": "Continue"
+    },
+    "business": {
+      "title": "Your business",
+      "intro": "We'll make your listing. You can add photos and prices next. The Wedded team checks it before families see it.",
+      "name": "Business name",
+      "nameError": "Please type your business name.",
+      "type": "What do you do?",
+      "typeHint": "Type what you do, like dhol, caterer or mehndi, then tap the match.",
+      "typeNoMatch": "Nothing matches that. Try another word, like DJ, hall or photographer.",
+      "typeError": "Please pick what you do.",
+      "town": "Town you work from",
+      "townMatch": "We'll use {{city}}.",
+      "townError": "Type a town in Northern California, like Yuba City.",
+      "submit": "Make my listing",
+      "errors": {
+        "needsProfile": "Please fill in your details first.",
+        "tooMany": "You already have 3 listings waiting. Finish one in My business first.",
+        "invalid": "Check the name, what you do and the town, then try again.",
+        "offline": "You're offline. Check your internet and try again.",
+        "failed": "We couldn't make your listing. Please try again."
+      }
+    }
   },
   "saveVendor": {
     "title": "Save to which event?",
@@ -492,7 +588,7 @@
     "sent": {
       "title": "Sent to {{vendor}}",
       "queuedTitle": "We'll send it to {{vendor}} first thing tomorrow",
-      "next": "Most vendors reply within 1 to 2 days by call or text. A copy is in your email.",
+      "next": "The vendor has your request and will reply by call or text. A copy is in your email.",
       "faster": "Want a faster answer?",
       "callNow": "Call now",
       "textNow": "Text now",
@@ -502,7 +598,7 @@
       "chatTitle": "Keep talking here",
       "chatBody": "Your inquiry is now a chat with {{vendor}}. Their reply shows up in Messages, and we'll email you too.",
       "chatButton": "Continue in chat",
-      "nextNoEmail": "Most vendors reply within 1 to 2 days by call or text.",
+      "nextNoEmail": "The vendor has your request and will reply by call or text.",
       "seeRequests": "See all my requests"
     },
     "tourTitle": "Book a tour",
@@ -579,7 +675,6 @@
   },
   "myInquiries": {
     "title": "My requests",
-    "back": "Back",
     "empty": "You haven't asked any vendors yet. Tap \"Ask about price & date\" on a vendor to start.",
     "askedOn": "Asked on {{date}}",
     "viewVendor": "View vendor",
@@ -606,21 +701,62 @@
     }
   },
   "discover": {
-    "title": "Discover",
-    "eyebrow": "Real work from NorCal vendors",
-    "stories": "Vendor stories",
     "openStory": "Watch {{name}}'s photos",
-    "empty": "No photos yet. Check back soon.",
     "photoOf": "Photo {{number}} of {{total}}, {{name}}",
-    "doubleTapHint": "Double-tap to save",
-    "askLabel": "Ask {{name}} about price and date",
     "shareLabel": "Share {{name}}"
   },
   "story": {
-    "previous": "Previous photo",
-    "next": "Next photo",
+    "previous": "Previous",
+    "next": "Next",
     "close": "Close",
     "viewProfile": "Open {{name}}'s profile"
+  },
+  "stories": {
+    "title": "Stories",
+    "button": {
+      "one": "Stories, 1 new",
+      "other": "Stories, {{count}} new"
+    },
+    "yours": "Your story",
+    "add": "Add to your story",
+    "watch": "Watch {{name}}'s story",
+    "clipOf": "Clip {{number}} of {{total}}, {{name}}",
+    "gone": "This story isn't here anymore. Stories last 24 hours.",
+    "delete": "Delete this story",
+    "deleteTitle": "Delete this story?",
+    "cardSpoken": "Watch {{name}}'s story, {{time}}",
+    "empty": "No one else has shared a story today. Stories last 24 hours, so check back later."
+  },
+  "postStory": {
+    "title": "New story",
+    "heading": "Share a moment from today",
+    "photo": "Choose a photo",
+    "video": "Choose a video",
+    "camera": "Take one now",
+    "lasts": "Your story shows on Reels for 24 hours, then it's gone.",
+    "privacy": "We open only what you pick. Nothing else on your phone is looked at or uploaded. Videos can be up to {{seconds}} seconds.",
+    "needLibrary": "To pick a photo or video, allow Wedded App to open your photos when your phone asks.",
+    "needCamera": "To take a photo or video, allow Wedded App to use the camera when your phone asks.",
+    "blockedLibrary": "Wedded App isn't allowed to open your photos. Turn on Photos for Wedded App in Settings.",
+    "cantOpenLibrary": "Your photos didn't open. Try again.",
+    "yourPhoto": "Your photo",
+    "yourClip": "Your clip",
+    "showsFor": "Shows on Reels for 24 hours",
+    "change": "Choose something else",
+    "captionPlaceholder": "Say something about it",
+    "consent": "Everyone in this is okay with it being shared",
+    "rules": "Anyone can see stories for 24 hours. Don't show phone numbers or home addresses. We take down anything that breaks the rules.",
+    "preparing": "Getting it ready…",
+    "share": "Share to your story",
+    "discardTitle": "Discard this story?",
+    "discardBody": "It won't be shared.",
+    "errors": {
+      "notSignedIn": "Sign in to share a story.",
+      "consent": "Tick this box to say everyone in it is okay with it being shared.",
+      "limit": "You've shared a lot today. Try again tomorrow.",
+      "tooBig": "That video is too big to send. Trim it shorter, then try again.",
+      "failed": "Your story didn't send. Check your internet, then try again."
+    }
   },
   "share": {
     "vendor": "{{name}}, {{category}} in {{city}}. Found on Wedded App.",
@@ -653,7 +789,15 @@
     "about": "About",
     "version": "Version",
     "account": "Account",
-    "madeIn": "Made in Northern California for Punjabi families"
+    "madeIn": "Made in Northern California for Punjabi families",
+    "legal": "Legal",
+    "legalSoon": "The Terms, Privacy and Refund pages open on the Wedded website once it's live.",
+    "soon": "Soon",
+    "legalPages": {
+      "terms": "Terms of Service",
+      "privacy": "Privacy Policy",
+      "refunds": "Refund Policy"
+    }
   },
   "planner": {
     "title": "My Wedding",
@@ -817,6 +961,96 @@
     "editorExplain": "You'll see the plan and can change it: tick off vendors as they're booked, and add events.",
     "suggesterExplain": "You'll see the plan and can suggest vendors for each event. The family decides."
   },
+  "groupChat": {
+    "title": "Family chats",
+    "planBody": "Chat with family and friends about the wedding, all in one place. Write @Wed to ask Wed for help.",
+    "start": "Start a family chat",
+    "noMessages": "No messages yet",
+    "unavailable": "This chat isn't available. You may have left it, or it was removed.",
+    "people": {
+      "one": "1 person",
+      "other": "{{count}} people"
+    },
+    "openInfo": "Shows who's in the chat",
+    "you": "You",
+    "wed": "Wed",
+    "formerMember": "Someone who left",
+    "joined": "{{name}} joined",
+    "left": "{{name}} left",
+    "preview": {
+      "photo": "{{name}}: Photo",
+      "text": "{{name}}: {{text}}",
+      "joined": "{{name}} joined",
+      "left": "{{name}} left"
+    },
+    "askWed": "Ask Wed",
+    "wedThinking": "Wed is looking…",
+    "wedFailed": "Wed couldn't answer that one. Try asking again.",
+    "placeholder": "Write to everyone",
+    "new": {
+      "title": "New family chat",
+      "name": "Chat name",
+      "nameHint": "Like Family, or Jaago crew",
+      "defaultName": "Family",
+      "who": "Who's in it",
+      "whoHint": "Pick people from your wedding plan. Friends can join later with a link.",
+      "create": "Start the chat"
+    },
+    "info": {
+      "title": "Chat info",
+      "members": "People in this chat",
+      "inWedding": "Plans the wedding",
+      "friend": "Friend",
+      "manages": "Can add and remove people",
+      "invite": "Invite with a link",
+      "inviteBody": "Anyone with the link can join this chat for 14 days. They won't see the wedding plan.",
+      "inviteMessage": "Join our wedding chat on Wedded App: {{link}}",
+      "copied": "Link copied. Paste it into a message.",
+      "add": "Add from the wedding plan",
+      "addOne": "Add",
+      "rename": "Chat name",
+      "save": "Save name",
+      "saved": "Saved",
+      "leave": "Leave this chat",
+      "leaveTitle": "Leave this chat?",
+      "leaveConfirm": "You'll stop getting its messages. Someone can add you back.",
+      "removeTitle": "Remove from the chat?",
+      "removeConfirm": "{{name}} will stop getting this chat's messages.",
+      "remove": "Remove",
+      "removeHint": "Removes this person from the chat",
+      "keep": "Keep"
+    },
+    "join": {
+      "title": "Join the chat",
+      "pageTitle": "Join our wedding chat · Wedded App",
+      "pageDescription": "You're invited to a wedding chat on Wedded App.",
+      "invitedBy": "{{name}} invited you to",
+      "invited": "You're invited to",
+      "forWedding": "For {{title}}",
+      "explain": "You'll see the messages and can write to everyone. The wedding plan stays with the family.",
+      "join": "Join the chat",
+      "askForNewLink": "Ask the person who sent it for a new link.",
+      "status": {
+        "expired": "This link has expired",
+        "used_up": "This link has been used up",
+        "revoked": "This link was cancelled",
+        "not_found": "This link doesn't work"
+      }
+    },
+    "errors": {
+      "not_allowed": "Only the people planning the wedding can do that.",
+      "empty": "Please write something first.",
+      "rate": "You're sending very fast. Wait a minute, then send again.",
+      "revoked": "This link was cancelled. Ask for a new one.",
+      "expired": "This link has expired. Ask for a new one.",
+      "used_up": "This link has been used up. Ask for a new one.",
+      "not_found": "This link doesn't work. Ask for a new one.",
+      "full": "This chat already has the most people it can (50).",
+      "too_many": "You're in 30 chats already. Leave one to join this.",
+      "thread_limit": "This wedding already has 10 chats. Use one of those.",
+      "failed": "That didn't work. Check your internet, then try again."
+    }
+  },
   "vendorStats": {
     "savedBy": {
       "one": "Saved by {{count}} family",
@@ -975,7 +1209,8 @@
       "booking": "Inquiry",
       "phone": "Shared a phone number",
       "voice": "Voice note",
-      "deposit": "Deposit request"
+      "deposit": "Deposit request",
+      "proposal": "Proposal"
     },
     "errors": {
       "rate": "You're sending very fast. Wait a minute, then send again.",
@@ -1152,7 +1387,7 @@
     "privacyLink": "Privacy Policy",
     "phrases": {
       "plan": "Plan your family's wedding, together.",
-      "events": "Every event, every vendor, one plan.",
+      "events": "Every event, all in one plan.",
       "vendors": "Find vendors your family will love.",
       "ask": "Ask for prices and dates in one tap.",
       "countdown": "Your countdown to the big day.",
@@ -1313,6 +1548,10 @@
     "more": "More",
     "vendor": "Vendor",
     "taggedVendor": "See {{name}}",
+    "vendorCount": "{{count}} vendors",
+    "seeVendors": "See the {{count}} vendors in this reel",
+    "seeWhich": "Vendors in this reel",
+    "seeWhichBody": "Tap one to see their page.",
     "bookVendor": "Book {{name}}",
     "bookThis": "Book this vendor",
     "bookAny": "Book a vendor",
@@ -1462,8 +1701,10 @@
   },
   "business": {
     "title": "My business",
-    "profileHint": "Your numbers, the families who asked, menus and calendar",
     "notVendor": "This is for vendor accounts. If you run a wedding business, ask us to add you.",
+    "more": {
+      "title": "More about your page"
+    },
     "yourListing": "Your page",
     "listingHint": "Families see these on your page. Keep them up to date so they ask about the right things.",
     "cancel": "Cancel",
@@ -1478,7 +1719,6 @@
       "editTitle": "Change menu",
       "name": "Menu name",
       "nameHint": "For example: Gold Package",
-      "namePa": "Menu name in Punjabi (if you like)",
       "description": "About this menu",
       "cuisine": "Cuisine",
       "cuisineHint": "For example: Punjabi, Indo-Chinese",
@@ -1573,7 +1813,6 @@
         "booked": "You're taken for the whole day.",
         "held": "Someone is deciding. You're not free yet."
       },
-      "partNote": "Part of this day is marked. Picking one of these sets the whole day.",
       "saveFailed": "That didn't save. Check your internet, then try again.",
       "freshTitle": "Is your calendar up to date?",
       "freshBody": "Families only see your days as open while your calendar is fresh. Tap this whenever you've checked it.",
@@ -1653,28 +1892,7 @@
       "failed": "Your spreadsheet didn't come through. Check your internet, then try again.",
       "cantShare": "This phone can't share files from the app. Try on another phone, or on a computer at the website."
     },
-    "home": {
-      "week": {
-        "one": "This week: 1 person saw your page, {{asked}} asked about a date",
-        "other": "This week: {{count}} people saw your page, {{asked}} asked about a date"
-      },
-      "hint": "Opens My business"
-    },
     "insights": {
-      "period": {
-        "7": "This week",
-        "30": "In the last 30 days",
-        "90": "In the last 3 months"
-      },
-      "headline": "{{period}}, {{seen}} and {{asked}}.",
-      "seen": {
-        "one": "1 family saw your page",
-        "other": "{{count}} families saw your page"
-      },
-      "askedDate": {
-        "one": "1 asked about a date",
-        "other": "{{count}} asked about a date"
-      },
       "chartTitle": "People who viewed your page, day by day",
       "chartTotal": {
         "one": "1 view in all",
@@ -1756,7 +1974,7 @@
     "checklist": {
       "title": "Make your page stronger",
       "progress": "{{done}} of {{total}} done",
-      "fix": "Fix it",
+      "showAll": "Show all {{count}}",
       "askTeam": "Ask the Wedded team",
       "tellTeam": "Tell the Wedded team and we'll add it for you.",
       "teamMessage": "Hi Wedded team, please help me add this to {{name}}'s page: {{what}}",
@@ -1781,17 +1999,13 @@
           "title": "About you",
           "gain": "Families trust vendors who say who they are and how they work."
         },
-        "bioPa": {
-          "title": "About you in Punjabi",
-          "gain": "Many families read in Punjabi, especially parents and grandparents."
-        },
         "price": {
           "title": "A starting price",
           "gain": "Families ask more often when they can see a price."
         },
         "contact": {
           "title": "A phone or WhatsApp number",
-          "gain": "Most families want to call or WhatsApp before they book."
+          "gain": "Many families like to call or WhatsApp before they book."
         },
         "instagram": {
           "title": "Your Instagram",
@@ -1821,9 +2035,7 @@
       "about": "About you",
       "aboutHint": "What families read first under your name.",
       "tagline": "One line about you (English)",
-      "taglinePa": "One line about you (ਪੰਜਾਬੀ)",
       "bio": "About you (English)",
-      "bioPa": "About you (ਪੰਜਾਬੀ)",
       "price": "Price",
       "priceHint": "Families ask more often when they can see a price.",
       "priceShow": "How to show your price",
@@ -1895,7 +2107,6 @@
       "leave": "Leave"
     },
     "getPaid": {
-      "footer": "Families pay deposits by card in chat. Stripe handles the cards and pays you.",
       "none": {
         "title": "Get paid through Wedded",
         "hint": "Take deposits by card in chat. Set up a free Stripe account."
@@ -1968,5 +2179,333 @@
         }
       }
     }
+  },
+  "businessMode": {
+    "label": "Business",
+    "labelA11y": "Business mode",
+    "tabs": {
+      "today": "Today",
+      "wanted": "Wanted",
+      "reels": "Reels",
+      "leads": "Leads",
+      "business": "Business"
+    },
+    "today": {
+      "title": "Today",
+      "waitingTitle": "Waiting for your reply",
+      "seeLeads": "See all your leads",
+      "weekTitle": "This week",
+      "allNumbers": "See all your numbers",
+      "comingUp": "Coming up",
+      "noDates": "No days booked yet. Mark the days you're busy, so families only ask about days you're free.",
+      "openCalendar": "Open your calendar"
+    },
+    "account": "Account",
+    "switchToBusiness": "Switch to business",
+    "switchToBusinessHint": "Your leads, the families looking and your page",
+    "switchToPlanning": "Switch to planning",
+    "switchToPlanningHint": "Plan your own family's wedding"
+  },
+  "requests": {
+    "headline": "{{category}} for the {{event}}",
+    "miles": {
+      "one": "1 mile away",
+      "other": "{{count}} miles away"
+    },
+    "gone": "This request isn't here anymore.",
+    "ago": {
+      "now": "Just now",
+      "minutes": {
+        "one": "1 minute ago",
+        "other": "{{count}} minutes ago"
+      },
+      "hours": {
+        "one": "1 hour ago",
+        "other": "{{count}} hours ago"
+      },
+      "days": {
+        "one": "Yesterday",
+        "other": "{{count}} days ago"
+      },
+      "weeks": {
+        "one": "1 week ago",
+        "other": "{{count}} weeks ago"
+      }
+    },
+    "budget": {
+      "upTo": "Up to {{amount}}",
+      "perGuest": "{{budget}} a guest",
+      "bands": {
+        "under_500": "Under $500",
+        "500_1000": "$500–1,000",
+        "1000_2500": "$1,000–2,500",
+        "2500_5000": "$2,500–5,000",
+        "5000_plus": "$5,000+",
+        "pp_under_25": "Under $25 a guest",
+        "pp_25_50": "$25–50 a guest",
+        "pp_50_80": "$50–80 a guest",
+        "pp_80_plus": "$80+ a guest"
+      }
+    },
+    "status": {
+      "open": "Open",
+      "booked": "Booked",
+      "closed": "Closed",
+      "expired": "Expired"
+    },
+    "units": {
+      "event": "for the event",
+      "person": "a person",
+      "plate": "a plate",
+      "hour": "an hour",
+      "day": "a day"
+    },
+    "unitShort": {
+      "event": "Event",
+      "person": "Person",
+      "plate": "Plate",
+      "hour": "Hour",
+      "day": "Day"
+    },
+    "tab": {
+      "signIn": "Post what you need, like a DJ for the reception, and vendors near you send you their prices. Sign in to post one."
+    },
+    "post": {
+      "title": "Ask vendors",
+      "body": "Vendors near you send their prices. You choose.",
+      "hint": "Opens a form to post a request to vendors",
+      "fromPlan": "Ask vendors for this event",
+      "preview": "WHAT VENDORS SEE",
+      "previewLabel": "How vendors will see your request",
+      "pickType": "Pick what you need",
+      "you": "You",
+      "yourTown": "your town",
+      "event": "Which event?",
+      "type": "What do you need?",
+      "typeError": "Pick what you need",
+      "budget": "Pick one, or skip it",
+      "note": "Anything else? (optional)",
+      "noteHint": "Like: two dhol players for an hour, from 9 pm",
+      "privacy": "Vendors see “{{name}}” and {{city}}. Never your phone number or email, until you choose one.",
+      "send": "Ask vendors",
+      "town": "Your town",
+      "townMatch": "Vendors near {{city}} will see it",
+      "townError": "Type your town, like Yuba City",
+      "needsPlan": "Start your wedding plan first, so vendors know your date and events.",
+      "stepOf": "STEP {{step}} OF {{total}}",
+      "step1": "What do you need?",
+      "step2": "Your budget",
+      "step3": "Anything to add?",
+      "continue": "Continue",
+      "budgetHint": "Vendors see the range, so the prices you get fit.",
+      "vendorCount": {
+        "one": "1 near you",
+        "other": "{{count}} near you"
+      }
+    },
+    "mine": {
+      "title": "Your asks",
+      "subtitle": "What you asked vendors for, and their prices.",
+      "empty": "Post what you need, like a DJ for the reception, and vendors send you their prices.",
+      "proposals": {
+        "zero": "No proposals yet",
+        "one": "1 proposal",
+        "other": "{{count}} proposals"
+      },
+      "eyebrow": "REQUESTS",
+      "emptyTitle": "Let vendors come to you"
+    },
+    "inbox": {
+      "subtitle": "Compare prices, then choose one.",
+      "posted": "Posted! Vendors near you can see it now.",
+      "proposals": {
+        "zero": "Proposals",
+        "one": "1 proposal",
+        "other": "{{count}} proposals"
+      },
+      "none": "No proposals yet. Vendors usually reply within a day; we'll let you know.",
+      "lowest": "Lowest price",
+      "founding": "Founding vendor",
+      "bookedBy": {
+        "one": "Booked by 1 family",
+        "other": "Booked by {{count}} families"
+      },
+      "replied": "Replied to {{replied}} of {{asked}} families",
+      "withReel": "Sent a reel",
+      "withMenu": "Sent a menu",
+      "openVendor": "{{vendor}}, opens their page",
+      "accept": "Choose",
+      "decline": "No thanks",
+      "notYet": "Not yet",
+      "acceptTitle": "Choose this vendor?",
+      "acceptBody": "We'll start a chat with {{vendor}} about their {{price}} price. Nothing is booked until you both agree.",
+      "chosen": "You chose them",
+      "declined": "You said no thanks",
+      "close": "Close this request",
+      "closeTitle": "Close this request?",
+      "closeBody": "Vendors won't see it anymore or send new proposals.",
+      "closeYes": "Close it",
+      "acceptBodyNoPrice": "We'll start a chat with {{vendor}}. Nothing is booked until you both agree.",
+      "priceInChat": "Price in chat",
+      "freeOnDate": "Free on your date",
+      "openChat": "Open chat",
+      "title": {
+        "one": "1 vendor answered",
+        "other": "{{count}} vendors answered"
+      },
+      "postedShort": "SENT TO VENDORS NEAR YOU"
+    },
+    "problems": {
+      "failed": "Something went wrong. Try again.",
+      "notAllowed": "You can't do that here.",
+      "proOnly": "Wanted is part of Wedded Pro.",
+      "alreadyOpen": "You already have an open request for this. Look in Posted requests.",
+      "tooManyOpen": "You have a lot of open requests. Close one first.",
+      "rate": "That's a lot for one day. Try again tomorrow.",
+      "datePassed": "That date has passed. Pick a date that's coming up.",
+      "invalid": "Something in it isn't right. Check it and try again.",
+      "notOpen": "This request isn't open anymore.",
+      "alreadySent": "You've already sent a proposal for this.",
+      "proposalsFull": "This family has all the proposals they can take.",
+      "alreadyAnswered": "You've already answered this proposal.",
+      "offline": "You're offline. Check your connection and try again."
+    },
+    "chat": {
+      "title": "Proposal",
+      "chosenVendor": "They chose your proposal",
+      "chosenFamily": "You chose this proposal"
+    },
+    "invite": {
+      "today": "Today!",
+      "away": {
+        "one": "1 day away",
+        "other": "{{count}} days away"
+      },
+      "dateAway": "{{date}} · {{away}}"
+    },
+    "nearby": "Nearby",
+    "sent": {
+      "title": "Sent!",
+      "body": "{{category}} vendors near {{city}} can see it now. Their prices will show up here."
+    },
+    "match": {
+      "title": "You chose {{vendor}}",
+      "body": "Opening your chat…"
+    },
+    "guests": "{{band}} guests"
+  },
+  "looking": {
+    "title": "Wanted",
+    "subtitle": "Families near you who need what you do.",
+    "rowHint": "Send families your price",
+    "reach": "How far",
+    "miles": {
+      "one": "1 mi",
+      "other": "{{count}} mi"
+    },
+    "anywhere": "Anywhere",
+    "empty": "No families are looking near you right now. New requests show up here.",
+    "free": "You're free that day",
+    "booked": "You're booked that day",
+    "first": "Be the first to reply",
+    "proposals": {
+      "one": "1 proposal so far",
+      "other": "{{count}} proposals so far"
+    },
+    "propose": "Send a proposal",
+    "sent": "Proposal sent",
+    "teaser": {
+      "eyebrow": "WEDDED PRO",
+      "loading": "Families are looking for vendors near you",
+      "category": {
+        "one": "1 family near you needs a {{category}}",
+        "other": "{{count}} families near you need a {{category}}"
+      },
+      "total": {
+        "one": "1 family near you is looking",
+        "other": "{{count}} families near you are looking"
+      },
+      "body": "See what they need, their date and budget, and send them your price.",
+      "goPro": "See Wedded Pro",
+      "need": {
+        "one": "family near you is looking for a vendor",
+        "other": "families near you are looking for vendors"
+      },
+      "needCategory": {
+        "one": "family near you needs a {{category}}",
+        "other": "families near you need a {{category}}"
+      },
+      "hint": "Opens Families looking"
+    },
+    "more": "Show more",
+    "full": "This family has all the proposals they can take"
+  },
+  "propose": {
+    "title": "Send a proposal",
+    "price": "Your price in dollars",
+    "priceError": "Enter a price from $1 to $25,000",
+    "per": "Price per",
+    "note": "Your note",
+    "noteHint": "What you'd bring, and why you're a good fit",
+    "noteError": "Write a little more, so they know what you're offering",
+    "menu": "Attach a menu (optional)",
+    "once": "You can send one proposal per request. If they choose you, a chat opens.",
+    "send": "Send proposal",
+    "eyebrow": "FOR {{name}}"
+  },
+  "pro": {
+    "badge": "Pro",
+    "title": "Wedded Pro",
+    "subtitle": "Families come to you.",
+    "name": "Wedded Pro",
+    "price": "$50",
+    "perMonth": "a month",
+    "cancelAnytime": "Renews every month. Cancel anytime.",
+    "perks": {
+      "looking": {
+        "title": "See families looking",
+        "body": "Requests from families near you, with their date, guests and budget."
+      },
+      "proposals": {
+        "title": "Send your price",
+        "body": "One proposal per request, with a note and your menu."
+      },
+      "calendar": {
+        "title": "Know if you're free",
+        "body": "Each request says if your calendar is open that day."
+      },
+      "badge": {
+        "title": "A Pro mark",
+        "body": "Families see you're serious about their wedding."
+      }
+    },
+    "subscribe": "Subscribe on the Wedded website",
+    "youreOn": "You're on Wedded Pro",
+    "onWebsite": "You pay on the Wedded website, not in the app.",
+    "soon": "Subscribing opens on the Wedded website soon.",
+    "free": "Your listing, inquiries, chat and reels stay free, with or without Pro.",
+    "pastDue": "Your card didn't go through. Update it on the Wedded website.",
+    "renews": "Renews {{date}}",
+    "ends": "Ends {{date}}",
+    "eyebrow": "WEDDED PRO",
+    "manage": "Manage or cancel Pro",
+    "updateCard": "Update your card",
+    "manageOnWebsite": "You change your card or cancel on the Wedded website."
+  },
+  "licences": {
+    "title": "Licences",
+    "fonts": "Fonts",
+    "fontsFooter": "Free to use under the SIL Open Font License.",
+    "pictures": "Video and icons",
+    "picturesFooter": "The welcome video is cut from free clips on Pexels, used under the Pexels License.",
+    "welcomeVideo": "Welcome video",
+    "by": "By {{name}}",
+    "software": "Software",
+    "softwareFooter": "Thank you to everyone who builds and shares these.",
+    "openSource": "Open-source software, under the MIT licence"
+  },
+  "sample": {
+    "tag": "Sample",
+    "label": "Sample listing for the demo, not a real business"
   }
 }

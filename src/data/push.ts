@@ -45,9 +45,11 @@ export function pushSupported(): boolean {
 export function configurePushHandling(): void {
   Notifications.setNotificationHandler({
     handleNotification: async (notification) => {
-      const data = notification.request.content.data as { conversationId?: unknown } | undefined;
-      const onScreen =
-        typeof data?.conversationId === 'string' && data.conversationId === openConversation;
+      const data = notification.request.content.data as
+        { conversationId?: unknown; threadId?: unknown } | undefined;
+      // A chat or a group thread; setOpenConversation takes either id
+      const id = data?.conversationId ?? data?.threadId;
+      const onScreen = typeof id === 'string' && id === openConversation;
       return {
         shouldShowBanner: !onScreen,
         shouldShowList: !onScreen,
@@ -137,10 +139,10 @@ export async function forgetThisPhone(): Promise<void> {
   await writeSetting(StorageKeys.pushToken, '');
 }
 
-/** The chat an alert opens, from its data. */
+/** The chat or group thread an alert opens, from its data. */
 export function chatUrlOf(data: unknown): string | null {
   const d = data as { url?: unknown; conversationId?: unknown } | null | undefined;
-  if (typeof d?.url === 'string' && /^\/chat\/[0-9a-f-]{36}$/.test(d.url)) return d.url;
+  if (typeof d?.url === 'string' && /^\/(chat|group)\/[0-9a-f-]{36}$/.test(d.url)) return d.url;
   if (typeof d?.conversationId === 'string' && /^[0-9a-f-]{36}$/.test(d.conversationId)) {
     return `/chat/${d.conversationId}`;
   }

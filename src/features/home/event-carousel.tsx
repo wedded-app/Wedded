@@ -52,8 +52,7 @@ const scrim = (
 
 /**
  * "Plan by event" as tall cards that snap as you swipe, in ceremony order.
- * Each shows the event's name written large in Gurmukhi behind its name in
- * the family's language, how many kinds of vendor it needs and how many
+ * Each shows the event's name, how many kinds of vendor it needs and how many
  * vendors there are, on a shade for its part of the wedding (or a photo from
  * that event once vendors have one). Only the family's main events.
  */
@@ -115,15 +114,13 @@ function EventCard({
 }) {
   const Colors = useColors();
   const styles = useStyles();
-  const { t, locale } = useLocale();
-  const name = localized(event.name, locale);
+  const { t } = useLocale();
+  const name = localized(event.name);
   const detail = [
     t('counts.vendorTypes', { count: event.vendorTypeCount }),
     t('counts.vendors', { count: event.vendorCount }),
   ].join(' · ');
   const phaseLabel = PHASE_LABELS[phase];
-  // The name in Gurmukhi as a backdrop; in Punjabi mode, the English one
-  const backdrop = locale === 'pa' ? event.name.en : event.name.pa;
 
   return (
     <Animated.View entering={Motion.stagger(index)}>
@@ -139,20 +136,6 @@ function EventCard({
             <View style={[StyleSheet.absoluteFill, scrim]} />
           </>
         )}
-        {backdrop ? (
-          <AppText
-            aria-hidden
-            accessibilityElementsHidden
-            importantForAccessibility="no-hide-descendants"
-            numberOfLines={1}
-            ellipsizeMode="clip"
-            maxFontSizeMultiplier={1}
-            weight={800}
-            style={styles.backdrop}
-          >
-            {backdrop}
-          </AppText>
-        ) : null}
 
         <View style={styles.topRow}>
           <View style={styles.iconWrap}>
@@ -189,7 +172,7 @@ const useStyles = makeStyles((Colors) => ({
     paddingHorizontal: Sizes.pageGutter,
   },
   card: {
-    height: 236,
+    height: 168,
     justifyContent: 'space-between',
     padding: Spacing.lg,
     borderRadius: Radius.card + 4,
@@ -198,14 +181,6 @@ const useStyles = makeStyles((Colors) => ({
   },
   photoCard: {
     backgroundColor: Colors.heroFrom,
-  },
-  backdrop: {
-    position: 'absolute',
-    right: -12,
-    bottom: 52,
-    fontSize: 104,
-    lineHeight: 150,
-    color: 'rgba(255,255,255,0.13)',
   },
   topRow: {
     flexDirection: 'row',

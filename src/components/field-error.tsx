@@ -8,7 +8,7 @@ import { Sizes, Spacing, useColors } from '@/constants/theme';
 export function FieldError({ message }: { message: string }) {
   const Colors = useColors();
   const scale = useFontScale('body');
-  const { lineHeight } = useTypeStyle({ text: message });
+  const { lineHeight } = useTypeStyle({});
 
   return (
     <View style={styles.row} accessibilityLiveRegion="polite">

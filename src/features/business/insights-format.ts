@@ -7,25 +7,6 @@ import { sectionFor } from './listing-draft';
 
 type Translate = (key: string, options?: Record<string, string | number>) => string;
 
-/** "This week", "In the last 30 days" or "In the last 3 months". */
-export function periodWords(days: 7 | 30 | 90, t: Translate): string {
-  return t(`business.insights.period.${days}`);
-}
-
-/** The one line at the top: "This week, 38 families saw your page and 4 asked about a date." */
-export function headline(
-  days: 7 | 30 | 90,
-  views: number,
-  inquiries: number,
-  t: Translate,
-): string {
-  return t('business.insights.headline', {
-    period: periodWords(days, t),
-    seen: t('business.insights.seen', { count: views }),
-    asked: t('business.insights.askedDate', { count: inquiries }),
-  });
-}
-
 /**
  * "You replied to 9 of 10 families, usually within 2 hours", or null before
  * anyone has asked.

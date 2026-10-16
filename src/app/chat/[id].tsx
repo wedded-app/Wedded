@@ -52,6 +52,7 @@ import { leadAnswerRows } from '@/features/business/business-format';
 import { useEventNames } from '@/features/business/business-parts';
 import { messageSnippet } from '@/features/chat/chat-format';
 import { ChatDeposit, DepositsProvider, useChatDeposits } from '@/features/chat/chat-deposits';
+import { ChatProposal } from '@/features/requests/chat-proposal';
 import { PushAskCard } from '@/features/chat/push-ask';
 import { sentPhotoUri } from '@/features/chat/chat-photo';
 import { nextReaction, type ReactionCode } from '@/features/chat/reactions';
@@ -82,7 +83,7 @@ export default function ChatScreen() {
   const styles = useStyles();
   const insets = useSafeAreaInsets();
   const { id = '' } = useLocalSearchParams<{ id: string }>();
-  const { t, locale } = useLocale();
+  const { t } = useLocale();
   const thread = useConversation(id);
   const send = useSendMessage(id);
   const react = useReactToMessage(id);
@@ -110,7 +111,7 @@ export default function ChatScreen() {
   const convo = thread.conversation;
   const side = convo?.side ?? 'family';
   const typing = useTyping(id, convo?.side ?? null);
-  const deposits = useChatDeposits(id, side, convo ? localized(convo.vendor.name, locale) : '');
+  const deposits = useChatDeposits(id, side, convo ? localized(convo.vendor.name) : '');
   // Only a vendor families can pay asks for deposits
   const payments = usePaymentAccount(side === 'vendor' ? (convo?.vendor.id ?? '') : '');
   // Alerts for this chat don't pop up while it's on screen
@@ -184,7 +185,7 @@ export default function ChatScreen() {
   const title = convo
     ? side === 'vendor'
       ? (convo.family.firstName ?? t('chat.aFamily'))
-      : localized(convo.vendor.name, locale)
+      : localized(convo.vendor.name)
     : '';
 
   // Who wrote a quoted message, and the messages a reply can point at
@@ -231,7 +232,7 @@ export default function ChatScreen() {
                 >
                   {side === 'family'
                     ? t('chat.viewProfile')
-                    : t('chat.forBusiness', { name: localized(convo.vendor.name, locale) })}
+                    : t('chat.forBusiness', { name: localized(convo.vendor.name) })}
                 </AppText>
               </Pressable>
             )}
@@ -548,7 +549,8 @@ function ThreadRow({
     message.kind === 'menu' ||
     message.kind === 'booking' ||
     message.kind === 'phone' ||
-    message.kind === 'deposit';
+    message.kind === 'deposit' ||
+    message.kind === 'proposal';
   const quotedName = quoted ? authorOf(quoted) : '';
   const quotedText = quoted ? messageSnippet(quoted, t) : t('chat.reply.unavailable');
   return (
@@ -676,6 +678,8 @@ function MessageContent({
       return message.phone ? <PhoneCard phone={message.phone} mine={mine} /> : null;
     case 'deposit':
       return <ChatDeposit message={message} />;
+    case 'proposal':
+      return <ChatProposal message={message} conversation={conversation} />;
     default:
       return <TextBubble text={message.body ?? ''} mine={mine} first={first} last={last} />;
   }

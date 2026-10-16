@@ -1,0 +1,198 @@
+import { router } from 'expo-router';
+import { RefreshControl, View } from 'react-native';
+import Animated from 'react-native-reanimated';
+
+import { AppText } from '@/components/app-text';
+import { Icon } from '@/components/icon';
+import { PressableScale } from '@/components/pressable-scale';
+import { StateView } from '@/components/state-view';
+import { makeStyles, SchemeContext, Spacing, useColors } from '@/constants/theme';
+import { useMyRequests } from '@/data/requests';
+import { useSession } from '@/features/auth/session';
+import { useStartPlanning } from '@/features/onboarding/start';
+import { usePlanView } from '@/features/planner/use-plan-view';
+import { GlassCard, GlowButton, NightScreen } from '@/features/requests/night';
+import { RequestInvite } from '@/features/requests/request-invite';
+import { useRequestWords } from '@/features/requests/use-request-words';
+import { localized } from '@/i18n/localized';
+import { useLocale } from '@/i18n/locale-context';
+import { Motion } from '@/lib/motion';
+
+/**
+ * The Requests tab (#219, #253): "Ask vendors", then everything the family has
+ * asked vendors for, newest first, each as an invitation card with how many
+ * proposals came in. Signed out, or before there's a plan, it says what
+ * requests are and offers the next step: sign in, or start the plan. /requests
+ */
+export default function RequestsScreen() {
+  return (
+    <SchemeContext.Provider value="dark">
+      <Requests />
+    </SchemeContext.Provider>
+  );
+}
+
+function Requests() {
+  const Colors = useColors();
+  const styles = useStyles();
+  const { t } = useLocale();
+  const { status, requireSignIn, reloadProfile } = useSession();
+  const startPlanning = useStartPlanning();
+  const view = usePlanView();
+  const requests = useMyRequests(view.wedding?.id ?? '');
+  const words = useRequestWords();
+  const ask = () => router.push('/request-new');
+  const list = requests.data ?? [];
+
+  let content;
+  if (status === 'signedOut' || status === 'needsProfile') {
+    content = (
+      <StateView
+        state="empty"
+        icon="megaphone-outline"
+        message={t('requests.tab.signIn')}
+        action={{
+          label:
+            status === 'needsProfile' ? t('profile.account.finish') : t('profile.account.signIn'),
+          onPress: () => requireSignIn(),
+        }}
+      />
+    );
+  } else if (status === 'error') {
+    content = <StateView state="error" onRetry={reloadProfile} />;
+  } else if (view.loading || (view.wedding && requests.isPending)) {
+    content = <StateView state="loading" />;
+  } else if (!view.wedding) {
+    content = (
+      <StateView
+        state="empty"
+        icon="megaphone-outline"
+        message={t('requests.post.needsPlan')}
+        action={{ label: t('planner.startPlanning'), onPress: startPlanning }}
+      />
+    );
+  } else if (requests.isError) {
+    content = <StateView state="error" onRetry={() => void requests.refetch()} />;
+  } else if (list.length === 0) {
+    content = (
+      <GlassCard style={styles.empty}>
+        <Icon name="megaphone-outline" size={34} color={Colors.champagne} />
+        <AppText variant="heading" serif weight={600} style={styles.center}>
+          {t('requests.mine.emptyTitle')}
+        </AppText>
+        <AppText color="text2" style={styles.center}>
+          {t('requests.mine.empty')}
+        </AppText>
+      </GlassCard>
+    );
+  } else {
+    content = list.map((r, i) => {
+      const state = r.status === 'open' && r.expired ? 'expired' : r.status;
+      const event = view.chosen.find((e) => e.slug === r.eventSlug);
+      const fresh = state === 'open' && r.proposalCount > 0;
+      return (
+        <Animated.View key={r.id} entering={Motion.stagger(i)}>
+          <PressableScale
+            accessibilityRole="button"
+            accessibilityLabel={[
+              words.headline(r),
+              words.facts(r).date,
+              t(`requests.status.${state}`),
+              t('requests.mine.proposals', { count: r.proposalCount }),
+            ]
+              .filter(Boolean)
+              .join(', ')}
+            onPress={() => router.push({ pathname: '/request/[id]', params: { id: r.id } })}
+            pressedScale={0.98}
+          >
+            <RequestInvite
+              eventName={event ? localized(event.name) : null}
+              headline={words.category(r.categorySlug)}
+              date={r.eventDate}
+              facts={words.facts(r)}
+              sealed={state === 'open'}
+              compact
+              footer={
+                <View style={styles.footer}>
+                  <View style={[styles.count, fresh && styles.countFresh]}>
+                    <AppText
+                      weight={700}
+                      color={fresh ? 'onHero' : 'text2'}
+                      maxFontSizeMultiplier={1.4}
+                    >
+                      {String(r.proposalCount)}
+                    </AppText>
+                  </View>
+                  <AppText weight={600} style={styles.grow}>
+                    {state === 'open'
+                      ? t('requests.mine.proposals', { count: r.proposalCount })
+                      : t(`requests.status.${state}`)}
+                  </AppText>
+                  <AppText variant="label" weight={400} color="text2">
+                    {words.ago(r.createdAt)}
+                  </AppText>
+                  <Icon name="chevron-forward" size={17} color={Colors.text2} weight="semibold" />
+                </View>
+              }
+            />
+          </PressableScale>
+        </Animated.View>
+      );
+    });
+  }
+
+  return (
+    <NightScreen
+      // A tab: nothing to go back to
+      top={false}
+      eyebrow={t('requests.mine.eyebrow')}
+      title={t('requests.mine.title')}
+      subtitle={t('requests.mine.subtitle')}
+      refreshControl={
+        view.wedding ? (
+          <RefreshControl
+            refreshing={requests.isRefetching}
+            onRefresh={() => void requests.refetch()}
+            tintColor={Colors.champagne}
+            colors={[Colors.primary]}
+          />
+        ) : undefined
+      }
+    >
+      {/* Above the list, not pinned to the bottom, where the floating tab bar sits */}
+      {view.wedding && <GlowButton icon="add" label={t('requests.post.title')} onPress={ask} />}
+      {content}
+    </NightScreen>
+  );
+}
+
+const useStyles = makeStyles((Colors) => ({
+  empty: {
+    alignItems: 'center',
+    paddingVertical: Spacing.xxl,
+  },
+  center: {
+    textAlign: 'center',
+  },
+  footer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.sm,
+  },
+  count: {
+    minWidth: 34,
+    height: 34,
+    paddingHorizontal: Spacing.sm,
+    borderRadius: 17,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: Colors.nightCardStrong,
+  },
+  countFresh: {
+    backgroundColor: Colors.primaryFill,
+    boxShadow: Colors.roseGlow,
+  },
+  grow: {
+    flex: 1,
+  },
+}));

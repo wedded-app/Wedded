@@ -7,7 +7,7 @@ import { StateView } from '@/components/state-view';
 import { useVendorMenus } from '@/data/vendor-menus';
 import { useCurrentBusiness } from '@/features/business/use-current-business';
 import { menuMinimum, menuPrice } from '@/features/menus/menu-format';
-import { bilingual } from '@/i18n/localized';
+import { localized } from '@/i18n/localized';
 import { useLocale } from '@/i18n/locale-context';
 
 /**
@@ -15,7 +15,7 @@ import { useLocale } from '@/i18n/locale-context';
  * editor, and "Add a menu".
  */
 export default function BusinessMenusScreen() {
-  const { t, locale } = useLocale();
+  const { t } = useLocale();
   const business = useCurrentBusiness();
   const menus = useVendorMenus(business.vendorId);
   const addMenu = () => router.push('/business/menu');
@@ -45,16 +45,15 @@ export default function BusinessMenusScreen() {
       <>
         <ListSection footer={t('business.menus.hint')}>
           {menus.data.map((menu) => {
-            const { primary } = bilingual(menu.name, locale);
+            const name = localized(menu.name);
             const details = [menuPrice(menu, t), menuMinimum(menu, t)].filter(Boolean).join(' · ');
             return (
               <ListRow
                 key={menu.id}
-                title={primary.text}
-                titleLang={primary.lang}
+                title={name}
                 titleVariant="bodyLg"
                 subtitle={details || undefined}
-                accessibilityLabel={t('business.menus.editLabel', { name: primary.text })}
+                accessibilityLabel={t('business.menus.editLabel', { name })}
                 onPress={() =>
                   router.push({ pathname: '/business/menu', params: { menuId: menu.id } })
                 }

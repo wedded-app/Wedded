@@ -22,6 +22,8 @@ export function messageSnippet(
       return t('chat.preview.voice');
     case 'deposit':
       return t('chat.preview.deposit');
+    case 'proposal':
+      return t('chat.preview.proposal');
     default:
       return (message.body ?? '').replace(/\s+/g, ' ').trim();
   }

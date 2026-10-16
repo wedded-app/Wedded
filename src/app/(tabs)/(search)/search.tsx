@@ -22,6 +22,9 @@ import { useSearchLocation } from '@/features/location/search-location';
 import { matchCategories } from '@/features/search/match-categories';
 import { PlanCard, usePlanFromQuery } from '@/features/search/plan-card';
 import { useDebouncedValue, vendorQuery } from '@/features/search/vendor-query';
+import { AskWedButton } from '@/features/wed/ask-wed-button';
+import { openWed } from '@/features/wed/open-wed';
+import type { WedContext } from '@/features/wed/wed-store';
 import { localized } from '@/i18n/localized';
 import { useLocale } from '@/i18n/locale-context';
 
@@ -41,7 +44,7 @@ const VENDOR_LIMIT = 10;
  * wedding" on top, which opens the first questions already filled in.
  */
 export default function SearchScreen() {
-  const { t, locale } = useLocale();
+  const { t } = useLocale();
   const router = useRouter();
   const { focus } = useLocalSearchParams<{ focus?: string }>();
   const inputRef = useRef<TextInput>(null);
@@ -93,6 +96,9 @@ export default function SearchScreen() {
   // Still typing or still fetching: don't say "nothing matches" yet.
   const vendorsSettling = typed !== null && (needle !== typed || vendors.isFetching);
   const foundVendors = typed !== null && needle !== null ? (vendors.data ?? []) : [];
+  // Wed (mockup): look past Wedded for what they typed, on the web and Instagram.
+  const asked = query.trim();
+  const aboutSearch: WedContext = { kind: 'query', label: `“${asked}” in Search` };
   const popular = [...all]
     .filter((category) => vendorCount(category.slug) > 0)
     .sort((a, b) => vendorCount(b.slug) - vendorCount(a.slug))
@@ -114,7 +120,15 @@ export default function SearchScreen() {
           <StateView
             state="empty"
             icon="search-outline"
-            message={t('search.noMatch', { query: query.trim() })}
+            message={t('search.noMatch', { query: asked })}
+            action={{
+              label: `Ask Wed to look for “${asked}”`,
+              onPress: () =>
+                openWed({
+                  about: aboutSearch,
+                  ask: `Look for ${asked} near Yuba City, including Instagram pages`,
+                }),
+            }}
           />
         )
       ) : (
@@ -149,6 +163,7 @@ export default function SearchScreen() {
                     startingPrice={vendor.startingPrice}
                     photoUrl={vendor.photoUrl}
                     foundingNumber={vendor.foundingNumber}
+                    isSample={vendor.isSample}
                     saved={savedIds.has(vendor.id)}
                     onToggleSave={() => toggleSave(vendor.id)}
                     onPress={() =>
@@ -158,6 +173,18 @@ export default function SearchScreen() {
                 ))}
               </View>
             </View>
+          )}
+          {!vendorsSettling && (
+            <ListSection>
+              <View style={styles.wedRow}>
+                <AskWedButton
+                  variant="row"
+                  label="Not finding it? Ask Wed to look on the web"
+                  about={aboutSearch}
+                  ask={`Look on the web for ${asked} near Yuba City`}
+                />
+              </View>
+            </ListSection>
           )}
         </>
       );
@@ -176,7 +203,7 @@ export default function SearchScreen() {
                 <Chip
                   key={category.slug}
                   role="button"
-                  label={localized(category.name, locale)}
+                  label={localized(category.name)}
                   onPress={() => openCategory(category.slug)}
                 />
               ))}
@@ -209,7 +236,7 @@ export default function SearchScreen() {
   }
 
   return (
-    <NavScreen title={t('tabs.search')} back={false} keyboardDismissMode="on-drag">
+    <NavScreen title={t('tabs.search')} keyboardDismissMode="on-drag">
       <SearchField ref={inputRef} value={query} onChangeText={setQuery} />
       {body}
     </NavScreen>
@@ -237,5 +264,8 @@ const styles = StyleSheet.create({
   },
   tile: {
     flex: 1,
+  },
+  wedRow: {
+    paddingHorizontal: Spacing.lg,
   },
 });

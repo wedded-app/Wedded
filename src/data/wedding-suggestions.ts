@@ -36,7 +36,7 @@ type Row = {
   resolved_by: string | null;
   resolved_at: string | null;
   created_at: string;
-  vendor: { id: string; slug: string; name: string; name_pa: string | null } | null;
+  vendor: { id: string; slug: string; name: string } | null;
 };
 
 export function toSuggestion(row: Row): WeddingSuggestion {
@@ -54,9 +54,7 @@ export function toSuggestion(row: Row): WeddingSuggestion {
       ? {
           id: row.vendor.id,
           slug: row.vendor.slug,
-          name: row.vendor.name_pa
-            ? { en: row.vendor.name, pa: row.vendor.name_pa }
-            : { en: row.vendor.name },
+          name: { en: row.vendor.name },
         }
       : null,
   };
@@ -119,7 +117,7 @@ export function useWeddingSuggestions(weddingId: string | null) {
       const { data, error } = await supabase
         .from('wedding_suggestions')
         .select(
-          'id, event_slug, category_slug, note, status, suggested_by, resolved_by, resolved_at, created_at, vendor:vendors(id, slug, name, name_pa)',
+          'id, event_slug, category_slug, note, status, suggested_by, resolved_by, resolved_at, created_at, vendor:vendors(id, slug, name)',
         )
         .eq('wedding_id', weddingId ?? '')
         .order('created_at', { ascending: false })

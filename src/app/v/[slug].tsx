@@ -23,6 +23,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { ActionButton } from '@/components/action-button';
 import { AppText, useFontScale } from '@/components/app-text';
+import { SampleTag } from '@/components/sample-tag';
 import { Button } from '@/components/button';
 import { Card } from '@/components/card';
 import { Glass } from '@/components/glass';
@@ -44,12 +45,14 @@ import { useRealWeddingsAt, useVendorPhotos, type VendorPhoto } from '@/data/ven
 import { useVendor } from '@/data/vendors';
 import { useMyWeddings } from '@/data/wedding';
 import { useSession } from '@/features/auth/session';
+import { SavedToastHost } from '@/features/saved/saved-toast';
 import { trackVendorActivity, useVendorPublicStats } from '@/data/vendor-stats';
 import { useStartConversation } from '@/data/chat';
 import { useVendorMenus } from '@/data/vendor-menus';
 import { ALL_NORCAL_MILES, factLabels, priceLine } from '@/features/vendors/profile-format';
 import { shareVendor } from '@/features/vendors/share';
-import { bilingual, localized, vendorText } from '@/i18n/localized';
+import { AskWedButton } from '@/features/wed/ask-wed-button';
+import { localized } from '@/i18n/localized';
 import { useLocale } from '@/i18n/locale-context';
 import { saveHaptic } from '@/lib/haptics';
 import { formatPhone } from '@/lib/phone';
@@ -61,7 +64,6 @@ import { formatPhone } from '@/lib/phone';
 function LinkedVendors({ title, vendors }: { title: string; vendors: LinkedVendor[] }) {
   const styles = useStyles();
   const router = useRouter();
-  const { locale } = useLocale();
   if (vendors.length === 0) return null;
 
   return (
@@ -69,7 +71,7 @@ function LinkedVendors({ title, vendors }: { title: string; vendors: LinkedVendo
       <SectionTitle>{title}</SectionTitle>
       <ListSection>
         {vendors.map((linked) => {
-          const name = localized(linked.name, locale);
+          const name = localized(linked.name);
           return (
             <ListRow
               key={linked.id}
@@ -93,7 +95,7 @@ function LinkedVendors({ title, vendors }: { title: string; vendors: LinkedVendo
 function Highlights({ slug, photos, name }: { slug: string; photos: VendorPhoto[]; name: string }) {
   const styles = useStyles();
   const router = useRouter();
-  const { locale, t } = useLocale();
+  const { t } = useLocale();
   const events = useHomeEvents();
   const eventNames = new Map(
     (events.data ?? []).flatMap((section) => section.events).map((e) => [e.slug, e.name]),
@@ -124,7 +126,7 @@ function Highlights({ slug, photos, name }: { slug: string; photos: VendorPhoto[
       />
       {[...byEvent.entries()].map(([eventSlug, photo]) => {
         const eventName = eventNames.get(eventSlug);
-        const label = eventName ? localized(eventName, locale) : eventSlug;
+        const label = eventName ? localized(eventName) : eventSlug;
         return (
           <StoryRing
             key={eventSlug}
@@ -198,7 +200,7 @@ export default function VendorProfileScreen() {
   // `event` is set when they came from an event, so Save and Ask use it.
   const { slug = '', event } = useLocalSearchParams<{ slug: string; event?: string }>();
   const router = useRouter();
-  const { locale, t } = useLocale();
+  const { t } = useLocale();
   const insets = useSafeAreaInsets();
   const { width } = useWindowDimensions();
   const scroll = useNavScroll();
@@ -282,10 +284,9 @@ export default function VendorProfileScreen() {
     );
   } else {
     const v = vendor.data;
-    const { primary, secondary } = bilingual(v.name, locale);
-    const name = primary.text;
-    const tagline = vendorText(v.tagline.en, v.tagline.pa, locale);
-    const bio = vendorText(v.bio.en, v.bio.pa, locale);
+    const name = localized(v.name);
+    const tagline = v.tagline?.trim() || null;
+    const bio = v.bio?.trim() || null;
     const facts = factLabels(v.facts, t);
     // Halls, gurdwaras and other venues take visits before booking (demo step 3).
     const isVenue = v.categories.some((category) => category.groupSlug === 'venues');
@@ -294,7 +295,7 @@ export default function VendorProfileScreen() {
     const languages = v.languages
       .map((code) => t(`vendor.languages.${code}`, { defaultValue: code }))
       .join(', ');
-    const categoryNames = v.categories.map((category) => localized(category.name, locale));
+    const categoryNames = v.categories.map((category) => localized(category.name));
 
     const actions: {
       key: string;
@@ -474,14 +475,10 @@ export default function VendorProfileScreen() {
               </AppText>
             </View>
           )}
-          <AppText variant="title" lang={primary.lang} accessibilityRole="header">
-            {primary.text}
+          <AppText variant="title" accessibilityRole="header">
+            {name}
           </AppText>
-          {secondary && (
-            <AppText variant="bodyLg" color="text2" lang={secondary.lang}>
-              {secondary.text}
-            </AppText>
-          )}
+          <SampleTag show={v.isSample} />
           <AppText color="text2">{[categoryNames.join(', '), v.city].join(' · ')}</AppText>
           {/* Quiet trust lines, shown only once 5+ families are behind each. */}
           {stats.data?.bookedBy != null && (
@@ -507,7 +504,7 @@ export default function VendorProfileScreen() {
 
         {Platform.OS === 'web' && (
           <Button
-            variant="secondary"
+            variant="text"
             icon="phone-portrait-outline"
             label={t('vendor.openInApp')}
             onPress={() => void Linking.openURL(appLink(`/v/${v.slug}`))}
@@ -541,21 +538,36 @@ export default function VendorProfileScreen() {
           />
         )}
 
-        {isVenue && (
-          <Button
-            variant="secondary"
-            icon="calendar-outline"
-            label={t('vendor.bookTour')}
-            onPress={() =>
-              router.push({
-                pathname: '/ask',
-                params: event
-                  ? { vendorId: v.id, event, kind: 'tour' }
-                  : { vendorId: v.id, kind: 'tour' },
-              })
-            }
-          />
-        )}
+        {/* A hall's tour and Wed side by side, one above the other at very large text */}
+        <View style={[styles.pair, stackButtons && styles.pairStacked]}>
+          {isVenue && (
+            <Button
+              variant="secondary"
+              icon="calendar-outline"
+              label={t('vendor.bookTour')}
+              onPress={() =>
+                router.push({
+                  pathname: '/ask',
+                  params: event
+                    ? { vendorId: v.id, event, kind: 'tour' }
+                    : { vendorId: v.id, kind: 'tour' },
+                })
+              }
+              style={!stackButtons && styles.pairItem}
+            />
+          )}
+          {/* Wed (mockup): the composer starts with this vendor and a date question.
+              A short label, so it stays on one line whatever the name. */}
+          <View style={!stackButtons && styles.pairItem}>
+            <AskWedButton
+              variant="pill"
+              label={isVenue ? 'Ask Wed' : 'Ask Wed about this vendor'}
+              a11y={`Ask Wed about ${v.name.en}`}
+              about={{ kind: 'vendor', id: v.slug, label: v.name.en, thumb: cover?.url.small }}
+              ask={`Is ${v.name.en} free on Jun 13, and what do they charge?`}
+            />
+          </View>
+        </View>
 
         <ListSection inset>
           <ListRow
@@ -636,7 +648,7 @@ export default function VendorProfileScreen() {
           <View style={styles.block}>
             <SectionTitle>{t('vendor.realWeddings')}</SectionTitle>
             {realWeddings.data.map((photo) => {
-              const by = localized(photo.vendor.name, locale);
+              const by = localized(photo.vendor.name);
               return (
                 <Card
                   key={photo.id}
@@ -736,13 +748,13 @@ export default function VendorProfileScreen() {
 
       <NavBar
         scroll={scroll}
-        title={vendor.data ? localized(vendor.data.name, locale) : null}
+        title={vendor.data ? localized(vendor.data.name) : null}
         trailing={
           vendor.data ? (
             <GlassButton
               icon="share-outline"
               accessibilityLabel={t('discover.shareLabel', {
-                name: localized(vendor.data.name, locale),
+                name: localized(vendor.data.name),
               })}
               onPress={() => {
                 const v = vendor.data;
@@ -750,8 +762,8 @@ export default function VendorProfileScreen() {
                 trackVendorActivity(v.id, 'share');
                 void shareVendor(
                   {
-                    name: localized(v.name, locale),
-                    category: v.categories[0] ? localized(v.categories[0].name, locale) : null,
+                    name: localized(v.name),
+                    category: v.categories[0] ? localized(v.categories[0].name) : null,
                     city: v.city,
                     slug: v.slug,
                   },
@@ -775,7 +787,7 @@ export default function VendorProfileScreen() {
               icon={saved ? 'heart' : 'heart-outline'}
               label={saved ? t('vendor.saved') : t('vendor.save')}
               accessibilityLabel={t(saved ? 'vendorCard.unsave' : 'vendorCard.save', {
-                name: localized(vendor.data.name, locale),
+                name: localized(vendor.data.name),
               })}
               onPress={() => {
                 if (!vendor.data) return;
@@ -800,6 +812,8 @@ export default function VendorProfileScreen() {
           </Glass>
         </View>
       )}
+      {/* "Saved to Jaago · See list", rising from behind the Save bar */}
+      {vendor.data && barHeight > 0 ? <SavedToastHost bottom={barBottom + barHeight} /> : null}
     </View>
   );
 }
@@ -855,6 +869,16 @@ const useStyles = makeStyles((Colors) => ({
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: Spacing.sm,
+  },
+  pair: {
+    flexDirection: 'row',
+    gap: Spacing.sm,
+  },
+  pairStacked: {
+    flexDirection: 'column',
+  },
+  pairItem: {
+    flex: 1,
   },
   block: {
     gap: Spacing.lg,

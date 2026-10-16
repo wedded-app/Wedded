@@ -9,10 +9,9 @@ import Animated, {
 
 import { AppText } from '@/components/app-text';
 import { makeStyles, Sizes, Springs } from '@/constants/theme';
-import type { Locale } from '@/i18n';
 import { selectionHaptic } from '@/lib/haptics';
 
-export type SegmentedOption<T extends string> = { value: T; label: string; lang?: Locale };
+export type SegmentedOption<T extends string> = { value: T; label: string };
 
 export type SegmentedProps<T extends string> = {
   options: SegmentedOption<T>[];
@@ -73,12 +72,7 @@ export function Segmented<T extends string>({
             }}
             style={styles.option}
           >
-            <AppText
-              variant="label"
-              weight={selected ? 600 : 500}
-              lang={option.lang}
-              style={styles.label}
-            >
+            <AppText variant="label" weight={selected ? 600 : 500} style={styles.label}>
               {option.label}
             </AppText>
           </Pressable>

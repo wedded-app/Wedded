@@ -13,11 +13,22 @@ export type PushClaim = {
   event_names: string[];
 };
 
+/** A group thread's message (claim_group_push). */
+export type GroupPushClaim = {
+  message_id: string;
+  thread_id: string;
+  tokens: string[];
+  thread_name: string;
+  sender_name: string;
+  kind: string;
+  body: string | null;
+};
+
 export type PushMessage = {
   to: string;
   title: string;
   body: string;
-  data: { conversationId: string; url: string };
+  data: { conversationId: string; url: string } | { threadId: string; url: string };
   sound: 'default';
   channelId: 'messages';
   priority: 'high';
@@ -89,6 +100,20 @@ export function buildPushes(claim: PushClaim): PushMessage[] {
     title: claim.title,
     body,
     data: { conversationId: claim.conversation_id, url: `/chat/${claim.conversation_id}` },
+    sound: 'default',
+    channelId: 'messages',
+    priority: 'high',
+  }));
+}
+
+/** One alert per phone for a group message: the thread's name, then "Harjit K.: …". */
+export function buildGroupPushes(claim: GroupPushClaim): PushMessage[] {
+  const body = `${claim.sender_name}: ${pushBody({ ...claim, data: {}, event_names: [] })}`;
+  return claim.tokens.map((to) => ({
+    to,
+    title: claim.thread_name,
+    body,
+    data: { threadId: claim.thread_id, url: `/group/${claim.thread_id}` },
     sound: 'default',
     channelId: 'messages',
     priority: 'high',

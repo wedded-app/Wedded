@@ -42,17 +42,14 @@ function dietTags(value: unknown): DietTag[] {
     : [];
 }
 
-function text(en: unknown, pa: unknown): LocalizedText {
-  const english = typeof en === 'string' ? en : '';
-  return typeof pa === 'string' && pa ? { en: english, pa } : { en: english };
+function text(en: unknown): LocalizedText {
+  return { en: typeof en === 'string' ? en : '' };
 }
 
 type Row = {
   id: string;
   name: string;
-  name_pa: string | null;
   description: string | null;
-  description_pa: string | null;
   cuisine: string | null;
   diet: string[];
   price_from: number | null;
@@ -66,8 +63,8 @@ export function toMenu(row: Row): Menu {
   const sections = Array.isArray(row.sections) ? row.sections : [];
   return {
     id: row.id,
-    name: text(row.name, row.name_pa),
-    description: row.description ? text(row.description, row.description_pa) : null,
+    name: text(row.name),
+    description: row.description ? text(row.description) : null,
     price:
       row.price_from &&
       (row.price_unit === 'person' || row.price_unit === 'plate' || row.price_unit === 'event')
@@ -77,10 +74,10 @@ export function toMenu(row: Row): Menu {
     cuisine: row.cuisine,
     dietTags: dietTags(row.diet),
     sections: sections.map((section: Record<string, unknown>) => ({
-      name: text(section.title, section.title_pa),
+      name: text(section.title),
       items: (Array.isArray(section.items) ? section.items : []).map(
         (item: Record<string, unknown>) => ({
-          name: text(item.name, item.name_pa),
+          name: text(item.name),
           description: typeof item.description === 'string' ? item.description : null,
           dietTags: dietTags(item.diet),
         }),
@@ -100,9 +97,7 @@ export function cheapestMenu(menus: Menu[]): Menu['price'] {
 export async function fetchVendorMenus(vendorId: string): Promise<Menu[]> {
   const { data, error } = await supabase
     .from('vendor_menus')
-    .select(
-      'id, name, name_pa, description, description_pa, cuisine, diet, price_from, price_unit, min_guests, sections',
-    )
+    .select('id, name, description, cuisine, diet, price_from, price_unit, min_guests, sections')
     .eq('vendor_id', vendorId)
     .order('sort_order')
     .order('created_at');

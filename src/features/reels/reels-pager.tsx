@@ -23,7 +23,7 @@ import Animated, {
 
 import { AppText } from '@/components/app-text';
 import { Icon } from '@/components/icon';
-import { useBottomSpace } from '@/components/tab-bar';
+import { useTabBarTop } from '@/components/tab-bar';
 import { Radius, Spacing } from '@/constants/theme';
 import { useTraditions } from '@/data/reference';
 import {
@@ -36,6 +36,7 @@ import {
   useToggleLike,
 } from '@/data/reels';
 import { useSession } from '@/features/auth/session';
+import { useStoryTray } from '@/features/stories/stories-bar';
 import { localized } from '@/i18n/localized';
 import { useLocale } from '@/i18n/locale-context';
 import { readSetting, StorageKeys, writeSetting } from '@/lib/storage';
@@ -63,8 +64,11 @@ export function ReelsPager({
   empty,
   initialIndex = 0,
   swipeHint = false,
+  business = false,
 }: {
   feed: Feed;
+  /** Business mode's Reels tab: reels without the families' Book and Ask Wed. */
+  business?: boolean;
   /** Show "Swipe up for more" the first time (the Reels tab). */
   swipeHint?: boolean;
   /** Start on this reel (a person's grid opening one of theirs). */
@@ -75,15 +79,17 @@ export function ReelsPager({
   empty: ReactNode;
 }) {
   const router = useRouter();
-  const { t, locale } = useLocale();
+  const { t } = useLocale();
   const { requireSignIn, session } = useSession();
-  const bottomSpace = useBottomSpace();
+  // The progress line sits just above the tab bar, the words just above it
+  const bottomSpace = useTabBarTop() + Spacing.xs;
   const reels = useReelsFeed(feed);
   const traditions = useTraditions();
   const like = useToggleLike();
   const follow = useToggleFollow();
   const block = useToggleBlock();
   const remove = useDeleteReel();
+  const tray = useStoryTray();
   const [active, setActive] = useState(initialIndex);
   const [focused, setFocused] = useState(true);
   const [muted, setMuted] = useState(!soundOn);
@@ -119,17 +125,23 @@ export function ReelsPager({
     const names: Record<string, string> = {};
     for (const tradition of traditions.data ?? []) {
       for (const event of tradition.events) {
-        names[event.slug] ??= localized(event.name, locale);
+        names[event.slug] ??= localized(event.name);
       }
     }
     return names;
-  }, [traditions.data, locale]);
+  }, [traditions.data]);
 
   // Stable, as FlatList requires
   const onViewable = useCallback(({ viewableItems }: { viewableItems: ViewToken[] }) => {
     const first = viewableItems.find((v) => v.isViewable);
     if (first?.index != null) setActive(first.index);
   }, []);
+
+  // Who has a story today, by poster: a business, or a person as themselves
+  const storyOf = (reel: Reel): 'new' | 'seen' | null => {
+    const group = tray.groups.find((g) => g.key === (reel.vendor?.id ?? reel.authorId));
+    return group ? (tray.seen(group) ? 'seen' : 'new') : null;
+  };
 
   const share = async (reel: Reel) => {
     const who = reel.vendor?.name ?? reel.authorName ?? '';
@@ -229,6 +241,14 @@ export function ReelsPager({
             muted={muted}
             eventName={item.eventSlug ? (eventNames[item.eventSlug] ?? null) : null}
             bottomSpace={bottomSpace}
+            story={storyOf(item)}
+            business={business}
+            onStory={(reel) =>
+              router.push({
+                pathname: '/story',
+                params: { group: reel.vendor?.id ?? reel.authorId },
+              })
+            }
             onToggleMute={() => {
               soundOn = muted;
               setMuted(!muted);
@@ -278,18 +298,18 @@ export function ReelsPager({
         initialNumToRender={2}
         maxToRenderPerBatch={2}
         removeClippedSubviews
-        // A key per account, so signing in or out starts the list fresh
-        extraData={session?.user.id}
+        // Redraw on signing in or out, and as story rings arrive or turn grey
+        extraData={`${session?.user.id ?? ''}:${tray.groups
+          .map((g) => `${g.key}${tray.seen(g) ? '-' : '+'}`)
+          .join()}`}
       />
-      {hint && active === 0 && list.length > 1 && (
-        <SwipeHint label={t('reels.swipeHint')} bottom={bottomSpace + 200} />
-      )}
+      {hint && active === 0 && list.length > 1 && <SwipeHint label={t('reels.swipeHint')} />}
     </View>
   );
 }
 
 /** A bouncing "Swipe up for more" the first time someone opens Reels. */
-function SwipeHint({ label, bottom }: { label: string; bottom: number }) {
+function SwipeHint({ label }: { label: string }) {
   const reduceMotion = useReducedMotion();
   const lift = useSharedValue(0);
   useEffect(() => {
@@ -303,7 +323,7 @@ function SwipeHint({ label, bottom }: { label: string; bottom: number }) {
   }, [lift, reduceMotion]);
   const style = useAnimatedStyle(() => ({ transform: [{ translateY: lift.value }] }));
   return (
-    <View pointerEvents="none" style={[styles.hint, { bottom }]}>
+    <View pointerEvents="none" style={styles.hint}>
       <Animated.View style={style}>
         <Icon name="chevron-up" size={36} color={REEL_INK} />
       </Animated.View>
@@ -322,6 +342,7 @@ const styles = StyleSheet.create({
   },
   hint: {
     position: 'absolute',
+    top: '40%',
     left: 0,
     right: 0,
     alignItems: 'center',

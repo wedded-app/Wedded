@@ -6,7 +6,6 @@ const row = {
   vendor_id: 'v1',
   slug: 'royal-orchard',
   name: 'Royal Orchard',
-  name_pa: null,
   city: 'Yuba City',
   published: true,
   event_slugs: ['reception'],

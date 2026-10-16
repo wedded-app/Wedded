@@ -66,7 +66,7 @@ describe('toLookingCard', () => {
       family_name: 'Harjit K.',
       city: 'Yuba City',
       category_slug: 'dhol',
-      category_name: { en: 'Dhol player', pa: 'ਢੋਲੀ' },
+      category_name: { en: 'Dhol player' },
       event_slug: 'jaago',
       event_name: { en: 'Jaago' },
       event_date: '2027-06-11',
@@ -83,7 +83,7 @@ describe('toLookingCard', () => {
     });
     expect(card).toMatchObject({
       familyName: 'Harjit K.',
-      categoryName: { en: 'Dhol player', pa: 'ਢੋਲੀ' },
+      categoryName: { en: 'Dhol player' },
       eventName: { en: 'Jaago' },
       miles: 4.2,
       dateStatus: 'open',
@@ -99,7 +99,6 @@ describe('toProposal', () => {
       vendor_id: 'v1',
       vendor_slug: 'dhol-di-awaaz',
       vendor_name: 'Dhol Di Awaaz',
-      vendor_name_pa: 'ਢੋਲ ਦੀ ਆਵਾਜ਼',
       vendor_city: 'Yuba City',
       cover_path: 'v1/photo',
       founding_number: 3,
@@ -111,8 +110,10 @@ describe('toProposal', () => {
       status: 'sent',
       conversation_id: null,
       created_at: '2026-10-14T08:00:00Z',
+      vendor_is_sample: true,
     });
-    expect(proposal.vendor.name).toEqual({ en: 'Dhol Di Awaaz', pa: 'ਢੋਲ ਦੀ ਆਵਾਜ਼' });
+    expect(proposal.vendor.name).toEqual({ en: 'Dhol Di Awaaz' });
+    expect(proposal.vendor.isSample).toBe(true);
     expect(proposal.vendor.photoUrl).toContain('v1/photo');
     expect(proposal.priceUnit).toBe('event');
   });

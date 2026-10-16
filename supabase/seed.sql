@@ -101,16 +101,15 @@ insert into public.vendors (
   '{"dholis": 2, "min_hours": 2}'
 );
 
--- Punjabi-only bio
 insert into public.vendors (
-  id, slug, status, is_sample, name, name_pa, bio_pa,
+  id, slug, status, is_sample, name, bio,
   city, location, service_radius_miles,
   text_phone, preferred_contact, languages,
   price_display, price_from, price_unit, price_note
 ) values (
   '00000000-0000-4000-8000-000000000006', 'rang-mehndi', 'published', true,
-  'Rang Mehndi', 'ਰੰਗ ਮਹਿੰਦੀ',
-  'ਲਾੜੀ ਅਤੇ ਮਹਿਮਾਨਾਂ ਲਈ ਮਹਿੰਦੀ। ਘਰ ਆ ਕੇ ਲਗਾਉਂਦੇ ਹਾਂ।',
+  'Rang Mehndi',
+  'Mehndi for the bride and her guests. We come to your home.',
   'Elk Grove', (select location from public.cities where slug = 'elk-grove'), 25,
   '+19165550106', 'text', '{pa}',
   'starting_at', 300, 'event', 'Bridal. Guests from $10 a hand.'

@@ -2,7 +2,7 @@
  * The Discover feed: vendors' photos as posts, newest first, the way people
  * already scroll Instagram. One post per vendor holds all their photos (a
  * swipeable carousel), with the vendor's name, type, city, a line about them
- * and their price. Stories are the same vendors, one tap each.
+ * and their price. A vendor page's story highlights play these photos.
  */
 import { useQuery } from '@tanstack/react-query';
 
@@ -17,9 +17,11 @@ export type FeedPost = {
   slug: string;
   name: LocalizedText;
   /** The vendor's own words (tagline, else the start of the bio). */
-  caption: { en: string | null; pa: string | null };
+  caption: string | null;
   city: string;
   foundingNumber: number | null;
+  /** A demo sample, not a real business: show the Sample tag. */
+  isSample: boolean;
   category: { slug: string; name: LocalizedText; groupSlug: string } | null;
   price: VendorPrice | null;
   photos: VendorPhoto[];
@@ -40,13 +42,11 @@ type Row = {
     id: string;
     slug: string;
     name: string;
-    name_pa: string | null;
     tagline: string | null;
-    tagline_pa: string | null;
     bio: string | null;
-    bio_pa: string | null;
     city: string;
     founding_number: number | null;
+    is_sample: boolean;
     price_display: string;
     price_from: number | null;
     price_to: number | null;
@@ -78,8 +78,8 @@ async function fetchFeed(): Promise<FeedPost[]> {
     .from('vendor_media')
     .select(
       `id, storage_path, width, height, blurhash, is_cover, sort_order, event_slug, credit_text, created_at,
-       vendor:vendors!vendor_media_vendor_id_fkey!inner(id, slug, name, name_pa, tagline, tagline_pa, bio, bio_pa, city,
-         founding_number, price_display, price_from, price_to, price_unit, status,
+       vendor:vendors!vendor_media_vendor_id_fkey!inner(id, slug, name, tagline, bio, city,
+         founding_number, is_sample, price_display, price_from, price_to, price_unit, status,
          vendor_categories(position, category:categories(slug, name, group_slug)))`,
     )
     .eq('vendor.status', 'published')
@@ -96,10 +96,11 @@ async function fetchFeed(): Promise<FeedPost[]> {
       post = {
         vendorId: v.id,
         slug: v.slug,
-        name: v.name_pa ? { en: v.name, pa: v.name_pa } : { en: v.name },
-        caption: { en: v.tagline ?? v.bio, pa: v.tagline_pa ?? v.bio_pa },
+        name: { en: v.name },
+        caption: v.tagline ?? v.bio,
         city: v.city,
         foundingNumber: v.founding_number,
+        isSample: v.is_sample,
         category: primary
           ? {
               slug: primary.category.slug,
@@ -138,10 +139,11 @@ async function fetchFeed(): Promise<FeedPost[]> {
 }
 
 /** Every vendor with photos, as feed posts. Fresh for five minutes. */
-export function useFeed() {
+export function useFeed({ enabled = true }: { enabled?: boolean } = {}) {
   return useQuery({
     queryKey: ['feed'],
     queryFn: fetchFeed,
     staleTime: 5 * 60 * 1000,
+    enabled,
   });
 }

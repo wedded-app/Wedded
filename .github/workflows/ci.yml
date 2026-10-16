@@ -141,6 +141,16 @@ jobs:
         run: >-
           gh pr merge "$PR" --repo "$GITHUB_REPOSITORY" --squash
           --match-head-commit "$HEAD_SHA" --subject "$TITLE (#$PR)" --body ""
+      # The repo's "Automatically delete head branches" skips merges made with
+      # github.token, so delete the branch here. Never fails the merge.
+      - name: Delete the merged branch
+        if: github.event.pull_request.head.repo.full_name == github.repository
+        env:
+          GH_TOKEN: ${{ github.token }}
+          HEAD_REF: ${{ github.event.pull_request.head.ref }}
+        run: >-
+          gh api -X DELETE "repos/$GITHUB_REPOSITORY/git/refs/heads/$HEAD_REF"
+          || echo "::notice::Couldn't delete $HEAD_REF; delete it by hand."
       # A push made with github.token never starts other workflows, so the
       # merge above can't trigger demo.yml's push trigger; starting it by hand
       # is the one thing github.token is allowed to do

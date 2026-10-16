@@ -13,10 +13,13 @@ export function useStartPlanning() {
   const { requireSignIn } = useSession();
   return useCallback(
     () =>
-      requireSignIn(() => {
-        resetAnswers();
-        router.push('/onboarding/who');
-      }),
+      requireSignIn(
+        () => {
+          resetAnswers();
+          router.push('/onboarding/who');
+        },
+        { planning: true },
+      ),
     [requireSignIn],
   );
 }

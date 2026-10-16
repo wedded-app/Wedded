@@ -35,7 +35,6 @@ type Row = {
   vendor_id: string;
   slug: string;
   name: string;
-  name_pa: string | null;
   city: string;
   published: boolean;
   event_slugs: string[] | null;
@@ -51,7 +50,7 @@ export function toShortlistVendor(row: Row): ShortlistVendor {
   return {
     vendorId: row.vendor_id,
     slug: row.slug,
-    name: row.name_pa ? { en: row.name, pa: row.name_pa } : { en: row.name },
+    name: { en: row.name },
     city: row.city,
     published: row.published,
     eventSlugs: row.event_slugs ?? [],

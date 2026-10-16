@@ -22,6 +22,8 @@ export type OutgoingEmail = {
   subject: string;
   text: string;
   html: string;
+  /** Extra headers, such as List-Unsubscribe (email-links.ts) */
+  headers?: Record<string, string>;
 };
 
 const GUEST_LABELS: Record<GuestBand, string> = {
@@ -378,6 +380,7 @@ export async function sendEmail(email: OutgoingEmail, idempotencyKey: string): P
         subject: email.subject,
         text: email.text,
         html: email.html,
+        headers: email.headers,
       }),
     });
     const result = await response.json().catch(() => ({}));
@@ -401,7 +404,7 @@ export async function sendEmail(email: OutgoingEmail, idempotencyKey: string): P
         Subject: email.subject,
         Text: email.text,
         HTML: email.html,
-        Headers: { 'X-Inquiry-Id': idempotencyKey },
+        Headers: { ...email.headers, 'X-Inquiry-Id': idempotencyKey },
       }),
     });
     const result = await response.json().catch(() => ({}));

@@ -26,7 +26,7 @@ export type VendorSearch = {
   maxMiles?: number | null;
   categorySlug?: string;
   eventSlug?: string;
-  /** Free text: vendor names and category names or synonyms, English or Gurmukhi. */
+  /** Free text: vendor names and category names or synonyms. */
   query?: string;
   /** Also vendors who travel beyond their radius ("Show vendors who travel to you"). */
   includeTravelers?: boolean;
@@ -57,6 +57,8 @@ export type VendorResult = {
   photoUrl: string | null;
   /** The cover's storage path, for a bigger size (photoUrl(coverPath, 'medium')). */
   coverPath: string | null;
+  /** A demo sample, not a real business: show the Sample tag. */
+  isSample: boolean;
 };
 
 const PRICE_UNITS: readonly string[] = [
@@ -105,7 +107,7 @@ export async function searchVendors(params: VendorSearch): Promise<VendorResult[
     return {
       id: row.id ?? '',
       slug: row.slug ?? '',
-      name: row.name_pa ? { en: row.name ?? '', pa: row.name_pa } : { en: row.name ?? '' },
+      name: { en: row.name ?? '' },
       city: row.city ?? '',
       categorySlug: row.primary_category_slug,
       category: asLocalizedText(row.primary_category_name),
@@ -122,6 +124,7 @@ export async function searchVendors(params: VendorSearch): Promise<VendorResult[
       longitude: row.longitude ?? 0,
       photoUrl: row.cover_path ? photoUrl(row.cover_path, 'small') : null,
       coverPath: row.cover_path,
+      isSample: row.is_sample ?? false,
     };
   });
 }

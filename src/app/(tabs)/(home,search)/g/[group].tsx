@@ -6,7 +6,7 @@ import { ListSection } from '@/components/list';
 import { NavScreen } from '@/components/nav';
 import { StateView } from '@/components/state-view';
 import { useCategoryGroups } from '@/data/reference';
-import { bilingual } from '@/i18n/localized';
+import { localized } from '@/i18n/localized';
 import { useLocale } from '@/i18n/locale-context';
 
 /**
@@ -16,10 +16,10 @@ import { useLocale } from '@/i18n/locale-context';
 export default function GroupScreen() {
   const { group: groupSlug = '' } = useLocalSearchParams<{ group: string }>();
   const router = useRouter();
-  const { locale, t } = useLocale();
+  const { t } = useLocale();
   const groups = useCategoryGroups();
   const group = groups.data?.find((g) => g.slug === groupSlug);
-  const title = group ? bilingual(group.name, locale) : null;
+  const title = group ? localized(group.name) : null;
 
   let body;
   if (groups.isPending) {
@@ -52,14 +52,5 @@ export default function GroupScreen() {
     );
   }
 
-  return (
-    <NavScreen
-      title={title?.primary.text}
-      titleLang={title?.primary.lang}
-      subtitle={title?.secondary?.text}
-      subtitleLang={title?.secondary?.lang}
-    >
-      {body}
-    </NavScreen>
-  );
+  return <NavScreen title={title}>{body}</NavScreen>;
 }

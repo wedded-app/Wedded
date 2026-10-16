@@ -20,14 +20,14 @@ export type StoryRingProps = {
 // The unwatched ring runs from the app's maroon to marigold, the one place the
 // brand's second colour shows (vision §4: marigold for small fills only).
 const RING = 'linear-gradient(45deg, #F0A030 0%, #D9485F 50%, #8A1C30 100%)';
-const ringStyle = (
+export const storyRingStyle = (
   Platform.OS === 'web' ? { backgroundImage: RING } : { experimental_backgroundImage: RING }
 ) as ViewStyle;
 
 /**
  * A story circle: a round photo in a coloured ring with a short name under
- * it. Tapping opens the full-screen story viewer. Used in the Discover row
- * and the profile highlights.
+ * it. Tapping opens the full-screen story viewer. Used in the profile
+ * highlights; its ring colours also mark stories on Reels.
  */
 export function StoryRing({
   photoUrl,
@@ -53,7 +53,7 @@ export function StoryRing({
         style={[
           styles.ring,
           { width: size, height: size, borderRadius: size / 2 },
-          seen ? styles.seen : ringStyle,
+          seen ? styles.seen : storyRingStyle,
         ]}
       >
         <View

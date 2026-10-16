@@ -1,17 +1,25 @@
 // push-chat: sends a push alert for each new chat message (the push_alerts
-// migration). A trigger on new messages calls it straight away and pg_cron
-// every minute as a safety net; only the service role may.
+// migration) and each new group thread message (group_chat_alerts). Triggers
+// on new messages call it straight away and pg_cron every minute as a safety
+// net; only the service role may.
 //
-// claim_push_messages() hands over each new message once, with the other
-// side's phones. Alerts go through Expo's push service; phones Expo says are
+// claim_push_messages() and claim_group_push() hand over each new message
+// once, with the phones to buzz. Alerts go through Expo's push service; phones Expo says are
 // gone (DeviceNotRegistered) are forgotten.
 //
 //   200 { messages, sent, failed }
 //   403 { error: 'forbidden' }
 
 import { createClient } from '@supabase/supabase-js';
+import { isServiceRequest } from '../_shared/request-security.ts';
 
-import { buildPushes, type PushClaim, type PushMessage } from './push.ts';
+import {
+  buildGroupPushes,
+  buildPushes,
+  type GroupPushClaim,
+  type PushClaim,
+  type PushMessage,
+} from './push.ts';
 
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL') ?? '';
 const SERVICE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ??
@@ -26,15 +34,6 @@ function json(body: unknown, status: number): Response {
     status,
     headers: { 'Content-Type': 'application/json' },
   });
-}
-
-function roleOf(token: string): string | undefined {
-  try {
-    const payload = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
-    return JSON.parse(atob(payload.padEnd(Math.ceil(payload.length / 4) * 4, '='))).role;
-  } catch {
-    return undefined;
-  }
 }
 
 type Ticket = { status: 'ok' | 'error'; details?: { error?: string } };
@@ -56,22 +55,27 @@ async function sendBatch(batch: PushMessage[]): Promise<Ticket[]> {
 }
 
 Deno.serve(async (request) => {
-  const token = request.headers.get('Authorization')?.replace(/^Bearer\s+/i, '') ?? '';
-  if (token !== SERVICE_KEY && roleOf(token) !== 'service_role') {
+  if (request.method !== 'POST') return json({ error: 'method_not_allowed' }, 405);
+  if (!isServiceRequest(request, SERVICE_KEY)) {
     return json({ error: 'forbidden' }, 403);
   }
 
   const admin = createClient(SUPABASE_URL, SERVICE_KEY, {
     auth: { persistSession: false, autoRefreshToken: false },
   });
-  const { data, error } = await admin.rpc('claim_push_messages');
-  if (error) {
-    console.error('claiming messages to push failed', error);
-    return json({ error: 'server_error' }, 500);
+  const [chats, groups] = await Promise.all([
+    admin.rpc('claim_push_messages'),
+    admin.rpc('claim_group_push'),
+  ]);
+  if (chats.error || groups.error) {
+    console.error('claiming messages to push failed', chats.error ?? groups.error);
+    // Whatever was claimed still goes out: claimed messages are never handed over again
+    if (!chats.data && !groups.data) return json({ error: 'server_error' }, 500);
   }
 
-  const claims = (data ?? []) as PushClaim[];
-  const pushes = claims.flatMap(buildPushes);
+  const claims = (chats.data ?? []) as PushClaim[];
+  const groupClaims = (groups.data ?? []) as GroupPushClaim[];
+  const pushes = [...claims.flatMap(buildPushes), ...groupClaims.flatMap(buildGroupPushes)];
   let sent = 0;
   let failed = 0;
   const gone: string[] = [];
@@ -97,5 +101,5 @@ Deno.serve(async (request) => {
     const { error: forgetError } = await admin.from('push_tokens').delete().in('token', gone);
     if (forgetError) console.error('forgetting gone phones failed', forgetError);
   }
-  return json({ messages: claims.length, sent, failed }, 200);
+  return json({ messages: claims.length + groupClaims.length, sent, failed }, 200);
 });

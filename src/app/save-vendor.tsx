@@ -12,7 +12,7 @@ import { StateView } from '@/components/state-view';
 import { Sizes, Spacing, useColors } from '@/constants/theme';
 import { useHomeEvents } from '@/data/reference';
 import { useSavedEventsFor, useSaveVendor } from '@/data/saved';
-import { bilingual, type LocalizedText } from '@/i18n/localized';
+import { type LocalizedText, localized } from '@/i18n/localized';
 import { useLocale } from '@/i18n/locale-context';
 import { saveHaptic } from '@/lib/haptics';
 
@@ -23,7 +23,7 @@ import { saveHaptic } from '@/lib/haptics';
  */
 export default function SaveVendorScreen() {
   const Colors = useColors();
-  const { t, locale } = useLocale();
+  const { t } = useLocale();
   const { vendorId = '' } = useLocalSearchParams<{ vendorId?: string }>();
   const events = useHomeEvents();
   const savedFor = useSavedEventsFor(vendorId);
@@ -63,19 +63,17 @@ export default function SaveVendorScreen() {
         <ListSection>
           {options.map((option) => {
             const alreadySaved = savedFor.includes(option.slug);
-            const { primary, secondary } = bilingual(option.name, locale);
+            const name = localized(option.name);
             return (
               <ListRow
                 key={option.slug ?? 'not-sure'}
-                title={primary.text}
-                titleLang={primary.lang}
+                title={name}
                 titleVariant="bodyLg"
-                subtitle={alreadySaved ? t('saveVendor.alreadySaved') : secondary?.text}
-                subtitleLang={alreadySaved ? undefined : secondary?.lang}
+                subtitle={alreadySaved ? t('saveVendor.alreadySaved') : undefined}
                 chevron={false}
                 onPress={alreadySaved || saving ? undefined : () => choose(option.slug)}
                 accessibilityLabel={
-                  alreadySaved ? `${primary.text}, ${t('saveVendor.alreadySaved')}` : primary.text
+                  alreadySaved ? `${name}, ${t('saveVendor.alreadySaved')}` : name
                 }
                 trailing={
                   <Icon
