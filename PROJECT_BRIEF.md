@@ -297,7 +297,7 @@ None: everything in this brief is on `main` as of the evening of 2026-10-06. The
 - The November demo with one real hall (the founders still need its details and photos).
 - "My business" vendor screens.
 - The **AI wedding planner** (#107).
-- **Moving the backend to AWS**: self-hosted Supabase on one EC2 server (`infra/`, stack `WeddedBackend`), ready to create once Kirat has access to the AWS account; then the demo's data moves over and the app switches address (infra/README.md).
+- **Moving the backend to AWS**: self-hosted Supabase on one EC2 server (`infra/`, stack `WeddedBackend`), ready for Fezy to create in his AWS account (#263); then the demo's data moves over and the app switches address (infra/README.md).
 - New chat features the founders are about to lay out.
 - Rich link previews, a web page for Google Play deletion requests (needs the domain).
 - Later phases in `docs/PROJECT_PLAN.md`: testing with sample vendors, LLC and trademark, vendor outreach and beta, store release and marketing.

@@ -66,7 +66,7 @@ Supabase's open-source stack runs on our own server: the same Postgres, sign-in,
 
 ### Set it up (once)
 
-1. Fezy gives Kirat access to the AWS account. Then both sign in as in "First time" above.
+1. Sign in to the AWS account (Fezy's) as in "First time" above. Fezy runs this setup (#263).
 2. Create it: `cd infra && npx cdk deploy WeddedBackend --profile wedded`. The first boot takes about 10 minutes (about 3 GB of downloads).
 3. The sign-in email. Until the domain, Gmail with an [app password](https://myaccount.google.com/apppasswords) (Resend once the domain is verified):
    ```
