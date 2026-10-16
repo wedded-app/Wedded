@@ -51,12 +51,14 @@ import { useStartConversation } from '@/data/chat';
 import { useVendorMenus } from '@/data/vendor-menus';
 import { ALL_NORCAL_MILES, factLabels, priceLine } from '@/features/vendors/profile-format';
 import { shareVendor } from '@/features/vendors/share';
-import { AskWedButton } from '@/features/wed/ask-wed-button';
+import { openWed } from '@/features/wed/open-wed';
 import { localized } from '@/i18n/localized';
 import { useLocale } from '@/i18n/locale-context';
 import { saveHaptic } from '@/lib/haptics';
 import { formatPhone } from '@/lib/phone';
 
+// The contact buttons in one row: the rest are printed under Contact
+const MAX_ACTIONS = 4;
 /**
  * Other vendors linked to this one (approved caterers, venues that approved
  * them, worked with), each opening their own profile. Nothing when empty.
@@ -104,6 +106,8 @@ function Highlights({ slug, photos, name }: { slug: string; photos: VendorPhoto[
   for (const photo of photos) {
     if (photo.eventSlug && !byEvent.has(photo.eventSlug)) byEvent.set(photo.eventSlug, photo);
   }
+  // A lone "All photos" ring repeats the cover and the grid: only with event highlights
+  if (byEvent.size === 0) return null;
   const open = (photoId?: string) =>
     router.push({
       pathname: '/story',
@@ -344,18 +348,18 @@ export default function VendorProfileScreen() {
               ]),
       });
     }
-    if (v.textPhone) {
-      actions.push({
-        key: 'text',
-        icon: 'chatbubble-outline',
-        label: t('vendor.text'),
-        spoken: t('vendor.textSpoken', { name, phone: formatPhone(v.textPhone) }),
-        onPress: () => {
-          trackVendorActivity(v.id, 'text');
-          open(`sms:${v.textPhone}`);
-        },
-      });
-    }
+    // Wed (mockup): the composer starts with this vendor and a date question
+    actions.push({
+      key: 'wed',
+      icon: 'sparkles-outline',
+      label: 'Ask Wed',
+      spoken: `Ask Wed about ${v.name.en}`,
+      onPress: () =>
+        openWed({
+          about: { kind: 'vendor', id: v.slug, label: v.name.en, thumb: cover?.url.small },
+          ask: `Is ${v.name.en} free on Jun 13, and what do they charge?`,
+        }),
+    });
     if (v.whatsappPhone) {
       actions.push({
         key: 'whatsapp',
@@ -365,6 +369,18 @@ export default function VendorProfileScreen() {
         onPress: () => {
           trackVendorActivity(v.id, 'whatsapp');
           open(`https://wa.me/${v.whatsappPhone?.replace(/\D/g, '')}`);
+        },
+      });
+    }
+    if (v.textPhone) {
+      actions.push({
+        key: 'text',
+        icon: 'chatbubble-outline',
+        label: t('vendor.text'),
+        spoken: t('vendor.textSpoken', { name, phone: formatPhone(v.textPhone) }),
+        onPress: () => {
+          trackVendorActivity(v.id, 'text');
+          open(`sms:${v.textPhone}`);
         },
       });
     }
@@ -380,38 +396,60 @@ export default function VendorProfileScreen() {
         },
       });
     }
-    if (v.addressLine) {
-      const destination = encodeURIComponent(v.addressLine);
-      actions.push({
-        key: 'directions',
-        icon: 'navigate-outline',
-        label: t('vendor.directions'),
-        spoken: t('vendor.directionsSpoken', { name }),
-        onPress: () => {
+    // Directions open from the address row below, not one more button
+    const directions = v.addressLine
+      ? () => {
+          const destination = encodeURIComponent(v.addressLine ?? '');
           trackVendorActivity(v.id, 'directions');
           open(
             Platform.OS === 'ios'
               ? `https://maps.apple.com/?daddr=${destination}`
               : `https://www.google.com/maps/dir/?api=1&destination=${destination}`,
           );
-        },
-      });
-    }
+        }
+      : undefined;
 
     // Printed out as well as behind buttons: elders often read a number aloud
     // to someone else (vision S9 item 12).
-    const contacts: { label: string; value: string }[] = [];
-    if (v.callPhone) contacts.push({ label: t('vendor.phone'), value: formatPhone(v.callPhone) });
+    // Each line also does what its button would, for the ones that don't fit the row
+    const doAction = (key: string) => actions.find((action) => action.key === key)?.onPress;
+    const contacts: { label: string; value: string; onPress?: () => void }[] = [];
+    if (v.callPhone) {
+      contacts.push({
+        label: t('vendor.phone'),
+        value: formatPhone(v.callPhone),
+        onPress: doAction('call'),
+      });
+    }
     if (v.textPhone && v.textPhone !== v.callPhone) {
-      contacts.push({ label: t('vendor.text'), value: formatPhone(v.textPhone) });
+      contacts.push({
+        label: t('vendor.text'),
+        value: formatPhone(v.textPhone),
+        onPress: doAction('text'),
+      });
     }
     if (v.whatsappPhone) {
-      contacts.push({ label: t('vendor.whatsapp'), value: formatPhone(v.whatsappPhone) });
+      contacts.push({
+        label: t('vendor.whatsapp'),
+        value: formatPhone(v.whatsappPhone),
+        onPress: doAction('whatsapp'),
+      });
     }
     if (v.instagramHandle) {
-      contacts.push({ label: t('vendor.instagram'), value: `@${v.instagramHandle}` });
+      contacts.push({
+        label: t('vendor.instagram'),
+        value: `@${v.instagramHandle}`,
+        onPress: doAction('instagram'),
+      });
     }
-    if (v.websiteUrl) contacts.push({ label: t('vendor.website'), value: v.websiteUrl });
+    if (v.websiteUrl) {
+      const site = v.websiteUrl;
+      contacts.push({
+        label: t('vendor.website'),
+        value: site,
+        onPress: () => open(/^https?:\/\//.test(site) ? site : `https://${site}`),
+      });
+    }
 
     const category = categoryNames[0] ?? null;
     // Without photos, a shorter band with the category's icon.
@@ -511,9 +549,10 @@ export default function VendorProfileScreen() {
           />
         )}
 
+        {/* Four at most, so the row stays one calm line; the rest are in Contact below */}
         {actions.length > 0 && (
           <View style={styles.actions}>
-            {actions.map((action) => (
+            {actions.slice(0, MAX_ACTIONS).map((action) => (
               <ActionButton
                 key={action.key}
                 icon={action.icon}
@@ -538,41 +577,30 @@ export default function VendorProfileScreen() {
           />
         )}
 
-        {/* A hall's tour and Wed side by side, one above the other at very large text */}
-        <View style={[styles.pair, stackButtons && styles.pairStacked]}>
-          {isVenue && (
-            <Button
-              variant="secondary"
-              icon="calendar-outline"
-              label={t('vendor.bookTour')}
-              onPress={() =>
-                router.push({
-                  pathname: '/ask',
-                  params: event
-                    ? { vendorId: v.id, event, kind: 'tour' }
-                    : { vendorId: v.id, kind: 'tour' },
-                })
-              }
-              style={!stackButtons && styles.pairItem}
-            />
-          )}
-          {/* Wed (mockup): the composer starts with this vendor and a date question.
-              A short label, so it stays on one line whatever the name. */}
-          <View style={!stackButtons && styles.pairItem}>
-            <AskWedButton
-              variant="pill"
-              label={isVenue ? 'Ask Wed' : 'Ask Wed about this vendor'}
-              a11y={`Ask Wed about ${v.name.en}`}
-              about={{ kind: 'vendor', id: v.slug, label: v.name.en, thumb: cover?.url.small }}
-              ask={`Is ${v.name.en} free on Jun 13, and what do they charge?`}
-            />
-          </View>
-        </View>
+        {isVenue && (
+          <Button
+            variant="secondary"
+            icon="calendar-outline"
+            label={t('vendor.bookTour')}
+            onPress={() =>
+              router.push({
+                pathname: '/ask',
+                params: event
+                  ? { vendorId: v.id, event, kind: 'tour' }
+                  : { vendorId: v.id, kind: 'tour' },
+              })
+            }
+          />
+        )}
 
         <ListSection inset>
           <ListRow
             icon="location-outline"
             title={v.addressLine ?? t('vendor.basedIn', { city: v.city })}
+            onPress={directions}
+            accessibilityLabel={
+              directions ? `${v.addressLine}. ${t('vendor.directionsSpoken', { name })}` : undefined
+            }
           />
           {!v.addressLine && (
             <ListRow
@@ -647,39 +675,47 @@ export default function VendorProfileScreen() {
         {realWeddings.data && realWeddings.data.length > 0 && (
           <View style={styles.block}>
             <SectionTitle>{t('vendor.realWeddings')}</SectionTitle>
-            {realWeddings.data.map((photo) => {
-              const by = localized(photo.vendor.name);
-              return (
-                <Card
-                  key={photo.id}
-                  onPress={() =>
-                    router.push({ pathname: '/v/[slug]', params: { slug: photo.vendor.slug } })
-                  }
-                  accessibilityLabel={t('vendor.photoBy', { name: by })}
-                  style={styles.realWedding}
-                >
-                  <Image
-                    source={{ uri: photo.url.medium }}
-                    placeholder={photo.blurhash ? { blurhash: photo.blurhash } : undefined}
-                    contentFit="cover"
-                    transition={200}
-                    accessible={false}
-                    style={styles.realWeddingPhoto}
-                  />
-                  <View style={styles.realWeddingCaption}>
-                    <AppText weight={600} style={styles.grow}>
-                      {t('vendor.photoBy', { name: by })}
-                    </AppText>
-                    <Icon
-                      name="chevron-forward"
-                      size={17}
-                      color={Colors.chevron}
-                      weight="semibold"
+            {/* Sideways, so a hall with many doesn't make the page endless */}
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              style={styles.bleed}
+              contentContainerStyle={styles.realWeddings}
+            >
+              {realWeddings.data.map((photo) => {
+                const by = localized(photo.vendor.name);
+                return (
+                  <Card
+                    key={photo.id}
+                    onPress={() =>
+                      router.push({ pathname: '/v/[slug]', params: { slug: photo.vendor.slug } })
+                    }
+                    accessibilityLabel={t('vendor.photoBy', { name: by })}
+                    style={styles.realWedding}
+                  >
+                    <Image
+                      source={{ uri: photo.url.medium }}
+                      placeholder={photo.blurhash ? { blurhash: photo.blurhash } : undefined}
+                      contentFit="cover"
+                      transition={200}
+                      accessible={false}
+                      style={styles.realWeddingPhoto}
                     />
-                  </View>
-                </Card>
-              );
-            })}
+                    <View style={styles.realWeddingCaption}>
+                      <AppText weight={600} style={styles.grow}>
+                        {t('vendor.photoBy', { name: by })}
+                      </AppText>
+                      <Icon
+                        name="chevron-forward"
+                        size={17}
+                        color={Colors.chevron}
+                        weight="semibold"
+                      />
+                    </View>
+                  </Card>
+                );
+              })}
+            </ScrollView>
           </View>
         )}
 
@@ -711,14 +747,20 @@ export default function VendorProfileScreen() {
             <SectionTitle>{t('vendor.contact')}</SectionTitle>
             <ListSection>
               {contacts.map((line) => (
-                <View key={line.label} style={styles.contact}>
+                <Pressable
+                  key={line.label}
+                  accessibilityRole={line.onPress ? 'button' : undefined}
+                  disabled={!line.onPress}
+                  onPress={line.onPress}
+                  style={({ pressed }) => [styles.contact, pressed && styles.contactPressed]}
+                >
                   <AppText variant="label" weight={400} color="text2">
                     {line.label}
                   </AppText>
                   <AppText variant="bodyLg" selectable style={styles.tabular}>
                     {line.value}
                   </AppText>
-                </View>
+                </Pressable>
               ))}
             </ListSection>
           </View>
@@ -870,16 +912,6 @@ const useStyles = makeStyles((Colors) => ({
     flexWrap: 'wrap',
     gap: Spacing.sm,
   },
-  pair: {
-    flexDirection: 'row',
-    gap: Spacing.sm,
-  },
-  pairStacked: {
-    flexDirection: 'column',
-  },
-  pairItem: {
-    flex: 1,
-  },
   block: {
     gap: Spacing.lg,
   },
@@ -925,7 +957,15 @@ const useStyles = makeStyles((Colors) => ({
   dimmed: {
     opacity: 0.7,
   },
+  bleed: {
+    marginHorizontal: -Sizes.pageGutter,
+  },
+  realWeddings: {
+    gap: Spacing.md,
+    paddingHorizontal: Sizes.pageGutter,
+  },
   realWedding: {
+    width: 240,
     padding: 0,
   },
   realWeddingPhoto: {
@@ -946,6 +986,9 @@ const useStyles = makeStyles((Colors) => ({
     gap: 2,
     paddingHorizontal: Spacing.lg,
     paddingVertical: Spacing.md,
+  },
+  contactPressed: {
+    backgroundColor: Colors.rowPressed,
   },
   tabular: {
     fontVariant: ['tabular-nums'],
