@@ -12,6 +12,8 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 [ -n "${AWS_ACCESS_KEY_ID:-}" ] || export AWS_PROFILE=${AWS_PROFILE:-wedded}
 export AWS_REGION=us-east-2
+# Git Bash on Windows turns /wedded/… and /opt/… into Windows paths unless told not to
+export MSYS_NO_PATHCONV=1
 
 output() {
   aws cloudformation describe-stacks --stack-name WeddedBackend --output text \
@@ -47,7 +49,12 @@ case "${1:-}" in
       --exclude '.temp/*' --exclude '.branches/*' --exclude 'tests/*'
     aws s3 sync infra/backend "s3://$bucket/app/infra/backend" --delete --quiet
     seed=$([ "${2:-}" = --seed ] && echo 1 || true)
-    on_server "aws s3 sync s3://$bucket/app /opt/wedded/app --delete --quiet --region $AWS_REGION &&
+    # A new server may still be on its first boot, which installs the AWS CLI
+    on_server "cloud-init status --wait >/dev/null || {
+        echo \"The server's first boot failed: see /var/log/cloud-init-output.log and /opt/wedded/setup.log\" >&2
+        exit 1
+      }
+      aws s3 sync s3://$bucket/app /opt/wedded/app --delete --quiet --region $AWS_REGION &&
       DOMAIN=$(output Domain) STORAGE_BUCKET=$bucket AWS_REGION=$AWS_REGION SEED=$seed \
       bash /opt/wedded/app/infra/backend/deploy.sh"
     ;;
