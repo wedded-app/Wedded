@@ -15,6 +15,7 @@ import { useIsVendor } from '@/data/chat';
 import { useFeed, type FeedPost } from '@/data/feed';
 import { useCategoryGroups, useHomeEvents } from '@/data/reference';
 import { useCategoryVendorCounts } from '@/data/vendors';
+import { useSession } from '@/features/auth/session';
 import { ChatButton } from '@/features/chat/chat-button';
 import { EventCarousel } from '@/features/home/event-carousel';
 import { HomeCover, useCoverHeight } from '@/features/home/home-cover';
@@ -57,9 +58,11 @@ export default function HomeScreen() {
   const { wedding, loading, plan, events, next } = view;
   const planning = !!wedding || (loading && !!plan.syncedWeddingId);
   // A vendor account that isn't planning a wedding gets no "Plan your wedding"
-  // cover: their My business card comes first instead
+  // cover (their My business card comes first instead), and nor does someone
+  // who joined just looking: they came to browse, not to be asked to plan
   const { isVendor } = useIsVendor();
-  const showCover = planning || !isVendor;
+  const { profile } = useSession();
+  const showCover = planning || (!isVendor && profile?.joined_as !== 'looking');
 
   // The small title and the bar's backdrop come in as the cover scrolls away
   const collapseAt = showCover ? coverHeight - navTop : 0;
@@ -127,8 +130,9 @@ export default function HomeScreen() {
             />
             <LocationChip />
           </View>
-          {/* MOCKUP: Wed's cards waiting for a yes, what it's working on, or a way in */}
-          <WedHomeSection />
+          {/* MOCKUP: Wed's cards waiting for a yes, what it's working on, or a way in.
+              Only with a plan: its cards book things for a sample family's wedding */}
+          {planning && <WedHomeSection />}
 
           {planning ? (
             <>
