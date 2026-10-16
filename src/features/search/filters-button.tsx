@@ -14,7 +14,7 @@ export function FiltersButton({ groupSlug }: { groupSlug?: string | null }) {
   const count = activeFilterCount(useSearchFilters());
   return (
     <Button
-      variant="secondary"
+      variant="text"
       icon="options-outline"
       label={count > 0 ? t('filters.buttonCount', { count }) : t('filters.button')}
       onPress={() =>

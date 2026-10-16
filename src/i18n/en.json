@@ -259,7 +259,7 @@
     "label": "Search",
     "clear": "Clear search",
     "popular": "Popular",
-    "allCategories": "All categories A to Z",
+    "browseByKind": "Browse by kind",
     "noMatch": "Nothing matches “{{query}}”. Try another word, like dhol or hall.",
     "types": "Vendor types",
     "vendors": "Vendors",

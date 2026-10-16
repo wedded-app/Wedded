@@ -2,18 +2,16 @@ import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { StyleSheet, View, type TextInput } from 'react-native';
 
-import { useFontScale } from '@/components/app-text';
 import { CategoryRow } from '@/components/category-row';
-import { CategoryTile } from '@/components/category-tile';
 import { Chip } from '@/components/chip';
 import { groupIcon } from '@/components/group-icon';
-import { ListSection, SectionTitle } from '@/components/list';
+import { ListRow, ListSection, SectionTitle } from '@/components/list';
 import { NavScreen } from '@/components/nav';
 import { SearchField } from '@/components/search-field';
 import { StateView } from '@/components/state-view';
 import { VendorCard } from '@/components/vendor-card';
 import { Spacing } from '@/constants/theme';
-import { useCategories } from '@/data/reference';
+import { useCategories, useCategoryGroups } from '@/data/reference';
 import { useSavedVendors, useSaveVendor } from '@/data/saved';
 import { trackSearchAppearances } from '@/data/business-insights';
 import { useVendorSearch } from '@/data/search';
@@ -50,6 +48,7 @@ export default function SearchScreen() {
   const inputRef = useRef<TextInput>(null);
   const [query, setQuery] = useState('');
   const categories = useCategories();
+  const groups = useCategoryGroups();
   const counts = useCategoryVendorCounts();
   const { place } = useSearchLocation();
   const saves = useSavedVendors();
@@ -73,8 +72,6 @@ export default function SearchScreen() {
       trackSearchAppearances(vendors.data.map((vendor) => vendor.id));
     }
   }, [vendors.data, needle]);
-  // Two columns stop fitting once the phone's text is very large.
-  const columns = useFontScale('heading') >= 1.5 ? 1 : 2;
 
   useFocusEffect(
     useCallback(() => {
@@ -189,10 +186,6 @@ export default function SearchScreen() {
         </>
       );
   } else {
-    const rows = [];
-    for (let i = 0; i < all.length; i += columns) {
-      rows.push(all.slice(i, i + columns));
-    }
     body = (
       <>
         {popular.length > 0 && (
@@ -210,27 +203,24 @@ export default function SearchScreen() {
             </View>
           </View>
         )}
-        <View style={styles.block}>
-          <SectionTitle>{t('search.allCategories')}</SectionTitle>
-          <View style={styles.grid}>
-            {rows.map((row) => (
-              <View key={row[0].slug} style={styles.gridRow}>
-                {row.map((category) => (
-                  <CategoryTile
-                    key={category.slug}
-                    name={category.name}
-                    icon={groupIcon(category.groupSlug)}
-                    vendorCount={vendorCount(category.slug) || undefined}
-                    nearYou={false}
-                    onPress={() => openCategory(category.slug)}
-                    style={styles.tile}
-                  />
-                ))}
-                {row.length < columns && <View style={styles.tile} />}
-              </View>
-            ))}
+        {/* A short list of kinds, each opening its types, instead of every type at once */}
+        {groups.data && (
+          <View style={styles.block}>
+            <SectionTitle>{t('search.browseByKind')}</SectionTitle>
+            <ListSection>
+              {groups.data.map((group) => (
+                <ListRow
+                  key={group.slug}
+                  icon={groupIcon(group.slug)}
+                  title={localized(group.name)}
+                  onPress={() =>
+                    router.push({ pathname: '/g/[group]', params: { group: group.slug } })
+                  }
+                />
+              ))}
+            </ListSection>
           </View>
-        </View>
+        )}
       </>
     );
   }
@@ -254,16 +244,6 @@ const styles = StyleSheet.create({
   },
   list: {
     gap: Spacing.lg,
-  },
-  grid: {
-    gap: Spacing.md,
-  },
-  gridRow: {
-    flexDirection: 'row',
-    gap: Spacing.md,
-  },
-  tile: {
-    flex: 1,
   },
   wedRow: {
     paddingHorizontal: Spacing.lg,
