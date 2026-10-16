@@ -14,7 +14,6 @@ import { Sizes, Spacing, useColors, useScheme } from '@/constants/theme';
 import { useIsVendor } from '@/data/chat';
 import { useFeed, type FeedPost } from '@/data/feed';
 import { useCategoryGroups, useHomeEvents } from '@/data/reference';
-import { useCategoryVendorCounts } from '@/data/vendors';
 import { useSession } from '@/features/auth/session';
 import { ChatButton } from '@/features/chat/chat-button';
 import { EventCarousel } from '@/features/home/event-carousel';
@@ -22,12 +21,13 @@ import { HomeCover, useCoverHeight } from '@/features/home/home-cover';
 import { NextUp } from '@/features/home/next-up';
 import { SectionHeader } from '@/features/home/section-header';
 import { VendorPhotoCards } from '@/features/home/vendor-photo-cards';
-import { BENTO_TILES, VendorTypeBento } from '@/features/home/vendor-type-bento';
+import { VendorTypeRow } from '@/features/home/vendor-type-row';
 import { YourFamily } from '@/features/home/your-family';
 import { YourVendors } from '@/features/home/your-vendors';
 import { LocationChip } from '@/features/location/location-chip';
 import { findForPlan } from '@/features/planner/find-for-plan';
 import { usePlanView } from '@/features/planner/use-plan-view';
+import { StoryRings } from '@/features/stories/story-rings';
 import { WedHomeSection } from '@/features/wed/home-wed';
 import { localized } from '@/i18n/localized';
 import { useLocale } from '@/i18n/locale-context';
@@ -124,6 +124,7 @@ export default function HomeScreen() {
         {showCover && <HomeCover view={view} posts={posts} />}
 
         <View style={[styles.body, !showCover && { paddingTop: navTop + Spacing.lg }]}>
+          <StoryRings />
           <View style={styles.find}>
             <SearchButton
               onPress={() => router.navigate({ pathname: '/search', params: { focus: '1' } })}
@@ -183,7 +184,6 @@ function BrowseSections({ posts }: { posts: FeedPost[] }) {
   const { t } = useLocale();
   const router = useRouter();
   const groups = useCategoryGroups();
-  const counts = useCategoryVendorCounts();
   const { data: sections, status, refetch } = useHomeEvents();
 
   return (
@@ -193,14 +193,12 @@ function BrowseSections({ posts }: { posts: FeedPost[] }) {
       <View style={styles.block}>
         <SectionHeader
           title={t('home.whatDoYouNeed')}
-          link={(groups.data?.length ?? 0) > BENTO_TILES ? t('home.seeAllTypes') : t('home.seeAll')}
+          link={t('home.seeAllTypes')}
           onLink={() => router.navigate('/search')}
         />
         {groups.isPending && <StateView state="loading" />}
         {groups.isError && <StateView state="error" onRetry={() => void groups.refetch()} />}
-        {groups.data && (
-          <VendorTypeBento groups={groups.data} counts={counts.data ?? {}} posts={posts} />
-        )}
+        {groups.data && <VendorTypeRow groups={groups.data} />}
       </View>
 
       <View style={styles.block}>
@@ -248,7 +246,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: Sizes.pageGutter,
   },
   find: {
-    gap: Spacing.md,
+    gap: Spacing.xs,
   },
   block: {
     gap: Spacing.md,
