@@ -58,16 +58,8 @@ export default function PlanScreen() {
   const suggestions = useWeddingSuggestions(wedding?.id ?? null);
   const suggested = openCounts(suggestions.data ?? []);
 
-  // The first event with an essential left to book starts open.
-  const firstOpen =
-    chosen.find((event) => {
-      const booked = plan.booked[event.slug] ?? [];
-      return essentialNeeds(needsByEvent[event.slug]).some(
-        (need) => !booked.includes(need.categorySlug),
-      );
-    })?.slug ?? chosen[0]?.slug;
-  const [open, setOpen] = useState<string[] | null>(null);
-  const openSlugs = open ?? (firstOpen ? [firstOpen] : []);
+  // Every event starts folded, so the page reads as one list; a tap opens one
+  const [openSlugs, setOpen] = useState<string[]>([]);
   const toggleOpen = (slug: string) =>
     setOpen(openSlugs.includes(slug) ? openSlugs.filter((s) => s !== slug) : [...openSlugs, slug]);
 
