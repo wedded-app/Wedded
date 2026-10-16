@@ -3,7 +3,8 @@ import { useState } from 'react';
 import { View } from 'react-native';
 
 import {
-  GlassTabBar,
+  CENTER_RISE,
+  TabBar,
   TabBarSpaceProvider,
   useTabBarOffset,
   type TabSpec,
@@ -15,19 +16,25 @@ import { useOpensInBusiness } from '@/features/business/app-mode';
 import { useOnboardingGate } from '@/features/onboarding/gate';
 import { SavedToastHost } from '@/features/saved/saved-toast';
 import { useWedNavigation } from '@/features/wed/open-wed';
-import { WED_BUTTON_SPACE, WedButton } from '@/features/wed/wed-button';
+import { WedButton } from '@/features/wed/wed-button';
 import { useWed, waitingCount } from '@/features/wed/wed-store';
 import { useLocale } from '@/i18n/locale-context';
 
 const TABS: (Omit<TabSpec, 'label'> & { labelKey: string })[] = [
-  { name: '(home)', labelKey: 'tabs.home', icon: 'home-outline', iconFilled: 'home' },
+  // Search opens from Home's search box, so Home stays lit while it's open
+  {
+    name: '(home)',
+    labelKey: 'tabs.home',
+    icon: 'home-outline',
+    iconFilled: 'home',
+    alsoFor: ['(search)'],
+  },
   {
     name: 'discover',
     labelKey: 'tabs.discover',
     icon: 'play-circle-outline',
     iconFilled: 'play-circle',
   },
-  { name: '(search)', labelKey: 'tabs.search', icon: 'search-outline', iconFilled: 'search' },
   {
     name: 'requests',
     labelKey: 'tabs.requests',
@@ -43,14 +50,13 @@ const TABS: (Omit<TabSpec, 'label'> & { labelKey: string })[] = [
 ];
 
 /**
- * Bottom tabs: Home, Reels (the discover route), Search, Requests, Profile,
- * in a floating glass bar (the iOS 26 tab bar) that content scrolls under.
- * Wed's pages are in this group, so its chat sits above the bar, but get no
- * tab (href: null): Wed's round button floats above the bar's right end
- * (WedButton, with how many of its cards wait for a yes), and its buttons
- * around the app open it too. Labels are always
- * visible and come from i18n. Expo Router's JS tabs draw it the same on iPhone,
- * Android and the web; the glass itself is the system material on iOS 26.
+ * Bottom tabs: Home, Reels (the discover route), Wed's round button in the
+ * middle (WedButton, with how many of its cards wait for a yes), Requests and
+ * Profile, in a floating bar that content scrolls under (TabBar: the selected
+ * tab grows into a pill with its name). Search and Wed's pages are in this
+ * group without a tab (href: null): Search opens from Home's search box, Wed
+ * from its button and the Wed buttons around the app. Expo Router's JS tabs
+ * draw it the same on iPhone, Android and the web.
  */
 export default function TabsLayout() {
   const Colors = useColors();
@@ -88,15 +94,11 @@ export default function TabsLayout() {
   if (business) return <Redirect href="/today" />;
 
   return (
-    <TabBarSpaceProvider value={Sizes.tabBar + offset + Spacing.sm + WED_BUTTON_SPACE}>
+    <TabBarSpaceProvider value={Sizes.tabBar + offset + Spacing.sm + CENTER_RISE}>
       <Tabs
         key={generation}
         tabBar={(props) => (
-          <GlassTabBar
-            {...props}
-            tabs={tabs}
-            floating={<WedButton count={canApprove ? waiting : 0} />}
-          />
+          <TabBar {...props} tabs={tabs} center={<WedButton count={canApprove ? waiting : 0} />} />
         )}
         screenOptions={{
           headerShown: false,
@@ -106,6 +108,7 @@ export default function TabsLayout() {
         {tabs.map((tab) => (
           <Tabs.Screen key={tab.name} name={tab.name} options={{ title: tab.label }} />
         ))}
+        <Tabs.Screen name="(search)" options={{ href: null }} />
         <Tabs.Screen name="wed" options={{ href: null }} />
       </Tabs>
       <SavedToastHost />

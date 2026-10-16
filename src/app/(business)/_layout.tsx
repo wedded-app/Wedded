@@ -1,12 +1,7 @@
 import { Redirect, Tabs } from 'expo-router';
 import { View } from 'react-native';
 
-import {
-  GlassTabBar,
-  TabBarSpaceProvider,
-  useTabBarOffset,
-  type TabSpec,
-} from '@/components/tab-bar';
+import { TabBar, TabBarSpaceProvider, useTabBarOffset, type TabSpec } from '@/components/tab-bar';
 import { Sizes, Spacing, useColors } from '@/constants/theme';
 import { useBusinessLeads, waitingCount } from '@/data/business';
 import { useSession } from '@/features/auth/session';
@@ -78,7 +73,7 @@ export default function BusinessTabsLayout() {
   return (
     <TabBarSpaceProvider value={Sizes.tabBar + offset + Spacing.sm}>
       <Tabs
-        tabBar={(props) => <GlassTabBar {...props} tabs={tabs} accent="kesari" />}
+        tabBar={(props) => <TabBar {...props} tabs={tabs} accent="kesari" />}
         screenOptions={{
           headerShown: false,
           sceneStyle: { backgroundColor: Colors.bg },

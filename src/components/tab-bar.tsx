@@ -1,4 +1,3 @@
-import { Image, type ImageProps } from 'expo-image';
 import type { Tabs } from 'expo-router';
 import {
   createContext,
@@ -19,32 +18,29 @@ import Animated, {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AppText } from '@/components/app-text';
-import { Glass } from '@/components/glass';
 import { Icon, type IconName } from '@/components/icon';
 import {
-  type ColorToken,
   makeStyles,
   Palettes,
   Sizes,
   Spacing,
   Springs,
   useColors,
+  useScheme,
 } from '@/constants/theme';
+import { Motion } from '@/lib/motion';
 
 export type TabBarProps = Parameters<NonNullable<ComponentProps<typeof Tabs>['tabBar']>>[0];
 
 export type TabSpec = {
   name: string;
   label: string;
-  icon?: IconName;
+  icon: IconName;
   iconFilled?: IconName;
-  /** A one-colour picture instead of an icon (Wed's ribbon), tinted like the
-   * icons: a require()'d PNG, drawn 28 by 24. */
-  image?: ImageProps['source'];
   /** A count on the icon, e.g. unread messages on Profile. */
   badge?: number;
-  /** What a screen reader says for the count, e.g. "1 needs your OK". */
-  badgeLabel?: string;
+  /** Routes without a tab that count as this one, e.g. Search opened from Home. */
+  alsoFor?: string[];
 };
 
 const PADDING = 6;
@@ -103,8 +99,8 @@ export function useBottomSpace() {
  * How far the floating tab bar's top edge sits above the bottom of the
  * screen, or the home indicator's outside the tabs: for full-screen media
  * like Reels, whose words and progress line sit right on it. Unlike
- * useBottomSpace it leaves no room for Wed's floating button, which isn't
- * shown over Reels.
+ * useBottomSpace it leaves no room for Wed's raised button, which sits
+ * flat in the bar over Reels.
  */
 export function useTabBarTop() {
   const inTabs = useContext(TabBarSpaceContext) > 0;
@@ -113,64 +109,66 @@ export function useTabBarTop() {
   return inTabs ? Sizes.tabBar + offset : insets.bottom;
 }
 
+/** The round button in the middle of the bar (Wed's) and the ring around it. */
+const CENTER = 60;
+const RING = CENTER + 8;
+/** How far the middle button rises above the bar, for content to clear. */
+export const CENTER_RISE = 26;
+
 /**
- * The iOS 26 tab bar: a glass capsule floating over the content, with a
- * highlight that springs to the selected tab. Labels are always visible and
- * at least 13 point (vision §5); the selected tab also gets its filled icon
- * (a picture tab grows a little instead) and the highlight, so colour isn't
- * the only signal. Slides away while a screen asks with useHideTabBar().
+ * The bottom bar: a solid capsule floating over the content. The selected
+ * tab grows into a filled pill with its icon and name; the others show just
+ * their icon (screen readers still hear every name). `center` (Wed's button)
+ * sits raised in the middle, and moves aside a little as the pill moves, so
+ * a long name like Requests never gets cut short. Over Reels it sits flat in
+ * the bar, clear of the video's words. Slides away while a screen asks with
+ * useHideTabBar().
  */
-export function GlassTabBar({
+export function TabBar({
   state,
   descriptors,
   navigation,
   tabs,
   accent = 'primary',
-  floating,
+  center,
 }: TabBarProps & {
   tabs: TabSpec[];
-  /** The selected tab's colour: saffron in business mode, so it's clear which side this is. */
-  accent?: ColorToken;
-  /**
-   * A round button floating just above the bar's right end (Wed's), which
-   * hides with the bar. It's left out over Reels' videos, whose own buttons
-   * sit there, and on a route the bar has no tab for (the one it opens).
-   */
-  floating?: ReactNode;
+  /** The selected pill's colour: saffron in business mode, so it's clear which side this is. */
+  accent?: 'primary' | 'kesari';
+  center?: ReactNode;
 }) {
   const appColors = useColors();
+  const scheme = useScheme();
   const styles = useStyles();
   const bottom = useTabBarOffset();
-  // Over the Reels videos the bar is always dark glass with light labels
-  const overVideo = ['discover', 'reels'].includes(state.routes[state.index]?.name ?? '');
+  const current = state.routes[state.index]?.name ?? '';
+  // Over the Reels videos the bar is always dark, with the button lowered into it
+  const overVideo = ['discover', 'reels'].includes(current);
   const Colors = overVideo ? Palettes.dark : appColors;
+  const dark = overVideo || scheme === 'dark';
+  const fill = accent === 'primary' ? Colors.primaryFill : Colors.kesari;
+  // White on the fill, except on dark mode's light saffron, which needs dark words
+  const onFill = dark && accent === 'kesari' ? Colors.bg : Colors.onPrimary;
   const reduceMotion = useReducedMotion();
-  const [width, setWidth] = useState(0);
   // Only the routes with a tab: a hidden route (href: null, like Wed) gets no slot
   const shown = state.routes.filter((route) => tabs.some((tab) => tab.name === route.name));
-  const selected = shown.findIndex((route) => route.key === state.routes[state.index]?.key);
-  const itemWidth = width > 0 ? (width - PADDING * 2) / shown.length : 0;
-  const x = useSharedValue(0);
+  const half = Math.ceil(shown.length / 2);
   const keyboardShown = useKeyboardShown();
   const hidden = useSyncExternalStore(subscribeHidden, isHidden, neverHidden);
   const drop = useSharedValue(0);
 
-  useEffect(() => {
-    const target = Math.max(selected, 0) * itemWidth;
-    x.value = reduceMotion || itemWidth === 0 ? target : withSpring(target, Springs.snappy);
-  }, [selected, itemWidth, reduceMotion, x]);
-
   // Below the bottom edge, shadow and all
   useEffect(() => {
-    const target = hidden ? Sizes.tabBar + bottom + Spacing.xl : 0;
+    const target = hidden ? Sizes.tabBar + bottom + CENTER_RISE + Spacing.xl : 0;
     drop.value = reduceMotion ? target : withSpring(target, Springs.smooth);
   }, [hidden, bottom, reduceMotion, drop]);
 
-  const highlight = useAnimatedStyle(() => ({ transform: [{ translateX: x.value }] }));
   const dropStyle = useAnimatedStyle(() => ({ transform: [{ translateY: drop.value }] }));
 
   // Android lifts the whole screen above the keyboard; the bar would ride on it.
   if (keyboardShown) return null;
+
+  const raised = !!center && !overVideo;
 
   // Whether it takes taps sits on a plain View, as one of two stylesheet
   // styles that swap. On the web an inline 'box-none' isn't valid CSS, so the
@@ -184,136 +182,112 @@ export function GlassTabBar({
       importantForAccessibility={hidden ? 'no-hide-descendants' : 'auto'}
     >
       <Animated.View style={[styles.through, dropStyle]}>
-        {floating && !overVideo && selected >= 0 && (
-          <View style={[styles.floating, styles.through]}>{floating}</View>
-        )}
-        <Glass interactive scheme={overVideo ? 'dark' : undefined} style={styles.bar}>
-          <View
-            style={styles.items}
-            accessibilityRole="tablist"
-            onLayout={(event) => setWidth(event.nativeEvent.layout.width)}
-          >
-            {itemWidth > 0 && selected >= 0 && (
+        <View style={[styles.bar, { backgroundColor: Colors.surface }]} />
+        {/* The row is tall enough to hold the raised button: Android only takes taps inside a view's bounds */}
+        <View
+          style={[styles.items, styles.through, raised && styles.roomAbove]}
+          accessibilityRole="tablist"
+        >
+          {shown.flatMap((route, index) => [
+            center && index === half && (
               <Animated.View
-                style={[
-                  styles.highlight,
-                  { width: itemWidth, backgroundColor: Colors.fillPressed },
-                  highlight,
-                ]}
-              />
-            )}
-            {shown.map((route, index) => {
-              const focused = selected === index;
-              const spec = tabs.find((tab) => tab.name === route.name);
-              const label = spec?.label ?? descriptors[route.key].options.title ?? route.name;
-              const color = focused ? Colors[accent] : Colors.text;
-
-              const onPress = () => {
-                const event = navigation.emit({
-                  type: 'tabPress',
-                  target: route.key,
-                  canPreventDefault: true,
-                });
-                if (!focused && !event.defaultPrevented) {
-                  navigation.navigate(route.name, route.params);
-                }
-              };
-
-              return (
-                <Pressable
-                  key={route.key}
-                  accessibilityRole="tab"
-                  accessibilityState={{ selected: focused }}
-                  accessibilityLabel={
-                    spec?.badge ? `${label}, ${spec.badgeLabel ?? spec.badge}` : label
-                  }
-                  onPress={onPress}
-                  onLongPress={() => navigation.emit({ type: 'tabLongPress', target: route.key })}
-                  style={styles.item}
+                key="center"
+                layout={Motion.layout}
+                style={[styles.centerSlot, raised ? styles.slotRaised : styles.slotFlat]}
+              >
+                <View
+                  style={[
+                    styles.ring,
+                    { backgroundColor: Colors.surface },
+                    !raised && styles.ringFlat,
+                  ]}
                 >
-                  {spec && (
-                    <View>
-                      {spec.image ? (
-                        <TabImage source={spec.image} color={color} focused={focused} />
-                      ) : (
-                        <Icon
-                          name={(focused ? spec.iconFilled : spec.icon) ?? spec.icon ?? 'ellipse'}
-                          size={Sizes.tabIcon}
-                          color={color}
-                          weight={focused ? 'semibold' : 'regular'}
-                        />
-                      )}
-                      {!!spec.badge && (
-                        <View style={[styles.badge, !!spec.image && styles.badgeOnImage]}>
-                          <AppText
-                            variant="caption"
-                            weight={700}
-                            color="onPrimary"
-                            maxFontSizeMultiplier={1.2}
-                            style={styles.badgeText}
-                          >
-                            {spec.badge > 99 ? '99+' : String(spec.badge)}
-                          </AppText>
-                        </View>
-                      )}
-                    </View>
-                  )}
-                  <AppText
-                    variant="caption"
-                    weight={600}
-                    numberOfLines={1}
-                    maxFontSizeMultiplier={1.2}
-                    style={{ color }}
-                  >
-                    {label}
-                  </AppText>
-                </Pressable>
-              );
-            })}
-          </View>
-        </Glass>
+                  {center}
+                </View>
+              </Animated.View>
+            ),
+            renderTab(route),
+          ])}
+        </View>
       </Animated.View>
     </View>
   );
-}
 
-const IMAGE_SIZE = { width: 28, height: 24 };
+  function renderTab(route: (typeof shown)[number]) {
+    const focused = route.name === current;
+    const spec = tabs.find((tab) => tab.name === route.name)!;
+    const selected = focused || !!spec.alsoFor?.includes(current);
+    const label = spec.label ?? descriptors[route.key].options.title ?? route.name;
+    const color = selected ? onFill : Colors.text2;
 
-/**
- * A picture tab (Wed's ribbon): one flat colour tinted like the icons, that
- * springs a little bigger while its tab is selected. It stays still with
- * Reduce Motion, where the highlight alone marks it.
- */
-function TabImage({
-  source,
-  color,
-  focused,
-}: {
-  source: ImageProps['source'];
-  color: string;
-  focused: boolean;
-}) {
-  const reduceMotion = useReducedMotion();
-  const scale = useSharedValue(1);
+    const onPress = () => {
+      const event = navigation.emit({
+        type: 'tabPress',
+        target: route.key,
+        canPreventDefault: true,
+      });
+      if (!focused && !event.defaultPrevented) {
+        navigation.navigate(route.name, route.params);
+      }
+    };
 
-  useEffect(() => {
-    const target = focused && !reduceMotion ? 1.08 : 1;
-    scale.value = reduceMotion ? target : withSpring(target, Springs.snappy);
-  }, [focused, reduceMotion, scale]);
-
-  const grow = useAnimatedStyle(() => ({ transform: [{ scale: scale.value }] }));
-
-  return (
-    <Animated.View style={grow}>
-      <Image
-        source={source}
-        tintColor={color}
-        contentFit="contain"
-        style={IMAGE_SIZE}
-        accessible={false}
-      />
-    </Animated.View>
-  );
+    const tab = (
+      <Animated.View
+        key={route.key}
+        layout={Motion.layout}
+        style={selected ? styles.slotWide : styles.slot}
+      >
+        <Pressable
+          accessibilityRole="tab"
+          accessibilityState={{ selected }}
+          accessibilityLabel={spec.badge ? `${label}, ${spec.badge}` : label}
+          onPress={onPress}
+          onLongPress={() => navigation.emit({ type: 'tabLongPress', target: route.key })}
+          style={({ pressed }) => [
+            styles.item,
+            selected && { backgroundColor: fill },
+            pressed && !selected && styles.pressed,
+          ]}
+        >
+          <View>
+            <Icon
+              name={(selected ? spec.iconFilled : spec.icon) ?? spec.icon}
+              size={Sizes.tabIcon}
+              color={color}
+              weight={selected ? 'semibold' : 'regular'}
+            />
+            {!!spec.badge && (
+              <View style={[styles.badge, { borderColor: selected ? fill : Colors.surface }]}>
+                <AppText
+                  variant="caption"
+                  weight={700}
+                  color="onPrimary"
+                  maxFontSizeMultiplier={1.2}
+                  style={styles.badgeText}
+                >
+                  {spec.badge > 99 ? '99+' : String(spec.badge)}
+                </AppText>
+              </View>
+            )}
+          </View>
+          {selected && (
+            <Animated.View entering={Motion.enter} style={styles.labelBox}>
+              <AppText
+                variant="caption"
+                weight={700}
+                numberOfLines={1}
+                maxFontSizeMultiplier={1.2}
+                style={{ color }}
+              >
+                {label}
+              </AppText>
+            </Animated.View>
+          )}
+        </Pressable>
+      </Animated.View>
+    );
+    return tab;
+  }
 }
 
 function useKeyboardShown() {
@@ -339,30 +313,77 @@ const useStyles = makeStyles((Colors) => ({
   through: {
     pointerEvents: 'box-none',
   },
-  floating: {
-    alignItems: 'flex-end',
-    marginBottom: Spacing.md,
-  },
   gone: {
     pointerEvents: 'none',
   },
+  // The bar's background, behind a row that can be taller (the raised button)
   bar: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
     height: Sizes.tabBar,
     borderRadius: Sizes.tabBar / 2,
+    borderCurve: 'continuous',
+    boxShadow: '0 8px 24px rgba(0, 0, 0, 0.14), 0 0 0 0.5px rgba(0, 0, 0, 0.06)',
   },
   items: {
-    flex: 1,
+    height: Sizes.tabBar,
     flexDirection: 'row',
-    padding: PADDING,
+    alignItems: 'flex-end',
+    paddingHorizontal: PADDING,
+    paddingBottom: PADDING,
   },
-  highlight: {
-    pointerEvents: 'none',
-    position: 'absolute',
-    top: PADDING,
-    bottom: PADDING,
-    left: PADDING,
+  roomAbove: {
+    height: Sizes.tabBar + CENTER_RISE,
+  },
+  // Icons share the room the selected pill doesn't need
+  slot: {
+    flex: 1,
+    minWidth: 44,
+  },
+  // As wide as its icon and name, giving way only when there's no room
+  slotWide: {
+    flexShrink: 1,
+  },
+  item: {
+    height: Sizes.tabBar - PADDING * 2,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: Spacing.xs + 2,
+    paddingHorizontal: 14,
     borderRadius: (Sizes.tabBar - PADDING * 2) / 2,
+    borderCurve: 'continuous',
+  },
+  pressed: {
     backgroundColor: Colors.fillPressed,
+  },
+  labelBox: {
+    flexShrink: 1,
+  },
+  centerSlot: {
+    width: RING + Spacing.xs,
+    alignSelf: 'stretch',
+    alignItems: 'center',
+  },
+  // Partly out of the bar, like a button set into it
+  slotRaised: {
+    justifyContent: 'flex-start',
+  },
+  slotFlat: {
+    justifyContent: 'center',
+  },
+  ring: {
+    width: RING,
+    height: RING,
+    borderRadius: RING / 2,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  // Over Reels: smaller and inside the bar, clear of the video's words
+  ringFlat: {
+    transform: [{ scale: 0.82 }],
   },
   badge: {
     position: 'absolute',
@@ -376,22 +397,9 @@ const useStyles = makeStyles((Colors) => ({
     borderRadius: 10,
     backgroundColor: Colors.errorFill,
     borderWidth: 2,
-    borderColor: Colors.surface,
-  },
-  // Clear of the ribbon's right loop, so the mark never looks clipped
-  badgeOnImage: {
-    top: -9,
-    right: -18,
   },
   badgeText: {
     fontSize: 11,
     lineHeight: 14,
-  },
-  item: {
-    flex: 1,
-    minHeight: Sizes.tapTarget,
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 1,
   },
 }));
