@@ -484,6 +484,10 @@ enabled = true
 # and column/key alignment. Set to "null" to emit raw, unformatted SQL.
 # format_options = "{\"keywordCase\":\"upper\",\"indent\":2,\"maxWidth\":180,\"commaStyle\":\"trailing\"}"
 
+# Pro billing platform webhook: Stripe signature verification in the handler.
+[functions.pro-webhook]
+verify_jwt = false
+
 # Signed email links work without a login. GET never changes preferences.
 [functions.email-unsubscribe]
 verify_jwt = false
