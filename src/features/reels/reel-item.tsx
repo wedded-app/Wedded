@@ -118,6 +118,7 @@ export function ReelItem({
   eventName,
   bottomSpace,
   story,
+  business = false,
   onToggleMute,
   ...actions
 }: ReelActions & {
@@ -132,6 +133,8 @@ export function ReelItem({
   bottomSpace: number;
   /** The poster has a story today: new, or already watched. */
   story: 'new' | 'seen' | null;
+  /** Business mode: no Book or Ask Wed, which are for families planning. */
+  business?: boolean;
   onToggleMute: () => void;
 }) {
   const router = useRouter();
@@ -393,16 +396,18 @@ export function ReelItem({
           />
         )}
         {/* Wed (mockup): find vendors like this, with the reel's still in the chip */}
-        <AskWedButton
-          variant="rail"
-          about={{
-            kind: 'reel',
-            id: reel.id,
-            label: `Reel by ${poster}`,
-            thumb: reel.thumbUrl ?? undefined,
-          }}
-          ask="Find vendors like this for our Mehndi"
-        />
+        {!business && (
+          <AskWedButton
+            variant="rail"
+            about={{
+              kind: 'reel',
+              id: reel.id,
+              label: `Reel by ${poster}`,
+              thumb: reel.thumbUrl ?? undefined,
+            }}
+            ask="Find vendors like this for our Mehndi"
+          />
+        )}
         <RailButton
           icon="ellipsis-horizontal"
           label=""
@@ -529,7 +534,7 @@ export function ReelItem({
             )}
           </View>
         )}
-        {vendors.length > 0 && (
+        {vendors.length > 0 && !business && (
           <Pressable
             accessibilityRole="button"
             accessibilityLabel={

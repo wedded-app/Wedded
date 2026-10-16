@@ -64,8 +64,11 @@ export function ReelsPager({
   empty,
   initialIndex = 0,
   swipeHint = false,
+  business = false,
 }: {
   feed: Feed;
+  /** Business mode's Reels tab: reels without the families' Book and Ask Wed. */
+  business?: boolean;
   /** Show "Swipe up for more" the first time (the Reels tab). */
   swipeHint?: boolean;
   /** Start on this reel (a person's grid opening one of theirs). */
@@ -239,6 +242,7 @@ export function ReelsPager({
             eventName={item.eventSlug ? (eventNames[item.eventSlug] ?? null) : null}
             bottomSpace={bottomSpace}
             story={storyOf(item)}
+            business={business}
             onStory={(reel) =>
               router.push({
                 pathname: '/story',
