@@ -504,7 +504,7 @@ export default function VendorProfileScreen() {
 
         {Platform.OS === 'web' && (
           <Button
-            variant="secondary"
+            variant="text"
             icon="phone-portrait-outline"
             label={t('vendor.openInApp')}
             onPress={() => void Linking.openURL(appLink(`/v/${v.slug}`))}
@@ -538,31 +538,36 @@ export default function VendorProfileScreen() {
           />
         )}
 
-        {isVenue && (
-          <Button
-            variant="secondary"
-            icon="calendar-outline"
-            label={t('vendor.bookTour')}
-            onPress={() =>
-              router.push({
-                pathname: '/ask',
-                params: event
-                  ? { vendorId: v.id, event, kind: 'tour' }
-                  : { vendorId: v.id, kind: 'tour' },
-              })
-            }
-          />
-        )}
-
-        {/* Wed (mockup): the composer starts with this vendor and a date question.
-            A short label, so it stays on one line whatever the name. */}
-        <AskWedButton
-          variant="pill"
-          label="Ask Wed about this vendor"
-          a11y={`Ask Wed about ${v.name.en}`}
-          about={{ kind: 'vendor', id: v.slug, label: v.name.en, thumb: cover?.url.small }}
-          ask={`Is ${v.name.en} free on Jun 13, and what do they charge?`}
-        />
+        {/* A hall's tour and Wed side by side, one above the other at very large text */}
+        <View style={[styles.pair, stackButtons && styles.pairStacked]}>
+          {isVenue && (
+            <Button
+              variant="secondary"
+              icon="calendar-outline"
+              label={t('vendor.bookTour')}
+              onPress={() =>
+                router.push({
+                  pathname: '/ask',
+                  params: event
+                    ? { vendorId: v.id, event, kind: 'tour' }
+                    : { vendorId: v.id, kind: 'tour' },
+                })
+              }
+              style={!stackButtons && styles.pairItem}
+            />
+          )}
+          {/* Wed (mockup): the composer starts with this vendor and a date question.
+              A short label, so it stays on one line whatever the name. */}
+          <View style={!stackButtons && styles.pairItem}>
+            <AskWedButton
+              variant="pill"
+              label={isVenue ? 'Ask Wed' : 'Ask Wed about this vendor'}
+              a11y={`Ask Wed about ${v.name.en}`}
+              about={{ kind: 'vendor', id: v.slug, label: v.name.en, thumb: cover?.url.small }}
+              ask={`Is ${v.name.en} free on Jun 13, and what do they charge?`}
+            />
+          </View>
+        </View>
 
         <ListSection inset>
           <ListRow
@@ -864,6 +869,16 @@ const useStyles = makeStyles((Colors) => ({
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: Spacing.sm,
+  },
+  pair: {
+    flexDirection: 'row',
+    gap: Spacing.sm,
+  },
+  pairStacked: {
+    flexDirection: 'column',
+  },
+  pairItem: {
+    flex: 1,
   },
   block: {
     gap: Spacing.lg,
