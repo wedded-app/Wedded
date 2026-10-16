@@ -1,3 +1,6 @@
+// First, so errors while the other modules load are reported too
+import { reportCrash } from '@/lib/crash-reports';
+
 import { Fraunces_500Medium, Fraunces_600SemiBold } from '@expo-google-fonts/fraunces';
 import {
   Inter_400Regular,
@@ -87,9 +90,13 @@ export default function RootLayout() {
  * A page that crashed shows this instead of a blank screen: what happened in
  * plain words, and Try again, which draws it again. It stands in for the
  * whole app, so it uses no provider (the strings come straight from i18n).
+ * The error goes to Sentry, without personal details (lib/crash-reports).
  */
-export function ErrorBoundary({ retry }: ErrorBoundaryProps) {
+export function ErrorBoundary({ error, retry }: ErrorBoundaryProps) {
   const Colors = useColors();
+  useEffect(() => {
+    reportCrash(error);
+  }, [error]);
   return (
     <View
       style={{
