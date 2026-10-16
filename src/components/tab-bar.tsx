@@ -8,7 +8,7 @@ import {
   type ComponentProps,
   type ReactNode,
 } from 'react';
-import { Keyboard, Platform, Pressable, View } from 'react-native';
+import { Keyboard, Platform, Pressable, View, type LayoutChangeEvent } from 'react-native';
 import Animated, {
   useAnimatedStyle,
   useReducedMotion,
@@ -44,6 +44,13 @@ export type TabSpec = {
 };
 
 const PADDING = 6;
+// The selected pill around its name: side padding, the icon and the gap between them
+const PILL_PADDING = 12;
+const ICON_GAP = Spacing.xs + 2;
+// A few points spare: text measures a fraction differently from how it's drawn
+const PILL_CHROME = PILL_PADDING * 2 + Sizes.tabIcon + ICON_GAP + 4;
+// An icon-only tab never gets narrower than this
+const MIN_ICON = 44;
 
 // Screens that cover the whole page for a moment (Wed's side menu) slide the
 // bar away while they're open. A count, so two of them can't fight.
@@ -112,6 +119,8 @@ export function useTabBarTop() {
 /** The round button in the middle of the bar (Wed's) and the ring around it. */
 const CENTER = 60;
 const RING = CENTER + 8;
+// Its slot in the row: the ring and a little air either side, so a pill never touches it
+const CENTER_SLOT = RING + Spacing.sm;
 /** How far the middle button rises above the bar, for content to clear. */
 export const CENTER_RISE = 26;
 
@@ -119,9 +128,11 @@ export const CENTER_RISE = 26;
  * The bottom bar: a solid capsule floating over the content. The selected
  * tab grows into a filled pill with its icon and name; the others show just
  * their icon (screen readers still hear every name). `center` (Wed's button)
- * sits raised in the middle, and moves aside a little as the pill moves, so
- * a long name like Requests never gets cut short. Over Reels it sits flat in
- * the bar, clear of the video's words. Slides away while a screen asks with
+ * sits raised in the middle, between two equal halves of tabs, and stays put
+ * as the pill moves: the pill grows inside its half. Only on a phone too
+ * narrow for a name like Requests beside it does that half take the room the
+ * name needs, so a name is never cut short. Over Reels it sits flat in the
+ * bar, clear of the video's words. Slides away while a screen asks with
  * useHideTabBar().
  */
 export function TabBar({
@@ -156,6 +167,9 @@ export function TabBar({
   const keyboardShown = useKeyboardShown();
   const hidden = useSyncExternalStore(subscribeHidden, isHidden, neverHidden);
   const drop = useSharedValue(0);
+  // The row's width and each name's width (measured off screen), to keep Wed in the middle
+  const [rowWidth, setRowWidth] = useState(0);
+  const [labelWidths, setLabelWidths] = useState<Record<string, number>>({});
 
   // Below the bottom edge, shadow and all
   useEffect(() => {
@@ -169,6 +183,29 @@ export function TabBar({
   if (keyboardShown) return null;
 
   const raised = !!center && !overVideo;
+
+  const labelOf = (route: (typeof shown)[number]) =>
+    tabs.find((tab) => tab.name === route.name)?.label ??
+    descriptors[route.key].options.title ??
+    route.name;
+  const isSelected = (route: (typeof shown)[number]) =>
+    route.name === current ||
+    !!tabs.find((tab) => tab.name === route.name)?.alsoFor?.includes(current);
+
+  // Each half's width: equal, unless the selected name needs more than half
+  let sides: [number, number] | null = null;
+  if (center && rowWidth > 0) {
+    const even = (rowWidth - PADDING * 2 - CENTER_SLOT) / 2;
+    const at = shown.findIndex(isSelected);
+    const name = at >= 0 ? labelWidths[shown[at].key] : undefined;
+    const inLeft = at < half;
+    const icons = (inLeft ? half : shown.length - half) - 1;
+    const extra =
+      name === undefined ? 0 : Math.max(0, PILL_CHROME + name + icons * MIN_ICON - even);
+    sides = inLeft ? [even + extra, even - extra] : [even - extra, even + extra];
+  }
+  const sideStyle = (width: number | undefined) =>
+    width === undefined ? [styles.side, styles.sideEven] : [styles.side, { width }];
 
   // Whether it takes taps sits on a plain View, as one of two stylesheet
   // styles that swap. On the web an inline 'box-none' isn't valid CSS, so the
@@ -187,11 +224,14 @@ export function TabBar({
         <View
           style={[styles.items, styles.through, raised && styles.roomAbove]}
           accessibilityRole="tablist"
+          onLayout={(event: LayoutChangeEvent) => setRowWidth(event.nativeEvent.layout.width)}
         >
-          {shown.flatMap((route, index) => [
-            center && index === half && (
+          {center ? (
+            <>
+              <Animated.View layout={Motion.layout} style={sideStyle(sides?.[0])}>
+                {shown.slice(0, half).map(renderTab)}
+              </Animated.View>
               <Animated.View
-                key="center"
                 layout={Motion.layout}
                 style={[styles.centerSlot, raised ? styles.slotRaised : styles.slotFlat]}
               >
@@ -205,10 +245,39 @@ export function TabBar({
                   {center}
                 </View>
               </Animated.View>
-            ),
-            renderTab(route),
-          ])}
+              <Animated.View layout={Motion.layout} style={sideStyle(sides?.[1])}>
+                {shown.slice(half).map(renderTab)}
+              </Animated.View>
+            </>
+          ) : (
+            shown.map(renderTab)
+          )}
         </View>
+        {center && (
+          <View
+            style={styles.measure}
+            accessibilityElementsHidden
+            importantForAccessibility="no-hide-descendants"
+          >
+            {shown.map((route) => (
+              <AppText
+                key={route.key}
+                variant="caption"
+                weight={700}
+                numberOfLines={1}
+                maxFontSizeMultiplier={1.2}
+                onLayout={(event: LayoutChangeEvent) => {
+                  const { width } = event.nativeEvent.layout;
+                  setLabelWidths((all) =>
+                    all[route.key] === width ? all : { ...all, [route.key]: width },
+                  );
+                }}
+              >
+                {labelOf(route)}
+              </AppText>
+            ))}
+          </View>
+        )}
       </Animated.View>
     </View>
   );
@@ -216,8 +285,8 @@ export function TabBar({
   function renderTab(route: (typeof shown)[number]) {
     const focused = route.name === current;
     const spec = tabs.find((tab) => tab.name === route.name)!;
-    const selected = focused || !!spec.alsoFor?.includes(current);
-    const label = spec.label ?? descriptors[route.key].options.title ?? route.name;
+    const selected = isSelected(route);
+    const label = labelOf(route);
     const color = selected ? onFill : Colors.text2;
 
     const onPress = () => {
@@ -337,10 +406,28 @@ const useStyles = makeStyles((Colors) => ({
   roomAbove: {
     height: Sizes.tabBar + CENTER_RISE,
   },
+  // Half the tabs, either side of the middle button
+  side: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    alignSelf: 'stretch',
+  },
+  sideEven: {
+    flex: 1,
+  },
+  // The names laid out once, unseen, to measure them
+  measure: {
+    position: 'absolute',
+    left: 0,
+    top: 0,
+    alignItems: 'flex-start',
+    opacity: 0,
+    pointerEvents: 'none',
+  },
   // Icons share the room the selected pill doesn't need
   slot: {
     flex: 1,
-    minWidth: 44,
+    minWidth: MIN_ICON,
   },
   // As wide as its icon and name, giving way only when there's no room
   slotWide: {
@@ -351,8 +438,8 @@ const useStyles = makeStyles((Colors) => ({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: Spacing.xs + 2,
-    paddingHorizontal: 14,
+    gap: ICON_GAP,
+    paddingHorizontal: PILL_PADDING,
     borderRadius: (Sizes.tabBar - PADDING * 2) / 2,
     borderCurve: 'continuous',
   },
@@ -363,7 +450,7 @@ const useStyles = makeStyles((Colors) => ({
     flexShrink: 1,
   },
   centerSlot: {
-    width: RING + Spacing.xs,
+    width: CENTER_SLOT,
     alignSelf: 'stretch',
     alignItems: 'center',
   },
