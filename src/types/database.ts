@@ -3001,6 +3001,7 @@ export type Database = {
           last_body: string;
           last_kind: string;
           last_message_at: string;
+          last_sender_is_me: boolean;
           last_sender_name: string;
           last_sender_role: string;
           member_count: number;

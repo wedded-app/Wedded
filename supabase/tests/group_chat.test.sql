@@ -4,7 +4,7 @@
 begin;
 create extension if not exists pgtap with schema extensions;
 
-select plan(45);
+select plan(47);
 
 -- People: Asha (owns the wedding), Balwinder (editor), Charan (suggester),
 -- Dev (a friend outside the wedding, joins with a link), Esha (a stranger)
@@ -232,6 +232,17 @@ select is(
   (select unread_count from public.my_group_threads() where id = pg_temp.id('family')),
   0,
   'Reading the thread clears it'
+);
+select is(
+  (select last_sender_is_me from public.my_group_threads() where id = pg_temp.id('family')),
+  false,
+  'The list knows the last message was someone else''s'
+);
+select public.send_group_message(pg_temp.id('other'), 'Jaago plans here');
+select is(
+  (select last_sender_is_me from public.my_group_threads() where id = pg_temp.id('other')),
+  true,
+  '...or mine, so it can say "You:"'
 );
 reset role;
 
