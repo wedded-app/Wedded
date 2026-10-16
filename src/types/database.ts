@@ -590,6 +590,171 @@ export type Database = {
           },
         ];
       };
+      group_invites: {
+        Row: {
+          created_at: string;
+          created_by: string;
+          expires_at: string;
+          id: string;
+          max_uses: number;
+          revoked_at: string | null;
+          thread_id: string;
+          token: string;
+          uses: number;
+        };
+        Insert: {
+          created_at?: string;
+          created_by: string;
+          expires_at?: string;
+          id?: string;
+          max_uses?: number;
+          revoked_at?: string | null;
+          thread_id: string;
+          token?: string;
+          uses?: number;
+        };
+        Update: {
+          created_at?: string;
+          created_by?: string;
+          expires_at?: string;
+          id?: string;
+          max_uses?: number;
+          revoked_at?: string | null;
+          thread_id?: string;
+          token?: string;
+          uses?: number;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'group_invites_thread_id_fkey';
+            columns: ['thread_id'];
+            isOneToOne: false;
+            referencedRelation: 'group_threads';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      group_members: {
+        Row: {
+          added_by: string | null;
+          joined_at: string;
+          read_at: string | null;
+          thread_id: string;
+          user_id: string;
+        };
+        Insert: {
+          added_by?: string | null;
+          joined_at?: string;
+          read_at?: string | null;
+          thread_id: string;
+          user_id: string;
+        };
+        Update: {
+          added_by?: string | null;
+          joined_at?: string;
+          read_at?: string | null;
+          thread_id?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'group_members_thread_id_fkey';
+            columns: ['thread_id'];
+            isOneToOne: false;
+            referencedRelation: 'group_threads';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      group_messages: {
+        Row: {
+          body: string | null;
+          created_at: string;
+          data: NonNullable<Json>;
+          id: string;
+          kind: string;
+          reply_to: string | null;
+          sender_role: string;
+          sender_user_id: string | null;
+          thread_id: string;
+          wed_ask: string | null;
+        };
+        Insert: {
+          body?: string | null;
+          created_at?: string;
+          data?: NonNullable<Json>;
+          id?: string;
+          kind?: string;
+          reply_to?: string | null;
+          sender_role: string;
+          sender_user_id?: string | null;
+          thread_id: string;
+          wed_ask?: string | null;
+        };
+        Update: {
+          body?: string | null;
+          created_at?: string;
+          data?: NonNullable<Json>;
+          id?: string;
+          kind?: string;
+          reply_to?: string | null;
+          sender_role?: string;
+          sender_user_id?: string | null;
+          thread_id?: string;
+          wed_ask?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'group_messages_reply_to_fkey';
+            columns: ['thread_id', 'reply_to'];
+            isOneToOne: false;
+            referencedRelation: 'group_messages';
+            referencedColumns: ['thread_id', 'id'];
+          },
+          {
+            foreignKeyName: 'group_messages_thread_id_fkey';
+            columns: ['thread_id'];
+            isOneToOne: false;
+            referencedRelation: 'group_threads';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      group_threads: {
+        Row: {
+          created_at: string;
+          created_by: string | null;
+          id: string;
+          last_message_at: string;
+          name: string;
+          wedding_id: string;
+        };
+        Insert: {
+          created_at?: string;
+          created_by?: string | null;
+          id?: string;
+          last_message_at?: string;
+          name: string;
+          wedding_id: string;
+        };
+        Update: {
+          created_at?: string;
+          created_by?: string | null;
+          id?: string;
+          last_message_at?: string;
+          name?: string;
+          wedding_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'group_threads_wedding_id_fkey';
+            columns: ['wedding_id'];
+            isOneToOne: false;
+            referencedRelation: 'weddings';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
       inquiries: {
         Row: {
           channel: string;
@@ -2471,7 +2636,12 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
+      accept_group_invite: { Args: { p_token: string }; Returns: string };
       accept_wedding_invite: { Args: { p_token: string }; Returns: string };
+      add_group_members: {
+        Args: { p_thread_id: string; p_user_ids: string[] };
+        Returns: undefined;
+      };
       add_reel_comment: { Args: { p_body: string; p_reel_id: string }; Returns: string };
       add_vendor_photo: {
         Args: {
@@ -2583,7 +2753,24 @@ export type Database = {
           tokens: string[];
         }[];
       };
+      claim_wed_asks: {
+        Args: { p_limit?: number };
+        Returns: {
+          all_in_wedding: boolean;
+          asker_name: string;
+          body: string;
+          context: Json;
+          message_id: string;
+          thread_id: string;
+          wedding_id: string;
+        }[];
+      };
       close_request: { Args: { p_booked?: boolean; p_request_id: string }; Returns: undefined };
+      create_group_invite: { Args: { p_thread_id: string }; Returns: string };
+      create_group_thread: {
+        Args: { p_member_ids?: string[]; p_name: string; p_wedding_id: string };
+        Returns: string;
+      };
       create_inquiry: {
         Args: {
           p_details: Json;
@@ -2712,9 +2899,31 @@ export type Database = {
           open_requests: number;
         }[];
       };
+      group_invite_preview: {
+        Args: { p_token: string };
+        Returns: {
+          inviter_name: string;
+          member_count: number;
+          status: string;
+          thread_name: string;
+          wedding_title: string;
+        }[];
+      };
+      group_members_list: {
+        Args: { p_thread_id: string };
+        Returns: {
+          can_manage: boolean;
+          is_me: boolean;
+          joined_at: string;
+          name: string;
+          user_id: string;
+          wedding_role: string;
+        }[];
+      };
       hide_reel_comment: { Args: { p_comment_id: string }; Returns: undefined };
       inquiry_emails_left_today: { Args: Record<PropertyKey, never>; Returns: number };
       mark_conversation_read: { Args: { p_conversation_id: string }; Returns: undefined };
+      mark_group_read: { Args: { p_thread_id: string }; Returns: undefined };
       my_businesses: {
         Args: Record<PropertyKey, never>;
         Returns: {
@@ -2743,6 +2952,22 @@ export type Database = {
           vendor_slug: string;
         }[];
       };
+      my_group_threads: {
+        Args: Record<PropertyKey, never>;
+        Returns: {
+          can_manage: boolean;
+          id: string;
+          last_body: string;
+          last_kind: string;
+          last_message_at: string;
+          last_sender_name: string;
+          last_sender_role: string;
+          member_count: number;
+          name: string;
+          unread_count: number;
+          wedding_id: string;
+        }[];
+      };
       my_listing: { Args: { p_vendor_id: string }; Returns: Json };
       pending_reel_tags: {
         Args: { p_vendor_id: string };
@@ -2766,6 +2991,10 @@ export type Database = {
           p_note: string;
           p_wedding_id: string;
         };
+        Returns: string;
+      };
+      post_wed_reply: {
+        Args: { p_body: string; p_data?: Json; p_message_id: string };
         Returns: string;
       };
       react_to_message: { Args: { p_message_id: string; p_reaction?: string }; Returns: undefined };
@@ -2838,11 +3067,13 @@ export type Database = {
       };
       refuse_password_sign_in: { Args: { event: Json }; Returns: Json };
       register_push_token: { Args: { p_platform: string; p_token: string }; Returns: undefined };
+      remove_group_member: { Args: { p_thread_id: string; p_user_id: string }; Returns: undefined };
       remove_vendor_photo: { Args: { p_media_id: string }; Returns: string };
       remove_wedding_member: {
         Args: { p_user_id: string; p_wedding_id: string };
         Returns: undefined;
       };
+      rename_group_thread: { Args: { p_name: string; p_thread_id: string }; Returns: undefined };
       reorder_vendor_photos: {
         Args: { p_media_ids: string[]; p_vendor_id: string };
         Returns: undefined;
@@ -2938,6 +3169,10 @@ export type Database = {
           slug: string;
           within_search_radius: boolean;
         }[];
+      };
+      send_group_message: {
+        Args: { p_body: string; p_reply_to?: string; p_thread_id: string };
+        Returns: string;
       };
       send_message: {
         Args: {
