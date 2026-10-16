@@ -68,7 +68,7 @@ Supabase's open-source stack runs on our own server: the same Postgres, sign-in,
 
 1. Sign in to the AWS account (Fezy's) as in "First time" above. Fezy runs this setup (#263).
 2. Create it: `cd infra && npx cdk deploy WeddedBackend --profile wedded`. The first boot takes about 10 minutes (about 3 GB of downloads).
-3. The sign-in email. Until the domain, Gmail with an [app password](https://myaccount.google.com/apppasswords) (Resend once the domain is verified):
+3. The sign-in email. Until the domain, Gmail with an [app password](https://myaccount.google.com/apppasswords) (Resend once the domain is verified). In Git Bash on Windows, run `export MSYS_NO_PATHCONV=1` first, or it turns `/wedded/…` into a Windows path:
    ```
    put() { aws ssm put-parameter --profile wedded --region us-east-2 --overwrite --type SecureString --name "/wedded/backend/$1" --value "$2"; }
    put env/SMTP_HOST smtp.gmail.com
