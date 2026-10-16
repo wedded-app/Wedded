@@ -36,6 +36,7 @@ import {
   useToggleLike,
 } from '@/data/reels';
 import { useSession } from '@/features/auth/session';
+import { useStoryTray } from '@/features/stories/stories-bar';
 import { localized } from '@/i18n/localized';
 import { useLocale } from '@/i18n/locale-context';
 import { readSetting, StorageKeys, writeSetting } from '@/lib/storage';
@@ -85,6 +86,7 @@ export function ReelsPager({
   const follow = useToggleFollow();
   const block = useToggleBlock();
   const remove = useDeleteReel();
+  const tray = useStoryTray();
   const [active, setActive] = useState(initialIndex);
   const [focused, setFocused] = useState(true);
   const [muted, setMuted] = useState(!soundOn);
@@ -131,6 +133,12 @@ export function ReelsPager({
     const first = viewableItems.find((v) => v.isViewable);
     if (first?.index != null) setActive(first.index);
   }, []);
+
+  // Who has a story today, by poster: a business, or a person as themselves
+  const storyOf = (reel: Reel): 'new' | 'seen' | null => {
+    const group = tray.groups.find((g) => g.key === (reel.vendor?.id ?? reel.authorId));
+    return group ? (tray.seen(group) ? 'seen' : 'new') : null;
+  };
 
   const share = async (reel: Reel) => {
     const who = reel.vendor?.name ?? reel.authorName ?? '';
@@ -230,6 +238,13 @@ export function ReelsPager({
             muted={muted}
             eventName={item.eventSlug ? (eventNames[item.eventSlug] ?? null) : null}
             bottomSpace={bottomSpace}
+            story={storyOf(item)}
+            onStory={(reel) =>
+              router.push({
+                pathname: '/story',
+                params: { group: reel.vendor?.id ?? reel.authorId },
+              })
+            }
             onToggleMute={() => {
               soundOn = muted;
               setMuted(!muted);
@@ -279,8 +294,10 @@ export function ReelsPager({
         initialNumToRender={2}
         maxToRenderPerBatch={2}
         removeClippedSubviews
-        // A key per account, so signing in or out starts the list fresh
-        extraData={session?.user.id}
+        // Redraw on signing in or out, and as story rings arrive or turn grey
+        extraData={`${session?.user.id ?? ''}:${tray.groups
+          .map((g) => `${g.key}${tray.seen(g) ? '-' : '+'}`)
+          .join()}`}
       />
       {hint && active === 0 && list.length > 1 && (
         <SwipeHint label={t('reels.swipeHint')} bottom={bottomSpace + 200} />

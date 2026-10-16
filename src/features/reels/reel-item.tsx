@@ -27,6 +27,7 @@ import Animated, {
 
 import { AppText } from '@/components/app-text';
 import { Icon } from '@/components/icon';
+import { storyRingStyle } from '@/components/story-ring';
 import { Radius, Spacing, Springs } from '@/constants/theme';
 import { trackReelView } from '@/data/business';
 import { compactCount, type Reel, reelVendors } from '@/data/reels';
@@ -91,6 +92,8 @@ export type ReelActions = {
   onMore: (reel: Reel) => void;
   /** Book this vendor: the Ask screen, or a picker when the reel shows several. */
   onBook: (reel: Reel) => void;
+  /** Watch the poster's story (their avatar has a ring). */
+  onStory: (reel: Reel) => void;
 };
 
 /**
@@ -98,7 +101,8 @@ export type ReelActions = {
  * clip loops and plays only while it's on screen, with a thin progress line
  * along the bottom. A tap pauses; a double tap likes, with hearts where you
  * tapped (keep tapping for more); holding pauses and hides everything so the
- * video shows whole. The rail on the right has the poster (with follow),
+ * video shows whole. The rail on the right has the poster (with follow, and
+ * a ring when they have a story today, which the avatar then plays),
  * like, comments, share, sound and more; at the bottom are who posted it,
  * the caption (two lines, then "more"), then one row with the event and a
  * single vendors chip (one vendor opens their page; several open a list of
@@ -113,6 +117,7 @@ export function ReelItem({
   muted,
   eventName,
   bottomSpace,
+  story,
   onToggleMute,
   ...actions
 }: ReelActions & {
@@ -125,6 +130,8 @@ export function ReelItem({
   eventName: string | null;
   /** Room for the floating tab bar under the caption. */
   bottomSpace: number;
+  /** The poster has a story today: new, or already watched. */
+  story: 'new' | 'seen' | null;
   onToggleMute: () => void;
 }) {
   const router = useRouter();
@@ -322,20 +329,26 @@ export function ReelItem({
         style={[styles.rail, { bottom: bottomSpace + Spacing.sm }, chromeStyle]}
       >
         <View style={styles.posterButton}>
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel={poster}
-            onPress={openPoster}
-            style={styles.avatar}
+          <View
+            style={
+              story ? [styles.storyRing, story === 'new' ? storyRingStyle : styles.storySeen] : null
+            }
           >
-            {reel.vendor ? (
-              <Icon name="storefront-outline" size={24} color={REEL_INK} />
-            ) : (
-              <AppText weight={700} style={styles.ink}>
-                {initials(reel.authorName)}
-              </AppText>
-            )}
-          </Pressable>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={story ? t('stories.watch', { name: poster }) : poster}
+              onPress={story ? () => actions.onStory(reel) : openPoster}
+              style={[styles.avatar, story && styles.avatarInRing]}
+            >
+              {reel.vendor ? (
+                <Icon name="storefront-outline" size={24} color={REEL_INK} />
+              ) : (
+                <AppText weight={700} style={styles.ink}>
+                  {initials(reel.authorName)}
+                </AppText>
+              )}
+            </Pressable>
+          </View>
           {!reel.isMine && !reel.following && (
             <Pressable
               accessibilityRole="button"
@@ -680,6 +693,17 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: 'rgba(138,28,51,0.9)',
+  },
+  // A story today: the avatar sits in the stories' ring, as on TikTok
+  storyRing: {
+    padding: 3,
+    borderRadius: 30,
+  },
+  storySeen: {
+    backgroundColor: 'rgba(255,255,255,0.55)',
+  },
+  avatarInRing: {
+    borderColor: '#000000',
   },
   followDot: {
     position: 'absolute',

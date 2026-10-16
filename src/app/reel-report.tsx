@@ -25,14 +25,19 @@ const REASONS: ReportReason[] = [
 ];
 
 /**
- * Report a reel, a comment or a person (App Store rule 1.2): pick a reason,
- * add a note if you like, and the founders review it. `?reel=`, `?comment=`
- * or `?user=`.
+ * Report a reel, a comment, a person or a story (App Store rule 1.2): pick a
+ * reason, add a note if you like, and the founders review it. `?reel=`,
+ * `?comment=`, `?user=` or `?story=`.
  */
 export default function ReelReportScreen() {
   const Colors = useColors();
   const { t } = useLocale();
-  const params = useLocalSearchParams<{ reel?: string; comment?: string; user?: string }>();
+  const params = useLocalSearchParams<{
+    reel?: string;
+    comment?: string;
+    user?: string;
+    story?: string;
+  }>();
   const report = useReport();
   const [reason, setReason] = useState<ReportReason | null>(null);
   const [note, setNote] = useState('');
@@ -46,7 +51,9 @@ export default function ReelReportScreen() {
       ? { commentId: params.comment }
       : params.user
         ? { userId: params.user }
-        : null;
+        : params.story
+          ? { storyId: params.story }
+          : null;
 
   const send = () => {
     if (!target || !reason) return;

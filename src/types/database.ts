@@ -990,6 +990,7 @@ export type Database = {
           reported_user_id: string | null;
           reporter_id: string | null;
           status: string;
+          story_id: string | null;
         };
         Insert: {
           comment_id?: string | null;
@@ -1001,6 +1002,7 @@ export type Database = {
           reported_user_id?: string | null;
           reporter_id?: string | null;
           status?: string;
+          story_id?: string | null;
         };
         Update: {
           comment_id?: string | null;
@@ -1012,6 +1014,7 @@ export type Database = {
           reported_user_id?: string | null;
           reporter_id?: string | null;
           status?: string;
+          story_id?: string | null;
         };
         Relationships: [
           {
@@ -1026,6 +1029,13 @@ export type Database = {
             columns: ['reel_id'];
             isOneToOne: false;
             referencedRelation: 'reels';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'reel_reports_story_id_fkey';
+            columns: ['story_id'];
+            isOneToOne: false;
+            referencedRelation: 'stories';
             referencedColumns: ['id'];
           },
         ];
@@ -1296,6 +1306,59 @@ export type Database = {
           },
           {
             foreignKeyName: 'saved_vendors_vendor_id_fkey';
+            columns: ['vendor_id'];
+            isOneToOne: false;
+            referencedRelation: 'vendors';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      stories: {
+        Row: {
+          author_id: string;
+          caption: string | null;
+          created_at: string;
+          duration_s: number | null;
+          height: number | null;
+          id: string;
+          kind: string;
+          media_path: string;
+          status: string;
+          thumb_path: string | null;
+          vendor_id: string | null;
+          width: number | null;
+        };
+        Insert: {
+          author_id: string;
+          caption?: string | null;
+          created_at?: string;
+          duration_s?: number | null;
+          height?: number | null;
+          id?: string;
+          kind: string;
+          media_path: string;
+          status?: string;
+          thumb_path?: string | null;
+          vendor_id?: string | null;
+          width?: number | null;
+        };
+        Update: {
+          author_id?: string;
+          caption?: string | null;
+          created_at?: string;
+          duration_s?: number | null;
+          height?: number | null;
+          id?: string;
+          kind?: string;
+          media_path?: string;
+          status?: string;
+          thumb_path?: string | null;
+          vendor_id?: string | null;
+          width?: number | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'stories_vendor_id_fkey';
             columns: ['vendor_id'];
             isOneToOne: false;
             referencedRelation: 'vendors';
@@ -2568,6 +2631,20 @@ export type Database = {
         };
         Returns: string;
       };
+      create_story: {
+        Args: {
+          p_caption: string;
+          p_consent: boolean;
+          p_duration_s: number;
+          p_height: number;
+          p_kind: string;
+          p_media_path: string;
+          p_thumb_path: string;
+          p_vendor_id: string;
+          p_width: number;
+        };
+        Returns: string;
+      };
       create_wedding: {
         Args: {
           p_booked?: Json;
@@ -2776,6 +2853,7 @@ export type Database = {
           p_note?: string;
           p_reason?: string;
           p_reel_id?: string;
+          p_story_id?: string;
           p_user_id?: string;
         };
         Returns: undefined;
@@ -2892,6 +2970,28 @@ export type Database = {
       start_my_business: {
         Args: { p_category_slug: string; p_city_slug: string; p_name: string };
         Returns: Json;
+      };
+      stories_feed: {
+        Args: Record<PropertyKey, never>;
+        Returns: {
+          author_id: string;
+          author_name: string;
+          caption: string;
+          created_at: string;
+          duration_s: number;
+          following: boolean;
+          height: number;
+          id: string;
+          is_mine: boolean;
+          is_sample: boolean;
+          kind: string;
+          media_path: string;
+          thumb_path: string;
+          vendor_id: string;
+          vendor_name: string;
+          vendor_slug: string;
+          width: number;
+        }[];
       };
       suggest_vendor: {
         Args: {

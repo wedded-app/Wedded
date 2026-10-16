@@ -15,6 +15,8 @@ export const StorageKeys = {
   appMode: 'settings.mode',
   /** Reels' first-time "Swipe up for more": "done" once they've swiped. */
   reelsSwipeHint: 'reels.swipeHint',
+  /** Stories watched on this phone, as JSON of story id to when (features/stories/seen-stories). */
+  seenStories: 'stories.seen',
   /** This phone's Expo push token once registered (src/data/push.ts), to forget it on sign out. */
   pushToken: 'push.token',
 } as const;

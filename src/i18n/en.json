@@ -704,10 +704,56 @@
     "shareLabel": "Share {{name}}"
   },
   "story": {
-    "previous": "Previous photo",
-    "next": "Next photo",
+    "previous": "Previous",
+    "next": "Next",
     "close": "Close",
     "viewProfile": "Open {{name}}'s profile"
+  },
+  "stories": {
+    "title": "Stories",
+    "button": {
+      "one": "Stories, 1 new",
+      "other": "Stories, {{count}} new"
+    },
+    "yours": "Your story",
+    "add": "Add to your story",
+    "watch": "Watch {{name}}'s story",
+    "watchYours": "Watch your story",
+    "clipOf": "Clip {{number}} of {{total}}, {{name}}",
+    "gone": "This story isn't here anymore. Stories last 24 hours.",
+    "delete": "Delete this story",
+    "deleteTitle": "Delete this story?"
+  },
+  "postStory": {
+    "title": "New story",
+    "heading": "Share a moment from today",
+    "photo": "Choose a photo",
+    "video": "Choose a video",
+    "camera": "Take one now",
+    "lasts": "Your story shows on Reels for 24 hours, then it's gone.",
+    "privacy": "We open only what you pick. Nothing else on your phone is looked at or uploaded. Videos can be up to {{seconds}} seconds.",
+    "needLibrary": "To pick a photo or video, allow Wedded App to open your photos when your phone asks.",
+    "needCamera": "To take a photo or video, allow Wedded App to use the camera when your phone asks.",
+    "blockedLibrary": "Wedded App isn't allowed to open your photos. Turn on Photos for Wedded App in Settings.",
+    "cantOpenLibrary": "Your photos didn't open. Try again.",
+    "yourPhoto": "Your photo",
+    "yourClip": "Your clip",
+    "showsFor": "Shows on Reels for 24 hours",
+    "change": "Choose something else",
+    "captionPlaceholder": "Say something about it",
+    "consent": "Everyone in this is okay with it being shared",
+    "rules": "Anyone can see stories for 24 hours. Don't show phone numbers or home addresses. We take down anything that breaks the rules.",
+    "preparing": "Getting it ready…",
+    "share": "Share to your story",
+    "discardTitle": "Discard this story?",
+    "discardBody": "It won't be shared.",
+    "errors": {
+      "notSignedIn": "Sign in to share a story.",
+      "consent": "Tick this box to say everyone in it is okay with it being shared.",
+      "limit": "You've shared a lot today. Try again tomorrow.",
+      "tooBig": "That video is too big to send. Trim it shorter, then try again.",
+      "failed": "Your story didn't send. Check your internet, then try again."
+    }
   },
   "share": {
     "vendor": "{{name}}, {{category}} in {{city}}. Found on Wedded App.",
