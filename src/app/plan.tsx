@@ -25,6 +25,7 @@ import type { EventNeed, EventNeedsSection, TraditionEvent } from '@/data/refere
 import { formatDate, GUEST_BANDS } from '@/features/inquiry/inquiry-helpers';
 import { CountdownCard } from '@/features/planner/countdown-card';
 import { openCounts, useWeddingSuggestions } from '@/data/wedding-suggestions';
+import { FamilyChats } from '@/features/group-chat/family-chats';
 import { FamilyShortlist } from '@/features/planner/family-shortlist';
 import { findForPlan } from '@/features/planner/find-for-plan';
 import { essentialNeeds } from '@/features/planner/plan';
@@ -241,6 +242,7 @@ export default function PlanScreen() {
 
       {wedding && <Suggestions wedding={wedding} events={chosen} />}
       {wedding && <PlanTogether wedding={wedding} />}
+      {wedding && <FamilyChats wedding={wedding} />}
       {wedding && <FamilyShortlist weddingId={wedding.id} />}
     </NavScreen>
   );

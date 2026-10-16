@@ -578,8 +578,9 @@ type Translate = (key: string, options?: Record<string, string | number>) => str
 export async function shareInvite(
   link: string,
   t: Translate,
+  messageKey = 'planTogether.inviteMessage',
 ): Promise<'shared' | 'copied' | 'none'> {
-  const message = t('planTogether.inviteMessage', { link });
+  const message = t(messageKey, { link });
   if (Platform.OS === 'web' && typeof navigator !== 'undefined' && !navigator.share) {
     try {
       await navigator.clipboard.writeText(message);

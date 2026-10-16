@@ -125,8 +125,9 @@ describe('forgetThisPhone', () => {
 
 describe('chatUrlOf', () => {
   const id = '6f1c0b9e-1d2a-4c3b-9e8f-0a1b2c3d4e5f';
-  it('opens only a chat', () => {
+  it('opens only a chat or a group thread', () => {
     expect(chatUrlOf({ url: `/chat/${id}` })).toBe(`/chat/${id}`);
+    expect(chatUrlOf({ url: `/group/${id}`, threadId: id })).toBe(`/group/${id}`);
     expect(chatUrlOf({ conversationId: id })).toBe(`/chat/${id}`);
     expect(chatUrlOf({ url: 'https://evil.example' })).toBeNull();
     expect(chatUrlOf({ url: '/settings' })).toBeNull();
