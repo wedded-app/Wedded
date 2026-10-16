@@ -1,4 +1,5 @@
-import { focusManager, QueryClient } from '@tanstack/react-query';
+import NetInfo from '@react-native-community/netinfo';
+import { focusManager, onlineManager, QueryClient } from '@tanstack/react-query';
 import { AppState, Platform } from 'react-native';
 
 /**
@@ -25,4 +26,10 @@ if (Platform.OS !== 'web') {
     });
     return () => subscription.remove();
   });
+  // Offline, reads wait (keeping what's on screen) and run again once the
+  // phone is back online, instead of failing; OfflineBanner says so. The web
+  // build already follows the browser's online state.
+  onlineManager.setEventListener((setOnline) =>
+    NetInfo.addEventListener((state) => setOnline(state.isConnected !== false)),
+  );
 }
