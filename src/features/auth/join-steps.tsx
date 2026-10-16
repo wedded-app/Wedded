@@ -12,11 +12,15 @@ import { startBusinessErrorKind, useStartMyBusiness } from '@/data/business';
 import { matchCities, useCities } from '@/data/places';
 import { useCategories } from '@/data/reference';
 import { OptionCard } from '@/features/onboarding/option-card';
+import { matchCategories } from '@/features/search/match-categories';
 import { localized } from '@/i18n/localized';
 import { useLocale } from '@/i18n/locale-context';
 
 /** What someone new came for (profiles.joined_as, R5 #222). */
 export type JoinedAs = 'planning' | 'looking' | 'business';
+
+// Enough to find yours without a wall of chips
+const MAX_TYPE_MATCHES = 6;
 
 const CHOICES: { value: JoinedAs; icon: IconName }[] = [
   { value: 'planning', icon: 'heart-outline' },
@@ -56,8 +60,8 @@ export function JoinChoiceStep({ onChoose }: { onChoose: (choice: JoinedAs) => v
 }
 
 /**
- * After About you, for "Wedding business": the name, the main vendor type and the
- * town, which make a draft listing they own (start_my_business). A founder publishes it.
+ * After About you, for "Wedding business": the name, the main vendor type (searched,
+ * not picked from all of them) and the town, which make a draft listing they own (start_my_business). A founder publishes it.
  */
 export function BusinessStep({ initialTown, onDone }: { initialTown: string; onDone: () => void }) {
   const { t } = useLocale();
@@ -66,6 +70,7 @@ export function BusinessStep({ initialTown, onDone }: { initialTown: string; onD
   const start = useStartMyBusiness();
   const [name, setName] = useState('');
   const [category, setCategory] = useState<string | null>(null);
+  const [typeQuery, setTypeQuery] = useState('');
   const [town, setTown] = useState(initialTown);
   const [attempted, setAttempted] = useState(false);
   const [failed, setFailed] = useState<string>();
@@ -83,15 +88,20 @@ export function BusinessStep({ initialTown, onDone }: { initialTown: string; onD
     );
   }
 
+  const typeMatches = matchCategories(categories.data, typeQuery).slice(0, MAX_TYPE_MATCHES);
+  // One match left counts as picked, so "DJ" then Make my listing just works
+  const picked = category ?? (typeMatches.length === 1 ? typeMatches[0].slug : null);
+  const typeError = !picked && attempted ? t('signIn.business.typeError') : undefined;
+
   // The town as one of our cities, so families nearby find the listing
   const place = matchCities(cities.data, town, 1)[0] ?? null;
 
   function submit() {
     setAttempted(true);
     setFailed(undefined);
-    if (!name.trim() || !category || !place) return;
+    if (!name.trim() || !picked || !place) return;
     start.mutate(
-      { name, categorySlug: category, citySlug: place.slug },
+      { name, categorySlug: picked, citySlug: place.slug },
       {
         onSuccess: onDone,
         onError: (error) =>
@@ -125,20 +135,37 @@ export function BusinessStep({ initialTown, onDone }: { initialTown: string; onD
         error={attempted && !place ? t('signIn.business.townError') : undefined}
       />
       <View style={styles.group}>
-        <AppText weight={600}>{t('signIn.business.type')}</AppText>
-        <View style={styles.chips} accessibilityRole="radiogroup">
-          {categories.data.map((c) => (
-            <Chip
-              key={c.slug}
-              role="radio"
-              label={localized(c.name)}
-              selected={category === c.slug}
-              onPress={() => setCategory(c.slug)}
-            />
-          ))}
-        </View>
-        {attempted && !category ? (
-          <AppText color="error">{t('signIn.business.typeError')}</AppText>
+        <TextField
+          label={t('signIn.business.type')}
+          hint={t('signIn.business.typeHint')}
+          value={typeQuery}
+          onChangeText={(text) => {
+            setTypeQuery(text);
+            setCategory(null);
+          }}
+          autoCorrect={false}
+          maxLength={60}
+          error={
+            typeQuery.trim() && typeMatches.length === 0
+              ? t('signIn.business.typeNoMatch')
+              : typeError
+          }
+        />
+        {typeMatches.length > 0 ? (
+          <View style={styles.chips} accessibilityRole="radiogroup">
+            {typeMatches.map((c) => (
+              <Chip
+                key={c.slug}
+                role="radio"
+                label={localized(c.name)}
+                selected={picked === c.slug}
+                onPress={() => {
+                  setCategory(c.slug);
+                  setTypeQuery(localized(c.name));
+                }}
+              />
+            ))}
+          </View>
         ) : null}
       </View>
       {failed ? <AppText color="error">{failed}</AppText> : null}
