@@ -13,8 +13,6 @@ export type StoryRingProps = {
   /** Grey ring once watched, as on Instagram. */
   seen?: boolean;
   size?: number;
-  /** Over a video (the Reels tab): white name, dark gap inside the ring. */
-  onVideo?: boolean;
   accessibilityLabel: string;
   onPress: () => void;
 };
@@ -28,8 +26,8 @@ export const storyRingStyle = (
 
 /**
  * A story circle: a round photo in a coloured ring with a short name under
- * it. Tapping opens the full-screen story viewer. Used in the Reels tab's
- * stories row and the profile highlights.
+ * it. Tapping opens the full-screen story viewer. Used in the profile
+ * highlights; its ring colours also mark stories on Reels.
  */
 export function StoryRing({
   photoUrl,
@@ -37,7 +35,6 @@ export function StoryRing({
   label,
   seen = false,
   size = 68,
-  onVideo = false,
   accessibilityLabel,
   onPress,
 }: StoryRingProps) {
@@ -60,11 +57,7 @@ export function StoryRing({
         ]}
       >
         <View
-          style={[
-            styles.gap,
-            { width: size - 4, height: size - 4, borderRadius: (size - 4) / 2 },
-            onVideo && styles.gapOnVideo,
-          ]}
+          style={[styles.gap, { width: size - 4, height: size - 4, borderRadius: (size - 4) / 2 }]}
         >
           {photoUrl ? (
             <Image
@@ -88,8 +81,7 @@ export function StoryRing({
         weight={500}
         numberOfLines={1}
         maxFontSizeMultiplier={1.2}
-        color={onVideo ? 'onPhoto' : undefined}
-        style={[styles.label, onVideo && styles.labelOnVideo]}
+        style={styles.label}
       >
         {label}
       </AppText>
@@ -117,9 +109,6 @@ const useStyles = makeStyles((Colors) => ({
     justifyContent: 'center',
     backgroundColor: Colors.bg,
   },
-  gapOnVideo: {
-    backgroundColor: '#000000',
-  },
   iconWell: {
     alignItems: 'center',
     justifyContent: 'center',
@@ -128,10 +117,5 @@ const useStyles = makeStyles((Colors) => ({
   label: {
     textAlign: 'center',
     alignSelf: 'stretch',
-  },
-  labelOnVideo: {
-    textShadowColor: 'rgba(0, 0, 0, 0.5)',
-    textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 3,
   },
 }));
