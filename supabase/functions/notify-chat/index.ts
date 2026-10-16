@@ -6,6 +6,10 @@
 // account yet get the family's message with an invitation to claim their free
 // listing; founders get a copy of those so they can follow up by phone.
 //
+// Group threads (group_chat_alerts): a member with messages unread past the
+// quiet minutes gets one email per thread, then none until they've read it
+// (claim_group_notifications).
+//
 // Each address gets its own email with its own "Stop these emails" link
 // (email-links.ts); addresses in email_opt_outs are skipped.
 //
@@ -161,6 +165,88 @@ ${
   };
 }
 
+export type GroupClaim = {
+  thread_id: string;
+  user_id: string;
+  recipient: string;
+  thread_name: string;
+  wedding_title: string | null;
+  unread_count: number;
+  last_sender_name: string | null;
+  last_kind: string | null;
+  last_body: string | null;
+  notified_at: string;
+};
+
+/** Why a member gets a group email, for the footer. */
+export function groupEmailReason(claim: GroupClaim): string {
+  const wedding = claim.wedding_title ? ` for ${claim.wedding_title}` : '';
+  return `You get this because you're in the "${claim.thread_name}" chat${wedding} on Wedded App.`;
+}
+
+/** The email to one member about unread messages in a group thread. */
+export function buildGroupEmail(claim: GroupClaim): OutgoingEmail {
+  const testInbox = env('INQUIRY_TEST_INBOX');
+  const site = env('SITE_URL');
+  const from = env('INQUIRY_FROM') ?? 'Wedded App <inquiries@example.com>';
+  const who = claim.last_sender_name ?? 'Someone';
+  const what = claim.last_kind === 'photo' ? 'sent a photo' : 'wrote';
+  const preview = claim.last_body ? claim.last_body.slice(0, 280) : null;
+  const subject = claim.unread_count > 1
+    ? `${claim.unread_count} new messages in ${claim.thread_name} on Wedded App`
+    : `${who} wrote in ${claim.thread_name} on Wedded App`;
+  const action = {
+    text: 'Open Wedded App to read the chat',
+    url: site ? `${site}/messages` : null,
+  };
+
+  const lines = [
+    `${who} ${what} in ${claim.thread_name}:`,
+    ...(preview ? ['', `"${preview}"`] : []),
+    ...(claim.unread_count > 1 ? ['', `${claim.unread_count} new messages are waiting.`] : []),
+    '',
+    action.url ? `${action.text}: ${action.url}` : `${action.text}.`,
+  ];
+  const html =
+    `<div style="font-family:-apple-system,Segoe UI,Helvetica,Arial,sans-serif;font-size:17px;line-height:1.5;color:#1c1c1e;max-width:560px">
+<p style="margin:0 0 12px"><strong>${escapeHtml(who)}</strong> ${escapeHtml(what)} in <strong>${
+      escapeHtml(claim.thread_name)
+    }</strong>:</p>
+${
+      preview
+        ? `<p style="margin:0 0 16px;padding:12px 16px;background:#f2f2f7;border-radius:12px">${
+          escapeHtml(preview)
+        }</p>`
+        : ''
+    }
+${
+      claim.unread_count > 1
+        ? `<p style="margin:0 0 16px">${claim.unread_count} new messages are waiting.</p>`
+        : ''
+    }
+${
+      action.url
+        ? `<p style="margin:0 0 16px"><a href="${
+          escapeHtml(action.url)
+        }" style="display:inline-block;background:#8A1C30;color:#fff;text-decoration:none;padding:12px 20px;border-radius:24px;font-weight:600">${
+          escapeHtml(action.text)
+        }</a></p>`
+        : `<p style="margin:0 0 16px"><strong>${escapeHtml(action.text)}.</strong></p>`
+    }
+</div>`;
+
+  return {
+    from,
+    to: [testInbox ?? claim.recipient],
+    cc: [],
+    bcc: [],
+    replyTo: [],
+    subject,
+    text: lines.join('\n'),
+    html,
+  };
+}
+
 Deno.serve(async (request) => {
   if (request.method !== 'POST') return json({ error: 'method_not_allowed' }, 405);
   if (!isServiceRequest(request, SERVICE_KEY)) {
@@ -212,6 +298,28 @@ Deno.serve(async (request) => {
       failed += 1;
       console.error('chat notification failed', claim.conversation_id, e);
     }
+  }
+
+  const groups = await admin.rpc('claim_group_notifications', { p_quiet_minutes: quiet });
+  if (groups.error) console.error('claiming group notifications failed', groups.error);
+  const groupClaims = (groups.data ?? []) as GroupClaim[];
+  try {
+    const stopped = await optedOut(admin, groupClaims.map((claim) => claim.recipient));
+    for (const claim of groupClaims) {
+      if (stopped.has(normalizeEmail(claim.recipient))) continue;
+      try {
+        const email = buildGroupEmail(claim);
+        const one = await withFooter(email, email.to[0], groupEmailReason(claim));
+        await sendEmail(one, `group-${claim.thread_id}-${claim.user_id}-${claim.notified_at}`);
+        sent += 1;
+      } catch (e) {
+        failed += 1;
+        console.error('group notification failed', claim.thread_id, e);
+      }
+    }
+  } catch (e) {
+    failed += groupClaims.length;
+    console.error('group notifications failed', e);
   }
   return json({ sent, failed }, 200);
 });
