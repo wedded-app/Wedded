@@ -53,6 +53,7 @@ describe('groupPreview', () => {
     lastBody: 'See you at 6',
     lastSenderRole: 'member',
     lastSenderName: 'Asha Kaur',
+    lastSenderIsMe: false,
     unreadCount: 0,
   };
   it('says who wrote what', () => {
@@ -64,6 +65,9 @@ describe('groupPreview', () => {
     );
     expect(groupPreview({ ...thread, lastKind: 'joined' }, t)).toBe(
       'groupChat.preview.joined {"name":"Asha Kaur"}',
+    );
+    expect(groupPreview({ ...thread, lastKind: 'photo', lastSenderIsMe: true }, t)).toBe(
+      'groupChat.preview.photo {"name":"groupChat.you"}',
     );
     expect(groupPreview({ ...thread, lastKind: null }, t)).toBe('groupChat.noMessages');
   });

@@ -29,7 +29,9 @@ export function groupPreview(thread: GroupThread, t: Translate): string {
   const name =
     thread.lastSenderRole === 'wed'
       ? t('groupChat.wed')
-      : thread.lastSenderName?.trim() || t('groupChat.formerMember');
+      : thread.lastSenderIsMe
+        ? t('groupChat.you')
+        : thread.lastSenderName?.trim() || t('groupChat.formerMember');
   if (thread.lastKind === 'joined' || thread.lastKind === 'left') {
     return t(`groupChat.preview.${thread.lastKind}`, { name });
   }
