@@ -45,6 +45,8 @@ import { saveHaptic } from '@/lib/haptics';
 
 const PHOTO_MS = 5000;
 const CLOSE_DRAG = 120;
+// How far a sideways swipe goes before it changes person
+const SKIP_DRAG = 60;
 // Browsers only autoplay muted video
 const MUTED = Platform.OS === 'web';
 
@@ -116,7 +118,8 @@ function fromGroup(group: StoryGroup, someone: string): Teller {
  * The full-screen story viewer, like Instagram's and TikTok's: one photo or
  * clip after another with progress bars along the top. Tap the right side
  * for the next, the left for the one before; hold to pause; swipe down or
- * tap Close to leave. After the last it moves on to the next person.
+ * tap Close to leave; swipe sideways for the next or previous person. After
+ * the last it moves on to the next person.
  *
  * /story?group={key}: posted stories (the Reels tab's rings), starting at
  * the first one not yet watched. /story?vendor={slug}&photo={id}: a vendor's
@@ -254,10 +257,28 @@ export default function StoryScreen() {
       close();
     }
   };
-  // The timer, the clip's end and the key handlers call the latest `go`
+  // Swipe left or right: the next person's stories or the last one's, like Instagram
+  const skip = (step: 1 | -1) => {
+    if (!position) return;
+    const next = position.teller + step;
+    if (next < 0) return;
+    if (next >= tellers.length) {
+      close();
+      return;
+    }
+    elapsed.current = 0;
+    startedAt.current = 0;
+    cancelAnimation(progress);
+    progress.set(0);
+    setPosition({ teller: next, slide: step === 1 ? firstUnseen(tellers[next]) : 0 });
+  };
+
+  // The timer, the clip's end, the key handlers and the swipe call the latest `go` and `skip`
   const goRef = useRef(go);
+  const skipRef = useRef(skip);
   useEffect(() => {
     goRef.current = go;
+    skipRef.current = skip;
   });
 
   const slideId = slide?.id;
@@ -302,15 +323,29 @@ export default function StoryScreen() {
     return () => window.removeEventListener('keydown', onKey);
   });
 
-  // Swipe down to close, the way stories and photo viewers dismiss.
+  // A sideways swipe asks for the next or previous person; `n` makes each one new
+  const [swipe, setSwipe] = useState<{ step: 1 | -1; n: number } | null>(null);
+  useEffect(() => {
+    if (swipe) skipRef.current(swipe.step);
+  }, [swipe]);
+
+  // Swipe down to close, the way stories and photo viewers dismiss; sideways
+  // for the next or previous person.
   const [pan] = useState(() =>
     PanResponder.create({
-      onMoveShouldSetPanResponder: (_, g) => g.dy > 12 && Math.abs(g.dy) > Math.abs(g.dx),
+      onMoveShouldSetPanResponder: (_, g) =>
+        (g.dy > 12 && Math.abs(g.dy) > Math.abs(g.dx)) ||
+        (Math.abs(g.dx) > 16 && Math.abs(g.dx) > Math.abs(g.dy)),
       onPanResponderMove: (_, g) => {
-        dragY.set(Math.max(0, g.dy));
+        if (Math.abs(g.dy) > Math.abs(g.dx)) dragY.set(Math.max(0, g.dy));
       },
       onPanResponderRelease: (_, g) => {
-        if (g.dy > CLOSE_DRAG) {
+        if (Math.abs(g.dx) > Math.abs(g.dy)) {
+          if (Math.abs(g.dx) > SKIP_DRAG) {
+            const step = g.dx < 0 ? 1 : -1;
+            setSwipe((last) => ({ step, n: (last?.n ?? 0) + 1 }));
+          }
+        } else if (g.dy > CLOSE_DRAG) {
           close();
         } else {
           dragY.set(withSpring(0, Springs.snappy));

@@ -12,7 +12,7 @@ import type { FeedMode } from '@/data/reels';
 import { useSession } from '@/features/auth/session';
 import { REEL_DIM, REEL_INK } from '@/features/reels/reel-item';
 import { ReelsPager } from '@/features/reels/reels-pager';
-import { StoriesButton } from '@/features/stories/stories-bar';
+import { useStoryTray } from '@/features/stories/stories-bar';
 import { localized } from '@/i18n/localized';
 import { useLocale } from '@/i18n/locale-context';
 import { selectionHaptic } from '@/lib/haptics';
@@ -23,8 +23,9 @@ import { selectionHaptic } from '@/lib/haptics';
  * shows the people and vendors you follow; For you shows everything. Chips
  * under them narrow either feed to one of the family's main events (Jaago,
  * Mehndi…), from the database. The vendors in each clip are one tap away.
- * Stories are one ring at the top left that opens the Stories page
- * (DECISIONS.md 2026-10-16), so they never cover the video.
+ * Stories sit beside them in the top bar: one tap plays everyone's stories
+ * full screen, from the first person with something new (DECISIONS.md
+ * 2026-10-16), so they never cover the video.
  */
 export default function ReelsScreen({ business = false }: { business?: boolean }) {
   const { t } = useLocale();
@@ -36,6 +37,7 @@ export default function ReelsScreen({ business = false }: { business?: boolean }
   const [eventSlug, setEventSlug] = useState<string | null>(null);
   const scheme = useScheme();
   const homeEvents = useHomeEvents();
+  const tray = useStoryTray();
 
   // The family's main events in ceremony order, as on Home
   const events = useMemo(
@@ -60,6 +62,16 @@ export default function ReelsScreen({ business = false }: { business?: boolean }
     if (next === mode) return;
     selectionHaptic();
     setMode(next);
+  };
+
+  // Everyone's stories in a row, from the first person with something new;
+  // with none from anyone else, the Stories page (add yours, or see it's empty)
+  const watchStories = () => {
+    selectionHaptic();
+    const others = tray.groups.filter((g) => !g.isMine);
+    const first = others.find((g) => !tray.seen(g)) ?? others[0];
+    if (first) router.push({ pathname: '/story', params: { group: first.key } });
+    else router.push('/stories');
   };
 
   const filter = (next: string | null) => {
@@ -130,9 +142,6 @@ export default function ReelsScreen({ business = false }: { business?: boolean }
       )}
 
       <View style={[styles.top, { paddingTop: insets.top + Spacing.xs }]} pointerEvents="box-none">
-        <View style={[styles.stories, { top: insets.top + Spacing.xs }]}>
-          <StoriesButton />
-        </View>
         {/* Post a reel: top right, where Instagram's Reels camera sits */}
         <Pressable
           accessibilityRole="button"
@@ -167,6 +176,23 @@ export default function ReelsScreen({ business = false }: { business?: boolean }
               <View style={[styles.underline, mode !== m && styles.hidden]} />
             </Pressable>
           ))}
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={
+              tray.fresh > 0 ? t('stories.button', { count: tray.fresh }) : t('stories.title')
+            }
+            onPress={watchStories}
+            hitSlop={8}
+            style={styles.tab}
+          >
+            <View style={styles.storiesLabel}>
+              <AppText variant="bodyLg" weight={600} style={[styles.tabText, styles.tabDim]}>
+                {t('stories.title')}
+              </AppText>
+              {tray.fresh > 0 && <View style={styles.newDot} />}
+            </View>
+            <View style={[styles.underline, styles.hidden]} />
+          </Pressable>
         </View>
         {events.length > 0 && (
           <ScrollView
@@ -254,13 +280,24 @@ const styles = StyleSheet.create({
     right: 0,
     alignItems: 'center',
   },
+  // From the left, like Instagram's Reels, so three fit beside the camera on any phone
   tabs: {
     flexDirection: 'row',
-    gap: Spacing.xl,
+    gap: Spacing.lg,
+    alignSelf: 'flex-start',
+    marginLeft: Spacing.lg,
   },
-  stories: {
-    position: 'absolute',
-    left: Spacing.md,
+  storiesLabel: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.xs,
+  },
+  // Someone has a story you haven't watched
+  newDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#FF3B5C',
   },
   create: {
     position: 'absolute',
