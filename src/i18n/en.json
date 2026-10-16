@@ -465,6 +465,8 @@
       "name": "Business name",
       "nameError": "Please type your business name.",
       "type": "What do you do?",
+      "typeHint": "Type what you do, like dhol, caterer or mehndi, then tap the match.",
+      "typeNoMatch": "Nothing matches that. Try another word, like DJ, hall or photographer.",
       "typeError": "Please pick what you do.",
       "town": "Town you work from",
       "townMatch": "We'll use {{city}}.",
