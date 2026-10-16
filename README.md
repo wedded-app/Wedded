@@ -133,11 +133,12 @@ To make every screen look lived in, run these in order after `npm run db:reset` 
 ```
 npm run photos:samples
 npm run reels:samples -- reel-samples --local
+npm run stories:samples -- reel-samples --local
 npm run requests:samples -- --local --pro=frames-by-jas --family=<your email>
 npm run demo:samples -- --local --family=<your email> --business=frames-by-jas
 ```
 
-`demo:samples` gives the family's wedding event dates, 14 booked vendors, saved vendors to compare and three family members with reactions and suggestions; six chats with vendors (quotes, a menu, a paid deposit, one unread); six leads and chats for the business; 90 days of page views, searches and contact taps for every published vendor; reel views; and booked or held weekends on the sample vendors' calendars. Sign in once in the app first, so the account, profile and wedding exist. For the hosted demo, drop `--local` and set `SUPABASE_URL` and `SUPABASE_SECRET_KEY` (photos: `npm run photos:upload -- --samples`). Each command replaces its own earlier samples.
+`demo:samples` gives the family's wedding event dates, 14 booked vendors, saved vendors to compare and three family members with reactions and suggestions; six chats with vendors (quotes, a menu, a paid deposit, one unread); six leads and chats for the business; 90 days of page views, searches and contact taps for every published vendor; reel views; and booked or held weekends on the sample vendors' calendars. `stories:samples` has eight of the sample reel posters share a story; stories last 24 hours, so run it again on the morning of a demo. Sign in once in the app first, so the account, profile and wedding exist. For the hosted demo, drop `--local` and set `SUPABASE_URL` and `SUPABASE_SECRET_KEY` (photos: `npm run photos:upload -- --samples`). Each command replaces its own earlier samples.
 
 **Through AWS:** add `--aws` to either command (`npm run photos:samples -- --aws`) to send the photos through the AWS pipeline in [infra/](infra/README.md) instead. Each original goes to S3, a Lambda makes the same three sizes, and CloudFront serves them. It needs `aws login --region us-east-2 --profile wedded` (or `AWS_PROFILE`). Then set `EXPO_PUBLIC_MEDIA_URL` in `.env.local` to the stack's `MediaUrl`, and the app loads every vendor photo from CloudFront. Before setting it, run `npm run photos:to-aws -- --local` (or with `SUPABASE_URL` and `SUPABASE_SECRET_KEY` set for the hosted database). It copies every photo that's only in Supabase Storage to AWS, because a photo that isn't on AWS won't load. Running it again copies only what's missing.
 

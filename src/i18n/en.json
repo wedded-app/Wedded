@@ -720,11 +720,12 @@
     "yours": "Your story",
     "add": "Add to your story",
     "watch": "Watch {{name}}'s story",
-    "watchYours": "Watch your story",
     "clipOf": "Clip {{number}} of {{total}}, {{name}}",
     "gone": "This story isn't here anymore. Stories last 24 hours.",
     "delete": "Delete this story",
-    "deleteTitle": "Delete this story?"
+    "deleteTitle": "Delete this story?",
+    "cardSpoken": "Watch {{name}}'s story, {{time}}",
+    "empty": "No one else has shared a story today. Stories last 24 hours, so check back later."
   },
   "postStory": {
     "title": "New story",

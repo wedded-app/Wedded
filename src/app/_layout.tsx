@@ -187,6 +187,7 @@ function AppShell() {
           <Stack.Screen name="reels-viewer" options={{ animation: 'fade' }} />
           <Stack.Screen name="post-reel" options={{ presentation: 'modal' }} />
           <Stack.Screen name="post-story" options={{ presentation: 'modal' }} />
+          <Stack.Screen name="stories" options={{ presentation: 'modal' }} />
           <Stack.Screen name="my-inquiries" />
           <Stack.Screen name="saved" />
           <Stack.Screen name="settings" />
