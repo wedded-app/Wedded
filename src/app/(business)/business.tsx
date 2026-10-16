@@ -2,7 +2,6 @@ import { router } from 'expo-router';
 import { useState } from 'react';
 import { ActivityIndicator, View } from 'react-native';
 
-import { AppText, useFontScale } from '@/components/app-text';
 import { Chip } from '@/components/chip';
 import { FieldError } from '@/components/field-error';
 import { ListRow, ListSection, SectionTitle } from '@/components/list';
@@ -16,28 +15,13 @@ import {
   useBusinessStats,
 } from '@/data/business';
 import { useExportBusiness } from '@/data/business-export';
-import {
-  useBusinessChecklist,
-  useBusinessInsights,
-  useBusinessReels,
-} from '@/data/business-insights';
 import { useVendorMenus } from '@/data/vendor-menus';
 import { useMyVendorPhotos } from '@/data/vendor-photos-self';
 import { changeFrom } from '@/features/business/business-format';
 import { switchToPlanning } from '@/features/business/app-mode';
-import { NotLiveNotice, StatCard } from '@/features/business/business-parts';
+import { NotLiveNotice, StatRows } from '@/features/business/business-parts';
 import { BusinessTabScreen } from '@/features/business/business-tab-screen';
 import { GetPaid } from '@/features/business/get-paid';
-import {
-  FunnelSteps,
-  HowYouCompare,
-  PageChecklist,
-  ReplySpeed,
-  ViewsChart,
-  WhatFamiliesWant,
-  YourReels,
-} from '@/features/business/insights';
-import { headline } from '@/features/business/insights-format';
 import { chooseBusiness, useCurrentBusiness } from '@/features/business/use-current-business';
 import { useLocale } from '@/i18n/locale-context';
 
@@ -51,17 +35,6 @@ const MAIN_STATS: (keyof BusinessStats)[] = [
   'saves',
   'reelViews',
 ];
-/** How families reached out, one row each. */
-const CONTACT_STATS: (keyof BusinessStats)[] = [
-  'calls',
-  'texts',
-  'whatsapps',
-  'directions',
-  'instagram',
-  'website',
-  'shares',
-];
-
 /**
  * Business mode's Business tab (C6, #252): which business (when they run
  * several), whether the page is live, how it did over 7, 30 or 90 days next
@@ -77,12 +50,7 @@ export default function BusinessScreen() {
   const { t } = useLocale();
   const current = useCurrentBusiness();
   const [days, setDays] = useState<StatsPeriod>(30);
-  // At large text the number cards go one per row instead of two
-  const largeText = useFontScale('display') >= 1.4;
   const stats = useBusinessStats(current.vendorId, days);
-  const insights = useBusinessInsights(current.vendorId, days);
-  const reels = useBusinessReels(current.vendorId);
-  const checklist = useBusinessChecklist(current.vendorId);
   const menus = useVendorMenus(current.vendorId);
   const photos = useMyVendorPhotos(current.vendorId);
   const exporting = useExportBusiness(current.vendorId);
@@ -111,7 +79,6 @@ export default function BusinessScreen() {
     if (!change) return null;
     return t(`business.stats.change.${change.kind}`, { percent: change.percent, days });
   };
-  const contactRows = CONTACT_STATS.filter((key) => now[key] > 0);
 
   return (
     <BusinessTabScreen title={t('business.title')} subtitle={name}>
@@ -131,12 +98,6 @@ export default function BusinessScreen() {
 
       {business.status !== 'published' && <NotLiveNotice />}
 
-      {stats.data && (
-        <AppText variant="title" accessibilityRole="header">
-          {headline(days, now.views, now.inquiries, t)}
-        </AppText>
-      )}
-
       <View style={styles.block}>
         <SectionTitle>{t('business.stats.title')}</SectionTitle>
         <Segmented
@@ -151,85 +112,56 @@ export default function BusinessScreen() {
         {stats.isError ? (
           <StateView state="error" onRetry={() => void stats.refetch()} />
         ) : (
-          <View style={[styles.grid, stats.isPending && styles.loading]}>
-            {MAIN_STATS.map((key, index) => (
-              <StatCard
-                key={key}
-                wide={index === 0 || largeText}
-                value={now[key]}
-                label={t(`business.stats.${key}`)}
-                change={changeFrom(now[key], before[key])}
-                changeWords={changeWords(key)}
-              />
-            ))}
+          <View style={stats.isPending && styles.loading}>
+            <StatRows
+              rows={MAIN_STATS.map((key) => ({
+                key,
+                label: t(`business.stats.${key}`),
+                value: now[key],
+                changeWords: changeWords(key),
+              }))}
+            />
           </View>
         )}
-        {contactRows.length > 0 && (
-          <ListSection header={t('business.stats.howTitle')}>
-            {contactRows.map((key) => (
-              <ListRow
-                key={key}
-                title={t(`business.stats.${key}`)}
-                value={now[key].toLocaleString('en-US')}
-              />
-            ))}
-          </ListSection>
-        )}
+        {/* The charts and the rest live one tap away, so this tab stays short */}
+        <ListSection>
+          <ListRow
+            icon="stats-chart-outline"
+            title={t('business.more.title')}
+            onPress={() =>
+              router.push({ pathname: '/business/insights', params: { days: String(days) } })
+            }
+          />
+        </ListSection>
       </View>
-
-      {insights.isError && <StateView state="error" onRetry={() => void insights.refetch()} />}
-      {insights.data && (
-        <>
-          <ViewsChart daily={insights.data.daily} />
-          <FunnelSteps funnel={insights.data.funnel} />
-          <ReplySpeed replies={insights.data.replies} />
-        </>
-      )}
-
-      {insights.data && <WhatFamiliesWant asks={insights.data.asks} />}
-      {insights.data?.compare && <HowYouCompare compare={insights.data.compare} />}
-      {reels.data && <YourReels reels={reels.data} />}
-      {checklist.data && checklist.data.total > 0 && (
-        <PageChecklist
-          items={checklist.data.items}
-          doneCount={checklist.data.doneCount}
-          total={checklist.data.total}
-          businessName={business.name}
-        />
-      )}
 
       <ListSection header={t('business.yourListing')} footer={t('business.listingHint')}>
         <ListRow
           icon="create-outline"
           title={t('business.listing.title')}
-          subtitle={t('business.listing.rowHint')}
           onPress={() => router.push('/business/listing')}
         />
         <ListRow
           icon="images-outline"
           title={t('business.photos.title')}
-          subtitle={t('business.photos.rowHint')}
           value={photos.data ? String(photos.data.length) : undefined}
           onPress={() => router.push('/business/photos')}
         />
         <ListRow
           icon="restaurant-outline"
           title={t('business.menus.title')}
-          subtitle={t('business.menus.rowHint')}
           value={menus.data ? String(menus.data.length) : undefined}
           onPress={() => router.push('/business/menus')}
         />
         <ListRow
           icon="calendar-outline"
           title={t('business.calendar.title')}
-          subtitle={t('business.calendar.rowHint')}
           onPress={() => router.push('/business/calendar')}
         />
         {business.status === 'published' && (
           <ListRow
             icon="storefront-outline"
             title={t('business.viewPage')}
-            subtitle={t('business.viewPageHint')}
             onPress={() => router.push({ pathname: '/v/[slug]', params: { slug: business.slug } })}
           />
         )}

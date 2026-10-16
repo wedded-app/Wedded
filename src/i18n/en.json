@@ -1702,6 +1702,9 @@
   "business": {
     "title": "My business",
     "notVendor": "This is for vendor accounts. If you run a wedding business, ask us to add you.",
+    "more": {
+      "title": "More about your page"
+    },
     "yourListing": "Your page",
     "listingHint": "Families see these on your page. Keep them up to date so they ask about the right things.",
     "cancel": "Cancel",
@@ -1890,20 +1893,6 @@
       "cantShare": "This phone can't share files from the app. Try on another phone, or on a computer at the website."
     },
     "insights": {
-      "period": {
-        "7": "This week",
-        "30": "In the last 30 days",
-        "90": "In the last 3 months"
-      },
-      "headline": "{{period}}, {{seen}} and {{asked}}.",
-      "seen": {
-        "one": "1 family saw your page",
-        "other": "{{count}} families saw your page"
-      },
-      "askedDate": {
-        "one": "1 asked about a date",
-        "other": "{{count}} asked about a date"
-      },
       "chartTitle": "People who viewed your page, day by day",
       "chartTotal": {
         "one": "1 view in all",
@@ -1985,7 +1974,7 @@
     "checklist": {
       "title": "Make your page stronger",
       "progress": "{{done}} of {{total}} done",
-      "fix": "Fix it",
+      "showAll": "Show all {{count}}",
       "askTeam": "Ask the Wedded team",
       "tellTeam": "Tell the Wedded team and we'll add it for you.",
       "teamMessage": "Hi Wedded team, please help me add this to {{name}}'s page: {{what}}",
@@ -2118,7 +2107,6 @@
       "leave": "Leave"
     },
     "getPaid": {
-      "footer": "Families pay deposits by card in chat. Stripe handles the cards and pays you.",
       "none": {
         "title": "Get paid through Wedded",
         "hint": "Take deposits by card in chat. Set up a free Stripe account."

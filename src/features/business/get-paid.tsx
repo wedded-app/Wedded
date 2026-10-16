@@ -42,7 +42,8 @@ export function GetPaid({ vendorId }: { vendorId: string }) {
 
   const ready = status === 'ready';
   return (
-    <ListSection footer={footer ?? t('business.getPaid.footer')}>
+    // Only an error goes under the row; the row's own line already says what it does
+    <ListSection footer={footer ?? undefined}>
       <ListRow
         icon="card-outline"
         title={t(`business.getPaid.${status}.title`)}

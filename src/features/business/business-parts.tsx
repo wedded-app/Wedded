@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import { Pressable, View } from 'react-native';
 
 import { AppText } from '@/components/app-text';
+import { ListRow, ListSection } from '@/components/list';
 import { Icon } from '@/components/icon';
 import { makeStyles, Radius, Sizes, Spacing, useColors } from '@/constants/theme';
 import type { Lead } from '@/data/business';
@@ -10,8 +11,6 @@ import { inboxTime } from '@/features/chat/chat-format';
 import { formatDate } from '@/features/inquiry/inquiry-helpers';
 import { localized } from '@/i18n/localized';
 import { useLocale } from '@/i18n/locale-context';
-
-import type { Change } from './business-format';
 
 /** Every event's name in the app's language, from any tradition (a lead can be from any). */
 export function useEventNames(): (slug: string) => string {
@@ -28,52 +27,39 @@ export function useEventNames(): (slug: string) => string {
 }
 
 /**
- * One number on the business home: big, with what it means in plain words
- * and how it moved from the period before (an arrow and words, not colour
- * alone).
+ * The business's numbers as one quiet list: what each means in plain words,
+ * how it moved from the period before as a grey line under it, and the
+ * number on the right. Replaces a grid of big number cards.
  */
-export function StatCard({
-  value,
-  label,
-  change,
-  changeWords,
-  wide = false,
+export function StatRows({
+  rows,
 }: {
-  value: number;
-  label: string;
-  change: Change;
-  /** "Up 20% from the 30 days before", or null to say nothing. */
-  changeWords: string | null;
-  wide?: boolean;
+  rows: {
+    key: string;
+    label: string;
+    value: number;
+    /** "Up 20% from the 30 days before", or null to say nothing. */
+    changeWords: string | null;
+  }[];
 }) {
-  const Colors = useColors();
-  const styles = useStyles();
-  const up = change?.kind === 'up';
   return (
-    <View
-      style={[styles.card, wide && styles.wide]}
-      accessible
-      accessibilityLabel={[`${value} ${label}`, changeWords].filter(Boolean).join('. ')}
-    >
-      <AppText variant="display" style={styles.number}>
-        {value.toLocaleString('en-US')}
-      </AppText>
-      <AppText weight={600}>{label}</AppText>
-      {changeWords && change && (
-        <View style={styles.change}>
-          <Icon
-            name={
-              change.kind === 'up' ? 'arrow-up' : change.kind === 'down' ? 'arrow-down' : 'remove'
-            }
-            size={16}
-            color={up ? Colors.success : Colors.text2}
-          />
-          <AppText variant="label" weight={500} color={up ? 'success' : 'text2'}>
-            {changeWords}
-          </AppText>
-        </View>
-      )}
-    </View>
+    <ListSection>
+      {rows.map((row) => (
+        <ListRow
+          key={row.key}
+          title={row.label}
+          subtitle={row.changeWords ?? undefined}
+          accessibilityLabel={[`${row.value} ${row.label}`, row.changeWords]
+            .filter(Boolean)
+            .join('. ')}
+          trailing={
+            <AppText variant="heading" weight={700}>
+              {row.value.toLocaleString('en-US')}
+            </AppText>
+          }
+        />
+      ))}
+    </ListSection>
   );
 }
 
@@ -160,27 +146,6 @@ export function NotLiveNotice() {
 }
 
 const useStyles = makeStyles((Colors) => ({
-  card: {
-    flexGrow: 1,
-    flexBasis: '40%',
-    gap: 2,
-    padding: Spacing.lg,
-    borderRadius: Radius.card,
-    borderCurve: 'continuous',
-    backgroundColor: Colors.surface,
-  },
-  wide: {
-    flexBasis: '100%',
-  },
-  number: {
-    fontVariant: ['tabular-nums'],
-  },
-  change: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.xs,
-    marginTop: Spacing.xs,
-  },
   lead: {
     flexDirection: 'row',
     alignItems: 'center',

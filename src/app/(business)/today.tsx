@@ -1,9 +1,8 @@
 import { router } from 'expo-router';
 import { RefreshControl, View } from 'react-native';
 
-import { AppText, useFontScale } from '@/components/app-text';
-import { Button } from '@/components/button';
-import { ListRow, ListSection, SectionTitle } from '@/components/list';
+import { AppText } from '@/components/app-text';
+import { ListRow, ListSection } from '@/components/list';
 import { StateView } from '@/components/state-view';
 import { makeStyles, Spacing } from '@/constants/theme';
 import {
@@ -15,7 +14,8 @@ import {
 import { useBusinessChecklist } from '@/data/business-insights';
 import { type DayMark, useVendorCalendar } from '@/data/vendor-self';
 import { changeFrom } from '@/features/business/business-format';
-import { LeadRow, NotLiveNotice, StatCard } from '@/features/business/business-parts';
+import { LeadRow, NotLiveNotice, StatRows } from '@/features/business/business-parts';
+import { SectionHeader } from '@/features/home/section-header';
 import { BusinessTabScreen } from '@/features/business/business-tab-screen';
 import { PageChecklist } from '@/features/business/insights';
 import { nextMonth, upcomingDays } from '@/features/business/today';
@@ -38,7 +38,6 @@ export default function TodayScreen() {
   const { t } = useLocale();
   const current = useCurrentBusiness();
   const { vendorId, business } = current;
-  const largeText = useFontScale('display') >= 1.4;
   const leads = useBusinessLeads(vendorId);
   const stats = useBusinessStats(vendorId, 7);
   const checklist = useBusinessChecklist(vendorId);
@@ -107,56 +106,52 @@ export default function TodayScreen() {
       {business.status !== 'published' && <NotLiveNotice />}
 
       <View style={styles.block}>
-        <SectionTitle>{t('businessMode.today.waitingTitle')}</SectionTitle>
+        <SectionHeader
+          title={t('businessMode.today.waitingTitle')}
+          link={leadList.length > 0 ? t('home.seeAll') : undefined}
+          onLink={() => router.navigate('/leads')}
+        />
         {replies}
-        {leadList.length > 0 && (
-          <Button
-            variant="secondary"
-            label={t('businessMode.today.seeLeads')}
-            onPress={() => router.navigate('/leads')}
-          />
-        )}
       </View>
 
       <FamiliesLookingEntry vendorId={business.id} />
 
       <View style={styles.block}>
-        <SectionTitle>{t('businessMode.today.weekTitle')}</SectionTitle>
+        <SectionHeader
+          title={t('businessMode.today.weekTitle')}
+          link={t('home.seeAll')}
+          onLink={() => router.navigate('/business')}
+        />
         {stats.isError ? (
           <StateView state="error" onRetry={() => void stats.refetch()} />
         ) : (
-          <View style={[styles.grid, stats.isPending && styles.loading]}>
-            {WEEK_STATS.map((key, index) => {
-              const change = changeFrom(now[key], before[key]);
-              return (
-                <StatCard
-                  key={key}
-                  wide={index === 0 || largeText}
-                  value={now[key]}
-                  label={t(`business.stats.${key}`)}
-                  change={change}
-                  changeWords={
-                    change
-                      ? t(`business.stats.change.${change.kind}`, {
-                          percent: change.percent,
-                          days: 7,
-                        })
-                      : null
-                  }
-                />
-              );
-            })}
+          <View style={stats.isPending && styles.loading}>
+            <StatRows
+              rows={WEEK_STATS.map((key) => {
+                const change = changeFrom(now[key], before[key]);
+                return {
+                  key,
+                  label: t(`business.stats.${key}`),
+                  value: now[key],
+                  changeWords: change
+                    ? t(`business.stats.change.${change.kind}`, {
+                        percent: change.percent,
+                        days: 7,
+                      })
+                    : null,
+                };
+              })}
+            />
           </View>
         )}
-        <Button
-          variant="secondary"
-          label={t('businessMode.today.allNumbers')}
-          onPress={() => router.navigate('/business')}
-        />
       </View>
 
       <View style={styles.block}>
-        <SectionTitle>{t('businessMode.today.comingUp')}</SectionTitle>
+        <SectionHeader
+          title={t('businessMode.today.comingUp')}
+          link={t('business.calendar.title')}
+          onLink={() => router.push('/business/calendar')}
+        />
         {coming.length === 0 ? (
           <AppText color="text2">{t('businessMode.today.noDates')}</AppText>
         ) : (
@@ -172,11 +167,6 @@ export default function TodayScreen() {
             ))}
           </ListSection>
         )}
-        <Button
-          variant="secondary"
-          label={t('businessMode.today.openCalendar')}
-          onPress={() => router.push('/business/calendar')}
-        />
       </View>
 
       {checklist.data && checklist.data.doneCount < checklist.data.total && (
@@ -185,6 +175,7 @@ export default function TodayScreen() {
           doneCount={checklist.data.doneCount}
           total={checklist.data.total}
           businessName={business.name}
+          limit={3}
         />
       )}
     </BusinessTabScreen>
@@ -194,11 +185,6 @@ export default function TodayScreen() {
 const useStyles = makeStyles(() => ({
   block: {
     gap: Spacing.md,
-  },
-  grid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: Spacing.sm,
   },
   loading: {
     opacity: 0.5,
