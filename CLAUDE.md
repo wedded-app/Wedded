@@ -18,7 +18,7 @@ Before planning any feature, read the part of the docs it touches. They are the 
 - `docs/PROJECT_PLAN.md`: the 8-phase checklist. Tick a box in the same PR that finishes the task.
 - `docs/DECISIONS.md`: decisions already made. Don't reopen one without asking; add new ones at the top.
 - `docs/RESEARCH_GROWTH.md`: what successful apps do (Partiful, Meesho, Zola, The Knot, Thumbtack, Airbnb, Houzz) and the features we're building from it, in priority order.
-- `docs/HOSTED_SETUP.md`: setting up the hosted Supabase project (push, auth emails, secrets, functions, Vault), in order.
+- `docs/HOSTED_SETUP.md`: setting up the hosted Supabase project (push, auth emails, secrets, functions, Vault), in order. The demo has moved to our own server on AWS; its setup is in `infra/README.md`.
 
 ## Where things stand
 

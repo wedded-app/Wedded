@@ -86,7 +86,7 @@ Supabase's open-source stack runs on our own server: the same Postgres, sign-in,
    3. The files: `eval "$(npm run -s backend -- env)"`, then `FROM_URL=https://ujkshrptgmbtstrjcyfy.supabase.co FROM_SECRET_KEY=<the demo's service role key> npm run storage:copy`. Safe to run again.
    4. `aws ssm delete-parameter --profile wedded --region us-east-2 --name /wedded/backend/copy/SOURCE_DB_URL`
 6. Check it: `eval "$(npm run -s backend -- env)"` and `npm run demo:check -- --hall=<hall slug> --send`.
-7. Switch the app: on expo.dev → the project → **Environment variables** → `preview`, set `EXPO_PUBLIC_SUPABASE_URL` to the `Url` and `EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY` to the publishable key from `npm run backend -- env`. Then `npx eas-cli@latest update --channel demo --environment preview`. Everyone signs in again once; sessions belong to the old address.
+7. Switch the app: on expo.dev → the project → **Environment variables** → `preview`, set `EXPO_PUBLIC_SUPABASE_URL` to the `Url` and `EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY` to the publishable key from `npm run backend -- env`. Then `npx eas-cli@latest update --channel demo --environment preview` from a checkout without `.env.local` (its local values would go into the app too). Everyone signs in again once; sessions belong to the old address. Done 2026-10-17.
 8. Deploys from CI: the stack's `DeployUser` may only upload `app/`, run commands on this server and read this stack (the organization denies IAM OIDC providers, so GitHub can't assume a role). Give GitHub its key:
    ```
    aws iam create-access-key --profile wedded --user-name <DeployUser> --output json > key.json
