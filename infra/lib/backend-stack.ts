@@ -132,10 +132,60 @@ export class BackendStack extends Stack {
       },
     });
 
+    // What GitHub Actions deploys with (`npm run backend -- deploy` in demo.yml): upload the
+    // repo's supabase/ under app/, run the deploy on this server, read this stack's outputs.
+    // shortcut: an access key, because this account's organization denies IAM OIDC providers,
+    // so GitHub can't assume a role. The key is made by hand (README), never in CloudFormation
+    const deployer = new iam.User(this, 'Deployer');
+    deployer.addToPolicy(
+      new iam.PolicyStatement({
+        actions: ['cloudformation:DescribeStacks'],
+        resources: [
+          this.formatArn({
+            service: 'cloudformation',
+            resource: 'stack',
+            resourceName: `${this.stackName}/*`,
+          }),
+        ],
+      }),
+    );
+    deployer.addToPolicy(
+      new iam.PolicyStatement({
+        actions: ['s3:ListBucket'],
+        resources: [bucket.bucketArn],
+        conditions: { StringLike: { 's3:prefix': ['app/*'] } },
+      }),
+    );
+    deployer.addToPolicy(
+      new iam.PolicyStatement({
+        actions: ['s3:PutObject', 's3:DeleteObject'],
+        resources: [bucket.arnForObjects('app/*')],
+      }),
+    );
+    deployer.addToPolicy(
+      new iam.PolicyStatement({
+        actions: ['ssm:SendCommand'],
+        resources: [
+          this.formatArn({ service: 'ec2', resource: 'instance', resourceName: server.instanceId }),
+          this.formatArn({
+            service: 'ssm',
+            resource: 'document',
+            resourceName: 'AWS-RunShellScript',
+            account: '',
+          }),
+        ],
+      }),
+    );
+    // Reading a command's result can't be limited to one server
+    deployer.addToPolicy(
+      new iam.PolicyStatement({ actions: ['ssm:GetCommandInvocation'], resources: ['*'] }),
+    );
+
     new CfnOutput(this, 'Url', { value: `https://${domain}` });
     new CfnOutput(this, 'Domain', { value: domain });
     new CfnOutput(this, 'InstanceId', { value: server.instanceId });
     new CfnOutput(this, 'Bucket', { value: bucket.bucketName });
+    new CfnOutput(this, 'DeployUser', { value: deployer.userName });
   }
 
   private parameterArn(name: string): string {
