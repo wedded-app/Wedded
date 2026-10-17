@@ -1607,7 +1607,9 @@
     "linkGone": "This post isn't available any more.",
     "openOriginal": "Opens the original post",
     "creditBy": "{{name}} on {{platform}}",
-    "creditFrom": "From {{platform}}"
+    "creditFrom": "From {{platform}}",
+    "everyEvent": "All events",
+    "chooseEvent": "Shows the events to choose from"
   },
   "postReel": {
     "title": "New reel",

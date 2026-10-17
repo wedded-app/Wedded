@@ -20,9 +20,10 @@ import { selectionHaptic } from '@/lib/haptics';
 /**
  * Reels (the Discover tab; DECISIONS.md 2026-10-05): wedding clips from
  * families and vendors, one per screen, swipe up for the next. Following
- * shows the people and vendors you follow; For you shows everything. Chips
- * under them narrow either feed to one of the family's main events (Jaago,
- * Mehndi…), from the database. The vendors in each clip are one tap away.
+ * shows the people and vendors you follow; For you shows everything. One
+ * chip under them ("All events") opens the family's main events (Jaago,
+ * Mehndi…, from the database) to narrow either feed; it folds away again
+ * once one is picked, so ten choices don't sit over every video (Hick's law). The vendors in each clip are one tap away.
  * Stories sit beside them in the top bar: one tap plays everyone's stories
  * full screen, from the first person with something new (DECISIONS.md
  * 2026-10-16), so they never cover the video.
@@ -35,6 +36,7 @@ export default function ReelsScreen({ business = false }: { business?: boolean }
   const { status, requireSignIn } = useSession();
   const [mode, setMode] = useState<FeedMode>('for_you');
   const [eventSlug, setEventSlug] = useState<string | null>(null);
+  const [eventsOpen, setEventsOpen] = useState(false);
   const scheme = useScheme();
   const homeEvents = useHomeEvents();
   const tray = useStoryTray();
@@ -75,6 +77,7 @@ export default function ReelsScreen({ business = false }: { business?: boolean }
   };
 
   const filter = (next: string | null) => {
+    setEventsOpen(false);
     if (next === eventSlug) return;
     selectionHaptic();
     setEventSlug(next);
@@ -194,7 +197,38 @@ export default function ReelsScreen({ business = false }: { business?: boolean }
             <View style={[styles.underline, styles.hidden]} />
           </Pressable>
         </View>
-        {events.length > 0 && (
+        {events.length > 0 && !eventsOpen && (
+          <View style={styles.oneChip}>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityState={{ expanded: false }}
+              accessibilityHint={t('reels.chooseEvent')}
+              onPress={() => {
+                selectionHaptic();
+                setEventsOpen(true);
+              }}
+              // Slim over the video; its touch area is 48 tall
+              hitSlop={{ top: 6, bottom: 6 }}
+              style={({ pressed }) => [
+                styles.chip,
+                styles.chipRow,
+                eventSlug !== null && styles.chipOn,
+                pressed && styles.pressed,
+              ]}
+            >
+              <AppText
+                variant="label"
+                weight={eventSlug ? 700 : 600}
+                numberOfLines={1}
+                style={eventSlug ? styles.chipTextOn : styles.tabText}
+              >
+                {eventName ?? t('reels.everyEvent')}
+              </AppText>
+              <Icon name="chevron-down" size={14} color={eventSlug ? '#000000' : REEL_INK} />
+            </Pressable>
+          </View>
+        )}
+        {events.length > 0 && eventsOpen && (
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
@@ -345,6 +379,18 @@ const styles = StyleSheet.create({
     gap: Spacing.xs,
     paddingHorizontal: Spacing.lg,
     paddingVertical: 6,
+  },
+  oneChip: {
+    alignSelf: 'stretch',
+    flexDirection: 'row',
+    marginTop: Spacing.sm,
+    paddingHorizontal: Spacing.lg,
+    paddingVertical: 6,
+  },
+  chipRow: {
+    flexDirection: 'row',
+    gap: 4,
+    maxWidth: '100%',
   },
   chip: {
     minHeight: 36,
