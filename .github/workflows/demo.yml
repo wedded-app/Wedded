@@ -6,10 +6,15 @@ name: Shared demo
 # that we open in Expo Go. The demo's database address and public key live in
 # the Expo project's "preview" environment, not here.
 #
-# Needs three repository secrets (Settings → Secrets and variables → Actions):
+# The backend is moving to our own server on AWS (infra/README.md, #263). Until
+# the app's "preview" environment points there, both backends get every update.
+#
+# Needs these repository secrets (Settings → Secrets and variables → Actions):
 #   EXPO_TOKEN             an Expo access token (expo.dev → Account settings → Access tokens)
 #   SUPABASE_ACCESS_TOKEN  a Supabase access token (supabase.com → Account → Access tokens)
 #   DEMO_DB_PASSWORD       the demo database's password
+#   AWS_ACCESS_KEY_ID      the WeddedBackend stack's DeployUser key (infra/README.md)
+#   AWS_SECRET_ACCESS_KEY
 # Until they're set, the steps that need them are skipped with a note.
 on:
   push:
@@ -57,6 +62,18 @@ jobs:
           # before one the demo already has
           supabase db push --password "$DEMO_DB_PASSWORD" --include-all --yes
           supabase functions deploy --project-ref "$DEMO_PROJECT_REF" --use-api
+
+      - name: Update the backend server on AWS
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        shell: bash
+        run: |
+          if [ -z "$AWS_ACCESS_KEY_ID" ] || [ -z "$AWS_SECRET_ACCESS_KEY" ]; then
+            echo "::notice::AWS_ACCESS_KEY_ID or AWS_SECRET_ACCESS_KEY isn't set, so the AWS backend wasn't updated."
+            exit 0
+          fi
+          npm run backend -- deploy
 
       - name: Publish the app to the demo channel
         env:

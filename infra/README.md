@@ -81,16 +81,23 @@ Supabase's open-source stack runs on our own server: the same Postgres, sign-in,
    And the functions' settings from docs/HOSTED_SETUP.md step 4 the same way, for example `put functions/RESEND_API_KEY '<key>'`.
 4. `npm run backend -- deploy`. It ends with `Up to date: https://….sslip.io`.
 5. Bring the demo's data over (or run `npm run backend -- deploy --seed` instead, for a fresh demo with the sample vendors):
-   1. Supabase dashboard → **Connect** → **Session pooler**: copy the address with the database password filled in, and save it: `put copy/SOURCE_DB_URL '<the address>'`
+   1. Supabase dashboard → **Connect** → **Session pooler**: copy the address with the database password filled in, and save it: `put copy/SOURCE_DB_URL '<the address>'`. Encode the password's symbols (`?` is `%3F`, `@` is `%40`, `+` is `%2B`) and keep every other character, `_` included.
    2. `npm run backend -- copy-from-supabase`: accounts and every table, in one go. It refuses if the server already has accounts; `REPLACE=1 npm run backend -- copy-from-supabase` replaces them.
    3. The files: `eval "$(npm run -s backend -- env)"`, then `FROM_URL=https://ujkshrptgmbtstrjcyfy.supabase.co FROM_SECRET_KEY=<the demo's service role key> npm run storage:copy`. Safe to run again.
    4. `aws ssm delete-parameter --profile wedded --region us-east-2 --name /wedded/backend/copy/SOURCE_DB_URL`
 6. Check it: `eval "$(npm run -s backend -- env)"` and `npm run demo:check -- --hall=<hall slug> --send`.
 7. Switch the app: on expo.dev → the project → **Environment variables** → `preview`, set `EXPO_PUBLIC_SUPABASE_URL` to the `Url` and `EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY` to the publishable key from `npm run backend -- env`. Then `npx eas-cli@latest update --channel demo --environment preview`. Everyone signs in again once; sessions belong to the old address.
+8. Deploys from CI: the stack's `DeployUser` may only upload `app/`, run commands on this server and read this stack (the organization denies IAM OIDC providers, so GitHub can't assume a role). Give GitHub its key:
+   ```
+   aws iam create-access-key --profile wedded --user-name <DeployUser> --output json > key.json
+   jq -rj .AccessKey.AccessKeyId key.json | gh secret set AWS_ACCESS_KEY_ID
+   jq -rj .AccessKey.SecretAccessKey key.json | gh secret set AWS_SECRET_ACCESS_KEY
+   rm key.json
+   ```
 
 ### Day to day
 
-- After a merge that changes `supabase/` (migrations, functions, the sign-in email): `npm run backend -- deploy`. CI doesn't deploy here yet.
+- Every merge to `main` runs `npm run backend -- deploy` in `.github/workflows/demo.yml`, before the app is published. By hand, the same command from an up-to-date `main` (never a branch: the server is shared).
 - Scripts (`vendors:import`, `photos:upload`, `demo:check`, the samples): run `eval "$(npm run -s backend -- env)"` first instead of pasting the hosted keys.
 - The dashboard (Studio) is at the `Url`: user `supabase`, password from `aws ssm get-parameter --profile wedded --region us-east-2 --with-decryption --name /wedded/backend/keys/dashboard --query Parameter.Value --output text`.
 - A shell on the server: `aws ssm start-session --profile wedded --region us-east-2 --target <InstanceId>` (needs `brew install --cask session-manager-plugin`), then `sudo -i`, `cd /opt/wedded/supabase` and `sh run.sh status`, `sh run.sh logs auth` and so on.
