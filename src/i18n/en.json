@@ -307,7 +307,7 @@
     },
     "savedGrid": "Your saved vendors",
     "savedGridEmpty": "Vendors you save show up here. Tap the heart on any vendor.",
-    "myRequests": "My requests",
+    "myRequests": "Vendors you asked",
     "myRequestsHint": "Who you asked, and whether they got back to you"
   },
   "common": {
@@ -2303,11 +2303,12 @@
       "vendorCount": {
         "one": "1 near you",
         "other": "{{count}} near you"
-      }
+      },
+      "everyKind": "See every kind of vendor ({{count}})"
     },
     "mine": {
-      "title": "Your asks",
-      "subtitle": "What you asked vendors for, and their prices.",
+      "title": "Your requests",
+      "subtitle": "What you need, and the prices vendors send.",
       "empty": "Post what you need, like a DJ for the reception, and vendors send you their prices.",
       "proposals": {
         "zero": "No proposals yet",

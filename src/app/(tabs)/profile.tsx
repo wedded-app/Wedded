@@ -30,6 +30,8 @@ import { formatPhone } from '@/lib/phone';
  * Vendor accounts also get "Switch to business" (business mode, #252) at
  * the top of the list. Wed (the planning helper) has its own short list:
  * what it knows, the apps it can use and how much it does on its own.
+ * Founding vendors and "Get listed" live on Home and in Settings, not here
+ * too (Hick's law: the same link three times is three more things to read).
  */
 export default function ProfileScreen() {
   const { t } = useLocale();
@@ -91,19 +93,6 @@ export default function ProfileScreen() {
           title={t('settings.title')}
           onPress={() => router.push('/settings')}
         />
-        <ListRow
-          icon="ribbon-outline"
-          iconColor="kesari"
-          title={t('home.foundingWall')}
-          onPress={() => router.push('/founding')}
-        />
-        {!isVendor && (
-          <ListRow
-            icon="storefront-outline"
-            title={t('home.forVendors')}
-            onPress={() => router.push('/for-vendors')}
-          />
-        )}
       </ListSection>
     </NavScreen>
   );
