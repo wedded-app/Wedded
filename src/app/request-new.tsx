@@ -15,6 +15,7 @@ import {
   backgroundCss,
   makeStyles,
   Radius,
+  Sizes,
   Spacing,
   useColors,
   SchemeContext,
@@ -42,6 +43,8 @@ type Step = 0 | 1 | 2;
 
 /** Every sample vendor's id starts with this (supabase/seed.sql). */
 const SAMPLE_ID = '00000000-0000-4000-8000-';
+// With no plan for the event: this many kinds first, the rest on request
+const POPULAR_KINDS = 8;
 
 /**
  * Ask vendors (#219), in three steps on the night page: what you need (big
@@ -97,17 +100,25 @@ function AskVendors() {
   const [town, setTown] = useState(profile?.city ?? '');
   const [note, setNote] = useState('');
   const [sent, setSent] = useState(false);
+  const [everyKind, setEveryKind] = useState(false);
 
   const eventNeeds = (event ? (view.needsByEvent[event] ?? []) : []).flatMap((s) => s.needs);
-  // No plan for this event yet: every vendor type, A to Z
-  const needs =
-    eventNeeds.length > 0
-      ? eventNeeds
-      : (categories.data ?? []).map((c) => ({
-          categorySlug: c.slug,
-          name: c.name,
-          groupSlug: c.groupSlug,
-        }));
+  // No plan for this event yet: the kinds with the most vendors first, as
+  // Search's Popular does, and every kind A to Z only when asked (Hick's law:
+  // ~55 tiles at once made the first step the slowest)
+  const allKinds = (categories.data ?? []).map((c) => ({
+    categorySlug: c.slug,
+    name: c.name,
+    groupSlug: c.groupSlug,
+  }));
+  const popularKinds = [...allKinds]
+    .sort(
+      (a, b) =>
+        (vendorCounts.data?.[b.categorySlug] ?? 0) - (vendorCounts.data?.[a.categorySlug] ?? 0),
+    )
+    .slice(0, POPULAR_KINDS);
+  const showingFew = eventNeeds.length === 0 && !everyKind && allKinds.length > POPULAR_KINDS;
+  const needs = eventNeeds.length > 0 ? eventNeeds : showingFew ? popularKinds : allKinds;
   const group = category ? words.group(category) : null;
   const bands = budgetBands(group);
   const band = bands.find((b) => b.key === budget) ?? null;
@@ -279,6 +290,21 @@ function AskVendors() {
                 );
               })}
             </View>
+            {showingFew && (
+              <Pressable
+                accessibilityRole="button"
+                onPress={() => {
+                  selectionHaptic();
+                  setEveryKind(true);
+                }}
+                style={({ pressed }) => [styles.everyKind, pressed && styles.everyKindPressed]}
+              >
+                <AppText weight={700} color="onHero">
+                  {t('requests.post.everyKind', { count: allKinds.length })}
+                </AppText>
+                <Icon name="chevron-down" size={18} color={Colors.onHero} />
+              </Pressable>
+            )}
           </>
         )}
 
@@ -473,6 +499,17 @@ const useStyles = makeStyles((Colors) => ({
   tileWrap: {
     flexGrow: 1,
     flexBasis: 150,
+  },
+  everyKind: {
+    minHeight: Sizes.tapTarget,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: Spacing.xs,
+    marginTop: Spacing.md,
+  },
+  everyKindPressed: {
+    opacity: 0.6,
   },
   tile: {
     minHeight: 150,
