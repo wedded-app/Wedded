@@ -478,16 +478,18 @@ async function main() {
     );
   }
   await db.from('wedding_members').delete().eq('wedding_id', weddingId).in('user_id', members);
-  await db.from('wedding_bookings').delete().eq('wedding_id', weddingId);
-  await db.from('wedding_reactions').delete().eq('wedding_id', weddingId);
-  await db.from('wedding_suggestions').delete().eq('wedding_id', weddingId);
+  await db.from('shortlist_reactions').delete().eq('wedding_id', weddingId);
+  await db.from('suggestions').delete().eq('wedding_id', weddingId);
   await db.from('saved_vendors').delete().eq('user_id', familyId).in('vendor_id', sampleIds);
 
   const { data: eventRows } = await db
     .from('wedding_events')
-    .select('event_slug')
+    .select('id, event_slug')
     .eq('wedding_id', weddingId);
-  const events = new Set((eventRows ?? []).map((e) => e.event_slug as string));
+  const eventId = new Map((eventRows ?? []).map((e) => [e.event_slug as string, e.id as string]));
+  const events = new Set(eventId.keys());
+  // Slots go with their bookings
+  await db.from('wedding_slots').delete().in('wedding_event_id', [...eventId.values()]);
   const eventDate: Record<string, string> = {};
   for (const slug of events) {
     const [offset, guests] = EVENT_DATES[slug] ?? [0, 'not_sure'];
@@ -495,8 +497,7 @@ async function main() {
     const { error } = await db
       .from('wedding_events')
       .update({ event_date: eventDate[slug], guest_band: guests })
-      .eq('wedding_id', weddingId)
-      .eq('event_slug', slug);
+      .eq('id', eventId.get(slug));
     if (error) fail(`Couldn't date ${slug}: ${error.message}`);
   }
   const ours = <T extends [string, ...unknown[]]>(rows: T[]) =>
@@ -507,20 +508,24 @@ async function main() {
       wedding_id: weddingId,
       user_id: members[i],
       role: m.role,
-      invited_by: familyId,
       joined_at: new Date(Date.now() - (20 - i * 4) * DAY).toISOString(),
     })),
   );
   if (memberError) fail(`Couldn't add the family: ${memberError.message}`);
 
   const booked = ours(BOOKED).filter(([, , slug]) => vendorId.has(slug));
-  const { error: bookError } = await db.from('wedding_bookings').insert(
+  const { data: slots, error: slotError } = await db
+    .from('wedding_slots')
+    .insert(booked.map(([event, category]) => ({ wedding_event_id: eventId.get(event), category_slug: category })))
+    .select('id, wedding_event_id, category_slug');
+  if (slotError) fail(`Couldn't add the plan's vendor types: ${slotError.message}`);
+  const slotId = new Map(slots.map((slot) => [`${slot.wedding_event_id}/${slot.category_slug}`, slot.id as string]));
+  const { error: bookError } = await db.from('bookings').insert(
     booked.map(([event, category, slug]) => ({
-      wedding_id: weddingId,
-      event_slug: event,
-      category_slug: category,
+      slot_id: slotId.get(`${eventId.get(event)}/${category}`),
       vendor_id: vendorId.get(slug),
-      updated_by: familyId,
+      booked_by: familyId,
+      family_confirmed_at: new Date().toISOString(),
     })),
   );
   if (bookError) fail(`Couldn't book: ${bookError.message}`);
@@ -533,13 +538,14 @@ async function main() {
       .map(([event, slug], i) => ({
         user_id: familyId,
         vendor_id: vendorId.get(slug),
-        event_slug: event,
+        wedding_id: weddingId,
+        wedding_event_id: eventId.get(event),
         created_at: new Date(Date.now() - (30 - i) * DAY).toISOString(),
       })),
   );
   if (saveError) fail(`Couldn't save vendors: ${saveError.message}`);
 
-  await db.from('wedding_reactions').insert(
+  await db.from('shortlist_reactions').insert(
     REACTIONS.filter(([, slug]) => vendorId.has(slug)).map(([by, slug, reaction]) => ({
       wedding_id: weddingId,
       vendor_id: vendorId.get(slug),
@@ -547,10 +553,10 @@ async function main() {
       reaction,
     })),
   );
-  const { error: suggestError } = await db.from('wedding_suggestions').insert(
+  const { error: suggestError } = await db.from('suggestions').insert(
     SUGGESTIONS.filter((s) => events.has(s.event) && vendorId.has(s.vendor)).map((s, i) => ({
       wedding_id: weddingId,
-      event_slug: s.event,
+      wedding_event_id: eventId.get(s.event),
       category_slug: s.category,
       vendor_id: vendorId.get(s.vendor),
       note: s.note,
@@ -734,6 +740,7 @@ async function main() {
       await db.from('saved_vendors').insert({
         user_id: leadIds[i],
         vendor_id: businessId,
+        source: 'inquiry',
         created_at: new Date(Date.now() - lead.days * DAY - HOUR).toISOString(),
       });
       chats += 1;

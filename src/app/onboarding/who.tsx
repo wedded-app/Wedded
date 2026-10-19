@@ -21,7 +21,7 @@ const OPTIONS: { value: PlanningFor; icon: IconName }[] = [
   { value: 'friend', icon: 'hand-left-outline' },
 ];
 
-/** Question 1: whose wedding it is (weddings.planning_for), as Shaadi.com asks. */
+/** Question 1: whose wedding it is (profiles.planning_for), as Shaadi.com asks. */
 export default function WhoStep() {
   const { t } = useLocale();
   const answers = useAnswers();

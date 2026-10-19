@@ -70,14 +70,14 @@ type MembershipRow = {
     id: string;
     title: string | null;
     wedding_date: string | null;
-    traditions: string[] | null;
+    wedding_cultures: { culture_slug: string }[];
     wedding_events: {
       event_slug: string;
       event_date: string | null;
       guest_band: string | null;
-      wedding_bookings: {
+      wedding_slots: {
         category_slug: string;
-        vendor: { slug: string; name: string } | null;
+        bookings: { status: string; vendor: { slug: string; name: string } | null }[];
       }[];
     }[];
   } | null;
@@ -91,12 +91,13 @@ export function toAccountWedding(row: MembershipRow): AccountWedding | null {
   const eventDates: Record<string, string> = {};
   const bookedVendors: Record<string, { slug: string; name: string }> = {};
   for (const event of row.wedding.wedding_events) {
-    for (const booking of event.wedding_bookings) {
-      if (booking.vendor) {
-        bookedVendors[`${event.event_slug}/${booking.category_slug}`] = booking.vendor;
-      }
+    const categories: string[] = [];
+    for (const slot of event.wedding_slots) {
+      const live = slot.bookings.find((b) => b.status !== 'canceled');
+      if (!live) continue;
+      categories.push(slot.category_slug);
+      if (live.vendor) bookedVendors[`${event.event_slug}/${slot.category_slug}`] = live.vendor;
     }
-    const categories = event.wedding_bookings.map((b) => b.category_slug);
     if (categories.length > 0) booked[event.event_slug] = categories;
     if (event.guest_band) guests[event.event_slug] = event.guest_band;
     if (event.event_date) eventDates[event.event_slug] = event.event_date;
@@ -107,7 +108,7 @@ export function toAccountWedding(row: MembershipRow): AccountWedding | null {
     weddingDate: row.wedding.wedding_date,
     role: row.role,
     joinedAt: row.joined_at,
-    traditions: row.wedding.traditions ?? [],
+    traditions: row.wedding.wedding_cultures.map((c) => c.culture_slug),
     events: row.wedding.wedding_events.map((e) => e.event_slug),
     booked,
     guests,
@@ -140,7 +141,7 @@ async function fetchMyWeddings(userId: string): Promise<AccountWedding[]> {
   const { data, error } = await supabase
     .from('wedding_members')
     .select(
-      'role, joined_at, wedding:weddings(id, title, wedding_date, traditions, wedding_events(event_slug, event_date, guest_band, wedding_bookings(category_slug, vendor:vendors(slug, name))))',
+      'role, joined_at, wedding:weddings(id, title, wedding_date, wedding_cultures(culture_slug), wedding_events(event_slug, event_date, guest_band, wedding_slots(category_slug, bookings(status, vendor:vendors(slug, name)))))',
     )
     .eq('user_id', userId)
     .order('joined_at');
@@ -263,10 +264,10 @@ async function saveChange(weddingId: string, change: WeddingChange): Promise<voi
         .eq('id', weddingId));
       break;
     case 'traditions':
-      ({ error } = await supabase
-        .from('weddings')
-        .update({ traditions: change.slugs })
-        .eq('id', weddingId));
+      ({ error } = await supabase.rpc('set_wedding_cultures', {
+        p_wedding_id: weddingId,
+        p_culture_slugs: change.slugs,
+      }));
       break;
     case 'addEvents':
       ({ error } = await supabase.from('wedding_events').upsert(
@@ -289,19 +290,12 @@ async function saveChange(weddingId: string, change: WeddingChange): Promise<voi
             .eq('event_slug', change.slug));
       break;
     case 'booked':
-      ({ error } = change.on
-        ? await supabase
-            .from('wedding_bookings')
-            .upsert(
-              { wedding_id: weddingId, event_slug: change.event, category_slug: change.category },
-              { onConflict: 'wedding_id,event_slug,category_slug', ignoreDuplicates: true },
-            )
-        : await supabase
-            .from('wedding_bookings')
-            .delete()
-            .eq('wedding_id', weddingId)
-            .eq('event_slug', change.event)
-            .eq('category_slug', change.category));
+      ({ error } = await supabase.rpc('set_booked', {
+        p_wedding_id: weddingId,
+        p_event_slug: change.event,
+        p_category_slug: change.category,
+        p_booked: change.on,
+      }));
       break;
     case 'guests':
       ({ error } = await supabase
@@ -424,7 +418,7 @@ export function useWeddingPlan() {
 export function useStartWedding() {
   const queryClient = useQueryClient();
   return useMutation({
-    /** `planningFor` is who it's for (weddings.planning_for), from the first questions. */
+    /** `planningFor` is who it's for (profiles.planning_for), from the first questions. */
     mutationFn: async (plan: WeddingPlan & { planningFor?: string | null }): Promise<string> => {
       const { data: auth } = await supabase.auth.getSession();
       const userId = auth.session?.user.id;
@@ -434,25 +428,12 @@ export function useStartWedding() {
       const { data, error } = await supabase.rpc('create_wedding', {
         p_wedding_date: plan.weddingDate ?? undefined,
         p_planning_for: plan.planningFor ?? undefined,
+        p_cultures: plan.traditions,
         p_events: plan.events,
+        p_guests: plan.guests ?? {},
         p_booked: plan.booked,
       });
       if (error) throw error;
-      // The traditions and guest counts per event come across too (best effort)
-      if (plan.traditions.length > 0) {
-        await supabase.from('weddings').update({ traditions: plan.traditions }).eq('id', data);
-      }
-      await Promise.all(
-        Object.entries(plan.guests ?? {})
-          .filter(([event]) => plan.events.includes(event))
-          .map(([event, band]) =>
-            supabase
-              .from('wedding_events')
-              .update({ guest_band: band })
-              .eq('wedding_id', data)
-              .eq('event_slug', event),
-          ),
-      );
       return data;
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: weddingKeys.all }),

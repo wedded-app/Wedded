@@ -30,18 +30,17 @@ set local role authenticated;
 select pg_temp.as_user('a3000000-0000-4000-8000-00000000000a');
 insert into pg_temp.ids select 'wedding', public.create_wedding(p_events => array['reception', 'jaago'])::text;
 insert into pg_temp.ids select 'invite', public.create_wedding_invite((select value::uuid from pg_temp.ids where name = 'wedding'));
-insert into public.saved_vendors (vendor_id, event_slug) values ('90000000-0000-4000-8000-000000000001', 'reception');
+select public.save_vendor('90000000-0000-4000-8000-000000000001', 'reception');
 
 select pg_temp.as_user('b3000000-0000-4000-8000-00000000000b');
 select public.accept_wedding_invite((select value from pg_temp.ids where name = 'invite'));
-insert into public.saved_vendors (vendor_id, event_slug) values
-  ('90000000-0000-4000-8000-000000000001', 'jaago'),
-  ('90000000-0000-4000-8000-000000000002', 'reception');
-insert into public.wedding_reactions (wedding_id, vendor_id, reaction)
+select public.save_vendor('90000000-0000-4000-8000-000000000001', 'jaago');
+select public.save_vendor('90000000-0000-4000-8000-000000000002', 'reception');
+insert into public.shortlist_reactions (wedding_id, vendor_id, reaction)
 values ((select value::uuid from pg_temp.ids where name = 'wedding'), '90000000-0000-4000-8000-000000000001', 'love');
 
 select pg_temp.as_user('a3000000-0000-4000-8000-00000000000a');
-insert into public.wedding_reactions (wedding_id, vendor_id, reaction) values
+insert into public.shortlist_reactions (wedding_id, vendor_id, reaction) values
   ((select value::uuid from pg_temp.ids where name = 'wedding'), '90000000-0000-4000-8000-000000000001', 'maybe'),
   ((select value::uuid from pg_temp.ids where name = 'wedding'), '90000000-0000-4000-8000-000000000002', 'no');
 
@@ -58,7 +57,7 @@ select results_eq(
   'with who saved it, for which events, the reaction counts, your own reaction and who loves it'
 );
 
-update public.wedding_reactions set reaction = 'no'
+update public.shortlist_reactions set reaction = 'no'
 where user_id = 'b3000000-0000-4000-8000-00000000000b';
 select is(
   (select loves from public.wedding_shortlist((select value::uuid from pg_temp.ids where name = 'wedding')) where slug = 'fs-hall'),
@@ -66,7 +65,7 @@ select is(
   'Nobody can change someone else''s reaction'
 );
 
-update public.wedding_reactions set reaction = 'love'
+update public.shortlist_reactions set reaction = 'love'
 where user_id = 'a3000000-0000-4000-8000-00000000000a' and vendor_id = '90000000-0000-4000-8000-000000000001';
 select is(
   (select loves from public.wedding_shortlist((select value::uuid from pg_temp.ids where name = 'wedding')) where slug = 'fs-hall'),
@@ -88,12 +87,12 @@ select is(
   'Outsiders see no shortlist'
 );
 select is(
-  (select count(*)::int from public.wedding_reactions),
+  (select count(*)::int from public.shortlist_reactions),
   0,
   'or reactions'
 );
 select throws_ok(
-  $$ insert into public.wedding_reactions (wedding_id, vendor_id, reaction)
+  $$ insert into public.shortlist_reactions (wedding_id, vendor_id, reaction)
      values ((select value::uuid from pg_temp.ids where name = 'wedding'), '90000000-0000-4000-8000-000000000001', 'love') $$,
   '42501', null,
   'and can''t react'
