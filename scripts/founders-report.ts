@@ -133,14 +133,14 @@ async function weekly(db: SupabaseClient, days: number) {
 
   const { data: leads } = await db
     .from('vendor_leads')
-    .select('business_name, city, kind, status')
+    .select('business_name, city, kind, stage')
     .gte('created_at', since)
     .order('created_at');
   if (leads && leads.length > 0) {
     out.push('', 'New vendor sign-ups (phone numbers are in Studio):');
     for (const lead of leads) {
       out.push(
-        `- ${lead.business_name}, ${lead.city}${lead.kind === 'claim' ? ' (claim)' : ''} [${lead.status}]`,
+        `- ${lead.business_name}, ${lead.city}${lead.kind === 'claim' ? ' (claim)' : ''} [${lead.stage}]`,
       );
     }
   }

@@ -67,7 +67,6 @@ export default function ForVendorsScreen() {
       phone,
       instagramHandle: instagram || undefined,
       claimedVendorId: isClaim ? claimed.data?.id : undefined,
-      language: 'en',
     });
   }
 
