@@ -20,8 +20,8 @@ const row = {
   primary_category_slug: 'dhol',
   primary_category_name: { en: 'Dhol player' },
   price_display: 'starting_at',
-  price_from: 400,
-  price_to: null,
+  price_from_cents: 40000,
+  price_to_cents: null,
   price_unit: 'event',
   founding_number: null,
   distance_miles: 12.4,
@@ -85,6 +85,24 @@ describe('searchVendors', () => {
       distanceMiles: null,
       photoUrl: null,
     });
+  });
+
+  it('sends the price ceiling in cents, as the database keeps prices', async () => {
+    mockRpc.mockResolvedValue({ data: [], error: null });
+    await searchVendors({
+      filters: {
+        minGuests: null,
+        maxPrice: 40,
+        language: null,
+        availableOn: null,
+        sort: 'distance',
+      },
+    });
+
+    expect(mockRpc).toHaveBeenCalledWith(
+      'search_vendors',
+      expect.objectContaining({ max_price_cents: 4000 }),
+    );
   });
 
   it('throws database errors so the screen can show Try again', async () => {

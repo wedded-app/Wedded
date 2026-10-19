@@ -6,9 +6,9 @@ create extension if not exists pgtap with schema extensions;
 
 select plan(7);
 
-insert into public.vendors (id, slug, status, name, city, location) values
-  ('60000000-0000-4000-8000-000000000001', 'lead-published', 'published', 'Lead Published', 'Yuba City', 'SRID=4326;POINT(-121.6 39.1)'),
-  ('60000000-0000-4000-8000-000000000002', 'lead-draft', 'draft', 'Lead Draft', 'Yuba City', 'SRID=4326;POINT(-121.6 39.1)');
+insert into public.vendors (id, slug, status, name, base_city_slug, location) values
+  ('60000000-0000-4000-8000-000000000001', 'lead-published', 'published', 'Lead Published', 'yuba-city', 'SRID=4326;POINT(-121.6 39.1)'),
+  ('60000000-0000-4000-8000-000000000002', 'lead-draft', 'draft', 'Lead Draft', 'yuba-city', 'SRID=4326;POINT(-121.6 39.1)');
 
 set local role anon;
 

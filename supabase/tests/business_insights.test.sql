@@ -14,16 +14,20 @@ insert into auth.users (id, instance_id, aud, role, email) values
   ('ae000000-0000-4000-8000-000000000002', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'ins-family2@example.com');
 
 -- The caterer, four caterers nearby, one far away, and a draft
-insert into public.vendors (id, slug, status, name, city, location, tagline, call_phone, languages) values
-  ('be000000-0000-4000-8000-000000000001', 'ins-caterer', 'published', 'Ins Caterer', 'Yuba City',
-   'SRID=4326;POINT(-121.6169 39.1404)', 'Punjabi food', '+15305550111', array['pa', 'en']);
-insert into public.vendors (id, slug, status, name, city, location)
+insert into public.vendors (id, slug, status, name, base_city_slug, location, tagline) values
+  ('be000000-0000-4000-8000-000000000001', 'ins-caterer', 'published', 'Ins Caterer', 'yuba-city',
+   'SRID=4326;POINT(-121.6169 39.1404)', 'Punjabi food');
+insert into public.vendor_contacts (vendor_id, kind, value) values
+  ('be000000-0000-4000-8000-000000000001', 'call', '+15305550111');
+insert into public.vendor_languages (vendor_id, language_code) values
+  ('be000000-0000-4000-8000-000000000001', 'pa'), ('be000000-0000-4000-8000-000000000001', 'en');
+insert into public.vendors (id, slug, status, name, base_city_slug, location)
 select ('be000000-0000-4000-8000-00000000001' || n)::uuid, 'ins-peer-' || n, 'published', 'Peer ' || n,
-  'Marysville', 'SRID=4326;POINT(-121.5913 39.1457)'
+  'marysville', 'SRID=4326;POINT(-121.5913 39.1457)'
 from generate_series(1, 4) as n;
-insert into public.vendors (id, slug, status, name, city, location) values
-  ('be000000-0000-4000-8000-000000000021', 'ins-far', 'published', 'Far Caterer', 'Los Angeles', 'SRID=4326;POINT(-118.2437 34.0522)'),
-  ('be000000-0000-4000-8000-000000000022', 'ins-draft', 'draft', 'Draft Caterer', 'Yuba City', 'SRID=4326;POINT(-121.6169 39.1404)');
+insert into public.vendors (id, slug, status, name, base_city_slug, location) values
+  ('be000000-0000-4000-8000-000000000021', 'ins-far', 'published', 'Far Caterer', 'fresno', 'SRID=4326;POINT(-118.2437 34.0522)'),
+  ('be000000-0000-4000-8000-000000000022', 'ins-draft', 'draft', 'Draft Caterer', 'yuba-city', 'SRID=4326;POINT(-121.6169 39.1404)');
 -- Kids' entertainment has no sample vendors, so only these count as nearby.
 -- The first also caters (its second type), so menus are on its checklist.
 insert into public.vendor_categories (vendor_id, category_slug, position)
@@ -155,8 +159,8 @@ select ok(
 reset role;
 
 -- A fifth caterer nearby makes the comparison safe to show
-insert into public.vendors (id, slug, status, name, city, location) values
-  ('be000000-0000-4000-8000-000000000015', 'ins-peer-5', 'published', 'Peer 5', 'Yuba City', 'SRID=4326;POINT(-121.6169 39.1404)');
+insert into public.vendors (id, slug, status, name, base_city_slug, location) values
+  ('be000000-0000-4000-8000-000000000015', 'ins-peer-5', 'published', 'Peer 5', 'yuba-city', 'SRID=4326;POINT(-121.6169 39.1404)');
 insert into public.vendor_categories (vendor_id, category_slug, position) values
   ('be000000-0000-4000-8000-000000000015', 'kids-entertainment', 1);
 insert into public.vendor_activity_daily (vendor_id, day, kind, count) values

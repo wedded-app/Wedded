@@ -16,9 +16,9 @@ insert into public.profiles (id, full_name, city, phone) values
   ('b3000000-0000-4000-8000-00000000000b', 'Bal Singh', 'Yuba City', '+15305550302'),
   ('c3000000-0000-4000-8000-00000000000c', 'Charan Gill', 'Fremont', '+15105550303');
 
-insert into public.vendors (id, slug, status, name, city, location) values
-  ('90000000-0000-4000-8000-000000000001', 'fs-hall', 'published', 'Fs Hall', 'Yuba City', 'SRID=4326;POINT(-121.6169 39.1404)'),
-  ('90000000-0000-4000-8000-000000000002', 'fs-dj', 'published', 'Fs DJ', 'Yuba City', 'SRID=4326;POINT(-121.6169 39.1404)');
+insert into public.vendors (id, slug, status, name, base_city_slug, location) values
+  ('90000000-0000-4000-8000-000000000001', 'fs-hall', 'published', 'Fs Hall', 'yuba-city', 'SRID=4326;POINT(-121.6169 39.1404)'),
+  ('90000000-0000-4000-8000-000000000002', 'fs-dj', 'published', 'Fs DJ', 'yuba-city', 'SRID=4326;POINT(-121.6169 39.1404)');
 
 create function pg_temp.as_user(uid uuid) returns void language sql as $$
   select set_config('request.jwt.claims', json_build_object('sub', uid, 'role', 'authenticated')::text, true);

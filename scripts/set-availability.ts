@@ -82,7 +82,7 @@ async function main() {
 
   if (open.length > 0) {
     const { error } = await db
-      .from('vendor_unavailable_days')
+      .from('vendor_days')
       .delete()
       .eq('vendor_id', vendor.id)
       .in('day', open);
@@ -92,14 +92,14 @@ async function main() {
     // A day marked all day replaces its morning/evening marks, and the reverse
     const days = [...new Set(marks.map((m) => m.day))];
     const { error: clearError } = await db
-      .from('vendor_unavailable_days')
+      .from('vendor_days')
       .delete()
       .eq('vendor_id', vendor.id)
       .in('day', days);
     if (clearError) fail(`Could not update days: ${clearError.message}`);
     const { error } = await db
-      .from('vendor_unavailable_days')
-      .insert(marks.map((m) => ({ vendor_id: vendor.id, ...m })));
+      .from('vendor_days')
+      .insert(marks.map((m) => ({ vendor_id: vendor.id, ...m, source: 'founder_whatsapp' })));
     if (error) fail(`Could not save days: ${error.message}`);
   }
   if (marks.length > 0 || open.length > 0 || !args.includes('--list')) {
@@ -112,7 +112,7 @@ async function main() {
 
   const today = new Date().toISOString().slice(0, 10);
   const { data: upcoming } = await db
-    .from('vendor_unavailable_days')
+    .from('vendor_days')
     .select('day, part, status')
     .eq('vendor_id', vendor.id)
     .gte('day', today)

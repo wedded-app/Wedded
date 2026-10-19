@@ -194,9 +194,10 @@ export function useVendorCalendar(vendorId: string, month: string) {
     queryFn: async (): Promise<MonthMarks> => {
       const { from, to } = monthRange(month);
       const { data, error } = await supabase
-        .from('vendor_unavailable_days')
+        .from('vendor_days')
         .select('day, part, status')
         .eq('vendor_id', vendorId)
+        .neq('status', 'open')
         .gte('day', from)
         .lte('day', to);
       if (error) throw error;
@@ -222,17 +223,13 @@ export function useSetDayStatus(vendorId: string) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async ({ day, status, part = 'all_day' }: DayChange) => {
-      let clear = supabase
-        .from('vendor_unavailable_days')
-        .delete()
-        .eq('vendor_id', vendorId)
-        .eq('day', day);
+      let clear = supabase.from('vendor_days').delete().eq('vendor_id', vendorId).eq('day', day);
       if (part !== 'all_day') clear = clear.in('part', [part, 'all_day']);
       const { error: clearError } = await clear;
       if (clearError) throw clearError;
       if (status === 'open') return;
       const { error } = await supabase
-        .from('vendor_unavailable_days')
+        .from('vendor_days')
         .insert({ vendor_id: vendorId, day, part, status });
       if (error) throw error;
     },

@@ -7,6 +7,7 @@ import { Chip } from '@/components/chip';
 import { Screen } from '@/components/screen';
 import { SheetHeader } from '@/components/sheet-header';
 import { Spacing } from '@/constants/theme';
+import { useLanguages } from '@/data/reference';
 import { formatDate } from '@/features/inquiry/inquiry-helpers';
 import { usePlan } from '@/features/planner/plan';
 import {
@@ -15,13 +16,12 @@ import {
   priceSteps,
   setSearchFilters,
   useSearchFilters,
-  type SearchLanguage,
   type SearchSort,
 } from '@/features/search/search-filters';
 import { useLocale } from '@/i18n/locale-context';
+import { localized } from '@/i18n/localized';
 import { selectionHaptic } from '@/lib/haptics';
 
-const LANGUAGES: SearchLanguage[] = ['pa', 'hi', 'ur', 'en'];
 const SORTS: SearchSort[] = ['distance', 'price_low', 'founding'];
 
 const usd = new Intl.NumberFormat('en-US', {
@@ -38,6 +38,7 @@ const usd = new Intl.NumberFormat('en-US', {
  */
 export default function FiltersScreen() {
   const { t } = useLocale();
+  const languages = useLanguages();
   const { group } = useLocalSearchParams<{ group?: string }>();
   const filters = useSearchFilters();
   const weddingDate = usePlan().weddingDate;
@@ -112,12 +113,12 @@ export default function FiltersScreen() {
             selected={filters.language === null}
             onPress={() => set({ language: null })}
           />
-          {LANGUAGES.map((language) => (
+          {(languages.data ?? []).map(({ code, name }) => (
             <Chip
-              key={language}
-              label={t(`vendor.languages.${language}`)}
-              selected={filters.language === language}
-              onPress={() => set({ language })}
+              key={code}
+              label={localized(name)}
+              selected={filters.language === code}
+              onPress={() => set({ language: code })}
             />
           ))}
         </Section>

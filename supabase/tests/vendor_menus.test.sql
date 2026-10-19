@@ -5,9 +5,9 @@ create extension if not exists pgtap with schema extensions;
 
 select plan(7);
 
-insert into public.vendors (id, slug, status, name, city, location) values
-  ('c5000000-0000-4000-8000-000000000001', 'menu-live', 'published', 'Menu Live', 'Yuba City', 'SRID=4326;POINT(-121.6169 39.1404)'),
-  ('c5000000-0000-4000-8000-000000000002', 'menu-draft', 'draft', 'Menu Draft', 'Yuba City', 'SRID=4326;POINT(-121.6169 39.1404)');
+insert into public.vendors (id, slug, status, name, base_city_slug, location) values
+  ('c5000000-0000-4000-8000-000000000001', 'menu-live', 'published', 'Menu Live', 'yuba-city', 'SRID=4326;POINT(-121.6169 39.1404)'),
+  ('c5000000-0000-4000-8000-000000000002', 'menu-draft', 'draft', 'Menu Draft', 'yuba-city', 'SRID=4326;POINT(-121.6169 39.1404)');
 
 select lives_ok(
   $$ insert into public.vendor_menus (vendor_id, name, diet, price_from, price_unit, min_guests, sections) values

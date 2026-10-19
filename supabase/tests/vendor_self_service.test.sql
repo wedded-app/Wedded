@@ -9,9 +9,9 @@ select plan(10);
 insert into auth.users (id, instance_id, aud, role, email) values
   ('a8000000-0000-4000-8000-00000000000e', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'self-owner@example.com'),
   ('a8000000-0000-4000-8000-00000000000d', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'self-other@example.com');
-insert into public.vendors (id, slug, status, name, city, location) values
-  ('b8000000-0000-4000-8000-000000000001', 'self-hall', 'draft', 'Self Hall', 'Yuba City', 'SRID=4326;POINT(-121.6169 39.1404)'),
-  ('b8000000-0000-4000-8000-000000000002', 'self-other', 'published', 'Self Other', 'Yuba City', 'SRID=4326;POINT(-121.6169 39.1404)');
+insert into public.vendors (id, slug, status, name, base_city_slug, location) values
+  ('b8000000-0000-4000-8000-000000000001', 'self-hall', 'draft', 'Self Hall', 'yuba-city', 'SRID=4326;POINT(-121.6169 39.1404)'),
+  ('b8000000-0000-4000-8000-000000000002', 'self-other', 'published', 'Self Other', 'yuba-city', 'SRID=4326;POINT(-121.6169 39.1404)');
 insert into public.vendor_members (vendor_id, user_id) values
   ('b8000000-0000-4000-8000-000000000001', 'a8000000-0000-4000-8000-00000000000e');
 
@@ -38,15 +38,15 @@ select throws_ok(
 );
 
 select lives_ok(
-  $$ insert into public.vendor_unavailable_days (vendor_id, day, part, status) values
+  $$ insert into public.vendor_days (vendor_id, day, part, status) values
      ('b8000000-0000-4000-8000-000000000001', '2027-06-12', 'all_day', 'booked'),
      ('b8000000-0000-4000-8000-000000000001', '2027-06-19', 'evening', 'held') $$,
   'The owner marks days booked and held'
 );
-update public.vendor_unavailable_days set status = 'booked' where day = '2027-06-19';
-delete from public.vendor_unavailable_days where day = '2027-06-12';
+update public.vendor_days set status = 'booked' where day = '2027-06-19';
+delete from public.vendor_days where day = '2027-06-12';
 select results_eq(
-  $$ select day::text, status from public.vendor_unavailable_days where vendor_id = 'b8000000-0000-4000-8000-000000000001' $$,
+  $$ select day::text, status from public.vendor_days where vendor_id = 'b8000000-0000-4000-8000-000000000001' $$,
   $$ values ('2027-06-19'::text, 'booked'::text) $$,
   'changes a hold to booked and clears a day'
 );

@@ -6,18 +6,18 @@ create extension if not exists pgtap with schema extensions;
 
 select plan(10);
 
-insert into public.vendors (id, slug, status, name, city, location, calendar_updated_at) values
-  ('80000000-0000-4000-8000-000000000001', 'cal-hall', 'published', 'Cal Hall', 'Yuba City',
+insert into public.vendors (id, slug, status, name, base_city_slug, location, calendar_updated_at) values
+  ('80000000-0000-4000-8000-000000000001', 'cal-hall', 'published', 'Cal Hall', 'yuba-city',
     'SRID=4326;POINT(-121.6169 39.1404)', now()),
-  ('80000000-0000-4000-8000-000000000002', 'cal-stale', 'published', 'Cal Stale', 'Yuba City',
+  ('80000000-0000-4000-8000-000000000002', 'cal-stale', 'published', 'Cal Stale', 'yuba-city',
     'SRID=4326;POINT(-121.6169 39.1404)', now() - interval '90 days'),
-  ('80000000-0000-4000-8000-000000000003', 'cal-draft', 'draft', 'Cal Draft', 'Yuba City',
+  ('80000000-0000-4000-8000-000000000003', 'cal-draft', 'draft', 'Cal Draft', 'yuba-city',
     'SRID=4326;POINT(-121.6169 39.1404)', now());
 
 insert into public.vendor_categories (vendor_id, category_slug, position)
 select id, 'kids-entertainment', 1 from public.vendors where slug like 'cal-%';
 
-insert into public.vendor_unavailable_days (vendor_id, day, part, status) values
+insert into public.vendor_days (vendor_id, day, part, status) values
   ('80000000-0000-4000-8000-000000000001', '2027-06-12', 'all_day', 'booked'),
   ('80000000-0000-4000-8000-000000000001', '2027-06-13', 'all_day', 'held'),
   ('80000000-0000-4000-8000-000000000001', '2027-06-19', 'morning', 'booked'),
@@ -55,7 +55,7 @@ select set_eq(
   'and keeps vendors who are only holding the date'
 );
 select is(
-  (select count(*)::int from public.vendor_unavailable_days
+  (select count(*)::int from public.vendor_days
    where vendor_id = '80000000-0000-4000-8000-000000000003'),
   0,
   'Calendars of unpublished vendors are hidden'

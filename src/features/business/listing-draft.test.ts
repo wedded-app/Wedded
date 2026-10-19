@@ -1,4 +1,4 @@
-import type { ListingLanguage, Listing } from '@/data/listing';
+import type { Listing } from '@/data/listing';
 
 import { draftChanges, listingToDraft, sectionFor } from './listing-draft';
 
@@ -42,7 +42,7 @@ describe('listing editor', () => {
       tagline: '  ',
       bio: 'Our hall',
       whatsappPhone: '(530) 555-0199',
-      languages: ['pa', 'en', 'hi'] as ListingLanguage[],
+      languages: ['pa', 'en', 'hi'],
     };
     expect(draftChanges(listing, draft)).toEqual({
       changes: {

@@ -12,8 +12,8 @@ import { vendorKeys } from './vendors';
 
 export type PriceDisplay = 'hidden' | 'starting_at' | 'range' | 'packages' | 'contact';
 export type PriceUnit = 'event' | 'hour' | 'person' | 'plate' | 'hand' | 'turban' | 'day';
-export type ContactMethod = 'call' | 'text' | 'whatsapp' | 'email' | 'instagram';
-export type ListingLanguage = 'en' | 'pa' | 'hi' | 'ur';
+/** One of the vendor's own contacts (vendor_contacts), so it has to be filled in. */
+export type ContactMethod = 'call' | 'text' | 'whatsapp' | 'instagram';
 export type ServiceRadius = 10 | 25 | 50 | 100 | 250;
 
 export type Listing = {
@@ -37,7 +37,8 @@ export type Listing = {
   /** Without the @ */
   instagramHandle: string | null;
   websiteUrl: string | null;
-  languages: ListingLanguage[];
+  /** Language codes from the languages table. */
+  languages: string[];
   yearsInBusiness: number | null;
   teamSize: number | null;
   serviceRadiusMiles: ServiceRadius | null;
@@ -59,7 +60,7 @@ export function toListing(raw: Record<string, unknown>): Listing {
   const listing = raw as unknown as Listing;
   return {
     ...listing,
-    languages: Array.isArray(raw.languages) ? (raw.languages as ListingLanguage[]) : [],
+    languages: Array.isArray(raw.languages) ? (raw.languages as string[]) : [],
     willTravel: raw.willTravel === true,
   };
 }

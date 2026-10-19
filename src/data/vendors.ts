@@ -79,8 +79,8 @@ export type VendorProfile = {
   whatsappPhone: string | null;
   instagramHandle: string | null;
   websiteUrl: string | null;
-  /** Language codes: en, pa, hi, ur. */
-  languages: string[];
+  /** The languages they speak, in the founders' order. */
+  languages: LocalizedText[];
   /** Null when pricing is hidden. */
   price: VendorPrice | null;
   priceNote: string | null;
@@ -92,20 +92,21 @@ export type VendorProfile = {
   categories: { slug: string; name: LocalizedText; groupSlug: string }[];
 };
 
+/** The listed price in whole dollars (the database keeps cents). */
 function priceOf(row: {
   price_display: string;
-  price_from: number | null;
-  price_to: number | null;
+  price_from_cents: number | null;
+  price_to_cents: number | null;
   price_unit: string | null;
 }): VendorPrice | null {
   const unit = PRICE_UNITS.find((u) => u === row.price_unit);
+  const from = row.price_from_cents === null ? null : row.price_from_cents / 100;
+  const to = row.price_to_cents === null ? null : row.price_to_cents / 100;
   switch (row.price_display) {
     case 'starting_at':
-      return row.price_from ? { kind: 'starting_at', amount: row.price_from, unit } : null;
+      return from ? { kind: 'starting_at', amount: from, unit } : null;
     case 'range':
-      return row.price_from && row.price_to
-        ? { kind: 'range', from: row.price_from, to: row.price_to, unit }
-        : null;
+      return from && to ? { kind: 'range', from, to, unit } : null;
     case 'packages':
       return { kind: 'packages' };
     case 'contact':
@@ -135,29 +136,33 @@ async function fetchVendor(slug: string): Promise<VendorProfile | null> {
   const { data, error } = await supabase
     .from('vendors')
     .select(
-      'id, slug, name, tagline, bio, city, address_line, service_radius_miles, will_travel, travel_note, call_phone, text_phone, whatsapp_phone, instagram_handle, website_url, languages, price_display, price_from, price_to, price_unit, price_note, founding_number, is_sample, details, vendor_categories(position, category:categories(slug, name, group_slug))',
+      'id, slug, name, tagline, bio, base_city:cities(name), public_address, service_radius_miles, will_travel, travel_fee_note, vendor_contacts(kind, value), vendor_languages(language:languages(name, sort_order)), price_display, price_from_cents, price_to_cents, price_unit, price_note, founding_number, is_sample, details, vendor_categories(position, category:categories(slug, name, group_slug))',
     )
     .eq('slug', slug)
     .maybeSingle();
   if (error) throw error;
   if (!data) return null;
+  const contact = (kind: string) =>
+    data.vendor_contacts.find((c) => c.kind === kind)?.value ?? null;
   return {
     id: data.id,
     slug: data.slug,
     name: { en: data.name },
     tagline: data.tagline,
     bio: data.bio,
-    city: data.city,
-    addressLine: data.address_line,
+    city: data.base_city.name,
+    addressLine: data.public_address,
     serviceRadiusMiles: data.service_radius_miles,
     willTravel: data.will_travel,
-    travelNote: data.travel_note,
-    callPhone: data.call_phone,
-    textPhone: data.text_phone,
-    whatsappPhone: data.whatsapp_phone,
-    instagramHandle: data.instagram_handle,
-    websiteUrl: data.website_url,
-    languages: data.languages,
+    travelNote: data.travel_fee_note,
+    callPhone: contact('call'),
+    textPhone: contact('text'),
+    whatsappPhone: contact('whatsapp'),
+    instagramHandle: contact('instagram'),
+    websiteUrl: contact('website'),
+    languages: [...data.vendor_languages]
+      .sort((a, b) => a.language.sort_order - b.language.sort_order)
+      .map((l) => asLocalizedText(l.language.name) ?? { en: '' }),
     price: priceOf(data),
     priceNote: data.price_note,
     foundingNumber: data.founding_number,
@@ -210,7 +215,7 @@ async function fetchFoundingVendors(): Promise<FoundingVendor[]> {
   const { data, error } = await supabase
     .from('vendors')
     .select(
-      'slug, name, city, founding_number, is_sample, vendor_categories(position, category:categories(slug, name))',
+      'slug, name, base_city:cities(name), founding_number, is_sample, vendor_categories(position, category:categories(slug, name))',
     )
     .not('founding_number', 'is', null)
     .order('founding_number');
@@ -223,7 +228,7 @@ async function fetchFoundingVendors(): Promise<FoundingVendor[]> {
         slug: row.slug,
         foundingNumber: row.founding_number,
         name: { en: row.name },
-        city: row.city,
+        city: row.base_city.name,
         isSample: row.is_sample,
         category: primary ? asLocalizedText(primary.category.name) : null,
       },

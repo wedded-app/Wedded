@@ -89,7 +89,8 @@ export async function searchVendors(params: VendorSearch): Promise<VendorResult[
     result_limit: params.limit ?? 50,
     result_offset: params.offset ?? 0,
     min_guests: params.filters?.minGuests ?? undefined,
-    max_price: params.filters?.maxPrice ?? undefined,
+    // Prices are cents in the database; the filters speak whole dollars
+    max_price_cents: params.filters?.maxPrice ? params.filters.maxPrice * 100 : undefined,
     language: params.filters?.language ?? undefined,
     available_on: params.filters?.availableOn ?? undefined,
     sort: params.filters?.sort ?? 'distance',
@@ -100,7 +101,7 @@ export async function searchVendors(params: VendorSearch): Promise<VendorResult[
 
   // Function results come back typed as non-null; several columns can be null.
   return (data as Nullable<SearchFunction['Returns'][number]>[]).map((row) => {
-    const from = row.price_from;
+    const from = row.price_from_cents === null ? null : row.price_from_cents / 100;
     const unit = row.price_unit;
     const showsPrice =
       from !== null && (row.price_display === 'starting_at' || row.price_display === 'range');
