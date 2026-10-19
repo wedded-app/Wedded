@@ -9,10 +9,12 @@ import { Icon } from '@/components/icon';
 import { ListRow, ListSection } from '@/components/list';
 import { NavScreen } from '@/components/nav';
 import { StateView } from '@/components/state-view';
+import { VaultIcon } from '@/components/vault-icon';
 import { WeddingCard } from '@/components/wedding-card';
-import { makeStyles, Radius, Spacing, useColors } from '@/constants/theme';
+import { makeStyles, Radius, Sizes, Spacing, useColors } from '@/constants/theme';
 import { useMyInquiries } from '@/data/inquiries';
 import { useIsVendor, useUnreadCount } from '@/data/chat';
+import { useMyVaults } from '@/data/memory-vault';
 import { useSavedVendors, type SavedVendor } from '@/data/saved';
 import { useSession } from '@/features/auth/session';
 import { switchToBusiness } from '@/features/business/app-mode';
@@ -56,6 +58,7 @@ export default function ProfileScreen() {
       <Header />
       <WeddingCard compact />
       <SavedGrid />
+      <VaultsSection />
       <WedSection />
       <ListSection inset>
         {isVendor && (
@@ -231,6 +234,32 @@ function Stat({ value, label, onPress }: { value: number; label: string; onPress
   );
 }
 
+/** The Memory Vaults they're in (their own wedding's, or one they joined as a guest); nothing until then. */
+function VaultsSection() {
+  const Colors = useColors();
+  const styles = useStyles();
+  const { t } = useLocale();
+  const vaults = useMyVaults();
+  if (!vaults.data?.length) return null;
+  return (
+    <ListSection inset header={t('memoryVault.profileHeader')}>
+      {vaults.data.map((vault) => (
+        <ListRow
+          key={vault.id}
+          leading={
+            <View style={styles.rowIcon}>
+              <VaultIcon size={Sizes.icon} color={Colors.primary} />
+            </View>
+          }
+          title={vault.title ?? t('memoryVault.title')}
+          subtitle={t('memoryVault.count', { count: vault.itemCount })}
+          onPress={() => router.push({ pathname: '/vault/[id]', params: { id: vault.id } })}
+        />
+      ))}
+    </ListSection>
+  );
+}
+
 const modeOf = (s: WedState) => s.mode;
 
 /**
@@ -327,6 +356,10 @@ function SavedGrid() {
 const useStyles = makeStyles((Colors) => ({
   header: {
     gap: Spacing.lg,
+  },
+  rowIcon: {
+    width: Sizes.rowIcon,
+    alignItems: 'center',
   },
   topRow: {
     flexDirection: 'row',

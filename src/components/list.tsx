@@ -177,7 +177,9 @@ export function ListRow({
 
   if (!onPress) {
     return (
-      <View style={styles.row} accessible accessibilityLabel={accessibilityLabel}>
+      // One element for screen readers, unless it holds a control (a switch,
+      // a button) that has to stay reachable on its own
+      <View style={styles.row} accessible={!trailing} accessibilityLabel={accessibilityLabel}>
         {content}
       </View>
     );
@@ -186,7 +188,7 @@ export function ListRow({
   return (
     <Pressable
       accessibilityRole={accessibilityRole}
-      accessibilityLabel={accessibilityLabel ?? title}
+      accessibilityLabel={accessibilityLabel ?? [title, subtitle, value].filter(Boolean).join(', ')}
       accessibilityState={checked !== undefined ? { selected: checked } : undefined}
       onPress={onPress}
       style={({ pressed }) => [styles.row, pressed && styles.pressed]}

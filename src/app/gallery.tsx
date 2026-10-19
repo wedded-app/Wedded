@@ -3,7 +3,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useState } from 'react';
 import { FlatList, Platform, Pressable, View, type ViewStyle } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AppText, useFontScale } from '@/components/app-text';
 import { Icon } from '@/components/icon';
@@ -20,6 +20,7 @@ import { useLocale } from '@/i18n/locale-context';
 export default function GalleryScreen() {
   const Colors = useColors();
   const styles = useStyles();
+  const insets = useSafeAreaInsets();
   const { vendorId = '', index = '0' } = useLocalSearchParams<{
     vendorId: string;
     index?: string;
@@ -41,7 +42,8 @@ export default function GalleryScreen() {
   const photo = list[current];
 
   return (
-    <SafeAreaView edges={['top', 'bottom']} style={styles.screen}>
+    // Insets from the root: SafeAreaView reads none inside a full-screen modal
+    <View style={[styles.screen, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
       <StatusBar style="light" />
       <View style={styles.top}>
         <Pressable
@@ -114,7 +116,7 @@ export default function GalleryScreen() {
           <AppText color="onPrimary">{photo.credit}</AppText>
         </View>
       )}
-    </SafeAreaView>
+    </View>
   );
 }
 

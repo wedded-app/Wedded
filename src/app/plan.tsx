@@ -13,6 +13,7 @@ import { Button } from '@/components/button';
 import { CheckCircle } from '@/components/check-circle';
 import { Chip } from '@/components/chip';
 import { DateField } from '@/components/date-field';
+import { FieldError } from '@/components/field-error';
 import { eventIcon } from '@/components/event-icon';
 import { groupIcon } from '@/components/group-icon';
 import { Icon } from '@/components/icon';
@@ -20,8 +21,10 @@ import { ListRow, ListSection, SectionTitle } from '@/components/list';
 import { NavScreen } from '@/components/nav';
 import { ProgressBar } from '@/components/progress-bar';
 import { StateView } from '@/components/state-view';
+import { VaultIcon } from '@/components/vault-icon';
 import { makeStyles, Radius, Sizes, Spacing, Springs, useColors } from '@/constants/theme';
 import { useGuests } from '@/data/guests';
+import { useMemoryVault, useOpenMemoryVault } from '@/data/memory-vault';
 import type { EventNeed, EventNeedsSection, TraditionEvent } from '@/data/reference';
 import { formatDate, GUEST_BANDS } from '@/features/inquiry/inquiry-helpers';
 import { CountdownCard } from '@/features/planner/countdown-card';
@@ -61,6 +64,18 @@ export default function PlanScreen() {
   const suggested = openCounts(suggestions.data ?? []);
   // Only the owner and editors see the guest list: it's other people's numbers
   const guests = useGuests(canEdit ? (wedding?.id ?? null) : null);
+  const vault = useMemoryVault(wedding?.id ?? null);
+  const openVault = useOpenMemoryVault();
+  const openTheVault = () => {
+    if (vault.data) return router.push({ pathname: '/vault/[id]', params: { id: vault.data.id } });
+    if (!wedding || openVault.isPending) return;
+    openVault.mutate(wedding.id, {
+      onSuccess: (id) => {
+        successHaptic();
+        router.push({ pathname: '/vault/[id]', params: { id } });
+      },
+    });
+  };
 
   // Every event starts folded, so the page reads as one list; a tap opens one
   const [openSlugs, setOpen] = useState<string[]>([]);
@@ -220,28 +235,58 @@ export default function PlanScreen() {
               onToggleBooked={(category) => view.toggleBooked(event.slug, category)}
               onGuests={(band) => view.setEventGuests(event.slug, band)}
               onDate={(date) => view.setEventDate(event.slug, date)}
+              vault={
+                vault.data
+                  ? {
+                      id: vault.data.id,
+                      count: vault.data.events.find((e) => e.slug === event.slug)?.count ?? 0,
+                    }
+                  : null
+              }
             />
           ))}
         </View>
       )}
 
       {!view.loading && (
-        <ListSection>
-          {canEdit && (
+        <View style={styles.block}>
+          <ListSection>
+            {canEdit && (
+              <ListRow
+                icon="people-outline"
+                title={t('guests.title')}
+                subtitle={totalsLine(guests.data ?? [], t) ?? t('guests.planEntryBody')}
+                onPress={() => router.push('/guests')}
+              />
+            )}
+            {/* The Memory Vault: the couple opens it, then everyone in the wedding sees it */}
+            {wedding && !vault.isPending && (vault.data || canEdit) && (
+              <ListRow
+                leading={
+                  <View style={styles.rowIcon}>
+                    <VaultIcon size={Sizes.icon} color={Colors.primary} />
+                  </View>
+                }
+                title={vault.data ? t('memoryVault.title') : t('memoryVault.openTitle')}
+                subtitle={
+                  vault.data
+                    ? t('memoryVault.count', { count: vault.data.itemCount })
+                    : openVault.isPending
+                      ? t('memoryVault.opening')
+                      : t('memoryVault.openBody')
+                }
+                onPress={openTheVault}
+              />
+            )}
             <ListRow
-              icon="people-outline"
-              title={t('guests.title')}
-              subtitle={totalsLine(guests.data ?? [], t) ?? t('guests.planEntryBody')}
-              onPress={() => router.push('/guests')}
+              icon="mail-outline"
+              title={t('cards.planEntry')}
+              subtitle={t('cards.planEntryBody')}
+              onPress={() => router.push('/cards')}
             />
-          )}
-          <ListRow
-            icon="mail-outline"
-            title={t('cards.planEntry')}
-            subtitle={t('cards.planEntryBody')}
-            onPress={() => router.push('/cards')}
-          />
-        </ListSection>
+          </ListSection>
+          {openVault.isError && <FieldError message={t('memoryVault.openFailed')} />}
+        </View>
       )}
 
       {wedding && <Suggestions wedding={wedding} events={chosen} />}
@@ -268,6 +313,7 @@ function EventPlan({
   onToggleBooked,
   onGuests,
   onDate,
+  vault,
 }: {
   event: TraditionEvent;
   sections: EventNeedsSection[];
@@ -286,6 +332,8 @@ function EventPlan({
   onToggleBooked: (categorySlug: string) => void;
   onGuests: (band: string | null) => void;
   onDate: (date: string | null) => void;
+  /** The wedding's Memory Vault once it's open, and how many photos and videos are from this event. */
+  vault: { id: string; count: number } | null;
 }) {
   const Colors = useColors();
   const styles = useStyles();
@@ -483,6 +531,23 @@ function EventPlan({
               </AppText>
             </Pressable>
           )}
+          {vault && (
+            <Pressable
+              accessibilityRole="link"
+              onPress={() =>
+                router.push({
+                  pathname: '/vault/[id]',
+                  params: { id: vault.id, event: event.slug },
+                })
+              }
+              style={({ pressed }) => [styles.more, pressed && styles.headPressed]}
+            >
+              <VaultIcon size={17} color={Colors.primary} />
+              <AppText weight={600} color="primary">
+                {t('memoryVault.eventRow', { count: vault.count })}
+              </AppText>
+            </Pressable>
+          )}
         </Animated.View>
       )}
     </Animated.View>
@@ -593,6 +658,10 @@ const useStyles = makeStyles((Colors) => ({
   },
   block: {
     gap: Spacing.md,
+  },
+  rowIcon: {
+    width: Sizes.rowIcon,
+    alignItems: 'center',
   },
   heading: {
     gap: Spacing.xs,

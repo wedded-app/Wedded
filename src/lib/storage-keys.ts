@@ -21,4 +21,6 @@ export const StorageKeys = {
   seenStories: 'stories.seen',
   /** This phone's Expo push token once registered (src/data/push.ts), to forget it on sign out. */
   pushToken: 'push.token',
+  /** The Memory Vault's "Planning a wedding too?" card: "shown" once a guest has seen it. */
+  vaultPlanCard: 'vault.planCard',
 } as const;
