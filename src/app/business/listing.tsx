@@ -14,7 +14,6 @@ import { Switch } from '@/components/switch';
 import { TextField } from '@/components/text-field';
 import { makeStyles, Radius, Sizes, Spacing } from '@/constants/theme';
 import {
-  type ListingLanguage,
   listingProblem,
   type ContactMethod,
   type PriceDisplay,
@@ -23,6 +22,7 @@ import {
   useMyListing,
   useUpdateListing,
 } from '@/data/listing';
+import { useLanguages } from '@/data/reference';
 import {
   BIO_MAX,
   draftChanges,
@@ -36,12 +36,12 @@ import {
 import { useCurrentBusiness } from '@/features/business/use-current-business';
 import { formatPhone } from '@/lib/phone';
 import { useLocale } from '@/i18n/locale-context';
+import { localized } from '@/i18n/localized';
 import { successHaptic } from '@/lib/haptics';
 
 const PRICE_DISPLAYS: PriceDisplay[] = ['starting_at', 'range', 'packages', 'contact', 'hidden'];
 const PRICE_UNITS: PriceUnit[] = ['event', 'person', 'plate', 'hour', 'day', 'hand', 'turban'];
-const CONTACTS: ContactMethod[] = ['call', 'text', 'whatsapp', 'instagram', 'email'];
-const LANGUAGES: ListingLanguage[] = ['en', 'pa', 'hi', 'ur'];
+const CONTACTS: ContactMethod[] = ['call', 'text', 'whatsapp', 'instagram'];
 const RADII: ServiceRadius[] = [10, 25, 50, 100, 250];
 const TEAM_WHATSAPP = (process.env.EXPO_PUBLIC_TEAM_WHATSAPP ?? '').replace(/\D/g, '');
 
@@ -394,13 +394,14 @@ function ContactSection({ draft, change, errorFor }: SectionProps) {
 function LanguagesSection({ draft, change, errorFor }: SectionProps) {
   const styles = useStyles();
   const { t } = useLocale();
+  const languages = useLanguages();
   return (
     <Part title={t('business.listing.languagesTravel')}>
       <ChipField label={t('business.listing.languages')} error={errorFor('languages')}>
-        {LANGUAGES.map((code) => (
+        {(languages.data ?? []).map(({ code, name }) => (
           <Chip
             key={code}
-            label={t(`vendor.languages.${code}`)}
+            label={localized(name)}
             selected={draft.languages.includes(code)}
             onPress={() =>
               change({

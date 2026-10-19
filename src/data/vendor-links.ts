@@ -24,14 +24,14 @@ export type VendorLinks = {
   workedWith: LinkedVendor[];
 };
 
-type Row = { id: string; slug: string; name: string; city: string };
+type Row = { id: string; slug: string; name: string; base_city: { name: string } };
 
 function toLinked(row: Row): LinkedVendor {
   return {
     id: row.id,
     slug: row.slug,
     name: { en: row.name },
-    city: row.city,
+    city: row.base_city.name,
   };
 }
 
@@ -39,17 +39,17 @@ async function fetchVendorLinks(vendorId: string): Promise<VendorLinks> {
   const { data, error } = await supabase
     .from('vendor_links')
     .select(
-      'kind, venue_vendor_id, venue:vendors!vendor_links_venue_vendor_id_fkey(id, slug, name, city), vendor:vendors!vendor_links_vendor_id_fkey(id, slug, name, city)',
+      'kind, from_vendor_id, venue:vendors!vendor_links_from_vendor_id_fkey(id, slug, name, base_city:cities(name)), vendor:vendors!vendor_links_to_vendor_id_fkey(id, slug, name, base_city:cities(name))',
     )
-    .or(`venue_vendor_id.eq.${vendorId},vendor_id.eq.${vendorId}`);
+    .or(`from_vendor_id.eq.${vendorId},to_vendor_id.eq.${vendorId}`);
   if (error) throw error;
 
   const links: VendorLinks = { approvedCaterers: [], approvedAt: [], workedWith: [] };
   for (const link of data) {
-    const isVenue = link.venue_vendor_id === vendorId;
+    const isVenue = link.from_vendor_id === vendorId;
     const other = isVenue ? link.vendor : link.venue;
     if (!other) continue;
-    if (link.kind === 'approved_at') {
+    if (link.kind === 'approved_caterer') {
       (isVenue ? links.approvedCaterers : links.approvedAt).push(toLinked(other));
     } else {
       links.workedWith.push(toLinked(other));

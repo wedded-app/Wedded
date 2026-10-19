@@ -33,6 +33,7 @@ const SF_SYMBOLS: Partial<Record<IconName, SFSymbol>> = {
   'help-circle-outline': 'questionmark.circle',
   'close-circle-outline': 'xmark.circle',
   checkmark: 'checkmark',
+  remove: 'minus',
   'checkmark-sharp': 'checkmark',
   'checkmark-circle': 'checkmark.circle.fill',
   'card-outline': 'creditcard',

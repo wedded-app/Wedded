@@ -6,6 +6,7 @@
  */
 import { cheapestMenu, type Menu } from '@/data/vendor-menus';
 import type { VendorProfile } from '@/data/vendors';
+import { localized } from '@/i18n/localized';
 
 import { ALL_NORCAL_MILES, formatTime, priceLine, usd, type Translate } from './profile-format';
 
@@ -73,7 +74,7 @@ export function compareRows(
             : t('vendor.facts.byob')
           : v.facts.alcoholPolicy === 'full_bar'
             ? t('vendor.facts.fullBar')
-            : v.facts.alcoholPolicy === 'none'
+            : v.facts.alcoholPolicy === 'dry'
               ? t('vendor.facts.noAlcohol')
               : null,
       ),
@@ -116,9 +117,7 @@ export function compareRows(
       key: 'languages',
       label: t('compare.rows.languages'),
       values: vendors.map((v) =>
-        v.languages.length > 0
-          ? v.languages.map((l) => t(`vendor.languages.${l}`)).join(', ')
-          : null,
+        v.languages.length > 0 ? v.languages.map((name) => localized(name)).join(', ') : null,
       ),
     },
     {

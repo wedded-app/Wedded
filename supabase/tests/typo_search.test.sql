@@ -7,13 +7,13 @@ create extension if not exists pgtap with schema extensions;
 
 select plan(9);
 
-insert into public.vendors (id, slug, status, name, city, location) values
+insert into public.vendors (id, slug, status, name, base_city_slug, location) values
   ('40000000-0000-4000-8000-000000000001', 'qq-quorvex-sweets', 'published', 'Qq Quorvex Sweets',
-    'Yuba City', (select location from public.cities where slug = 'yuba-city')),
+    'yuba-city', (select location from public.cities where slug = 'yuba-city')),
   ('40000000-0000-4000-8000-000000000002', 'qq-pellam-decor', 'published', 'Qq Pellam Decor',
-    'Yuba City', (select location from public.cities where slug = 'yuba-city')),
+    'yuba-city', (select location from public.cities where slug = 'yuba-city')),
   ('40000000-0000-4000-8000-000000000003', 'qq-pellan-decor', 'published', 'Qq Pellan Decor',
-    'Yuba City', (select location from public.cities where slug = 'yuba-city'));
+    'yuba-city', (select location from public.cities where slug = 'yuba-city'));
 
 insert into public.vendor_categories (vendor_id, category_slug, position)
 select id, 'kids-entertainment', 1 from public.vendors where slug like 'qq-%';

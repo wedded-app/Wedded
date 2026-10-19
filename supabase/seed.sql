@@ -11,9 +11,72 @@
 -- Public locations of home-based vendors are their city's point from
 -- public.cities, never their house (vision section 8).
 
+-- Vendors are written flat here, the way a founder's vendor file reads (the
+-- city by name, phones and languages on the row, prices in whole dollars),
+-- into seed_vendors. publish_seed_vendors() moves each batch into vendors,
+-- vendor_contacts and vendor_languages.
+create temporary table seed_vendors (
+  id uuid primary key default gen_random_uuid(),
+  slug text not null,
+  status text not null default 'draft',
+  is_sample boolean not null default false,
+  name text not null,
+  tagline text,
+  bio text,
+  city text not null,
+  location extensions.geography(point, 4326) not null,
+  address_visibility text not null default 'city_only',
+  address_line text,
+  service_radius_miles smallint not null default 25,
+  will_travel boolean not null default false,
+  travel_note text,
+  call_phone text,
+  text_phone text,
+  whatsapp_phone text,
+  instagram_handle text,
+  website_url text,
+  preferred_contact text,
+  office_hours text,
+  languages text[] not null default '{en}',
+  price_display text not null default 'contact',
+  price_from integer,
+  price_to integer,
+  price_unit text,
+  price_note text,
+  years_in_business smallint,
+  team_size smallint,
+  founding_number smallint,
+  details jsonb not null default '{}'
+);
+
+create function pg_temp.publish_seed_vendors() returns void language sql as $$
+  insert into public.vendors (
+    id, slug, status, is_sample, name, tagline, bio, base_city_slug, location, address_visibility,
+    public_address, service_radius_miles, will_travel, travel_fee_note, office_hours, price_display,
+    price_from_cents, price_to_cents, price_unit, price_note, years_in_business, team_size,
+    founding_number, details)
+  select s.id, s.slug, s.status, s.is_sample, s.name, s.tagline, s.bio, c.slug, s.location,
+    s.address_visibility, s.address_line, s.service_radius_miles, s.will_travel, s.travel_note,
+    s.office_hours, s.price_display, s.price_from * 100, s.price_to * 100, s.price_unit, s.price_note,
+    s.years_in_business, s.team_size, s.founding_number, s.details
+  from seed_vendors s
+  left join public.cities c on c.name = s.city;
+  insert into public.vendor_contacts (vendor_id, kind, value, is_preferred, sort_order)
+  select s.id, x.kind, x.value, s.preferred_contact = x.kind, x.sort_order
+  from seed_vendors s
+  cross join lateral (values
+    ('call', s.call_phone, 1), ('text', s.text_phone, 2), ('whatsapp', s.whatsapp_phone, 3),
+    ('instagram', s.instagram_handle, 5), ('website', s.website_url, 8)
+  ) as x (kind, value, sort_order)
+  where x.value is not null;
+  insert into public.vendor_languages (vendor_id, language_code)
+  select s.id, l.code from seed_vendors s cross join lateral unnest(s.languages) as l (code);
+  truncate seed_vendors;
+$$;
+
 -- Banquet halls (public addresses) -----------------------------------------
 
-insert into public.vendors (
+insert into seed_vendors (
   id, slug, status, is_sample, name, tagline, bio,
   city, location, address_visibility, address_line,
   call_phone, text_phone, preferred_contact, office_hours, languages,
@@ -32,8 +95,9 @@ insert into public.vendors (
     "alcohol_policy": "byob", "corkage": 500, "ghori_allowed": true, "dhol_outside_allowed": true,
     "curfew": "01:00", "parking_spaces": 400}'
 );
+select pg_temp.publish_seed_vendors();
 
-insert into public.vendors (
+insert into seed_vendors (
   id, slug, status, is_sample, name, tagline,
   city, location, address_visibility, address_line,
   call_phone, preferred_contact, office_hours, languages,
@@ -50,10 +114,11 @@ insert into public.vendors (
   '{"seated_capacity": 450, "in_house_catering": "no", "outside_catering": "yes",
     "alcohol_policy": "full_bar", "security_required": true}'
 );
+select pg_temp.publish_seed_vendors();
 
 -- Home-based and mobile vendors (city only) ---------------------------------
 
-insert into public.vendors (
+insert into seed_vendors (
   id, slug, status, is_sample, name, tagline,
   city, location, service_radius_miles,
   call_phone, whatsapp_phone, preferred_contact, languages,
@@ -68,8 +133,9 @@ insert into public.vendors (
   '{"dietary": ["veg", "non_veg", "jhatka"], "live_stations": ["tandoor", "chaat", "jalebi"],
     "min_headcount": 100}'
 );
+select pg_temp.publish_seed_vendors();
 
-insert into public.vendors (
+insert into seed_vendors (
   id, slug, status, is_sample, name, tagline,
   city, location, service_radius_miles, will_travel, travel_note,
   text_phone, instagram_handle, preferred_contact, languages,
@@ -84,9 +150,10 @@ insert into public.vendors (
   '{"genres": ["bhangra", "bollywood", "punjabi_folk", "top_40"], "mc_included": true,
     "mc_languages": ["en", "pa"], "led_wall": true}'
 );
+select pg_temp.publish_seed_vendors();
 
 -- No email on file, Punjabi-first
-insert into public.vendors (
+insert into seed_vendors (
   id, slug, status, is_sample, name, tagline,
   city, location, service_radius_miles,
   call_phone, whatsapp_phone, preferred_contact, languages,
@@ -100,8 +167,9 @@ insert into public.vendors (
   'starting_at', 400, 'event', 'Two hours, two dholis.',
   '{"dholis": 2, "min_hours": 2}'
 );
+select pg_temp.publish_seed_vendors();
 
-insert into public.vendors (
+insert into seed_vendors (
   id, slug, status, is_sample, name, bio,
   city, location, service_radius_miles,
   text_phone, preferred_contact, languages,
@@ -114,9 +182,10 @@ insert into public.vendors (
   '+19165550106', 'text', '{pa}',
   'starting_at', 300, 'event', 'Bridal. Guests from $10 a hand.'
 );
+select pg_temp.publish_seed_vendors();
 
 -- Very long name, three categories, all of NorCal, hidden pricing
-insert into public.vendors (
+insert into seed_vendors (
   id, slug, status, is_sample, name, tagline,
   city, location, service_radius_miles,
   call_phone, instagram_handle, preferred_contact, languages,
@@ -129,8 +198,9 @@ insert into public.vendors (
   '+14085550107', 'goldenmomentsstudio', 'instagram', '{en,pa,hi}',
   'hidden', 12, 8
 );
+select pg_temp.publish_seed_vendors();
 
-insert into public.vendors (
+insert into seed_vendors (
   id, slug, status, is_sample, name, tagline,
   city, location, service_radius_miles,
   call_phone, preferred_contact, languages,
@@ -143,8 +213,9 @@ insert into public.vendors (
   '+12095550108', 'call', '{en,pa}',
   'range', 4000, 15000, 'event'
 );
+select pg_temp.publish_seed_vendors();
 
-insert into public.vendors (
+insert into seed_vendors (
   id, slug, status, is_sample, name, tagline,
   city, location, service_radius_miles,
   text_phone, instagram_handle, preferred_contact, languages,
@@ -157,6 +228,7 @@ insert into public.vendors (
   '+12095550109', 'glowbysimran', 'instagram', '{en,pa}',
   'starting_at', 350, 'event', 'Early-morning calls from 4 AM.'
 );
+select pg_temp.publish_seed_vendors();
 
 -- Private details (never readable through the API) -------------------------
 
@@ -166,7 +238,7 @@ insert into public.vendor_private (vendor_id, email, checks_email, street_addres
   ('00000000-0000-4000-8000-000000000003', 'orders@example.com', true, '88 Sample Tandoor Ct, Fremont, CA 94536',
     'SRID=4326;POINT(-121.9790 37.5560)', 'Sample Owner Three'),
   ('00000000-0000-4000-8000-000000000004', 'bookings@example.com', false, null, null, 'Sample Owner Four'),
-  ('00000000-0000-4000-8000-000000000005', null, null, '12 Sample Dhol Ln, Manteca, CA 95336',
+  ('00000000-0000-4000-8000-000000000005', null, false, '12 Sample Dhol Ln, Manteca, CA 95336',
     'SRID=4326;POINT(-121.2230 37.8050)', 'Sample Owner Five'),
   ('00000000-0000-4000-8000-000000000006', 'mehndi@example.com', false, '5 Sample Henna Way, Elk Grove, CA 95758',
     'SRID=4326;POINT(-121.3800 38.4150)', 'Sample Owner Six'),
@@ -269,7 +341,7 @@ insert into more_samples values
     'sacramento', 100, 'photo-booth', null, 'starting_at', 600, null, 'event', '+19165550125', 'text', '{en}',
     '{reception,sangeet}', null);
 
-insert into public.vendors (
+insert into seed_vendors (
   id, slug, status, is_sample, name, tagline, city, location, service_radius_miles,
   call_phone, text_phone, preferred_contact, languages,
   price_display, price_from, price_to, price_unit, founding_number
@@ -280,11 +352,12 @@ select
   m.price_display, m.price_from, m.price_to, m.unit, m.founding
 from more_samples m
 join public.cities c on c.slug = m.city_slug;
+select pg_temp.publish_seed_vendors();
 
 -- The hotel ballroom has a public address
 update public.vendors
 set address_visibility = 'public',
-    address_line = '700 Sample Plaza Dr, Yuba City, CA 95991',
+    public_address = '700 Sample Plaza Dr, Yuba City, CA 95991',
     location = 'SRID=4326;POINT(-121.6150 39.1380)',
     office_hours = 'Every day, 9 AM to 6 PM',
     details = '{"seated_capacity": 600, "in_house_catering": "yes", "outside_catering": "no",
@@ -313,13 +386,13 @@ drop table more_samples;
 -- Royal Orchard's approved caterers (demo step 3). Tandoor House is confirmed by
 -- the hall only, so it stays hidden until the caterer confirms too.
 
-insert into public.vendor_links (venue_vendor_id, vendor_id, kind, confirmed_by_venue, confirmed_by_vendor)
-select venue.id, vendor.id, link.kind, true, link.vendor_confirmed
+insert into public.vendor_links (from_vendor_id, to_vendor_id, kind, from_confirmed_at, to_confirmed_at)
+select venue.id, vendor.id, link.kind, now(), case when link.vendor_confirmed then now() end
 from (values
-  ('royal-orchard-banquet-hall', 'saffron-tandoor-catering', 'approved_at', true),
-  ('royal-orchard-banquet-hall', 'royal-feast-caterers', 'approved_at', true),
-  ('royal-orchard-banquet-hall', 'tandoor-house-catering', 'approved_at', false),
-  ('royal-orchard-banquet-hall', 'marigold-stage-decor', 'worked_with', true)
+  ('royal-orchard-banquet-hall', 'saffron-tandoor-catering', 'approved_caterer', true),
+  ('royal-orchard-banquet-hall', 'royal-feast-caterers', 'approved_caterer', true),
+  ('royal-orchard-banquet-hall', 'tandoor-house-catering', 'approved_caterer', false),
+  ('royal-orchard-banquet-hall', 'marigold-stage-decor', 'worked_at', true)
 ) as link (venue_slug, vendor_slug, kind, vendor_confirmed)
 join public.vendors venue on venue.slug = link.venue_slug
 join public.vendors vendor on vendor.slug = link.vendor_slug;
@@ -384,7 +457,7 @@ insert into all_type_samples values
   (72, 'royal-rides-limo', 'Royal Rides Limo & Party Bus', 'Vintage cars, limos and a party bus for the baraat.', 'The doli car comes decorated if you like.', 'hayward', 100, 'cars-limos', 'shuttle', 'starting_at', 150, null, 'hour', '+15105550172', 'call', '{en,pa,hi}', '{baraat,doli,reception}', 'royalrideslimo'),
   (73, 'park-it-valet', 'Park It Valet', 'Valet for halls with small lots and backyard functions.', 'Insured drivers, glow signs and a ticket for every car.', 'sacramento', 100, 'valet', null, 'starting_at', 600, null, 'event', '+19165550173', 'call', '{en}', '{reception,jaago}', null);
 
-insert into public.vendors (
+insert into seed_vendors (
   id, slug, status, is_sample, name, tagline, bio, city, location, service_radius_miles,
   call_phone, text_phone, whatsapp_phone, instagram_handle, preferred_contact, languages,
   price_display, price_from, price_to, price_unit
@@ -396,6 +469,7 @@ select
   m.price_display, m.price_from, m.price_to, m.unit
 from all_type_samples m
 join public.cities c on c.slug = m.city_slug;
+select pg_temp.publish_seed_vendors();
 
 insert into public.vendor_private (vendor_id, email, checks_email, owner_name)
 select ('00000000-0000-4000-8000-0000000000' || lpad(m.n::text, 2, '0'))::uuid,
@@ -537,7 +611,7 @@ insert into extra_samples values
   (148, 'thumka-dance-co', 'Thumka Dance Co.', 'Sangeet choreography for couples, cousins and parents.', 'Bollywood and bhangra routines taught over video calls, plus three rehearsals in person.', 'fremont', 250, 'choreographer', null, 'packages', 750, null, 'event', '+15105550148', 'instagram', '{en,hi,pa}', '{sangeet,mehndi,reception}', 'thumkadance'),
   (149, 'riverbend-community-center', 'Riverbend Community Center', 'Community hall for 250 with a kitchen for home-cooked functions.', 'Low weekday rates. A good fit for the roka lunch, the akhand paath bhog or a small walima.', 'modesto', 25, 'community-center', null, 'range', 900, 2000, 'event', '+12095550149', 'call', '{en,pa}', '{roka,chunni-kurmai,maiyan,akhand-paath,walima}', null);
 
-insert into public.vendors (
+insert into seed_vendors (
   id, slug, status, is_sample, name, tagline, bio, city, location, service_radius_miles,
   call_phone, text_phone, whatsapp_phone, instagram_handle, preferred_contact, languages,
   price_display, price_from, price_to, price_unit
@@ -549,6 +623,7 @@ select
   m.price_display, m.price_from, m.price_to, m.unit
 from extra_samples m
 join public.cities c on c.slug = m.city_slug;
+select pg_temp.publish_seed_vendors();
 
 insert into public.vendor_private (vendor_id, email, checks_email, owner_name)
 select ('00000000-0000-4000-8000-000000000' || lpad(m.n::text, 3, '0'))::uuid,
@@ -570,7 +645,22 @@ drop table extra_samples;
 
 -- Sample menus (vendor_menus) ------------------------------------------------------------
 
-insert into public.vendor_menus (vendor_id, name, description, cuisine, diet, price_from, price_unit, min_guests, sort_order, sections)
+-- Written flat like the vendors above: whole dollars and the dishes as a list
+-- of titled sections, moved into vendor_menus and menu_items.
+create temporary table seed_menus (
+  vendor_id uuid not null,
+  name text not null,
+  description text,
+  cuisine text,
+  diet text[] not null default '{}',
+  price_from integer,
+  price_unit text,
+  min_guests integer,
+  sort_order smallint not null default 0,
+  sections jsonb not null default '[]'
+);
+
+insert into seed_menus (vendor_id, name, description, cuisine, diet, price_from, price_unit, min_guests, sort_order, sections)
 select v.id, m.name, m.description, m.cuisine, m.diet, m.price_from, m.price_unit, m.min_guests, m.sort_order, m.sections::jsonb
 from (values
   ('saffron-tandoor-catering', 'Classic Punjabi', 'Our most booked reception menu, cooked on site with a live tandoor.', 'Punjabi',
@@ -595,3 +685,38 @@ from (values
       {"title": "Dessert", "items": [{"name": "Gajar halwa"}, {"name": "Wedding cake cutting service"}]}]')
 ) as m (slug, name, description, cuisine, diet, price_from, price_unit, min_guests, sort_order, sections)
 join public.vendors v on v.slug = m.slug;
+
+with menus as (
+  insert into public.vendor_menus
+    (vendor_id, name, description, cuisine, diet_tags, price_from_cents, price_unit, min_guests, sort_order)
+  select vendor_id, name, description, cuisine, diet, price_from * 100, price_unit, min_guests, sort_order
+  from seed_menus
+  returning id, vendor_id, name
+)
+insert into public.menu_items (menu_id, section, name, diet_tags, sort_order)
+select menus.id, s.value ->> 'title', i.value ->> 'name',
+  array(select jsonb_array_elements_text(coalesce(i.value -> 'diet', '[]'::jsonb))),
+  row_number() over (partition by menus.id order by s.ordinality, i.ordinality)
+from menus
+join seed_menus m on m.vendor_id = menus.vendor_id and m.name = menus.name
+cross join lateral jsonb_array_elements(m.sections) with ordinality as s (value, ordinality)
+cross join lateral jsonb_array_elements(s.value -> 'items') with ordinality as i (value, ordinality);
+
+-- Hall facts are written in details above, the way a founder's vendor file
+-- has them; they move into venue_policies and each hall's main room
+select private.set_hall_facts(v.id, v.details)
+from public.vendors v
+where exists (
+    select 1 from public.vendor_categories vc join public.categories c on c.slug = vc.category_slug
+    where vc.vendor_id = v.id and c.group_slug = 'venues')
+  and v.details ?| array['seated_capacity', 'in_house_catering', 'outside_catering', 'alcohol_policy',
+    'corkage', 'security_required', 'ghori_allowed', 'dhol_outside_allowed', 'curfew', 'min_headcount',
+    'parking_spaces'];
+
+update public.vendors v
+set details = details - array['seated_capacity', 'in_house_catering', 'outside_catering', 'alcohol_policy',
+  'corkage', 'security_required', 'ghori_allowed', 'dhol_outside_allowed', 'curfew', 'min_headcount',
+  'parking_spaces']
+where exists (
+    select 1 from public.vendor_categories vc join public.categories c on c.slug = vc.category_slug
+    where vc.vendor_id = v.id and c.group_slug = 'venues');

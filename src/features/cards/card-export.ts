@@ -33,7 +33,14 @@ export async function shareCard(card: RefObject<View | null>, title: string): Pr
   });
 }
 
-/** The print sheet, which also saves a PDF. */
-export async function printCard(card: RefObject<View | null>): Promise<void> {
-  await Print.printAsync({ html: cardPageHtml(await capture(card, 'base64')) });
+/** The print sheet, which also saves a PDF: one card a page. */
+export async function printCards(cards: RefObject<View | null>[]): Promise<void> {
+  const pictures: string[] = [];
+  for (const card of cards) pictures.push(await capture(card, 'base64'));
+  await Print.printAsync({ html: cardPageHtml(pictures) });
+}
+
+/** The card as a PNG file, to attach to a text or an email. */
+export function cardFile(card: RefObject<View | null>): Promise<string> {
+  return capture(card, 'tmpfile');
 }

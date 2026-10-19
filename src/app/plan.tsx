@@ -23,12 +23,14 @@ import { ProgressBar } from '@/components/progress-bar';
 import { StateView } from '@/components/state-view';
 import { VaultIcon } from '@/components/vault-icon';
 import { makeStyles, Radius, Sizes, Spacing, Springs, useColors } from '@/constants/theme';
+import { useGuests } from '@/data/guests';
 import { useMemoryVault, useOpenMemoryVault } from '@/data/memory-vault';
 import type { EventNeed, EventNeedsSection, TraditionEvent } from '@/data/reference';
 import { formatDate, GUEST_BANDS } from '@/features/inquiry/inquiry-helpers';
 import { CountdownCard } from '@/features/planner/countdown-card';
 import { openCounts, useWeddingSuggestions } from '@/data/wedding-suggestions';
 import { FamilyChats } from '@/features/group-chat/family-chats';
+import { totalsLine } from '@/features/guests/guest-helpers';
 import { FamilyShortlist } from '@/features/planner/family-shortlist';
 import { findForPlan } from '@/features/planner/find-for-plan';
 import { essentialNeeds } from '@/features/planner/plan';
@@ -60,6 +62,8 @@ export default function PlanScreen() {
   const { plan, wedding, canEdit, saveFailed, active, chosen, needsByEvent, progress } = view;
   const suggestions = useWeddingSuggestions(wedding?.id ?? null);
   const suggested = openCounts(suggestions.data ?? []);
+  // Only the owner and editors see the guest list: it's other people's numbers
+  const guests = useGuests(canEdit ? (wedding?.id ?? null) : null);
   const vault = useMemoryVault(wedding?.id ?? null);
   const openVault = useOpenMemoryVault();
   const openTheVault = () => {
@@ -244,40 +248,45 @@ export default function PlanScreen() {
         </View>
       )}
 
-      {/* The Memory Vault: the couple opens it, then everyone in the wedding sees it */}
-      {wedding && !vault.isPending && (vault.data || canEdit) && (
+      {!view.loading && (
         <View style={styles.block}>
           <ListSection>
+            {canEdit && (
+              <ListRow
+                icon="people-outline"
+                title={t('guests.title')}
+                subtitle={totalsLine(guests.data ?? [], t) ?? t('guests.planEntryBody')}
+                onPress={() => router.push('/guests')}
+              />
+            )}
+            {/* The Memory Vault: the couple opens it, then everyone in the wedding sees it */}
+            {wedding && !vault.isPending && (vault.data || canEdit) && (
+              <ListRow
+                leading={
+                  <View style={styles.rowIcon}>
+                    <VaultIcon size={Sizes.icon} color={Colors.primary} />
+                  </View>
+                }
+                title={vault.data ? t('memoryVault.title') : t('memoryVault.openTitle')}
+                subtitle={
+                  vault.data
+                    ? t('memoryVault.count', { count: vault.data.itemCount })
+                    : openVault.isPending
+                      ? t('memoryVault.opening')
+                      : t('memoryVault.openBody')
+                }
+                onPress={openTheVault}
+              />
+            )}
             <ListRow
-              leading={
-                <View style={styles.rowIcon}>
-                  <VaultIcon size={Sizes.icon} color={Colors.primary} />
-                </View>
-              }
-              title={vault.data ? t('memoryVault.title') : t('memoryVault.openTitle')}
-              subtitle={
-                vault.data
-                  ? t('memoryVault.count', { count: vault.data.itemCount })
-                  : openVault.isPending
-                    ? t('memoryVault.opening')
-                    : t('memoryVault.openBody')
-              }
-              onPress={openTheVault}
+              icon="mail-outline"
+              title={t('cards.planEntry')}
+              subtitle={t('cards.planEntryBody')}
+              onPress={() => router.push('/cards')}
             />
           </ListSection>
           {openVault.isError && <FieldError message={t('memoryVault.openFailed')} />}
         </View>
-      )}
-
-      {!view.loading && (
-        <ListSection>
-          <ListRow
-            icon="mail-outline"
-            title={t('cards.planEntry')}
-            subtitle={t('cards.planEntryBody')}
-            onPress={() => router.push('/cards')}
-          />
-        </ListSection>
       )}
 
       {wedding && <Suggestions wedding={wedding} events={chosen} />}

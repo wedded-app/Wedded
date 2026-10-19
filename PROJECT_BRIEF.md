@@ -203,13 +203,15 @@ All tables are in Postgres (`public` schema) with row-level security. Names that
 
 **Vendors:**
 
-- `vendors`: id, slug, status (published…), is_sample, name / name_pa, tagline(_pa), bio(_pa), city, `location` (PostGIS point), address_visibility, address_line, service_radius_miles, will_travel, call / text / whatsapp phones, instagram_handle, website_url, preferred_contact, office_hours, languages, price_display / price_from / price_to / price_unit / price_note, years_in_business, team_size, **founding_number**, details (jsonb hall facts: seats, alcohol, outside caterers, ghori, curfew, parking…), calendar_updated_at.
-- `vendor_private`: email, checks_email, street address, exact location, owner name, notes. **The API can never read it.**
+- `vendors`: id, slug, status (draft / in_review / published / slow / hidden / retired), provenance, is_sample, name, tagline, bio, base_city_slug (a city), `location` (PostGIS point), address_visibility, public_address, service_radius_miles, will_travel, travel_fee_note, office_hours, price_display / price_from_cents / price_to_cents / price_unit / price_note, years_in_business, team_size, **founding_number**, details (jsonb: facts particular to the vendor's type, like a DJ's genres), calendar_updated_at, published_at, merged_into_id.
+- `venue_policies` (one per hall: catering, alcohol, corkage_cents, ghori, dhol outside, curfew, minimums, fees, parking, tour booking) and `venue_rooms` (seated, standing, ceiling).
+- `vendor_contacts`: call / text / whatsapp / instagram / website… one row each, one preferred. `vendor_languages`: codes from `languages`.
+- `vendor_private`: email, checks_email, street address, exact location, owner name, founder_notes. **The API can never read it.**
 - `vendor_categories` (up to 3 per vendor, position 1 is the main one), `vendor_events`.
 - `vendor_media`: storage_path (files at `{400,1080,1600}.webp`), width, height, blurhash, is_cover, sort_order, event, venue (where it was taken), credit vendor or text. Public bucket `vendor-media`.
-- `vendor_menus`: name(_pa), description(_pa), cuisine, diet tags, price_from, price_unit, min_guests, `sections` (jsonb: titled sections of dishes).
-- `vendor_links`: a venue and a vendor, kind (approved caterer / worked with), confirmed by each side; shown only when both confirm.
-- `vendor_unavailable_days`: day, part (all day / morning / evening), status (booked / held). Public, no client details.
+- `vendor_menus`: name, description, cuisine, diet_tags, price_from_cents, price_unit, min_guests, event_slug. `menu_items`: its dishes (section, name, description, diet_tags, sort_order). Saved through `save_vendor_menu()`.
+- `vendor_links`: from a venue (or the first vendor) to another, kind (approved_caterer / worked_at / often_works_with / partner), each side's confirmation time, hidden_by_venue; shown only when both confirm.
+- `vendor_days`: day, part (all day / morning / evening), status (open / held / booked), capacity and taken, source, the booking behind it. Public, no client details.
 - `vendor_members`: a user's role on a vendor account (owner / staff).
 - `vendor_leads`: sign-ups and claims from `/for-vendors` (insert only; founders read them).
 - `vendor_activity_daily`: anonymous daily counts per vendor and kind (view, call, text, whatsapp, directions, share, instagram, website).
@@ -236,7 +238,8 @@ All tables are in Postgres (`public` schema) with row-level security. Names that
 **Reels** (data in #110, screens in #113):
 
 - `reels`: author, vendor (when posted as a business), video_path, thumb_path, duration_s, width, height, caption, event, status.
-- `reel_vendor_tags` (pending / approved / declined by the vendor), `follows` (a person or a vendor), `reel_likes`, `reel_comments` (with hidden), `user_blocks`, `reel_reports`. Public bucket `reels`.
+- `reel_vendor_tags` (pending / approved / declined by the vendor), `follows` (an id; followee_user_id or followee_vendor_id), `reel_likes`, `reel_comments` (with hidden), `user_blocks`, `reports` (a reel, comment, story or person; handled_by, handled_at). Public bucket `reels`.
+- `devices`: the phones that get push alerts (push_token, platform, last_seen_at).
 
 **Main server functions:** `search_vendors` (distance, category, text and fuzzy match, travelers, guests, max price, language, availability, sort), `create_inquiry`, `inquiry_emails_left_today`, `create_wedding`, `set_booked`, `set_wedding_cultures`, `save_vendor`, `create_wedding_invite`, `wedding_invite_preview`, `accept_wedding_invite`, `wedding_members_list`, `remove_wedding_member`, `set_wedding_member_role`, `react_to_vendor`, `wedding_shortlist`, `suggest_vendor`, `resolve_suggestion`, `withdraw_suggestion`, `start_conversation`, `send_message`, `mark_conversation_read`, `my_conversations`, `claim_chat_notifications`, `track_vendor_activity`, `vendor_public_stats`, `vendor_scorecard`, `vendor_date_status`, `touch_vendor_calendar`, and the reels functions (`reels_feed`, `create_reel`, `add_reel_comment`, `hide_reel_comment`, `decide_reel_tag`, `pending_reel_tags`, `report_reel_content`, `reel_person`, `reel_comments_list`).
 

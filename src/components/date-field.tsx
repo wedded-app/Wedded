@@ -5,33 +5,49 @@ import { Platform, View } from 'react-native';
 import { Button } from '@/components/button';
 import { makeStyles, Radius, Spacing, useColors, useScheme } from '@/constants/theme';
 import { formatDate, fromDateString, toDateString } from '@/features/inquiry/inquiry-helpers';
+import { formatTime } from '@/features/vendors/profile-format';
 import { useLocale } from '@/i18n/locale-context';
 
 export type DateFieldProps = {
-  /** yyyy-mm-dd, or null when not picked yet. */
+  /** yyyy-mm-dd (HH:MM for a time), or null when not picked yet. */
   value: string | null;
   onChange: (value: string) => void;
   /** Shown on the button before a date is picked. */
   placeholder: string;
+  /** Pick a time of day instead, e.g. when an event starts. */
+  mode?: 'date' | 'time';
 };
 
+/** "19:30" as today at 7:30 PM, for the time wheel. */
+function fromTimeString(value: string): Date {
+  const [hours, minutes] = value.split(':').map(Number);
+  const date = new Date();
+  date.setHours(hours, minutes, 0, 0);
+  return date;
+}
+
+function toTimeString(date: Date): string {
+  return `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
+}
+
 /**
- * Picking a date: the phone's own date wheel (iOS) or calendar (Android)
- * under a button showing the date, and the browser's date box on the web,
- * where the phone picker isn't available.
+ * Picking a date (or a time): the phone's own wheel (iOS) or calendar and
+ * clock (Android) under a button showing it, and the browser's date or time
+ * box on the web, where the phone picker isn't available.
  */
-export function DateField({ value, onChange, placeholder }: DateFieldProps) {
+export function DateField({ value, onChange, placeholder, mode = 'date' }: DateFieldProps) {
   const Colors = useColors();
   const styles = useStyles();
   const scheme = useScheme();
   const { t } = useLocale();
   const [open, setOpen] = useState(false);
+  const isTime = mode === 'time';
 
   if (Platform.OS === 'web') {
     return createElement('input', {
-      type: 'date',
+      type: mode,
       value: value ?? '',
-      min: toDateString(new Date()),
+      min: isTime ? undefined : toDateString(new Date()),
       'aria-label': placeholder,
       onChange: (event: { target: { value: string } }) => {
         if (event.target.value) onChange(event.target.value);
@@ -54,20 +70,22 @@ export function DateField({ value, onChange, placeholder }: DateFieldProps) {
     <View style={styles.field}>
       <Button
         variant="secondary"
-        icon="calendar-outline"
-        label={value ? formatDate(value) : placeholder}
+        icon={isTime ? 'time-outline' : 'calendar-outline'}
+        label={value ? (isTime ? formatTime(value) : formatDate(value)) : placeholder}
         onPress={() => setOpen((shown) => !shown)}
       />
       {open && (
         <DateTimePicker
-          value={value ? fromDateString(value) : new Date()}
-          mode="date"
+          value={value ? (isTime ? fromTimeString(value) : fromDateString(value)) : new Date()}
+          mode={mode}
           display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-          minimumDate={new Date()}
+          minimumDate={isTime ? undefined : new Date()}
           themeVariant={scheme}
           onChange={(event, picked) => {
             if (Platform.OS !== 'ios') setOpen(false);
-            if (event.type === 'set' && picked) onChange(toDateString(picked));
+            if (event.type === 'set' && picked) {
+              onChange(isTime ? toTimeString(picked) : toDateString(picked));
+            }
           }}
         />
       )}

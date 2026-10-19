@@ -8,6 +8,8 @@ import { selectionHaptic } from '@/lib/haptics';
 
 export type CheckboxProps = Omit<PressableProps, 'children' | 'style' | 'onPress'> & {
   label: string;
+  /** A second, grey line under the label, e.g. a phone number. */
+  detail?: string;
   checked: boolean;
   onChange: (checked: boolean) => void;
   /** Shown in red under the row, e.g. when a required box is left empty. */
@@ -21,6 +23,7 @@ export type CheckboxProps = Omit<PressableProps, 'children' | 'style' | 'onPress
  */
 export function Checkbox({
   label,
+  detail,
   checked,
   onChange,
   error,
@@ -35,7 +38,7 @@ export function Checkbox({
     <View style={[styles.container, style]}>
       <Pressable
         accessibilityRole="checkbox"
-        accessibilityLabel={accessibilityLabel ?? label}
+        accessibilityLabel={accessibilityLabel ?? (detail ? `${label}, ${detail}` : label)}
         accessibilityHint={error}
         accessibilityState={{ checked, disabled: !!disabled }}
         disabled={disabled}
@@ -54,20 +57,23 @@ export function Checkbox({
                 !!error && styles.boxInvalid,
                 pressed && styles.boxPressed,
                 checked && styles.boxChecked,
-                disabled && styles.boxDisabled,
+                disabled && (checked ? styles.boxCheckedDisabled : styles.boxDisabled),
               ]}
             >
               {checked && (
                 <Icon name="checkmark" size={17} color={Colors.onPrimary} weight="bold" />
               )}
             </View>
-            <AppText
-              variant="bodyLg"
-              color={disabled ? 'textDisabled' : 'text'}
-              style={styles.label}
-            >
-              {label}
-            </AppText>
+            <View style={styles.label}>
+              <AppText variant="bodyLg" color={disabled ? 'textDisabled' : 'text'}>
+                {label}
+              </AppText>
+              {detail ? (
+                <AppText variant="label" weight={400} color="text2">
+                  {detail}
+                </AppText>
+              ) : null}
+            </View>
           </>
         )}
       </Pressable>
@@ -112,7 +118,13 @@ const useStyles = makeStyles((Colors) => ({
     borderColor: Colors.border,
     backgroundColor: Colors.fill,
   },
+  // Ticked and can't be unticked here, e.g. a guest already invited
+  boxCheckedDisabled: {
+    borderColor: Colors.chevron,
+    backgroundColor: Colors.chevron,
+  },
   label: {
     flex: 1,
+    gap: 2,
   },
 }));

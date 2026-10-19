@@ -2,17 +2,22 @@
  * The vendor file for scripts/import-vendors.ts: reading and checking it, with
  * no database access, so it can be tested on its own.
  *
- * A file is one vendor object or a list of them. Field names are the database
- * column names (see supabase/migrations/*_vendors.sql), plus:
+ * A file is one vendor object or a list of them, written flat the way a
+ * founder collects a listing: the city by name, phones and languages on the
+ * vendor, prices in whole dollars. The importer turns it into vendors (with
+ * base_city_slug, public_address from address_line, travel_fee_note from
+ * travel_note, prices in cents, provenance from source), vendor_contacts,
+ * vendor_languages and vendor_private (founder_notes from notes). Plus:
  *   latitude, longitude  the public map point. Leave both out to use the
  *                        city's centre point (always, for home-based vendors).
  *   categories           category slugs, primary first (1 to 3)
  *   events               event slugs they serve
  *   private              { email, checks_email, street_address, owner_name,
  *                          notes, latitude, longitude }: never shown in the app
- *   links                [{ "vendor": "<slug>", "kind": "approved_at" | "worked_with" }]
- *                        from a venue to a caterer (approved_at) or anyone
- *                        (worked_with). Only list links both sides confirmed.
+ *   links                [{ "vendor": "<slug>", "kind": "approved_caterer" | "worked_at"
+ *                          | "often_works_with" | "partner" }] from this vendor (a
+ *                        venue, or the first of two vendors) to another. Only
+ *                        list links both sides confirmed.
  * Phone numbers can be typed any way: "(530) 555-0101" is stored as +15305550101.
  * Running it again updates the vendor. A field left out keeps its value; set
  * it to null to clear it.
@@ -35,21 +40,24 @@ const TEXT_LIMITS = {
 const CHOICES = {
   status: ['draft', 'published', 'hidden', 'retired'],
   address_visibility: ['public', 'city_only', 'on_request'],
-  preferred_contact: ['call', 'text', 'whatsapp', 'email', 'instagram'],
+  preferred_contact: ['call', 'text', 'whatsapp', 'instagram'],
   price_display: ['hidden', 'starting_at', 'range', 'packages', 'contact'],
   price_unit: ['event', 'hour', 'person', 'plate', 'hand', 'turban', 'day'],
   source: ['founder', 'claimed', 'self_signup'],
 } as const;
 
 const RADII = [10, 25, 50, 100, 250];
-const LANGUAGES = ['en', 'pa', 'hi', 'ur'];
 
-/** Hall facts the profile shows as chips, and what each must be. */
+/**
+ * Hall facts the profile shows as chips, and what each must be. The importer
+ * moves them into venue_policies and the hall's main room (set_hall_facts);
+ * other details keys stay in vendors.details.
+ */
 const DETAIL_CHECKS: Record<string, (value: unknown) => boolean> = {
   seated_capacity: (v) => Number.isInteger(v) && (v as number) > 0,
   in_house_catering: (v) => ['yes', 'no', 'optional'].includes(v as string),
   outside_catering: (v) => ['yes', 'approved_list', 'no'].includes(v as string),
-  alcohol_policy: (v) => ['byob', 'full_bar', 'none'].includes(v as string),
+  alcohol_policy: (v) => ['full_bar', 'beer_wine', 'byob', 'dry'].includes(v as string),
   corkage: (v) => Number.isInteger(v) && (v as number) >= 0,
   ghori_allowed: (v) => typeof v === 'boolean',
   dhol_outside_allowed: (v) => typeof v === 'boolean',
@@ -57,6 +65,8 @@ const DETAIL_CHECKS: Record<string, (value: unknown) => boolean> = {
   parking_spaces: (v) => Number.isInteger(v) && (v as number) > 0,
   security_required: (v) => typeof v === 'boolean',
 };
+
+export const HALL_FACT_KEYS = Object.keys(DETAIL_CHECKS);
 
 const VENDOR_KEYS = new Set([
   'slug',
@@ -108,7 +118,8 @@ export type VendorPrivate = {
   longitude?: number;
 };
 
-export type VendorLink = { vendor: string; kind: 'approved_at' | 'worked_with' };
+export const LINK_KINDS = ['approved_caterer', 'worked_at', 'often_works_with', 'partner'] as const;
+export type VendorLink = { vendor: string; kind: (typeof LINK_KINDS)[number] };
 
 export type VendorInput = {
   /** Columns for public.vendors, cleaned (phones in E.164, text trimmed), without location. */
@@ -123,7 +134,13 @@ export type VendorInput = {
   menus: VendorMenu[] | null;
 };
 
-/** A menu as the file gives it; the database checks the sections' shape. */
+/** A section of dishes as the file gives it; each dish becomes a menu_items row. */
+export type VendorMenuSection = {
+  title: string;
+  items: { name: string; description?: string; diet?: string[] }[];
+};
+
+/** A menu as the file gives it, in whole dollars; the database checks the dishes. */
 export type VendorMenu = {
   name: string;
   description?: string;
@@ -132,7 +149,7 @@ export type VendorMenu = {
   price_from?: number;
   price_unit?: 'person' | 'plate' | 'event';
   min_guests?: number;
-  sections: unknown[];
+  sections: VendorMenuSection[];
 };
 
 const MENU_DIETS = ['veg', 'non_veg', 'jhatka', 'halal', 'jain', 'eggless', 'vegan', 'gluten_free'];
@@ -253,8 +270,9 @@ function parseOne(raw: unknown, label: string, errors: string[], warnings: strin
 
   if (raw.languages !== undefined) {
     const languages = slugList(raw.languages);
-    if (!languages || languages.length === 0 || !languages.every((l) => LANGUAGES.includes(l))) {
-      fail(`languages must be a list from ${LANGUAGES.join(', ')}, like ["en", "pa"].`);
+    // Which codes exist is checked against the languages table on import
+    if (!languages || languages.length === 0 || !languages.every((l) => /^[a-z]{2}$/.test(l))) {
+      fail('languages must be a list of language codes, like ["en", "pa"].');
     } else row.languages = [...new Set(languages)];
   }
 
@@ -377,9 +395,9 @@ function parseOne(raw: unknown, label: string, errors: string[], warnings: strin
         if (
           !isObject(link) ||
           typeof link.vendor !== 'string' ||
-          !['approved_at', 'worked_with'].includes(link.kind as string)
+          !(LINK_KINDS as readonly string[]).includes(link.kind as string)
         ) {
-          fail('each link needs "vendor" (a slug) and "kind" ("approved_at" or "worked_with").');
+          fail(`each link needs "vendor" (a slug) and "kind" (${LINK_KINDS.join(', ')}).`);
         } else if (link.vendor === slug) {
           fail('a vendor cannot link to itself.');
         } else {
@@ -438,7 +456,7 @@ function parseOne(raw: unknown, label: string, errors: string[], warnings: strin
         menus!.push({
           ...(menu as VendorMenu),
           name: menu.name.trim(),
-          sections: sections as unknown[],
+          sections: sections as VendorMenuSection[],
         });
       });
     }

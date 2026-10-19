@@ -10,9 +10,11 @@
  * numbers against the database); nothing is written unless it all passes.
  * --dry-run stops after the checks.
  *
- * For each vendor it upserts the vendors row by slug, vendor_private, and
- * replaces its categories, events and, when "links" is given, the links it
- * makes (both sides confirmed: only list links you checked with both).
+ * For each vendor it upserts the vendors row by slug (its base city is the
+ * listed city it names, or the nearest one to its point), its contacts and
+ * languages, vendor_private, and replaces its categories, events and, when
+ * "links" is given, the links it makes (both sides confirmed: only list links
+ * you checked with both).
  * Photos go in separately with npm run photos:upload.
  *
  * --local uses the local Supabase (`supabase status`). Otherwise set
@@ -23,13 +25,96 @@ import { readFileSync } from 'node:fs';
 import type { SupabaseClient } from '@supabase/supabase-js';
 
 import { connect, fail } from './connect';
-import { parseVendorFile, type VendorInput } from './vendor-file';
+import { HALL_FACT_KEYS, parseVendorFile, type VendorInput } from './vendor-file';
 
 function point(latitude: number, longitude: number): string {
   return `SRID=4326;POINT(${longitude} ${latitude})`;
 }
 
-type City = { slug: string; name: string; nicknames: string[]; latitude: number; longitude: number };
+type City = {
+  slug: string;
+  name: string;
+  nicknames: string[];
+  latitude: number;
+  longitude: number;
+};
+
+/** The file's contact fields and the vendor_contacts kind each becomes. */
+const CONTACT_KINDS = {
+  call_phone: 'call',
+  text_phone: 'text',
+  whatsapp_phone: 'whatsapp',
+  instagram_handle: 'instagram',
+  website_url: 'website',
+} as const;
+const CONTACT_ORDER = [
+  'call',
+  'text',
+  'whatsapp',
+  'email',
+  'instagram',
+  'tiktok',
+  'facebook',
+  'website',
+];
+const PROVENANCE: Record<string, string> = {
+  founder: 'founder_entered',
+  claimed: 'claimed',
+  self_signup: 'self_signup',
+};
+
+/** Whole dollars from the file as cents; undefined (left out) and null (cleared) pass through. */
+function cents(value: unknown): number | null | undefined {
+  return typeof value === 'number' ? Math.round(value * 100) : (value as null | undefined);
+}
+
+/** The vendors row for a file's vendor: everything but contacts and languages, renamed. */
+function vendorRecord(row: VendorInput['row'], citySlug: string, location: string) {
+  const {
+    city: _city,
+    address_line,
+    travel_note,
+    price_from,
+    price_to,
+    source,
+    details,
+    ...rest
+  } = row as Record<string, unknown>;
+  const record: Record<string, unknown> = {
+    ...rest,
+    // Hall facts go to set_hall_facts(); the rest are the type's own details
+    details:
+      details === undefined
+        ? undefined
+        : Object.fromEntries(
+            Object.entries(details as Record<string, unknown>).filter(
+              ([key]) => !HALL_FACT_KEYS.includes(key),
+            ),
+          ),
+    base_city_slug: citySlug,
+    location,
+    public_address: address_line,
+    travel_fee_note: travel_note,
+    price_from_cents: cents(price_from),
+    price_to_cents: cents(price_to),
+    provenance: typeof source === 'string' ? PROVENANCE[source] : undefined,
+  };
+  for (const key of [...Object.keys(CONTACT_KINDS), 'preferred_contact', 'languages']) {
+    delete record[key];
+  }
+  return record;
+}
+
+/** Miles between two points, near enough for picking the nearest city. */
+function miles(
+  a: { latitude: number; longitude: number },
+  b: { latitude: number; longitude: number },
+) {
+  const rad = Math.PI / 180;
+  const x = (b.longitude - a.longitude) * rad * Math.cos(((a.latitude + b.latitude) / 2) * rad);
+  const y = (b.latitude - a.latitude) * rad;
+  return Math.hypot(x, y) * 3959;
+}
 
 function findCity(cities: City[], name: string): City | undefined {
   const wanted = name.trim().toLowerCase();
@@ -53,11 +138,13 @@ async function selectAll<T>(
 
 /** Checks that need the database. Returns the map point for each vendor. */
 async function checkAgainstDatabase(supabase: SupabaseClient, vendors: VendorInput[]) {
-  const [cities, categories, events] = await Promise.all([
+  const [cities, categories, events, languages] = await Promise.all([
     selectAll<City>(supabase, 'cities', 'slug, name, nicknames, latitude, longitude'),
     selectAll<{ slug: string }>(supabase, 'categories', 'slug'),
     selectAll<{ slug: string }>(supabase, 'events', 'slug'),
+    selectAll<{ code: string }>(supabase, 'languages', 'code'),
   ]);
+  const languageCodes = new Set(languages.map((l) => l.code));
   const categorySlugs = new Set(categories.map((c) => c.slug));
   const eventSlugs = new Set(events.map((e) => e.slug));
   const fileSlugs = new Set(vendors.map((v) => v.row.slug));
@@ -78,18 +165,24 @@ async function checkAgainstDatabase(supabase: SupabaseClient, vendors: VendorInp
 
   const errors: string[] = [];
   const points = new Map<string, string>();
+  const citySlugs = new Map<string, string>();
   // Sample vendors hand their founding number to the real vendor taking it
   const releaseFromSamples: { id: string; slug: string; number: number }[] = [];
   for (const vendor of vendors) {
     const { slug, city, founding_number } = vendor.row;
     const say = (message: string) => errors.push(`${slug}: ${message}`);
 
+    const match = findCity(cities, city);
     if (vendor.point) {
-      points.set(slug, point(vendor.point.latitude, vendor.point.longitude));
+      const at = vendor.point;
+      points.set(slug, point(at.latitude, at.longitude));
+      const base = match ?? [...cities].sort((a, b) => miles(at, a) - miles(at, b))[0];
+      citySlugs.set(slug, base.slug);
     } else {
-      const match = findCity(cities, city);
-      if (match) points.set(slug, point(match.latitude, match.longitude));
-      else {
+      if (match) {
+        points.set(slug, point(match.latitude, match.longitude));
+        citySlugs.set(slug, match.slug);
+      } else {
         say(
           `"${city}" is not in the cities list, so there's no centre point. Use a listed city name, or give latitude and longitude (public address only).`,
         );
@@ -100,6 +193,9 @@ async function checkAgainstDatabase(supabase: SupabaseClient, vendors: VendorInp
     }
     for (const event of vendor.events) {
       if (!eventSlugs.has(event)) say(`no event "${event}".`);
+    }
+    for (const code of (vendor.row.languages as string[] | undefined) ?? []) {
+      if (!languageCodes.has(code)) say(`no language "${code}".`);
     }
     for (const link of vendor.links) {
       if (!existing.has(link.vendor) && !fileSlugs.has(link.vendor)) {
@@ -115,13 +211,13 @@ async function checkAgainstDatabase(supabase: SupabaseClient, vendors: VendorInp
       say(`founding number ${founding_number} already belongs to ${taken.slug}.`);
     }
   }
-  return { errors, points, releaseFromSamples };
+  return { errors, points, citySlugs, releaseFromSamples };
 }
 
 type Checked = Awaited<ReturnType<typeof checkAgainstDatabase>>;
 
 async function write(supabase: SupabaseClient, vendors: VendorInput[], checked: Checked) {
-  const { points, releaseFromSamples } = checked;
+  const { points, citySlugs, releaseFromSamples } = checked;
   const ids = new Map<string, string>();
 
   for (const sample of releaseFromSamples) {
@@ -137,24 +233,79 @@ async function write(supabase: SupabaseClient, vendors: VendorInput[], checked: 
     const { slug } = vendor.row;
     const { data, error } = await supabase
       .from('vendors')
-      .upsert({ ...vendor.row, location: points.get(slug) }, { onConflict: 'slug' })
+      .upsert(vendorRecord(vendor.row, citySlugs.get(slug)!, points.get(slug)!), {
+        onConflict: 'slug',
+      })
       .select('id, status, founding_number')
       .single();
     if (error) fail(`Could not save ${slug}: ${error.message}`);
     const id = data.id as string;
     ids.set(slug, id);
 
+    const hallFacts = Object.fromEntries(
+      Object.entries((vendor.row.details ?? {}) as Record<string, unknown>).filter(([key]) =>
+        HALL_FACT_KEYS.includes(key),
+      ),
+    );
+    if (Object.keys(hallFacts).length > 0) {
+      const { error: factsError } = await supabase.rpc('set_hall_facts', {
+        p_vendor_id: id,
+        p_facts: hallFacts,
+      });
+      if (factsError) fail(`Could not save ${slug}'s hall facts: ${factsError.message}`);
+    }
+
+    // Contacts: a field left out keeps its contact, null removes it
+    for (const [field, kind] of Object.entries(CONTACT_KINDS)) {
+      const value = vendor.row[field];
+      if (value === undefined) continue;
+      const { error: contactError } =
+        value === null
+          ? await supabase.from('vendor_contacts').delete().eq('vendor_id', id).eq('kind', kind)
+          : await supabase
+              .from('vendor_contacts')
+              .upsert(
+                { vendor_id: id, kind, value, sort_order: CONTACT_ORDER.indexOf(kind) + 1 },
+                { onConflict: 'vendor_id,kind' },
+              );
+      if (contactError) fail(`Could not save ${slug}'s ${field}: ${contactError.message}`);
+    }
+    const preferred = vendor.row.preferred_contact;
+    if (preferred !== undefined) {
+      await supabase.from('vendor_contacts').update({ is_preferred: false }).eq('vendor_id', id);
+      if (preferred !== null) {
+        const { error: preferredError } = await supabase
+          .from('vendor_contacts')
+          .update({ is_preferred: true })
+          .eq('vendor_id', id)
+          .eq('kind', preferred as string);
+        if (preferredError)
+          fail(`Could not save ${slug}'s preferred contact: ${preferredError.message}`);
+      }
+    }
+    const spoken = vendor.row.languages as string[] | undefined;
+    if (spoken !== undefined) {
+      await supabase.from('vendor_languages').delete().eq('vendor_id', id);
+      const { error: languageError } = await supabase
+        .from('vendor_languages')
+        .insert(spoken.map((language_code) => ({ vendor_id: id, language_code })));
+      if (languageError) fail(`Could not save ${slug}'s languages: ${languageError.message}`);
+    }
+
     if (vendor.private) {
-      const { latitude, longitude, ...rest } = vendor.private;
+      const { latitude, longitude, notes, ...rest } = vendor.private;
       const exact =
         latitude !== undefined && longitude !== undefined
           ? point(latitude, longitude)
           : vendor.point
             ? point(vendor.point.latitude, vendor.point.longitude)
             : undefined;
-      const { error: privateError } = await supabase
-        .from('vendor_private')
-        .upsert({ vendor_id: id, ...rest, ...(exact ? { exact_location: exact } : {}) });
+      const { error: privateError } = await supabase.from('vendor_private').upsert({
+        vendor_id: id,
+        ...rest,
+        ...(notes !== undefined ? { founder_notes: notes } : {}),
+        ...(exact ? { exact_location: exact } : {}),
+      });
       if (privateError) fail(`Could not save ${slug}'s private details: ${privateError.message}`);
     }
 
@@ -191,11 +342,36 @@ async function write(supabase: SupabaseClient, vendors: VendorInput[], checked: 
         .delete()
         .eq('vendor_id', id);
       if (menuClearError) fail(`Could not update ${slug}'s menus: ${menuClearError.message}`);
-      if (vendor.menus.length > 0) {
-        const { error: menuError } = await supabase
+      for (const [i, menu] of vendor.menus.entries()) {
+        const { sections, diet, price_from, ...rest } = menu;
+        const { data: saved, error: menuError } = await supabase
           .from('vendor_menus')
-          .insert(vendor.menus.map((menu, i) => ({ ...menu, vendor_id: id, sort_order: i + 1 })));
+          .insert({
+            ...rest,
+            vendor_id: id,
+            sort_order: i + 1,
+            diet_tags: diet ?? [],
+            price_from_cents: price_from === undefined ? undefined : price_from * 100,
+          })
+          .select('id')
+          .single();
         if (menuError) fail(`Could not save ${slug}'s menus: ${menuError.message}`);
+        // Each dish under its section's title, in the file's order
+        const dishes = sections.flatMap((section) =>
+          section.items.map((item) => ({ section: section.title, ...item })),
+        );
+        if (dishes.length === 0) continue;
+        const { error: dishError } = await supabase.from('menu_items').insert(
+          dishes.map((dish, n) => ({
+            menu_id: saved.id,
+            section: dish.section,
+            name: dish.name,
+            description: dish.description ?? null,
+            diet_tags: dish.diet ?? [],
+            sort_order: n + 1,
+          })),
+        );
+        if (dishError) fail(`Could not save ${slug}'s dishes: ${dishError.message}`);
       }
     }
 
@@ -218,15 +394,15 @@ async function write(supabase: SupabaseClient, vendors: VendorInput[], checked: 
     const { error: clearError } = await supabase
       .from('vendor_links')
       .delete()
-      .eq('venue_vendor_id', id);
+      .eq('from_vendor_id', id);
     if (clearError) fail(`Could not update ${vendor.row.slug}'s links: ${clearError.message}`);
     const { error } = await supabase.from('vendor_links').insert(
       vendor.links.map((link) => ({
-        venue_vendor_id: id,
-        vendor_id: targetIds.get(link.vendor),
+        from_vendor_id: id,
+        to_vendor_id: targetIds.get(link.vendor),
         kind: link.kind,
-        confirmed_by_venue: true,
-        confirmed_by_vendor: true,
+        from_confirmed_at: new Date().toISOString(),
+        to_confirmed_at: new Date().toISOString(),
       })),
     );
     if (error) fail(`Could not save ${vendor.row.slug}'s links: ${error.message}`);

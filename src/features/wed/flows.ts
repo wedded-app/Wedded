@@ -9,6 +9,7 @@ import {
   type FoundPage,
   type MockVendor,
 } from './mock';
+import type { GuestSend } from './send-to-guests';
 import type { ApprovalSpec, Source, TaskSpec, WedContext } from './wed-store';
 
 /**
@@ -52,6 +53,9 @@ export type FlowKey =
   | 'photo'
   | 'unsave'
   | 'untour'
+  | 'cards'
+  | 'guests'
+  | 'vault'
   | 'fallback';
 
 export type Op =
@@ -67,6 +71,12 @@ export type Op =
   | { op: 'reply'; vendor: MockVendor; who: string; text: string }
   | { op: 'receipt'; text: string; undoFlow?: FlowKey }
   | { op: 'artifact'; id: string }
+  /** Invitation cards for the events named in "{q}" (all of them when none is). */
+  | { op: 'cards' }
+  /** The confirm card that sends the last cards to the guests "{q}" names. */
+  | { op: 'guests' }
+  /** The confirm card that sends the Memory Vault's link to the guests "{q}" names. */
+  | { op: 'vault' }
   /** The STARTERS rows. */
   | { op: 'starters' }
   /** Only when the family chose "Do the small things". */
@@ -242,6 +252,84 @@ const TOUR: ApprovalSpec = {
   receipt: 'Booked a tour at Royal Orchard, Sat, Oct 17 at 11 AM',
   then: { flow: 'tourBooked', after: 1500 },
 };
+
+// Flow D: invitation cards, then sending them to guests (#129), and the
+// Memory Vault's link (#306)
+
+/** The events named in the words, in the plan's order; every event when none is. */
+export function eventsIn(words: string): string[] {
+  const text = words.toLowerCase();
+  const named = EVENTS.filter((event) => text.includes(event.name.toLowerCase()));
+  return (named.length > 0 ? named : EVENTS).map((event) => event.slug);
+}
+
+/** "Reception" for 'reception' (the slug when Wed's plan doesn't have it). */
+export function eventName(slug: string): string {
+  return EVENTS.find((e) => e.slug === slug)?.name ?? slug;
+}
+
+/** Who "{q}" names: "everyone at the Reception" is that event's guests, anything else a list. */
+export function guestTarget(words: string): GuestSend['to'] {
+  const at =
+    /^(?:everyone|all(?: the guests)?|the guests)\s+(?:at|from|for)\s+(?:the |our )?(.+)$/i.exec(
+      words.trim(),
+    );
+  const event = at && EVENTS.find((e) => e.name.toLowerCase() === at[1].toLowerCase());
+  if (event) return { event: event.slug };
+  return {
+    list: words
+      .trim()
+      .replace(/^(?:my|our|the)\s+/i, '')
+      .replace(/\s+list$/i, ''),
+  };
+}
+
+/** "your Mehndi list" or "everyone at the Reception" */
+function whoWords(to: GuestSend['to']): string {
+  if ('event' in to) return `everyone at the ${eventName(to.event)}`;
+  return `your ${to.list.trim().replace(/\s+list$/i, '') || 'guest'} list`;
+}
+
+/** "Jaago, Anand Karaj and Reception" */
+function eventNames(slugs: string[]): string {
+  const names = slugs.flatMap((slug) => EVENTS.find((e) => e.slug === slug)?.name ?? []);
+  return names.length > 1 ? `${names.slice(0, -1).join(', ')} and ${names.at(-1)}` : names.join('');
+}
+
+/** The confirm card for a send to guests: everything the family sees before Send. */
+export function guestApproval(send: GuestSend): ApprovalSpec {
+  const who = whoWords(send.to);
+  const events = eventNames(send.events);
+  const what = send.vault
+    ? 'the Memory Vault link'
+    : events
+      ? `the ${events} cards`
+      : 'your invitation';
+  // No signature: it comes from the family's own number
+  const message = send.vault
+    ? 'Thank you for celebrating with us! Please add the photos and videos you took to our Memory Vault, our album for the wedding.'
+    : `Sat Sri Akal! With love, we invite you to our ${events || 'wedding'}. Your ${send.events.length > 1 ? 'cards are' : 'card is'} attached.`;
+  return {
+    id: send.vault ? 'send-vault' : 'send-guests',
+    kind: 'invite',
+    title: `Send ${what} to ${who}`,
+    verb: 'Send',
+    to: [],
+    forLine: send.vault ? 'Your Memory Vault' : events,
+    message,
+    shares: send.vault
+      ? "This message and the vault's link, from your own phone. Guests who join can't see your plan or your chats."
+      : 'The cards and this message, sent from your own phone, as you.',
+    sharesShort: 'Goes from your own phone',
+    cost: "Free. It's your phone's usual texting or email",
+    undo: 'You can undo for 10 seconds',
+    footer: 'Your phone opens each one filled in. Nothing goes until you tap Send there too.',
+    heldText: `Sending to ${who}`,
+    // The sheet adds how many really went, once Messages has opened for them
+    receipt: `Started sending ${what} to ${who}`,
+    guests: send,
+  };
+}
 
 // Flow C: a deposit, shown as a later feature
 
@@ -837,6 +925,50 @@ export const FLOWS: Record<FlowKey, Flow> = {
       },
     ],
   },
+  cards: {
+    triggers: ['invitation', 'invite card', 'cards for'],
+    capture: /(?:invitations?|cards?) for (?:the |our )?(.+?)[.?!]*$/i,
+    fill: 'your events',
+    ops: [
+      { at: 600, do: say('Here are your cards for {q}, filled in from your plan.') },
+      { at: 1000, do: { op: 'cards' } },
+      {
+        at: 1600,
+        do: say(
+          'Save them to Photos or print them. Or I can send them: try "Send them to my Mehndi list". You\'ll see who gets them before anything goes.',
+        ),
+      },
+    ],
+  },
+  guests: {
+    triggers: [
+      'send them',
+      'send the cards',
+      'send the invitations',
+      'send these',
+      'send our cards',
+    ],
+    capture: /\bto (.+?)[.?!]*$/i,
+    fill: 'guest',
+    ops: [
+      { at: 600, do: say("Here's who gets them and how. Nothing goes until you tap Send.") },
+      { at: 1000, do: { op: 'guests' } },
+    ],
+  },
+  vault: {
+    triggers: ['memory vault', 'vault link'],
+    capture: /\bto (.+?)[.?!]*$/i,
+    fill: 'everyone at the Reception',
+    ops: [
+      {
+        at: 600,
+        do: say(
+          "Here's who gets the link and how. Nothing goes until you tap Send. Each one who opens it can add their photos and videos.",
+        ),
+      },
+      { at: 1000, do: { op: 'vault' } },
+    ],
+  },
   unsave: {
     triggers: [],
     ops: [{ at: 300, do: say('Okay, I took them off your Jaago list.') }],
@@ -860,6 +992,10 @@ export const FLOWS: Record<FlowKey, Flow> = {
 // Earlier flows win: "Pay Royal Orchard's deposit" is the deposit, not the
 // hall, and "Find a Mehndi artist free on Jun 10" isn't a date question.
 const ORDER: FlowKey[] = [
+  // "Send the invitations" is a send, not new cards
+  'vault',
+  'guests',
+  'cards',
   'reel',
   'compare',
   'deposit',

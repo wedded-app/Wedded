@@ -1,7 +1,8 @@
 /**
  * Vendor menus (vendor_menus): packages and thalis with a price per person or
- * plate, minimum guests, cuisine, diet tags and sections of dishes. Families
- * see them on the vendor page, in Compare and in chat.
+ * plate, minimum guests, cuisine, diet tags and their dishes (menu_items, under
+ * titled sections). Families see them on the vendor page, in Compare and in
+ * chat. Prices are cents in the database and whole dollars here.
  */
 import { useQuery } from '@tanstack/react-query';
 
@@ -46,43 +47,59 @@ function text(en: unknown): LocalizedText {
   return { en: typeof en === 'string' ? en : '' };
 }
 
+type ItemRow = {
+  section: string;
+  name: string;
+  description: string | null;
+  diet_tags: string[];
+  sort_order: number;
+};
+
 type Row = {
   id: string;
   name: string;
   description: string | null;
   cuisine: string | null;
-  diet: string[];
-  price_from: number | null;
+  diet_tags: string[];
+  price_from_cents: number | null;
   price_unit: string | null;
   min_guests: number | null;
-  sections: unknown;
+  menu_items: ItemRow[];
 };
+
+/** The dishes in order, gathered under their section titles (a section opens with its first dish). */
+function sectionsOf(items: ItemRow[]): MenuSection[] {
+  const sections: MenuSection[] = [];
+  for (const item of [...items].sort((a, b) => a.sort_order - b.sort_order)) {
+    let section = sections.find((s) => s.name.en === item.section);
+    if (!section) {
+      section = { name: text(item.section), items: [] };
+      sections.push(section);
+    }
+    section.items.push({
+      name: text(item.name),
+      description: item.description,
+      dietTags: dietTags(item.diet_tags),
+    });
+  }
+  return sections;
+}
 
 /** One database row as the Menu the screens use. */
 export function toMenu(row: Row): Menu {
-  const sections = Array.isArray(row.sections) ? row.sections : [];
   return {
     id: row.id,
     name: text(row.name),
     description: row.description ? text(row.description) : null,
     price:
-      row.price_from &&
+      row.price_from_cents &&
       (row.price_unit === 'person' || row.price_unit === 'plate' || row.price_unit === 'event')
-        ? { amount: row.price_from, unit: row.price_unit }
+        ? { amount: row.price_from_cents / 100, unit: row.price_unit }
         : null,
     minGuests: row.min_guests,
     cuisine: row.cuisine,
-    dietTags: dietTags(row.diet),
-    sections: sections.map((section: Record<string, unknown>) => ({
-      name: text(section.title),
-      items: (Array.isArray(section.items) ? section.items : []).map(
-        (item: Record<string, unknown>) => ({
-          name: text(item.name),
-          description: typeof item.description === 'string' ? item.description : null,
-          dietTags: dietTags(item.diet),
-        }),
-      ),
-    })),
+    dietTags: dietTags(row.diet_tags),
+    sections: sectionsOf(row.menu_items),
   };
 }
 
@@ -97,7 +114,9 @@ export function cheapestMenu(menus: Menu[]): Menu['price'] {
 export async function fetchVendorMenus(vendorId: string): Promise<Menu[]> {
   const { data, error } = await supabase
     .from('vendor_menus')
-    .select('id, name, description, cuisine, diet, price_from, price_unit, min_guests, sections')
+    .select(
+      'id, name, description, cuisine, diet_tags, price_from_cents, price_unit, min_guests, menu_items(section, name, description, diet_tags, sort_order)',
+    )
     .eq('vendor_id', vendorId)
     .order('sort_order')
     .order('created_at');

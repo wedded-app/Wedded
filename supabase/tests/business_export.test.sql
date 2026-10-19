@@ -4,14 +4,14 @@
 begin;
 create extension if not exists pgtap with schema extensions;
 
-select plan(8);
+select plan(9);
 
 insert into auth.users (id, instance_id, aud, role, email) values
   ('ad000000-0000-4000-8000-00000000000e', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'export-owner@example.com'),
   ('ad000000-0000-4000-8000-00000000000d', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'export-stranger@example.com'),
   ('ad000000-0000-4000-8000-000000000001', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'export-family@example.com');
-insert into public.vendors (id, slug, status, name, city, location) values
-  ('bd000000-0000-4000-8000-000000000001', 'export-hall', 'published', 'Export Hall', 'Yuba City', 'SRID=4326;POINT(-121.6169 39.1404)');
+insert into public.vendors (id, slug, status, name, base_city_slug, location) values
+  ('bd000000-0000-4000-8000-000000000001', 'export-hall', 'published', 'Export Hall', 'yuba-city', 'SRID=4326;POINT(-121.6169 39.1404)');
 insert into public.vendor_members (vendor_id, user_id) values
   ('bd000000-0000-4000-8000-000000000001', 'ad000000-0000-4000-8000-00000000000e');
 
@@ -23,11 +23,13 @@ values
    'Harjit Kaur', '+15305550101', 'harjit@example.com', 'email', 'sent');
 insert into public.vendor_activity_daily (vendor_id, day, kind, count) values
   ('bd000000-0000-4000-8000-000000000001', (now() at time zone 'America/Los_Angeles')::date, 'view', 7);
-insert into public.vendor_unavailable_days (vendor_id, day, part, status) values
+insert into public.vendor_days (vendor_id, day, part, status) values
   ('bd000000-0000-4000-8000-000000000001', '2027-06-12', 'all_day', 'booked'),
   ('bd000000-0000-4000-8000-000000000001', (now() at time zone 'America/Los_Angeles')::date - 400, 'all_day', 'booked');
-insert into public.vendor_menus (vendor_id, name, price_from, price_unit, sections) values
-  ('bd000000-0000-4000-8000-000000000001', 'Gold', 45, 'plate', '[{"title": "Mains", "items": [{"name": "Dal makhani"}]}]');
+insert into public.vendor_menus (id, vendor_id, name, price_from_cents, price_unit) values
+  ('bd100000-0000-4000-8000-000000000001', 'bd000000-0000-4000-8000-000000000001', 'Gold', 4500, 'plate');
+insert into public.menu_items (menu_id, section, name, sort_order) values
+  ('bd100000-0000-4000-8000-000000000001', 'Mains', 'Dal makhani', 1);
 
 create function pg_temp.as_user(uid uuid) returns void language sql as $$
   select set_config('request.jwt.claims', json_build_object('sub', uid, 'role', 'authenticated')::text, true);
@@ -73,6 +75,12 @@ select is(
   (select jsonb_array_length(data -> 'days') || ' ' || jsonb_array_length(data -> 'menus') from export),
   '1 1',
   'Booked days from the last year on, and the menus'
+);
+
+select is(
+  (select (data -> 'menus' -> 0) - 'cuisine' - 'description' - 'minGuests' - 'diet' from export),
+  '{"name": "Gold", "priceFrom": 45, "priceUnit": "plate", "sections": [{"title": "Mains", "items": [{"name": "Dal makhani"}]}]}'::jsonb,
+  'A menu exports in whole dollars, with its sections rebuilt from its dishes'
 );
 
 select pg_temp.as_user('ad000000-0000-4000-8000-00000000000d');

@@ -331,8 +331,8 @@ async function main() {
     );
   }
   await db.from('follows').insert([
-    { follower_id: families['Ayesha Khan'], user_id: families['Simran Kaur'] },
-    { follower_id: families['Neha Sharma'], user_id: families['Harpreet Sandhu'] },
+    { follower_id: families['Ayesha Khan'], followee_user_id: families['Simran Kaur'] },
+    { follower_id: families['Neha Sharma'], followee_user_id: families['Harpreet Sandhu'] },
   ]);
 
   console.log(`\n${reelIds.length} sample reels posted.`);

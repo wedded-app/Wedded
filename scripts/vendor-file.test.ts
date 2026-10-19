@@ -21,7 +21,7 @@ const hall = {
   categories: ['banquet-hall'],
   events: ['reception'],
   private: { email: ' Bookings@Example.com ', owner_name: 'Owner' },
-  links: [{ vendor: 'saffron-tandoor-catering', kind: 'approved_at' }],
+  links: [{ vendor: 'saffron-tandoor-catering', kind: 'approved_caterer' }],
 };
 
 describe('parseVendorFile', () => {
@@ -44,7 +44,7 @@ describe('parseVendorFile', () => {
     expect(vendor.row.instagram_handle).toBe('sunrisehall');
     expect(vendor.point).toEqual({ latitude: 39.14, longitude: -121.61 });
     expect(vendor.private?.email).toBe('bookings@example.com');
-    expect(vendor.links).toEqual([{ vendor: 'saffron-tandoor-catering', kind: 'approved_at' }]);
+    expect(vendor.links).toEqual([{ vendor: 'saffron-tandoor-catering', kind: 'approved_caterer' }]);
   });
 
   it('keeps home-based vendors off the map', () => {

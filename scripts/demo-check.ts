@@ -35,12 +35,12 @@ function check(ok: boolean, text: string, problem: string, level: Result = 'fail
 }
 
 const YUBA_CITY = { lat: 39.1404, lng: -121.6169 };
+/** The hall's fact chips: venue_policies columns, and seats from its rooms. */
 const FACTS = [
-  'seated_capacity',
   'outside_catering',
   'alcohol_policy',
   'ghori_allowed',
-  'curfew',
+  'music_curfew',
   'parking_spaces',
 ];
 
@@ -93,7 +93,9 @@ async function checkProfile(db: SupabaseClient, hallSlug: string) {
   console.log('\n3. The hall’s profile');
   const { data: hall } = await db
     .from('vendors')
-    .select('id, status, is_sample, founding_number, address_line, call_phone, details')
+    .select(
+      'id, status, is_sample, founding_number, public_address, vendor_contacts(kind), venue_policies(*), venue_rooms(seated)',
+    )
     .eq('slug', hallSlug)
     .maybeSingle();
   if (!hall) {
@@ -110,17 +112,25 @@ async function checkProfile(db: SupabaseClient, hallSlug: string) {
       : 'Not a founding vendor',
     'warn',
   );
-  const details = (hall.details ?? {}) as Record<string, unknown>;
-  const missing = FACTS.filter((key) => details[key] === undefined);
+  // One-to-one, so PostgREST sends an object (or null)
+  const policies = (hall.venue_policies ?? {}) as unknown as Record<string, unknown>;
+  const missing = FACTS.filter((key) => policies[key] == null);
+  if (!(hall.venue_rooms ?? []).some((room: { seated: number | null }) => room.seated)) {
+    missing.unshift('seats');
+  }
   check(
     missing.length === 0,
     'All six fact chips (seats, catering, alcohol, ghori, curfew, parking)',
     `Fact chips missing: ${missing.join(', ')}`,
     'warn',
   );
-  check(Boolean(hall.call_phone), 'Call works (phone number set)', 'No call phone: Call is hidden');
   check(
-    Boolean(hall.address_line),
+    (hall.vendor_contacts ?? []).some((c: { kind: string }) => c.kind === 'call'),
+    'Call works (phone number set)',
+    'No call phone: Call is hidden',
+  );
+  check(
+    Boolean(hall.public_address),
     'Directions works (public address set)',
     'No public address: Directions is hidden',
   );
@@ -156,10 +166,11 @@ async function checkProfile(db: SupabaseClient, hallSlug: string) {
 
   const { data: links } = await db
     .from('vendor_links')
-    .select('vendor:vendors!vendor_links_vendor_id_fkey(slug, status)')
-    .eq('venue_vendor_id', hall.id)
-    .eq('kind', 'approved_at')
-    .eq('confirmed_by_both', true);
+    .select('vendor:vendors!vendor_links_to_vendor_id_fkey(slug, status)')
+    .eq('from_vendor_id', hall.id)
+    .eq('kind', 'approved_caterer')
+    .not('from_confirmed_at', 'is', null)
+    .not('to_confirmed_at', 'is', null);
   const caterers = (links ?? []).filter(
     (link) => (link.vendor as unknown as { status: string } | null)?.status === 'published',
   );
@@ -239,7 +250,10 @@ async function checkAsFamily(admin: SupabaseClient, local: boolean, send: boolea
       .upsert({ id: userId, full_name: 'Demo Check', city: 'Yuba City', phone: '+15305550100' });
     check(!profile.error, 'Fills in About you', `About you failed: ${profile.error?.message}`);
 
-    const saved = await family.rpc('save_vendor', { p_vendor_id: hallId, p_event_slug: 'reception' });
+    const saved = await family.rpc('save_vendor', {
+      p_vendor_id: hallId,
+      p_event_slug: 'reception',
+    });
     check(!saved.error, 'Saves the hall', `Saving failed: ${saved.error?.message}`);
 
     if (mailpitUrl) await fetch(`${mailpitUrl}/api/v1/messages`, { method: 'DELETE' });

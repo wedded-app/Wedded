@@ -522,6 +522,33 @@ export type Database = {
           },
         ];
       };
+      devices: {
+        Row: {
+          created_at: string;
+          id: string;
+          last_seen_at: string;
+          platform: string;
+          push_token: string;
+          user_id: string;
+        };
+        Insert: {
+          created_at?: string;
+          id?: string;
+          last_seen_at?: string;
+          platform: string;
+          push_token: string;
+          user_id: string;
+        };
+        Update: {
+          created_at?: string;
+          id?: string;
+          last_seen_at?: string;
+          platform?: string;
+          push_token?: string;
+          user_id?: string;
+        };
+        Relationships: [];
+      };
       email_opt_outs: {
         Row: {
           created_at: string;
@@ -645,26 +672,29 @@ export type Database = {
       follows: {
         Row: {
           created_at: string;
+          followee_user_id: string | null;
+          followee_vendor_id: string | null;
           follower_id: string;
-          user_id: string | null;
-          vendor_id: string | null;
+          id: string;
         };
         Insert: {
           created_at?: string;
+          followee_user_id?: string | null;
+          followee_vendor_id?: string | null;
           follower_id?: string;
-          user_id?: string | null;
-          vendor_id?: string | null;
+          id?: string;
         };
         Update: {
           created_at?: string;
+          followee_user_id?: string | null;
+          followee_vendor_id?: string | null;
           follower_id?: string;
-          user_id?: string | null;
-          vendor_id?: string | null;
+          id?: string;
         };
         Relationships: [
           {
-            foreignKeyName: 'follows_vendor_id_fkey';
-            columns: ['vendor_id'];
+            foreignKeyName: 'follows_followee_vendor_id_fkey';
+            columns: ['followee_vendor_id'];
             isOneToOne: false;
             referencedRelation: 'vendors';
             referencedColumns: ['id'];
@@ -1077,6 +1107,27 @@ export type Database = {
           },
         ];
       };
+      languages: {
+        Row: {
+          code: string;
+          created_at: string;
+          name: NonNullable<Json>;
+          sort_order: number;
+        };
+        Insert: {
+          code: string;
+          created_at?: string;
+          name: NonNullable<Json>;
+          sort_order: number;
+        };
+        Update: {
+          code?: string;
+          created_at?: string;
+          name?: NonNullable<Json>;
+          sort_order?: number;
+        };
+        Relationships: [];
+      };
       linked_account_tokens: {
         Row: {
           access_token: string;
@@ -1190,6 +1241,47 @@ export type Database = {
             columns: ['wedding_id'];
             isOneToOne: true;
             referencedRelation: 'weddings';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      menu_items: {
+        Row: {
+          created_at: string;
+          description: string | null;
+          diet_tags: string[];
+          id: string;
+          menu_id: string;
+          name: string;
+          section: string;
+          sort_order: number;
+        };
+        Insert: {
+          created_at?: string;
+          description?: string | null;
+          diet_tags?: string[];
+          id?: string;
+          menu_id: string;
+          name: string;
+          section: string;
+          sort_order: number;
+        };
+        Update: {
+          created_at?: string;
+          description?: string | null;
+          diet_tags?: string[];
+          id?: string;
+          menu_id?: string;
+          name?: string;
+          section?: string;
+          sort_order?: number;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'menu_items_menu_id_fkey';
+            columns: ['menu_id'];
+            isOneToOne: false;
+            referencedRelation: 'vendor_menus';
             referencedColumns: ['id'];
           },
         ];
@@ -1336,30 +1428,6 @@ export type Database = {
         };
         Relationships: [];
       };
-      push_tokens: {
-        Row: {
-          created_at: string;
-          platform: string;
-          token: string;
-          updated_at: string;
-          user_id: string;
-        };
-        Insert: {
-          created_at?: string;
-          platform: string;
-          token: string;
-          updated_at?: string;
-          user_id: string;
-        };
-        Update: {
-          created_at?: string;
-          platform?: string;
-          token?: string;
-          updated_at?: string;
-          user_id?: string;
-        };
-        Relationships: [];
-      };
       reel_comments: {
         Row: {
           body: string;
@@ -1417,67 +1485,6 @@ export type Database = {
             columns: ['reel_id'];
             isOneToOne: false;
             referencedRelation: 'reels';
-            referencedColumns: ['id'];
-          },
-        ];
-      };
-      reel_reports: {
-        Row: {
-          comment_id: string | null;
-          created_at: string;
-          id: string;
-          note: string | null;
-          reason: string;
-          reel_id: string | null;
-          reported_user_id: string | null;
-          reporter_id: string | null;
-          status: string;
-          story_id: string | null;
-        };
-        Insert: {
-          comment_id?: string | null;
-          created_at?: string;
-          id?: string;
-          note?: string | null;
-          reason: string;
-          reel_id?: string | null;
-          reported_user_id?: string | null;
-          reporter_id?: string | null;
-          status?: string;
-          story_id?: string | null;
-        };
-        Update: {
-          comment_id?: string | null;
-          created_at?: string;
-          id?: string;
-          note?: string | null;
-          reason?: string;
-          reel_id?: string | null;
-          reported_user_id?: string | null;
-          reporter_id?: string | null;
-          status?: string;
-          story_id?: string | null;
-        };
-        Relationships: [
-          {
-            foreignKeyName: 'reel_reports_comment_id_fkey';
-            columns: ['comment_id'];
-            isOneToOne: false;
-            referencedRelation: 'reel_comments';
-            referencedColumns: ['id'];
-          },
-          {
-            foreignKeyName: 'reel_reports_reel_id_fkey';
-            columns: ['reel_id'];
-            isOneToOne: false;
-            referencedRelation: 'reels';
-            referencedColumns: ['id'];
-          },
-          {
-            foreignKeyName: 'reel_reports_story_id_fkey';
-            columns: ['story_id'];
-            isOneToOne: false;
-            referencedRelation: 'stories';
             referencedColumns: ['id'];
           },
         ];
@@ -1661,6 +1668,73 @@ export type Database = {
           updated_at?: string;
         };
         Relationships: [];
+      };
+      reports: {
+        Row: {
+          comment_id: string | null;
+          created_at: string;
+          handled_at: string | null;
+          handled_by: string | null;
+          id: string;
+          note: string | null;
+          reason: string;
+          reel_id: string | null;
+          reporter_id: string | null;
+          status: string;
+          story_id: string | null;
+          user_id: string | null;
+        };
+        Insert: {
+          comment_id?: string | null;
+          created_at?: string;
+          handled_at?: string | null;
+          handled_by?: string | null;
+          id?: string;
+          note?: string | null;
+          reason: string;
+          reel_id?: string | null;
+          reporter_id?: string | null;
+          status?: string;
+          story_id?: string | null;
+          user_id?: string | null;
+        };
+        Update: {
+          comment_id?: string | null;
+          created_at?: string;
+          handled_at?: string | null;
+          handled_by?: string | null;
+          id?: string;
+          note?: string | null;
+          reason?: string;
+          reel_id?: string | null;
+          reporter_id?: string | null;
+          status?: string;
+          story_id?: string | null;
+          user_id?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'reports_comment_id_fkey';
+            columns: ['comment_id'];
+            isOneToOne: false;
+            referencedRelation: 'reel_comments';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'reports_reel_id_fkey';
+            columns: ['reel_id'];
+            isOneToOne: false;
+            referencedRelation: 'reels';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'reports_story_id_fkey';
+            columns: ['story_id'];
+            isOneToOne: false;
+            referencedRelation: 'stories';
+            referencedColumns: ['id'];
+          },
+        ];
       };
       request_proposals: {
         Row: {
@@ -2176,6 +2250,98 @@ export type Database = {
           },
         ];
       };
+      vendor_contacts: {
+        Row: {
+          created_at: string;
+          id: string;
+          is_preferred: boolean;
+          kind: string;
+          sort_order: number;
+          updated_at: string;
+          value: string;
+          vendor_id: string;
+        };
+        Insert: {
+          created_at?: string;
+          id?: string;
+          is_preferred?: boolean;
+          kind: string;
+          sort_order?: number;
+          updated_at?: string;
+          value: string;
+          vendor_id: string;
+        };
+        Update: {
+          created_at?: string;
+          id?: string;
+          is_preferred?: boolean;
+          kind?: string;
+          sort_order?: number;
+          updated_at?: string;
+          value?: string;
+          vendor_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'vendor_contacts_vendor_id_fkey';
+            columns: ['vendor_id'];
+            isOneToOne: false;
+            referencedRelation: 'vendors';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      vendor_days: {
+        Row: {
+          booking_id: string | null;
+          capacity: number | null;
+          created_at: string;
+          day: string;
+          part: string;
+          source: string;
+          status: string;
+          taken: number | null;
+          vendor_id: string;
+        };
+        Insert: {
+          booking_id?: string | null;
+          capacity?: number | null;
+          created_at?: string;
+          day: string;
+          part?: string;
+          source?: string;
+          status?: string;
+          taken?: number | null;
+          vendor_id: string;
+        };
+        Update: {
+          booking_id?: string | null;
+          capacity?: number | null;
+          created_at?: string;
+          day?: string;
+          part?: string;
+          source?: string;
+          status?: string;
+          taken?: number | null;
+          vendor_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'vendor_days_booking_id_fkey';
+            columns: ['booking_id'];
+            isOneToOne: false;
+            referencedRelation: 'bookings';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'vendor_days_vendor_id_fkey';
+            columns: ['vendor_id'];
+            isOneToOne: false;
+            referencedRelation: 'vendors';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
       vendor_events: {
         Row: {
           created_at: string;
@@ -2205,6 +2371,39 @@ export type Database = {
           },
           {
             foreignKeyName: 'vendor_events_vendor_id_fkey';
+            columns: ['vendor_id'];
+            isOneToOne: false;
+            referencedRelation: 'vendors';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      vendor_languages: {
+        Row: {
+          created_at: string;
+          language_code: string;
+          vendor_id: string;
+        };
+        Insert: {
+          created_at?: string;
+          language_code: string;
+          vendor_id: string;
+        };
+        Update: {
+          created_at?: string;
+          language_code?: string;
+          vendor_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'vendor_languages_language_code_fkey';
+            columns: ['language_code'];
+            isOneToOne: false;
+            referencedRelation: 'languages';
+            referencedColumns: ['code'];
+          },
+          {
+            foreignKeyName: 'vendor_languages_vendor_id_fkey';
             columns: ['vendor_id'];
             isOneToOne: false;
             referencedRelation: 'vendors';
@@ -2273,49 +2472,49 @@ export type Database = {
       };
       vendor_links: {
         Row: {
-          confirmed_by_both: boolean | null;
-          confirmed_by_vendor: boolean;
-          confirmed_by_venue: boolean;
           created_at: string;
+          from_confirmed_at: string | null;
+          from_vendor_id: string;
+          hidden_by_venue: boolean;
           id: string;
           kind: string;
+          to_confirmed_at: string | null;
+          to_vendor_id: string;
           updated_at: string;
-          vendor_id: string;
-          venue_vendor_id: string;
         };
         Insert: {
-          confirmed_by_both?: never;
-          confirmed_by_vendor?: boolean;
-          confirmed_by_venue?: boolean;
           created_at?: string;
+          from_confirmed_at?: string | null;
+          from_vendor_id: string;
+          hidden_by_venue?: boolean;
           id?: string;
           kind: string;
+          to_confirmed_at?: string | null;
+          to_vendor_id: string;
           updated_at?: string;
-          vendor_id: string;
-          venue_vendor_id: string;
         };
         Update: {
-          confirmed_by_both?: never;
-          confirmed_by_vendor?: boolean;
-          confirmed_by_venue?: boolean;
           created_at?: string;
+          from_confirmed_at?: string | null;
+          from_vendor_id?: string;
+          hidden_by_venue?: boolean;
           id?: string;
           kind?: string;
+          to_confirmed_at?: string | null;
+          to_vendor_id?: string;
           updated_at?: string;
-          vendor_id?: string;
-          venue_vendor_id?: string;
         };
         Relationships: [
           {
-            foreignKeyName: 'vendor_links_vendor_id_fkey';
-            columns: ['vendor_id'];
+            foreignKeyName: 'vendor_links_from_vendor_id_fkey';
+            columns: ['from_vendor_id'];
             isOneToOne: false;
             referencedRelation: 'vendors';
             referencedColumns: ['id'];
           },
           {
-            foreignKeyName: 'vendor_links_venue_vendor_id_fkey';
-            columns: ['venue_vendor_id'];
+            foreignKeyName: 'vendor_links_to_vendor_id_fkey';
+            columns: ['to_vendor_id'];
             isOneToOne: false;
             referencedRelation: 'vendors';
             referencedColumns: ['id'];
@@ -2439,13 +2638,13 @@ export type Database = {
           created_at: string;
           cuisine: string | null;
           description: string | null;
-          diet: string[];
+          diet_tags: string[];
+          event_slug: string | null;
           id: string;
           min_guests: number | null;
           name: string;
-          price_from: number | null;
+          price_from_cents: number | null;
           price_unit: string | null;
-          sections: NonNullable<Json>;
           sort_order: number;
           updated_at: string;
           vendor_id: string;
@@ -2454,13 +2653,13 @@ export type Database = {
           created_at?: string;
           cuisine?: string | null;
           description?: string | null;
-          diet?: string[];
+          diet_tags?: string[];
+          event_slug?: string | null;
           id?: string;
           min_guests?: number | null;
           name: string;
-          price_from?: number | null;
+          price_from_cents?: number | null;
           price_unit?: string | null;
-          sections?: NonNullable<Json>;
           sort_order?: number;
           updated_at?: string;
           vendor_id: string;
@@ -2469,18 +2668,25 @@ export type Database = {
           created_at?: string;
           cuisine?: string | null;
           description?: string | null;
-          diet?: string[];
+          diet_tags?: string[];
+          event_slug?: string | null;
           id?: string;
           min_guests?: number | null;
           name?: string;
-          price_from?: number | null;
+          price_from_cents?: number | null;
           price_unit?: string | null;
-          sections?: NonNullable<Json>;
           sort_order?: number;
           updated_at?: string;
           vendor_id?: string;
         };
         Relationships: [
+          {
+            foreignKeyName: 'vendor_menus_event_slug_fkey';
+            columns: ['event_slug'];
+            isOneToOne: false;
+            referencedRelation: 'events';
+            referencedColumns: ['slug'];
+          },
           {
             foreignKeyName: 'vendor_menus_vendor_id_fkey';
             columns: ['vendor_id'];
@@ -2530,33 +2736,33 @@ export type Database = {
       };
       vendor_private: {
         Row: {
-          checks_email: boolean | null;
+          checks_email: boolean;
           created_at: string;
           email: string | null;
           exact_location: unknown;
-          notes: string | null;
+          founder_notes: string | null;
           owner_name: string | null;
           street_address: string | null;
           updated_at: string;
           vendor_id: string;
         };
         Insert: {
-          checks_email?: boolean | null;
+          checks_email?: boolean;
           created_at?: string;
           email?: string | null;
           exact_location?: unknown;
-          notes?: string | null;
+          founder_notes?: string | null;
           owner_name?: string | null;
           street_address?: string | null;
           updated_at?: string;
           vendor_id: string;
         };
         Update: {
-          checks_email?: boolean | null;
+          checks_email?: boolean;
           created_at?: string;
           email?: string | null;
           exact_location?: unknown;
-          notes?: string | null;
+          founder_notes?: string | null;
           owner_name?: string | null;
           street_address?: string | null;
           updated_at?: string;
@@ -2619,154 +2825,250 @@ export type Database = {
           },
         ];
       };
-      vendor_unavailable_days: {
+      vendors: {
         Row: {
+          address_visibility: string;
+          base_city_slug: string;
+          bio: string | null;
+          calendar_updated_at: string | null;
           created_at: string;
-          day: string;
-          part: string;
+          details: NonNullable<Json>;
+          founding_number: number | null;
+          id: string;
+          is_sample: boolean;
+          last_verified_at: string | null;
+          location: unknown;
+          merged_into_id: string | null;
+          name: string;
+          office_hours: string | null;
+          price_display: string;
+          price_from_cents: number | null;
+          price_note: string | null;
+          price_to_cents: number | null;
+          price_unit: string | null;
+          provenance: string;
+          public_address: string | null;
+          published_at: string | null;
+          service_radius_miles: number;
+          slug: string;
           status: string;
-          vendor_id: string;
+          tagline: string | null;
+          team_size: number | null;
+          travel_fee_note: string | null;
+          updated_at: string;
+          will_travel: boolean;
+          years_in_business: number | null;
         };
         Insert: {
+          address_visibility?: string;
+          base_city_slug: string;
+          bio?: string | null;
+          calendar_updated_at?: string | null;
           created_at?: string;
-          day: string;
-          part?: string;
+          details?: NonNullable<Json>;
+          founding_number?: number | null;
+          id?: string;
+          is_sample?: boolean;
+          last_verified_at?: string | null;
+          location: unknown;
+          merged_into_id?: string | null;
+          name: string;
+          office_hours?: string | null;
+          price_display?: string;
+          price_from_cents?: number | null;
+          price_note?: string | null;
+          price_to_cents?: number | null;
+          price_unit?: string | null;
+          provenance?: string;
+          public_address?: string | null;
+          published_at?: string | null;
+          service_radius_miles?: number;
+          slug: string;
           status?: string;
-          vendor_id: string;
+          tagline?: string | null;
+          team_size?: number | null;
+          travel_fee_note?: string | null;
+          updated_at?: string;
+          will_travel?: boolean;
+          years_in_business?: number | null;
         };
         Update: {
+          address_visibility?: string;
+          base_city_slug?: string;
+          bio?: string | null;
+          calendar_updated_at?: string | null;
           created_at?: string;
-          day?: string;
-          part?: string;
+          details?: NonNullable<Json>;
+          founding_number?: number | null;
+          id?: string;
+          is_sample?: boolean;
+          last_verified_at?: string | null;
+          location?: unknown;
+          merged_into_id?: string | null;
+          name?: string;
+          office_hours?: string | null;
+          price_display?: string;
+          price_from_cents?: number | null;
+          price_note?: string | null;
+          price_to_cents?: number | null;
+          price_unit?: string | null;
+          provenance?: string;
+          public_address?: string | null;
+          published_at?: string | null;
+          service_radius_miles?: number;
+          slug?: string;
           status?: string;
-          vendor_id?: string;
+          tagline?: string | null;
+          team_size?: number | null;
+          travel_fee_note?: string | null;
+          updated_at?: string;
+          will_travel?: boolean;
+          years_in_business?: number | null;
         };
         Relationships: [
           {
-            foreignKeyName: 'vendor_unavailable_days_vendor_id_fkey';
-            columns: ['vendor_id'];
+            foreignKeyName: 'vendors_base_city_slug_fkey';
+            columns: ['base_city_slug'];
+            isOneToOne: false;
+            referencedRelation: 'cities';
+            referencedColumns: ['slug'];
+          },
+          {
+            foreignKeyName: 'vendors_merged_into_id_fkey';
+            columns: ['merged_into_id'];
             isOneToOne: false;
             referencedRelation: 'vendors';
             referencedColumns: ['id'];
           },
         ];
       };
-      vendors: {
+      venue_policies: {
         Row: {
-          address_line: string | null;
-          address_visibility: string;
-          bio: string | null;
-          calendar_updated_at: string | null;
-          call_phone: string | null;
-          city: string;
+          alcohol_policy: string | null;
+          bartender_required: boolean | null;
+          cold_sparks_allowed: boolean | null;
+          corkage_cents: number | null;
           created_at: string;
-          details: NonNullable<Json>;
-          founding_number: number | null;
-          id: string;
-          instagram_handle: string | null;
-          is_sample: boolean;
-          languages: string[];
-          last_verified_at: string | null;
-          location: unknown;
-          name: string;
-          office_hours: string | null;
-          preferred_contact: string | null;
-          price_display: string;
-          price_from: number | null;
-          price_note: string | null;
-          price_to: number | null;
-          price_unit: string | null;
-          service_radius_miles: number;
-          slug: string;
-          source: string;
-          status: string;
-          tagline: string | null;
-          team_size: number | null;
-          text_phone: string | null;
-          travel_note: string | null;
+          deposit_percent: number | null;
+          dhol_outside_allowed: boolean | null;
+          ghori_allowed: boolean | null;
+          in_house_catering: string | null;
+          min_guests: number | null;
+          music_curfew: string | null;
+          outside_catering: string | null;
+          parking_spaces: number | null;
+          per_plate_min_cents: number | null;
+          rental_fees: Json | null;
+          same_day_two_events: boolean | null;
+          security_rule: string | null;
+          tour_booking: string | null;
           updated_at: string;
-          website_url: string | null;
-          whatsapp_phone: string | null;
-          will_travel: boolean;
-          years_in_business: number | null;
+          vendor_id: string;
         };
         Insert: {
-          address_line?: string | null;
-          address_visibility?: string;
-          bio?: string | null;
-          calendar_updated_at?: string | null;
-          call_phone?: string | null;
-          city: string;
+          alcohol_policy?: string | null;
+          bartender_required?: boolean | null;
+          cold_sparks_allowed?: boolean | null;
+          corkage_cents?: number | null;
           created_at?: string;
-          details?: NonNullable<Json>;
-          founding_number?: number | null;
-          id?: string;
-          instagram_handle?: string | null;
-          is_sample?: boolean;
-          languages?: string[];
-          last_verified_at?: string | null;
-          location: unknown;
-          name: string;
-          office_hours?: string | null;
-          preferred_contact?: string | null;
-          price_display?: string;
-          price_from?: number | null;
-          price_note?: string | null;
-          price_to?: number | null;
-          price_unit?: string | null;
-          service_radius_miles?: number;
-          slug: string;
-          source?: string;
-          status?: string;
-          tagline?: string | null;
-          team_size?: number | null;
-          text_phone?: string | null;
-          travel_note?: string | null;
+          deposit_percent?: number | null;
+          dhol_outside_allowed?: boolean | null;
+          ghori_allowed?: boolean | null;
+          in_house_catering?: string | null;
+          min_guests?: number | null;
+          music_curfew?: string | null;
+          outside_catering?: string | null;
+          parking_spaces?: number | null;
+          per_plate_min_cents?: number | null;
+          rental_fees?: Json | null;
+          same_day_two_events?: boolean | null;
+          security_rule?: string | null;
+          tour_booking?: string | null;
           updated_at?: string;
-          website_url?: string | null;
-          whatsapp_phone?: string | null;
-          will_travel?: boolean;
-          years_in_business?: number | null;
+          vendor_id: string;
         };
         Update: {
-          address_line?: string | null;
-          address_visibility?: string;
-          bio?: string | null;
-          calendar_updated_at?: string | null;
-          call_phone?: string | null;
-          city?: string;
+          alcohol_policy?: string | null;
+          bartender_required?: boolean | null;
+          cold_sparks_allowed?: boolean | null;
+          corkage_cents?: number | null;
           created_at?: string;
-          details?: NonNullable<Json>;
-          founding_number?: number | null;
-          id?: string;
-          instagram_handle?: string | null;
-          is_sample?: boolean;
-          languages?: string[];
-          last_verified_at?: string | null;
-          location?: unknown;
-          name?: string;
-          office_hours?: string | null;
-          preferred_contact?: string | null;
-          price_display?: string;
-          price_from?: number | null;
-          price_note?: string | null;
-          price_to?: number | null;
-          price_unit?: string | null;
-          service_radius_miles?: number;
-          slug?: string;
-          source?: string;
-          status?: string;
-          tagline?: string | null;
-          team_size?: number | null;
-          text_phone?: string | null;
-          travel_note?: string | null;
+          deposit_percent?: number | null;
+          dhol_outside_allowed?: boolean | null;
+          ghori_allowed?: boolean | null;
+          in_house_catering?: string | null;
+          min_guests?: number | null;
+          music_curfew?: string | null;
+          outside_catering?: string | null;
+          parking_spaces?: number | null;
+          per_plate_min_cents?: number | null;
+          rental_fees?: Json | null;
+          same_day_two_events?: boolean | null;
+          security_rule?: string | null;
+          tour_booking?: string | null;
           updated_at?: string;
-          website_url?: string | null;
-          whatsapp_phone?: string | null;
-          will_travel?: boolean;
-          years_in_business?: number | null;
+          vendor_id?: string;
         };
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: 'venue_policies_vendor_id_fkey';
+            columns: ['vendor_id'];
+            isOneToOne: true;
+            referencedRelation: 'vendors';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      venue_rooms: {
+        Row: {
+          ceiling_ft: number | null;
+          combines_with_id: string | null;
+          created_at: string;
+          id: string;
+          name: string;
+          seated: number | null;
+          standing: number | null;
+          updated_at: string;
+          vendor_id: string;
+        };
+        Insert: {
+          ceiling_ft?: number | null;
+          combines_with_id?: string | null;
+          created_at?: string;
+          id?: string;
+          name: string;
+          seated?: number | null;
+          standing?: number | null;
+          updated_at?: string;
+          vendor_id: string;
+        };
+        Update: {
+          ceiling_ft?: number | null;
+          combines_with_id?: string | null;
+          created_at?: string;
+          id?: string;
+          name?: string;
+          seated?: number | null;
+          standing?: number | null;
+          updated_at?: string;
+          vendor_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'venue_rooms_combines_with_id_fkey';
+            columns: ['combines_with_id'];
+            isOneToOne: false;
+            referencedRelation: 'venue_rooms';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'venue_rooms_vendor_id_fkey';
+            columns: ['vendor_id'];
+            isOneToOne: false;
+            referencedRelation: 'vendors';
+            referencedColumns: ['id'];
+          },
+        ];
       };
       wedding_cultures: {
         Row: {
@@ -3940,6 +4242,10 @@ export type Database = {
         Returns: undefined;
       };
       save_vendor: { Args: { p_event_slug?: string; p_vendor_id: string }; Returns: string };
+      save_vendor_menu: {
+        Args: { p_menu: Json; p_menu_id?: string; p_vendor_id: string };
+        Returns: string;
+      };
       search_vendors: {
         Args: {
           available_on?: string;
@@ -3950,7 +4256,7 @@ export type Database = {
           lat?: number;
           lng?: number;
           max_miles?: number;
-          max_price?: number;
+          max_price_cents?: number;
           min_guests?: number;
           query?: string;
           result_limit?: number;
@@ -3968,8 +4274,8 @@ export type Database = {
           longitude: number;
           name: string;
           price_display: string;
-          price_from: number;
-          price_to: number;
+          price_from_cents: number;
+          price_to_cents: number;
           price_unit: string;
           primary_category_name: Json;
           primary_category_slug: string;
@@ -4016,6 +4322,7 @@ export type Database = {
         Args: { p_guest_ids: string[]; p_list_id: string };
         Returns: undefined;
       };
+      set_hall_facts: { Args: { p_facts: Json; p_vendor_id: string }; Returns: undefined };
       set_vault_settings: {
         Args: {
           p_guests_see_all?: boolean;

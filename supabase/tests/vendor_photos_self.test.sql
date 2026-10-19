@@ -9,9 +9,9 @@ select plan(16);
 insert into auth.users (id, instance_id, aud, role, email) values
   ('a1400000-0000-4000-8000-00000000000e', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'photo-owner@example.com'),
   ('a1400000-0000-4000-8000-00000000000d', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'photo-stranger@example.com');
-insert into public.vendors (id, slug, status, name, city, location) values
-  ('b1400000-0000-4000-8000-000000000001', 'photo-hall', 'draft', 'Photo Hall', 'Yuba City', 'SRID=4326;POINT(-121.6169 39.1404)'),
-  ('b1400000-0000-4000-8000-000000000002', 'photo-other', 'published', 'Photo Other', 'Yuba City', 'SRID=4326;POINT(-121.6169 39.1404)');
+insert into public.vendors (id, slug, status, name, base_city_slug, location) values
+  ('b1400000-0000-4000-8000-000000000001', 'photo-hall', 'draft', 'Photo Hall', 'yuba-city', 'SRID=4326;POINT(-121.6169 39.1404)'),
+  ('b1400000-0000-4000-8000-000000000002', 'photo-other', 'published', 'Photo Other', 'yuba-city', 'SRID=4326;POINT(-121.6169 39.1404)');
 insert into public.vendor_members (vendor_id, user_id) values
   ('b1400000-0000-4000-8000-000000000001', 'a1400000-0000-4000-8000-00000000000e');
 

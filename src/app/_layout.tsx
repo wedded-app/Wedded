@@ -193,8 +193,9 @@ function AppShell() {
           <Stack.Screen name="my-inquiries" />
           <Stack.Screen name="saved" />
           <Stack.Screen name="settings" />
-          {/* Wed: connecting an app, and talking to Wed full screen */}
+          {/* Wed: connecting an app, sending to guests, and talking to Wed full screen */}
           <Stack.Screen name="wed-connect" options={{ presentation: 'modal' }} />
+          <Stack.Screen name="wed-send" options={{ presentation: 'modal' }} />
           <Stack.Screen
             name="wed-voice"
             options={{ presentation: 'fullScreenModal', animation: 'fade' }}
@@ -202,6 +203,12 @@ function AppShell() {
           <Stack.Screen name="plan" />
           <Stack.Screen name="plan-events" options={{ presentation: 'modal' }} />
           <Stack.Screen name="cards" />
+          <Stack.Screen name="guests" />
+          <Stack.Screen name="guest" options={{ presentation: 'modal' }} />
+          <Stack.Screen name="guest-contacts" options={{ presentation: 'modal' }} />
+          <Stack.Screen name="guest-list" options={{ presentation: 'modal' }} />
+          <Stack.Screen name="guest-invite" options={{ presentation: 'modal' }} />
+          <Stack.Screen name="guest-details" options={{ presentation: 'modal' }} />
           <Stack.Screen
             name="gallery"
             options={{ presentation: 'fullScreenModal', animation: 'fade' }}

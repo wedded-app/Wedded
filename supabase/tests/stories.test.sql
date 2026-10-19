@@ -18,8 +18,8 @@ insert into public.profiles (id, full_name, city, phone) values
   ('b8000000-0000-4000-8000-00000000000b', 'Bal Singh', 'Yuba City', '+15305550402'),
   ('c8000000-0000-4000-8000-00000000000c', 'Cee Gill', 'Fremont', '+15105550403'),
   ('d8000000-0000-4000-8000-00000000000d', 'Dev Sandhu', 'Fremont', '+15105550404');
-insert into public.vendors (id, slug, status, name, city, location) values
-  ('98000000-0000-4000-8000-000000000001', 'story-hall', 'published', 'Story Hall', 'Yuba City', 'SRID=4326;POINT(-121.6169 39.1404)');
+insert into public.vendors (id, slug, status, name, base_city_slug, location) values
+  ('98000000-0000-4000-8000-000000000001', 'story-hall', 'published', 'Story Hall', 'yuba-city', 'SRID=4326;POINT(-121.6169 39.1404)');
 insert into public.vendor_members (vendor_id, user_id) values
   ('98000000-0000-4000-8000-000000000001', 'd8000000-0000-4000-8000-00000000000d');
 insert into storage.objects (bucket_id, name, owner) values
@@ -29,7 +29,7 @@ insert into storage.objects (bucket_id, name, owner) values
 -- Asha's story from two days ago, gone from the feeds
 insert into public.stories (author_id, kind, media_path, created_at) values
   ('a8000000-0000-4000-8000-00000000000a', 'photo', 'a8000000-0000-4000-8000-00000000000a/old.jpg', now() - interval '2 days');
-insert into public.follows (follower_id, user_id) values
+insert into public.follows (follower_id, followee_user_id) values
   ('b8000000-0000-4000-8000-00000000000b', 'a8000000-0000-4000-8000-00000000000a');
 insert into public.user_blocks (blocker_id, blocked_id) values
   ('c8000000-0000-4000-8000-00000000000c', 'a8000000-0000-4000-8000-00000000000a');
@@ -147,7 +147,7 @@ select lives_ok(
 delete from public.stories where id = (select value from pg_temp.ids where name = 'asha');
 reset role;
 select is(
-  (select count(*)::int from public.reel_reports where story_id = (select value from pg_temp.ids where name = 'hall')), 1,
+  (select count(*)::int from public.reports where story_id = (select value from pg_temp.ids where name = 'hall')), 1,
   'The founders get the story''s report'
 );
 select is(

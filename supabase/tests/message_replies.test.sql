@@ -12,9 +12,9 @@ insert into auth.users (id, instance_id, aud, role, email) values
   ('aa100000-0000-4000-8000-00000000000e', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'reply-vendor@example.com');
 insert into public.profiles (id, full_name, city, phone) values
   ('aa100000-0000-4000-8000-00000000000f', 'Harjit Kaur', 'Yuba City', '+15305550801');
-insert into public.vendors (id, slug, status, name, city, location) values
-  ('ba100000-0000-4000-8000-000000000001', 'reply-hall', 'published', 'Reply Hall', 'Yuba City', 'SRID=4326;POINT(-121.6169 39.1404)'),
-  ('ba100000-0000-4000-8000-000000000002', 'reply-other', 'published', 'Reply Other', 'Yuba City', 'SRID=4326;POINT(-121.6169 39.1404)');
+insert into public.vendors (id, slug, status, name, base_city_slug, location) values
+  ('ba100000-0000-4000-8000-000000000001', 'reply-hall', 'published', 'Reply Hall', 'yuba-city', 'SRID=4326;POINT(-121.6169 39.1404)'),
+  ('ba100000-0000-4000-8000-000000000002', 'reply-other', 'published', 'Reply Other', 'yuba-city', 'SRID=4326;POINT(-121.6169 39.1404)');
 insert into public.vendor_members (vendor_id, user_id) values
   ('ba100000-0000-4000-8000-000000000001', 'aa100000-0000-4000-8000-00000000000e');
 

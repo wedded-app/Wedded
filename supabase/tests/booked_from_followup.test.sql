@@ -10,9 +10,9 @@ select ('a4000000-0000-4000-8000-00000000000' || n)::uuid, '00000000-0000-0000-0
   'authenticated', 'authenticated', 'bf' || n || '@example.com'
 from generate_series(1, 6) as n;
 
-insert into public.vendors (id, slug, status, name, city, location) values
-  ('b4000000-0000-4000-8000-000000000001', 'bf-hall', 'published', 'Bf Hall', 'Yuba City', 'SRID=4326;POINT(-121.6169 39.1404)'),
-  ('b4000000-0000-4000-8000-000000000002', 'bf-other-hall', 'published', 'Bf Other Hall', 'Yuba City', 'SRID=4326;POINT(-121.6169 39.1404)');
+insert into public.vendors (id, slug, status, name, base_city_slug, location) values
+  ('b4000000-0000-4000-8000-000000000001', 'bf-hall', 'published', 'Bf Hall', 'yuba-city', 'SRID=4326;POINT(-121.6169 39.1404)'),
+  ('b4000000-0000-4000-8000-000000000002', 'bf-other-hall', 'published', 'Bf Other Hall', 'yuba-city', 'SRID=4326;POINT(-121.6169 39.1404)');
 insert into public.vendor_categories (vendor_id, category_slug, position) values
   ('b4000000-0000-4000-8000-000000000001', 'banquet-hall', 1),
   ('b4000000-0000-4000-8000-000000000002', 'banquet-hall', 1);

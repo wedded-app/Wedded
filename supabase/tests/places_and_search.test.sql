@@ -51,14 +51,14 @@ select ok(
 
 -- Test vendors (as the table owner) ---------------------------------------------------
 
-insert into public.vendors (id, slug, status, name, city, location, service_radius_miles, will_travel) values
-  ('30000000-0000-4000-8000-000000000001', 'zz-near', 'published', 'Zz Near', 'Yuba City',
+insert into public.vendors (id, slug, status, name, base_city_slug, location, service_radius_miles, will_travel) values
+  ('30000000-0000-4000-8000-000000000001', 'zz-near', 'published', 'Zz Near', 'yuba-city',
     (select location from public.cities where slug = 'yuba-city'), 10, false),
-  ('30000000-0000-4000-8000-000000000002', 'zz-wide', 'published', 'Zz Wide', 'Sacramento',
+  ('30000000-0000-4000-8000-000000000002', 'zz-wide', 'published', 'Zz Wide', 'sacramento',
     (select location from public.cities where slug = 'sacramento'), 50, false),
-  ('30000000-0000-4000-8000-000000000003', 'zz-traveler', 'published', 'Zz Traveler', 'Fresno',
+  ('30000000-0000-4000-8000-000000000003', 'zz-traveler', 'published', 'Zz Traveler', 'fresno',
     (select location from public.cities where slug = 'fresno'), 25, true),
-  ('30000000-0000-4000-8000-000000000004', 'zz-draft', 'draft', 'Zz Draft', 'Yuba City',
+  ('30000000-0000-4000-8000-000000000004', 'zz-draft', 'draft', 'Zz Draft', 'yuba-city',
     (select location from public.cities where slug = 'yuba-city'), 10, false);
 
 insert into public.vendor_categories (vendor_id, category_slug, position)

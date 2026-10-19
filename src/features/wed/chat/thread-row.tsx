@@ -11,6 +11,7 @@ import { makeStyles, Radius, Spacing, useColors } from '@/constants/theme';
 
 import { ApprovalCard, ReceiptLine } from '../approval-card';
 import { libraryList, type MockVendor } from '../mock';
+import { CardsRow } from '../wed-cards';
 import { getWed, wed, type ChatItem } from '../wed-store';
 
 import { StarterRows } from './greeting';
@@ -26,9 +27,10 @@ const FADE_WHOLE = FadeIn.duration(300).reduceMotion(ReduceMotion.Never);
  * One row of the Wed thread, by kind: what the family said (a grey bubble on
  * the right), Wed's words (plain text on the page, no bubble), a day line,
  * Wed at work, vendors it found, a card waiting for a yes, a receipt, a
- * vendor's reply, or a list Wed made. `fresh` is true for rows that arrived
- * while the chat was open, so Wed's words appear sentence by sentence. Rows
- * are kept as they are in the store, so only one that changed redraws.
+ * vendor's reply, invitation cards, or a list Wed made. `fresh` is true for
+ * rows that arrived while the chat was open, so Wed's words appear sentence
+ * by sentence. Rows are kept as they are in the store, so only one that
+ * changed redraws.
  */
 export const ThreadRow = memo(function ThreadRow({
   item,
@@ -60,6 +62,8 @@ export const ThreadRow = memo(function ThreadRow({
       );
     case 'reply':
       return <ReplyRow vendor={item.vendor} who={item.who} text={item.text} />;
+    case 'cards':
+      return <CardsRow events={item.events} />;
     case 'artifact':
       return <ArtifactRow id={item.id} gone={item.gone} />;
     case 'starters':
