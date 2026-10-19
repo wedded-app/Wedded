@@ -13,7 +13,7 @@ import {
   useGuests,
   useGuestSummary,
   type Guest,
-  type GuestEventSummary,
+  type EventGuestSummary,
 } from '@/data/guests';
 import { answerLabel, matchesSearch, totalsLine } from '@/features/guests/guest-helpers';
 import { StartPlanCard } from '@/features/planner/start-plan-card';
@@ -54,7 +54,7 @@ export default function GuestsScreen() {
       .filter(Boolean)
       .join(' · ');
 
-  const eventLine = (counts: GuestEventSummary) =>
+  const eventLine = (counts: EventGuestSummary) =>
     counts.invited === 0
       ? t('guests.noneInvited')
       : [
@@ -95,6 +95,15 @@ export default function GuestsScreen() {
             tone="primary"
             title={t('guests.byHand')}
             onPress={() => router.push('/guest')}
+          />
+        </ListSection>
+
+        <ListSection header={t('guests.details.header')}>
+          <ListRow
+            icon="time-outline"
+            title={t('guests.details.entry')}
+            subtitle={wedding.title ?? t('guests.details.entryBody')}
+            onPress={() => router.push('/guest-details')}
           />
         </ListSection>
 

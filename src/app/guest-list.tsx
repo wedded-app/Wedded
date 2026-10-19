@@ -6,6 +6,7 @@ import { FieldError } from '@/components/field-error';
 import { StateView } from '@/components/state-view';
 import { TextField } from '@/components/text-field';
 import {
+  guestErrorKind,
   useDeleteGuestList,
   useGuestLists,
   useGuests,
@@ -14,7 +15,6 @@ import {
   type GuestList,
 } from '@/data/guests';
 import { useWeddingPlan } from '@/data/wedding';
-import { guestErrorKind } from '@/features/guests/guest-helpers';
 import { closeGuestSheet, confirm, PickSheet } from '@/features/guests/pick-sheet';
 import { useLocale } from '@/i18n/locale-context';
 import { successHaptic } from '@/lib/haptics';
@@ -86,7 +86,7 @@ function ListSheet({
     if (!clean) return;
     setError(undefined);
     save.mutate(
-      { weddingId, listId: list?.id, name: clean, guestIds: picked },
+      { weddingId, id: list?.id, name: clean, guestIds: picked },
       {
         onSuccess: () => {
           successHaptic();
@@ -103,7 +103,11 @@ function ListSheet({
       t('guests.list.deleteBody'),
       t('guests.list.delete'),
       t('guests.list.keep'),
-      () => remove.mutate(doomed.id, { onSuccess: closeGuestSheet, onError: failed }),
+      () =>
+        remove.mutate(
+          { weddingId, id: doomed.id },
+          { onSuccess: closeGuestSheet, onError: failed },
+        ),
     );
 
   return (

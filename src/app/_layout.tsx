@@ -206,6 +206,7 @@ function AppShell() {
           <Stack.Screen name="guest-contacts" options={{ presentation: 'modal' }} />
           <Stack.Screen name="guest-list" options={{ presentation: 'modal' }} />
           <Stack.Screen name="guest-invite" options={{ presentation: 'modal' }} />
+          <Stack.Screen name="guest-details" options={{ presentation: 'modal' }} />
           <Stack.Screen
             name="gallery"
             options={{ presentation: 'fullScreenModal', animation: 'fade' }}

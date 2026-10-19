@@ -1,8 +1,8 @@
 /**
  * The guest list's plain logic (#308): head counts, turning a phone contact
- * into a guest, search, and which message an error gets.
+ * into a guest, and search.
  */
-import type { Guest, NewGuest, RsvpAnswer } from '@/data/guests';
+import type { Guest, GuestDraft, Rsvp } from '@/data/guests';
 import { isValidEmail, normalizePhone } from '@/features/auth/about-you-validation';
 
 type Translate = (key: string, options?: Record<string, string | number>) => string;
@@ -45,7 +45,7 @@ const MOBILE = /mobile|cell|iphone/i;
  * a real number (else any), and the first email that looks right. Null for a
  * contact without a name. Nothing else about the contact is kept.
  */
-export function contactToGuest(contact: PhoneContact): NewGuest | null {
+export function contactToGuest(contact: PhoneContact): Required<GuestDraft> | null {
   const name = (contact.fullName ?? '').trim().replace(/\s+/g, ' ').slice(0, 80);
   if (!name) return null;
   const phones = [...(contact.phones ?? [])].sort(
@@ -69,35 +69,7 @@ export function matchesSearch(query: string, name: string, detail?: string | nul
 }
 
 /** "Coming (4)", "Not coming" or "No answer yet". */
-export function answerLabel(rsvp: RsvpAnswer, coming: number | null, t: Translate): string {
+export function answerLabel(rsvp: Rsvp, coming: number | null, t: Translate): string {
   if (rsvp === 'yes') return t('guests.answer.yes', { count: coming ?? 1 });
   return rsvp === 'no' ? t('guests.answer.no') : t('guests.answer.pending');
-}
-
-export type GuestError =
-  | 'tooMany'
-  | 'limit'
-  | 'phoneTaken'
-  | 'nameTaken'
-  | 'listLimit'
-  | 'notFound'
-  | 'notInvited'
-  | 'rsvpLimit'
-  | 'failed';
-
-/** Which message to show when saving guests, lists or an answer fails (the database's error names). */
-export function guestErrorKind(error: unknown): GuestError {
-  const message =
-    typeof error === 'object' && error !== null && 'message' in error
-      ? String(error.message)
-      : String(error ?? '');
-  if (message.includes('too_many_guests')) return 'tooMany';
-  if (message.includes('guest_limit')) return 'limit';
-  if (message.includes('wedding_guests_one_per_phone')) return 'phoneTaken';
-  if (message.includes('list_name_taken')) return 'nameTaken';
-  if (message.includes('list_limit')) return 'listLimit';
-  if (message.includes('rsvp_not_found')) return 'notFound';
-  if (message.includes('not_invited')) return 'notInvited';
-  if (message.includes('rsvp_limit')) return 'rsvpLimit';
-  return 'failed';
 }

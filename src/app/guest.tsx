@@ -12,6 +12,7 @@ import { Stepper } from '@/components/stepper';
 import { TextField } from '@/components/text-field';
 import { makeStyles, Spacing } from '@/constants/theme';
 import {
+  guestErrorKind,
   rsvpLink,
   useAddGuests,
   useGuests,
@@ -21,7 +22,6 @@ import {
 } from '@/data/guests';
 import { shareInvite, useWeddingPlan } from '@/data/wedding';
 import { isValidEmail, normalizePhone } from '@/features/auth/about-you-validation';
-import { guestErrorKind } from '@/features/guests/guest-helpers';
 import { closeGuestSheet, confirm } from '@/features/guests/pick-sheet';
 import { useLocale } from '@/i18n/locale-context';
 import { successHaptic } from '@/lib/haptics';
@@ -121,7 +121,7 @@ function GuestForm({
       },
       onError: failed,
     };
-    if (guest) update.mutate({ guestId: guest.id, ...values }, done);
+    if (guest) update.mutate({ weddingId, id: guest.id, ...values }, done);
     else add.mutate({ weddingId, guests: [values] }, done);
   };
 
@@ -136,7 +136,8 @@ function GuestForm({
       t('guests.form.removeBody'),
       t('guests.form.remove'),
       t('guests.form.keep'),
-      () => remove.mutate(who.id, { onSuccess: closeGuestSheet, onError: failed }),
+      () =>
+        remove.mutate({ weddingId, id: who.id }, { onSuccess: closeGuestSheet, onError: failed }),
     );
 
   return (

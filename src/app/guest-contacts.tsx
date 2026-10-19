@@ -8,16 +8,16 @@ import { Button } from '@/components/button';
 import { FieldError } from '@/components/field-error';
 import { StateView } from '@/components/state-view';
 import { makeStyles, Radius, Spacing } from '@/constants/theme';
-import { useAddGuests, useGuests, type NewGuest } from '@/data/guests';
+import { guestErrorKind, useAddGuests, useGuests, type GuestDraft } from '@/data/guests';
 import { useWeddingPlan } from '@/data/wedding';
-import { contactToGuest, guestErrorKind } from '@/features/guests/guest-helpers';
+import { contactToGuest } from '@/features/guests/guest-helpers';
 import { closeGuestSheet, PickSheet } from '@/features/guests/pick-sheet';
 import { useLocale } from '@/i18n/locale-context';
 import { successHaptic } from '@/lib/haptics';
 import { formatPhone } from '@/lib/phone';
 
 type Access = 'asking' | 'denied' | 'all' | 'limited' | 'failed';
-type PhoneGuest = NewGuest & { id: string };
+type PhoneGuest = Required<GuestDraft> & { id: string };
 
 /** The phone's contacts as guests to tick (only the name, numbers and emails are read). */
 async function readContacts(): Promise<PhoneGuest[]> {

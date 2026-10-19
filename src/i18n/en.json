@@ -997,14 +997,20 @@
       "pending": "No answer yet"
     },
     "errors": {
-      "tooMany": "Add up to 500 people at a time.",
-      "limit": "A guest list can have up to 1,000 guests.",
+      "notAllowed": "Only the people who can change the wedding plan can change the guest list.",
+      "badPhone": "Check the phone number.",
       "phoneTaken": "Someone on your list already has this phone number.",
-      "nameTaken": "You already have a list with this name.",
+      "badEmail": "Check the email address.",
+      "tooMany": "Add up to 500 people at a time.",
+      "guestLimit": "A guest list can have up to 1,000 guests.",
+      "listNameTaken": "You already have a list with this name.",
       "listLimit": "You can have up to 50 lists.",
+      "eventNotInPlan": "This event isn't in your plan anymore.",
       "notFound": "This link doesn't work anymore. Ask the family for a new one.",
       "notInvited": "This event isn't on your invitation anymore. Open the link again to see the latest.",
+      "invalidCount": "Choose how many of you are coming.",
       "rsvpLimit": "This answer has been changed too many times. Call the family to change it.",
+      "sendLimit": "That's a lot of invitations for one day. Try again tomorrow.",
       "failed": "That didn't save. Check your internet, then try again."
     },
     "contacts": {
@@ -1080,6 +1086,21 @@
         "other": "Invite {{count}} guests"
       },
       "tick": "Tick the people to invite"
+    },
+    "details": {
+      "header": "Your invitation",
+      "entry": "Names, times and places",
+      "entryBody": "What guests see when they open their RSVP link",
+      "title": "Invitation details",
+      "intro": "Guests see these on their RSVP page, with only the events they're invited to.",
+      "names": "Your names",
+      "namesHint": "As guests should see them at the top of their invitation.",
+      "namesPlaceholder": "Simran & Arjun",
+      "date": "Pick the day",
+      "time": "Pick when it starts",
+      "place": "Where is the {{event}}?",
+      "placePlaceholder": "The hall or gurdwara, and its address",
+      "save": "Save"
     }
   },
   "rsvp": {

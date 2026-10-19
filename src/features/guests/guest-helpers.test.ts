@@ -3,7 +3,6 @@ import type { Guest } from '@/data/guests';
 import {
   answerLabel,
   contactToGuest,
-  guestErrorKind,
   guestTotals,
   matchesSearch,
   totalsLine,
@@ -22,6 +21,7 @@ const guest = (partySize: number, coming: (number | null)[]): Guest => ({
     coming: count,
     answeredAt: null,
   })),
+  lastSentAt: null,
 });
 
 describe('guestTotals', () => {
@@ -92,19 +92,5 @@ describe('answerLabel', () => {
     expect(answerLabel('yes', 4, t)).toBe('guests.answer.yes 4');
     expect(answerLabel('no', 0, t)).toBe('guests.answer.no');
     expect(answerLabel('pending', null, t)).toBe('guests.answer.pending');
-  });
-});
-
-describe('guestErrorKind', () => {
-  it("reads the database's error names", () => {
-    expect(guestErrorKind({ message: 'too_many_guests' })).toBe('tooMany');
-    expect(
-      guestErrorKind({
-        message: 'duplicate key value violates unique constraint "wedding_guests_one_per_phone"',
-      }),
-    ).toBe('phoneTaken');
-    expect(guestErrorKind(new Error('list_name_taken'))).toBe('nameTaken');
-    expect(guestErrorKind({ message: 'rsvp_limit' })).toBe('rsvpLimit');
-    expect(guestErrorKind(null)).toBe('failed');
   });
 });

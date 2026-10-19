@@ -13,9 +13,8 @@ import { NavScreen } from '@/components/nav';
 import { StateView } from '@/components/state-view';
 import { Stepper } from '@/components/stepper';
 import { makeStyles, Radius, Spacing, useColors } from '@/constants/theme';
-import { useRsvp, useRsvpPreview, type RsvpEvent } from '@/data/guests';
+import { guestErrorKind, useRsvp, useRsvpPreview, type RsvpEvent } from '@/data/guests';
 import { useEvent } from '@/data/reference';
-import { guestErrorKind } from '@/features/guests/guest-helpers';
 import { formatDate } from '@/features/inquiry/inquiry-helpers';
 import { formatTime } from '@/features/vendors/profile-format';
 import { localized } from '@/i18n/localized';
@@ -43,7 +42,7 @@ export default function RsvpScreen() {
   const { t } = useLocale();
   const { token = '' } = useLocalSearchParams<{ token: string }>();
   const preview = useRsvpPreview(token);
-  const rsvp = useRsvp();
+  const rsvp = useRsvp(token);
   const [draft, setDraft] = useState<Record<string, Answer>>({});
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
@@ -82,7 +81,6 @@ export default function RsvpScreen() {
         for (const event of changed) {
           const mine = draft[event.eventSlug];
           await rsvp.mutateAsync({
-            token,
             eventSlug: event.eventSlug,
             answer: mine.answer,
             coming: mine.answer === 'yes' ? mine.coming : undefined,
