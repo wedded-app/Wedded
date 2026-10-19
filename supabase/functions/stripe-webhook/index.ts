@@ -59,7 +59,7 @@ Deno.serve(async (request) => {
       p_payment_intent_id: meaning.deposit.paymentIntentId,
       p_outcome: meaning.deposit.outcome,
     })
-    : await admin.rpc('update_payment_account', {
+    : await admin.rpc('update_payout_account', {
       p_stripe_account_id: meaning.account.accountId,
       p_charges_enabled: meaning.account.chargesEnabled,
       p_details_submitted: meaning.account.detailsSubmitted,

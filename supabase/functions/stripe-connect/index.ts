@@ -72,7 +72,7 @@ Deno.serve(async (request) => {
     .eq('id', vendorId)
     .single();
   const { data: saved } = await admin
-    .from('vendor_payment_accounts')
+    .from('payout_accounts')
     .select('stripe_account_id, charges_enabled, details_submitted')
     .eq('vendor_id', vendorId)
     .maybeSingle();
@@ -96,7 +96,7 @@ Deno.serve(async (request) => {
 
     // Always ask Stripe how it stands, and keep our copy in step
     const account = await stripe.accounts.retrieve(accountId);
-    const { error: saveError } = await admin.rpc('save_payment_account', {
+    const { error: saveError } = await admin.rpc('save_payout_account', {
       p_vendor_id: vendorId,
       p_stripe_account_id: account.id,
       p_charges_enabled: account.charges_enabled === true,

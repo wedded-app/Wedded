@@ -301,7 +301,7 @@ export function usePaymentAccount(vendorId: string) {
     queryKey: depositKeys.account(vendorId),
     queryFn: async (): Promise<PaymentAccountStatus> => {
       const { data, error } = await supabase
-        .from('vendor_payment_accounts')
+        .from('payout_accounts')
         .select('charges_enabled')
         .eq('vendor_id', vendorId)
         .maybeSingle();
