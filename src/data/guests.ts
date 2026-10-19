@@ -345,6 +345,32 @@ export function useInviteToEvent() {
   });
 }
 
+/** Take guests off one event (ticked by mistake). Their answer for it goes too. Returns how many. */
+export function useUninviteFromEvent() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({
+      weddingId,
+      eventSlug,
+      guestIds,
+    }: {
+      weddingId: string;
+      eventSlug: string;
+      guestIds: string[];
+    }): Promise<number> => {
+      const { data, error } = await supabase.rpc('uninvite_from_event', {
+        p_wedding_id: weddingId,
+        p_event_slug: eventSlug,
+        p_guest_ids: guestIds,
+      });
+      if (error) throw new Error(error.message);
+      return data;
+    },
+    onSuccess: (_removed, { weddingId }) =>
+      queryClient.invalidateQueries({ queryKey: guestKeys.all(weddingId) }),
+  });
+}
+
 /**
  * The link a guest gets: the website's /rsvp page once there's a domain (it
  * opens without the app), until then a link into the app, like inviteLink().
