@@ -5,4 +5,3 @@ export type {
   Message as ChatMessage,
   Quote as ChatQuote,
 } from '@/data/chat';
-export type ChatRole = 'family' | 'vendor' | 'system';

@@ -1,4 +1,3 @@
-import { Image } from 'expo-image';
 import type { ReactNode } from 'react';
 import { View } from 'react-native';
 
@@ -36,38 +35,6 @@ export function FamilyAvatar({ name, size = 44 }: { name: string; size?: number 
         maxFontSizeMultiplier={1.2}
       >
         {initials(name)}
-      </AppText>
-    </View>
-  );
-}
-
-/** A vendor's cover in a rounded square, or their first letter when there's none. */
-export function VendorThumb({
-  name,
-  url,
-  size = 52,
-}: {
-  name: string;
-  url: string | null;
-  size?: number;
-}) {
-  const styles = useStyles();
-  return url ? (
-    <Image
-      source={{ uri: url }}
-      style={[styles.thumb, { width: size, height: size }]}
-      contentFit="cover"
-      accessible={false}
-    />
-  ) : (
-    <View style={[styles.thumb, styles.thumbEmpty, { width: size, height: size }]}>
-      <AppText
-        weight={700}
-        color="primary"
-        style={{ fontSize: size * 0.4 }}
-        maxFontSizeMultiplier={1.2}
-      >
-        {name.trim()[0]?.toUpperCase() ?? ''}
       </AppText>
     </View>
   );
@@ -151,30 +118,6 @@ export function LookingPost({
   );
 }
 
-/** "Open", "Booked" or "Closed" as a small tinted capsule. */
-export function StatusPill({
-  tone,
-  children,
-}: {
-  tone: 'open' | 'done' | 'quiet';
-  children: string;
-}) {
-  const styles = useStyles();
-  const color = tone === 'open' ? 'primary' : tone === 'done' ? 'success' : 'text2';
-  return (
-    <View
-      style={[
-        styles.pill,
-        tone === 'open' ? styles.pillOpen : tone === 'done' ? styles.pillDone : styles.pillQuiet,
-      ]}
-    >
-      <AppText variant="caption" weight={700} color={color}>
-        {children}
-      </AppText>
-    </View>
-  );
-}
-
 /** The gold "Wedded Pro" mark. */
 export function ProBadge() {
   const Colors = useColors();
@@ -219,30 +162,6 @@ const useStyles = makeStyles((Colors) => ({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 5,
-  },
-  thumb: {
-    borderRadius: Radius.photo - 4,
-    borderCurve: 'continuous',
-  },
-  thumbEmpty: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: Colors.primaryTint,
-  },
-  pill: {
-    alignSelf: 'flex-start',
-    paddingHorizontal: Spacing.sm,
-    paddingVertical: 3,
-    borderRadius: Radius.chip,
-  },
-  pillOpen: {
-    backgroundColor: Colors.primaryTint,
-  },
-  pillDone: {
-    backgroundColor: Colors.successTint,
-  },
-  pillQuiet: {
-    backgroundColor: Colors.fill,
   },
   pro: {
     flexDirection: 'row',
