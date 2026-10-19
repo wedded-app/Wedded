@@ -30,7 +30,7 @@ export type City = Place & {
   slug: string;
   name: string;
   areaCode: string;
-  aliases: string[];
+  nicknames: string[];
 };
 
 export type AreaCode = {
@@ -44,7 +44,7 @@ export type AreaCode = {
 async function fetchCities(): Promise<City[]> {
   const { data, error } = await supabase
     .from('cities')
-    .select('slug, name, area_code, aliases, latitude, longitude')
+    .select('slug, name, area_code, nicknames, latitude, longitude')
     .order('name');
   if (error) throw error;
   return data.map((row) => ({
@@ -52,7 +52,7 @@ async function fetchCities(): Promise<City[]> {
     name: row.name,
     label: row.name,
     areaCode: row.area_code,
-    aliases: row.aliases,
+    nicknames: row.nicknames,
     latitude: row.latitude,
     longitude: row.longitude,
   }));
@@ -84,20 +84,21 @@ export function useAreaCodes() {
 }
 
 /**
- * A California ZIP code's centre point, or null when it isn't one (outside
- * California: show "We're Northern California only for now").
+ * A California ZIP code's centre point, labelled with its nearest listed city
+ * when there is one ("Yuba City 95993"), or null when it isn't a California
+ * ZIP (show "We're Northern California only for now").
  */
 export async function findZip(zip: string): Promise<Place | null> {
   if (!/^\d{5}$/.test(zip)) return null;
   const { data, error } = await supabase
     .from('zip_codes')
-    .select('zip, latitude, longitude')
+    .select('zip, latitude, longitude, city:cities(name)')
     .eq('zip', zip)
     .maybeSingle();
   if (error) throw error;
-  return data
-    ? { label: `ZIP ${data.zip}`, latitude: data.latitude, longitude: data.longitude }
-    : null;
+  if (!data) return null;
+  const label = data.city ? `${data.city.name} ${data.zip}` : `ZIP ${data.zip}`;
+  return { label, latitude: data.latitude, longitude: data.longitude };
 }
 
 /**
@@ -109,7 +110,8 @@ export function matchCities(cities: City[], typed: string, limit = 8): City[] {
   if (!text) return [];
   const starts = cities.filter((city) => city.name.toLowerCase().startsWith(text));
   const nicknames = cities.filter(
-    (city) => !starts.includes(city) && city.aliases.some((alias) => alias.startsWith(text)),
+    (city) =>
+      !starts.includes(city) && city.nicknames.some((nickname) => nickname.startsWith(text)),
   );
   const contains = cities.filter(
     (city) =>

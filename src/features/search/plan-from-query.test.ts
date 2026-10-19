@@ -17,8 +17,8 @@ const data = {
     { slug: 'nikah', names: ['Nikah'] },
   ],
   cities: [
-    { slug: 'yuba-city', name: 'Yuba City', areaCode: '530', aliases: ['yuba'] },
-    { slug: 'sacramento', name: 'Sacramento', areaCode: '916', aliases: ['sac'] },
+    { slug: 'yuba-city', name: 'Yuba City', areaCode: '530', nicknames: ['yuba'] },
+    { slug: 'sacramento', name: 'Sacramento', areaCode: '916', nicknames: ['sac'] },
   ],
 };
 
