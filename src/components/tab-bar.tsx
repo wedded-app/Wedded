@@ -3,6 +3,7 @@ import {
   createContext,
   useContext,
   useEffect,
+  useRef,
   useState,
   useSyncExternalStore,
   type ComponentProps,
@@ -14,10 +15,12 @@ import Animated, {
   useReducedMotion,
   useSharedValue,
   withSpring,
+  withTiming,
 } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AppText } from '@/components/app-text';
+import { Glass } from '@/components/glass';
 import { Icon, type IconName } from '@/components/icon';
 import {
   makeStyles,
@@ -28,7 +31,6 @@ import {
   useColors,
   useScheme,
 } from '@/constants/theme';
-import { Motion } from '@/lib/motion';
 
 export type TabBarProps = Parameters<NonNullable<ComponentProps<typeof Tabs>['tabBar']>>[0];
 
@@ -43,14 +45,13 @@ export type TabSpec = {
   alsoFor?: string[];
 };
 
+// Between the bar's edge and the tabs; each tab (and the lens behind the
+// selected one) fills the bar's height inside it
 const PADDING = 6;
-// The selected pill around its name: side padding, the icon and the gap between them
-const PILL_PADDING = 12;
-const ICON_GAP = Spacing.xs + 2;
-// A few points spare: text measures a fraction differently from how it's drawn
-const PILL_CHROME = PILL_PADDING * 2 + Sizes.tabIcon + ICON_GAP + 4;
-// An icon-only tab never gets narrower than this
-const MIN_ICON = 44;
+const ITEM = Sizes.tabBar - PADDING * 2;
+const LENS_FADE_MS = 160;
+// Tabs whose pages are always dark (the Reels videos, Requests' night page)
+const ALWAYS_DARK = ['discover', 'reels', 'requests'];
 
 // Screens that cover the whole page for a moment (Wed's side menu) slide the
 // bar away while they're open. A count, so two of them can't fight.
@@ -105,9 +106,7 @@ export function useBottomSpace() {
 /**
  * How far the floating tab bar's top edge sits above the bottom of the
  * screen, or the home indicator's outside the tabs: for full-screen media
- * like Reels, whose words and progress line sit right on it. Unlike
- * useBottomSpace it leaves no room for Wed's raised button, which sits
- * flat in the bar over Reels.
+ * like Reels, whose words and progress line sit right on it.
  */
 export function useTabBarTop() {
   const inTabs = useContext(TabBarSpaceContext) > 0;
@@ -116,96 +115,97 @@ export function useTabBarTop() {
   return inTabs ? Sizes.tabBar + offset : insets.bottom;
 }
 
-/** The round button in the middle of the bar (Wed's) and the ring around it. */
-const CENTER = 60;
-const RING = CENTER + 8;
-// Its slot in the row: the ring and a little air either side, so a pill never touches it
-const CENTER_SLOT = RING + Spacing.sm;
-/** How far the middle button rises above the bar, for content to clear. */
-export const CENTER_RISE = 26;
-
 /**
- * The bottom bar: a solid capsule floating over the content. The selected
- * tab grows into a filled pill with its icon and name; the others show just
- * their icon (screen readers still hear every name). `center` (Wed's button)
- * sits raised in the middle, between two equal halves of tabs, and stays put
- * as the pill moves: the pill grows inside its half. Only on a phone too
- * narrow for a name like Requests beside it does that half take the room the
- * name needs, so a name is never cut short. Over Reels it sits flat in the
- * bar, clear of the video's words. Slides away while a screen asks with
- * useHideTabBar().
+ * The bottom bar, in iOS 26's style: a Liquid Glass capsule floating over the
+ * content (TabBarSpaceProvider leaves room for it), every tab its icon with
+ * its name under it, and a soft lens behind the selected one that springs
+ * from tab to tab. The selected tab's icon fills in and its name turns bold
+ * and dark; the others stay outlined and grey. `center` (Wed's button) takes
+ * the middle slot between two halves of tabs, level with them, and the lens
+ * sits behind it while `centerFor` is open. Over Reels the glass is always
+ * dark. Slides away while a screen asks with useHideTabBar().
  */
 export function TabBar({
   state,
-  descriptors,
   navigation,
   tabs,
-  accent = 'primary',
+  accent = 'text',
   center,
+  centerFor,
 }: TabBarProps & {
   tabs: TabSpec[];
-  /** The selected pill's colour: saffron in business mode, so it's clear which side this is. */
-  accent?: 'primary' | 'kesari';
+  /** The selected tab's colour: black (white in dark mode), or saffron in business mode, so it's clear which side this is. */
+  accent?: 'text' | 'kesari';
   center?: ReactNode;
+  /** The route the middle button opens: while it's open the lens sits behind the button. */
+  centerFor?: string;
 }) {
   const appColors = useColors();
   const scheme = useScheme();
   const styles = useStyles();
   const bottom = useTabBarOffset();
-  const current = state.routes[state.index]?.name ?? '';
-  // Over the Reels videos the bar is always dark, with the button lowered into it
-  const overVideo = ['discover', 'reels'].includes(current);
-  const Colors = overVideo ? Palettes.dark : appColors;
-  const dark = overVideo || scheme === 'dark';
-  const fill = accent === 'primary' ? Colors.primaryFill : Colors.kesari;
-  // White on the fill, except on dark mode's light saffron, which needs dark words
-  const onFill = dark && accent === 'kesari' ? Colors.bg : Colors.onPrimary;
   const reduceMotion = useReducedMotion();
+  const current = state.routes[state.index]?.name ?? '';
+  // Over the Reels videos and Requests' night page the bar is always dark glass
+  const overDark = ALWAYS_DARK.includes(current);
+  const Colors = overDark ? Palettes.dark : appColors;
+  const tint = accent === 'kesari' ? Colors.kesari : Colors.text;
   // Only the routes with a tab: a hidden route (href: null, like Wed) gets no slot
   const shown = state.routes.filter((route) => tabs.some((tab) => tab.name === route.name));
-  const half = Math.ceil(shown.length / 2);
+  const half = center ? Math.ceil(shown.length / 2) : shown.length;
   const keyboardShown = useKeyboardShown();
   const hidden = useSyncExternalStore(subscribeHidden, isHidden, neverHidden);
   const drop = useSharedValue(0);
-  // The row's width and each name's width (measured off screen), to keep Wed in the middle
   const [rowWidth, setRowWidth] = useState(0);
-  const [labelWidths, setLabelWidths] = useState<Record<string, number>>({});
 
-  // Below the bottom edge, shadow and all
-  useEffect(() => {
-    const target = hidden ? Sizes.tabBar + bottom + CENTER_RISE + Spacing.xl : 0;
-    drop.value = reduceMotion ? target : withSpring(target, Springs.smooth);
-  }, [hidden, bottom, reduceMotion, drop]);
-
-  const dropStyle = useAnimatedStyle(() => ({ transform: [{ translateY: drop.value }] }));
-
-  // Android lifts the whole screen above the keyboard; the bar would ride on it.
-  if (keyboardShown) return null;
-
-  const raised = !!center && !overVideo;
-
-  const labelOf = (route: (typeof shown)[number]) =>
-    tabs.find((tab) => tab.name === route.name)?.label ??
-    descriptors[route.key].options.title ??
-    route.name;
   const isSelected = (route: (typeof shown)[number]) =>
     route.name === current ||
     !!tabs.find((tab) => tab.name === route.name)?.alsoFor?.includes(current);
 
-  // Each half's width: equal, unless the selected name needs more than half
-  let sides: [number, number] | null = null;
-  if (center && rowWidth > 0) {
-    const even = (rowWidth - PADDING * 2 - CENTER_SLOT) / 2;
-    const at = shown.findIndex(isSelected);
-    const name = at >= 0 ? labelWidths[shown[at].key] : undefined;
-    const inLeft = at < half;
-    const icons = (inLeft ? half : shown.length - half) - 1;
-    const extra =
-      name === undefined ? 0 : Math.max(0, PILL_CHROME + name + icons * MIN_ICON - even);
-    sides = inLeft ? [even + extra, even - extra] : [even - extra, even + extra];
-  }
-  const sideStyle = (width: number | undefined) =>
-    width === undefined ? [styles.side, styles.sideEven] : [styles.side, { width }];
+  // Equal slots in screen order: the first half, the middle button, the rest
+  const slots = shown.length + (center ? 1 : 0);
+  const slotWidth = rowWidth > 0 ? rowWidth / slots : 0;
+  const selectedAt = shown.findIndex(isSelected);
+  const lensSlot =
+    selectedAt >= 0
+      ? selectedAt + (center && selectedAt >= half ? 1 : 0)
+      : center && centerFor === current
+        ? half
+        : -1;
+
+  const lensX = useSharedValue(0);
+  const lensOpacity = useSharedValue(0);
+  const lensPlaced = useRef(false);
+  useEffect(() => {
+    if (lensSlot < 0 || slotWidth === 0) {
+      lensOpacity.value = withTiming(0, { duration: LENS_FADE_MS });
+      return;
+    }
+    const x = PADDING + lensSlot * slotWidth;
+    // The first time it appears where it belongs; after that it slides
+    if (!lensPlaced.current || reduceMotion) {
+      lensX.value = x;
+      lensPlaced.current = true;
+    } else {
+      lensX.value = withSpring(x, Springs.smooth);
+    }
+    lensOpacity.value = withTiming(1, { duration: LENS_FADE_MS });
+  }, [lensSlot, slotWidth, reduceMotion, lensX, lensOpacity]);
+
+  // Below the bottom edge, shadow and all
+  useEffect(() => {
+    const target = hidden ? Sizes.tabBar + bottom + Spacing.xl : 0;
+    drop.value = reduceMotion ? target : withSpring(target, Springs.smooth);
+  }, [hidden, bottom, reduceMotion, drop]);
+
+  const dropStyle = useAnimatedStyle(() => ({ transform: [{ translateY: drop.value }] }));
+  const lensStyle = useAnimatedStyle(() => ({
+    opacity: lensOpacity.value,
+    transform: [{ translateX: lensX.value }],
+  }));
+
+  // Android lifts the whole screen above the keyboard; the bar would ride on it.
+  if (keyboardShown) return null;
 
   // Whether it takes taps sits on a plain View, as one of two stylesheet
   // styles that swap. On the web an inline 'box-none' isn't valid CSS, so the
@@ -219,65 +219,21 @@ export function TabBar({
       importantForAccessibility={hidden ? 'no-hide-descendants' : 'auto'}
     >
       <Animated.View style={[styles.through, dropStyle]}>
-        <View style={[styles.bar, { backgroundColor: Colors.surface }]} />
-        {/* The row is tall enough to hold the raised button: Android only takes taps inside a view's bounds */}
+        <Glass scheme={overDark ? 'dark' : scheme} style={styles.bar} />
+        <Animated.View
+          style={[styles.lens, { width: slotWidth, backgroundColor: Colors.tabLens }, lensStyle]}
+        />
         <View
-          style={[styles.items, styles.through, raised && styles.roomAbove]}
+          style={styles.items}
           accessibilityRole="tablist"
-          onLayout={(event: LayoutChangeEvent) => setRowWidth(event.nativeEvent.layout.width)}
+          onLayout={(event: LayoutChangeEvent) =>
+            setRowWidth(event.nativeEvent.layout.width - PADDING * 2)
+          }
         >
-          {center ? (
-            <>
-              <Animated.View layout={Motion.layout} style={sideStyle(sides?.[0])}>
-                {shown.slice(0, half).map(renderTab)}
-              </Animated.View>
-              <Animated.View
-                layout={Motion.layout}
-                style={[styles.centerSlot, raised ? styles.slotRaised : styles.slotFlat]}
-              >
-                <View
-                  style={[
-                    styles.ring,
-                    { backgroundColor: Colors.surface },
-                    !raised && styles.ringFlat,
-                  ]}
-                >
-                  {center}
-                </View>
-              </Animated.View>
-              <Animated.View layout={Motion.layout} style={sideStyle(sides?.[1])}>
-                {shown.slice(half).map(renderTab)}
-              </Animated.View>
-            </>
-          ) : (
-            shown.map(renderTab)
-          )}
+          {shown.slice(0, half).map(renderTab)}
+          {center ? <View style={styles.slot}>{center}</View> : null}
+          {shown.slice(half).map(renderTab)}
         </View>
-        {center && (
-          <View
-            style={styles.measure}
-            accessibilityElementsHidden
-            importantForAccessibility="no-hide-descendants"
-          >
-            {shown.map((route) => (
-              <AppText
-                key={route.key}
-                variant="caption"
-                weight={700}
-                numberOfLines={1}
-                maxFontSizeMultiplier={1.2}
-                onLayout={(event: LayoutChangeEvent) => {
-                  const { width } = event.nativeEvent.layout;
-                  setLabelWidths((all) =>
-                    all[route.key] === width ? all : { ...all, [route.key]: width },
-                  );
-                }}
-              >
-                {labelOf(route)}
-              </AppText>
-            ))}
-          </View>
-        )}
       </Animated.View>
     </View>
   );
@@ -286,8 +242,7 @@ export function TabBar({
     const focused = route.name === current;
     const spec = tabs.find((tab) => tab.name === route.name)!;
     const selected = isSelected(route);
-    const label = labelOf(route);
-    const color = selected ? onFill : Colors.text2;
+    const color = selected ? tint : Colors.text2;
 
     const onPress = () => {
       const event = navigation.emit({
@@ -300,62 +255,48 @@ export function TabBar({
       }
     };
 
-    const tab = (
-      <Animated.View
+    return (
+      <Pressable
         key={route.key}
-        layout={Motion.layout}
-        style={selected ? styles.slotWide : styles.slot}
+        accessibilityRole="tab"
+        accessibilityState={{ selected }}
+        accessibilityLabel={spec.badge ? `${spec.label}, ${spec.badge}` : spec.label}
+        onPress={onPress}
+        onLongPress={() => navigation.emit({ type: 'tabLongPress', target: route.key })}
+        style={({ pressed }) => [styles.slot, pressed && !selected && styles.pressed]}
       >
-        <Pressable
-          accessibilityRole="tab"
-          accessibilityState={{ selected }}
-          accessibilityLabel={spec.badge ? `${label}, ${spec.badge}` : label}
-          onPress={onPress}
-          onLongPress={() => navigation.emit({ type: 'tabLongPress', target: route.key })}
-          style={({ pressed }) => [
-            styles.item,
-            selected && { backgroundColor: fill },
-            pressed && !selected && styles.pressed,
-          ]}
-        >
-          <View>
-            <Icon
-              name={(selected ? spec.iconFilled : spec.icon) ?? spec.icon}
-              size={Sizes.tabIcon}
-              color={color}
-              weight={selected ? 'semibold' : 'regular'}
-            />
-            {!!spec.badge && (
-              <View style={[styles.badge, { borderColor: selected ? fill : Colors.surface }]}>
-                <AppText
-                  variant="caption"
-                  weight={700}
-                  color="onPrimary"
-                  maxFontSizeMultiplier={1.2}
-                  style={styles.badgeText}
-                >
-                  {spec.badge > 99 ? '99+' : String(spec.badge)}
-                </AppText>
-              </View>
-            )}
-          </View>
-          {selected && (
-            <Animated.View entering={Motion.enter} style={styles.labelBox}>
+        <View>
+          <Icon
+            name={(selected ? spec.iconFilled : spec.icon) ?? spec.icon}
+            size={Sizes.tabIcon}
+            color={color}
+            weight={selected ? 'semibold' : 'regular'}
+          />
+          {!!spec.badge && (
+            <View style={[styles.badge, { borderColor: Colors.surface }]}>
               <AppText
                 variant="caption"
                 weight={700}
-                numberOfLines={1}
+                color="onPrimary"
                 maxFontSizeMultiplier={1.2}
-                style={{ color }}
+                style={styles.badgeText}
               >
-                {label}
+                {spec.badge > 99 ? '99+' : String(spec.badge)}
               </AppText>
-            </Animated.View>
+            </View>
           )}
-        </Pressable>
-      </Animated.View>
+        </View>
+        <AppText
+          variant="caption"
+          weight={selected ? 600 : 500}
+          numberOfLines={1}
+          maxFontSizeMultiplier={1.2}
+          style={[styles.label, { color }]}
+        >
+          {spec.label}
+        </AppText>
+      </Pressable>
     );
-    return tab;
   }
 }
 
@@ -385,7 +326,7 @@ const useStyles = makeStyles((Colors) => ({
   gone: {
     pointerEvents: 'none',
   },
-  // The bar's background, behind a row that can be taller (the raised button)
+  // The glass behind the row
   bar: {
     position: 'absolute',
     left: 0,
@@ -394,83 +335,36 @@ const useStyles = makeStyles((Colors) => ({
     height: Sizes.tabBar,
     borderRadius: Sizes.tabBar / 2,
     borderCurve: 'continuous',
-    boxShadow: '0 8px 24px rgba(0, 0, 0, 0.14), 0 0 0 0.5px rgba(0, 0, 0, 0.06)',
+  },
+  // The soft pill behind the selected tab; it slides with translateX
+  lens: {
+    position: 'absolute',
+    left: 0,
+    top: PADDING,
+    height: ITEM,
+    borderRadius: ITEM / 2,
+    borderCurve: 'continuous',
+    pointerEvents: 'none',
   },
   items: {
     height: Sizes.tabBar,
     flexDirection: 'row',
-    alignItems: 'flex-end',
+    alignItems: 'center',
     paddingHorizontal: PADDING,
-    paddingBottom: PADDING,
   },
-  roomAbove: {
-    height: Sizes.tabBar + CENTER_RISE,
-  },
-  // Half the tabs, either side of the middle button
-  side: {
-    flexDirection: 'row',
-    alignItems: 'flex-end',
-    alignSelf: 'stretch',
-  },
-  sideEven: {
-    flex: 1,
-  },
-  // The names laid out once, unseen, to measure them
-  measure: {
-    position: 'absolute',
-    left: 0,
-    top: 0,
-    alignItems: 'flex-start',
-    opacity: 0,
-    pointerEvents: 'none',
-  },
-  // Icons share the room the selected pill doesn't need
   slot: {
     flex: 1,
-    minWidth: MIN_ICON,
-  },
-  // As wide as its icon and name, giving way only when there's no room
-  slotWide: {
-    flexShrink: 1,
-  },
-  item: {
-    height: Sizes.tabBar - PADDING * 2,
-    flexDirection: 'row',
+    height: ITEM,
     alignItems: 'center',
     justifyContent: 'center',
-    gap: ICON_GAP,
-    paddingHorizontal: PILL_PADDING,
-    borderRadius: (Sizes.tabBar - PADDING * 2) / 2,
-    borderCurve: 'continuous',
+    gap: 1,
   },
   pressed: {
-    backgroundColor: Colors.fillPressed,
+    opacity: 0.55,
   },
-  labelBox: {
-    flexShrink: 1,
-  },
-  centerSlot: {
-    width: CENTER_SLOT,
-    alignSelf: 'stretch',
-    alignItems: 'center',
-  },
-  // Partly out of the bar, like a button set into it
-  slotRaised: {
-    justifyContent: 'flex-start',
-  },
-  slotFlat: {
-    justifyContent: 'center',
-  },
-  ring: {
-    width: RING,
-    height: RING,
-    borderRadius: RING / 2,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  // Over Reels: smaller and inside the bar, clear of the video's words
-  ringFlat: {
-    transform: [{ scale: 0.82 }],
+  label: {
+    maxWidth: '100%',
+    paddingHorizontal: 2,
   },
   badge: {
     position: 'absolute',

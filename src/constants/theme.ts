@@ -58,6 +58,8 @@ const light = {
   glassWeb: 'rgba(255, 255, 255, 0.62)',
   glassEdge: 'rgba(255, 255, 255, 0.7)',
   glassShadow: 'rgba(0, 0, 0, 0.12)',
+  // The soft pill behind the selected tab, on the glass bar
+  tabLens: 'rgba(118, 118, 128, 0.14)',
   // iOS 26's scroll edge effect behind the nav bar: the page colour fading out.
   scrollEdge:
     'linear-gradient(to bottom, rgba(242, 242, 247, 0.97) 0%, rgba(242, 242, 247, 0.9) 72%, rgba(242, 242, 247, 0) 100%)',
@@ -155,6 +157,7 @@ const dark: Palette = {
   glassWeb: 'rgba(40, 40, 42, 0.55)',
   glassEdge: 'rgba(255, 255, 255, 0.12)',
   glassShadow: 'rgba(0, 0, 0, 0.5)',
+  tabLens: 'rgba(255, 255, 255, 0.16)',
   scrollEdge:
     'linear-gradient(to bottom, rgba(0, 0, 0, 0.95) 0%, rgba(0, 0, 0, 0.85) 72%, rgba(0, 0, 0, 0) 100%)',
   // canvas and bg are both black in dark mode, so the edges match.
