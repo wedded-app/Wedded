@@ -109,7 +109,6 @@ Deno.serve(async (request) => {
     p_location: inquiry.location,
     p_message: inquiry.message,
     p_preferred_contact: inquiry.preferredContact,
-    p_language: inquiry.language,
     p_details: inquiry.details,
     p_sender_name: sender.name,
     p_sender_phone: sender.phone,

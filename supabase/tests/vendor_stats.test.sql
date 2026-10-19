@@ -83,7 +83,7 @@ select is(
 );
 reset role;
 
-insert into public.inquiries (vendor_id, guest_band, location, message, preferred_contact,
+insert into public.inquiries (vendor_id, guest_band, venue_text, message, preferred_contact,
   channel, status, reply_answer)
 select '60000000-0000-4000-8000-000000000001', '100_250', 'Yuba City', 'Price?', 'call', 'email', 'sent', a
 from unnest(array['booked', 'deciding', 'deciding', 'no_reply']) as a;
@@ -96,7 +96,7 @@ select is(
 );
 reset role;
 
-insert into public.inquiries (vendor_id, guest_band, location, message, preferred_contact,
+insert into public.inquiries (vendor_id, guest_band, venue_text, message, preferred_contact,
   channel, status, reply_answer)
 values
   ('60000000-0000-4000-8000-000000000001', '100_250', 'Yuba City', 'Price?', 'call', 'email', 'sent', 'booked'),

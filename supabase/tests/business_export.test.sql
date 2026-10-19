@@ -15,12 +15,14 @@ insert into public.vendors (id, slug, status, name, base_city_slug, location) va
 insert into public.vendor_members (vendor_id, user_id) values
   ('bd000000-0000-4000-8000-000000000001', 'ad000000-0000-4000-8000-00000000000e');
 
-insert into public.inquiries (user_id, vendor_id, event_slugs, event_date, guest_band, location,
+insert into public.inquiries (id, user_id, vendor_id, event_date, guest_band, city_slug,
   message, preferred_contact, sender_name, sender_phone, sender_email, channel, status)
 values
-  ('ad000000-0000-4000-8000-000000000001', 'bd000000-0000-4000-8000-000000000001',
-   array['reception', 'jaago'], '2027-06-12', '250_500', 'Yuba City', 'Is June 12 open?', 'call',
+  ('ad100000-0000-4000-8000-000000000001', 'ad000000-0000-4000-8000-000000000001', 'bd000000-0000-4000-8000-000000000001',
+   '2027-06-12', '250_500', 'yuba-city', 'Is June 12 open?', 'call',
    'Harjit Kaur', '+15305550101', 'harjit@example.com', 'email', 'sent');
+insert into public.inquiry_events (inquiry_id, event_slug, position) values
+  ('ad100000-0000-4000-8000-000000000001', 'reception', 1), ('ad100000-0000-4000-8000-000000000001', 'jaago', 2);
 insert into public.vendor_activity_daily (vendor_id, day, kind, count) values
   ('bd000000-0000-4000-8000-000000000001', (now() at time zone 'America/Los_Angeles')::date, 'view', 7);
 insert into public.vendor_days (vendor_id, day, part, status) values

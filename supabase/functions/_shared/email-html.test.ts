@@ -18,7 +18,6 @@ Deno.test('inquiry emails escape user text and attribute delimiters', () => {
       location: attack,
       message: attack,
       preferredContact: 'email',
-      language: 'en',
       details: {},
       name: null,
       phone: null,

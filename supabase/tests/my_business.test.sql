@@ -33,17 +33,19 @@ insert into public.saved_vendors (user_id, vendor_id) values
 
 -- Two inquiries: family 1 asked yesterday and the vendor replied; family 2
 -- asked for a tour today and hasn't heard back.
-insert into public.inquiries (id, user_id, vendor_id, event_slugs, event_date, guest_band, location,
-  message, preferred_contact, sender_name, sender_phone, sender_email, channel, status, created_at, details)
+insert into public.inquiries (id, user_id, vendor_id, event_date, guest_band, city_slug,
+  message, preferred_contact, sender_name, sender_phone, sender_email, channel, status, created_at, kind, date_flex)
 values
   ('dc000000-0000-4000-8000-000000000001', 'ac000000-0000-4000-8000-000000000001',
-   'bc000000-0000-4000-8000-000000000001', array['reception'], '2027-06-12', '100_250', 'Yuba City',
+   'bc000000-0000-4000-8000-000000000001', '2027-06-12', '100_250', 'yuba-city',
    'Is June 12 open?', 'call', 'Harjit Kaur', '+15305550101', 'harjit@example.com', 'email', 'sent',
-   now() - interval '1 day', '{}'),
+   now() - interval '1 day', 'price_date', 'exact'),
   ('dc000000-0000-4000-8000-000000000002', 'ac000000-0000-4000-8000-000000000002',
-   'bc000000-0000-4000-8000-000000000001', array['anand-karaj'], null, 'not_sure', 'Marysville',
+   'bc000000-0000-4000-8000-000000000001', null, 'not_sure', 'marysville',
    'Can we visit?', 'email', 'Simran Gill', '+15305550102', 'simran@example.com', 'email', 'sent',
-   now(), '{"tour": true}');
+   now(), 'tour', 'not_sure');
+insert into public.inquiry_events (inquiry_id, event_slug) values
+  ('dc000000-0000-4000-8000-000000000001', 'reception'), ('dc000000-0000-4000-8000-000000000002', 'anand-karaj');
 
 -- The vendor's reply to family 1, straight into the thread
 insert into public.messages (conversation_id, sender_user_id, sender_role, kind, body)

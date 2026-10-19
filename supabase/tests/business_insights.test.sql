@@ -95,15 +95,20 @@ insert into public.saved_vendors (user_id, vendor_id) values
 
 -- Two inquiries today: family 1 heard back in 90 minutes and booked them;
 -- family 2 is still waiting
-insert into public.inquiries (id, user_id, vendor_id, event_slugs, event_date, guest_band, location,
+insert into public.inquiries (id, user_id, vendor_id, event_date, guest_band, venue_text,
   message, preferred_contact, sender_name, sender_phone, channel, status, created_at)
 values
   ('de000000-0000-4000-8000-000000000001', 'ae000000-0000-4000-8000-000000000001',
-   'be000000-0000-4000-8000-000000000001', array['reception', 'jaago'], '2027-06-12', '250_500', ' yuba city ',
+   'be000000-0000-4000-8000-000000000001', '2027-06-12', '250_500', ' yuba city ',
    'Menu for 300?', 'call', 'Harjit Kaur', '+15305550101', 'email', 'sent', pg_temp.today_at(5)),
   ('de000000-0000-4000-8000-000000000002', 'ae000000-0000-4000-8000-000000000002',
-   'be000000-0000-4000-8000-000000000001', array['reception'], '2027-06-19', '100_250', 'Yuba City',
+   'be000000-0000-4000-8000-000000000001', '2027-06-19', '100_250', null,
    'Do you do halal?', 'call', 'Simran Gill', '+15305550102', 'email', 'sent', pg_temp.today_at(10));
+-- The second family picked Yuba City from the list, the first typed it
+update public.inquiries set city_slug = 'yuba-city' where id = 'de000000-0000-4000-8000-000000000002';
+insert into public.inquiry_events (inquiry_id, event_slug) values
+  ('de000000-0000-4000-8000-000000000001', 'reception'), ('de000000-0000-4000-8000-000000000001', 'jaago'),
+  ('de000000-0000-4000-8000-000000000002', 'reception');
 insert into public.messages (conversation_id, sender_user_id, sender_role, kind, body, created_at)
 select c.id, 'ae000000-0000-4000-8000-00000000000e', 'vendor', 'text', 'Yes!', pg_temp.today_at(95)
 from public.conversations c

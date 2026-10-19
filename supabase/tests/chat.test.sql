@@ -142,22 +142,23 @@ reset role;
 
 -- An inquiry continues the conversation ----------------------------------------------------------
 
-insert into public.inquiries (user_id, vendor_id, event_slugs, event_date, guest_band, location, message,
+insert into public.inquiries (id, user_id, vendor_id, event_date, guest_band, city_slug, message,
   preferred_contact, sender_name, sender_phone, channel, status)
-values ('a6000000-0000-4000-8000-00000000000f', 'b6000000-0000-4000-8000-000000000001', array['reception'],
-  '2027-06-12', '250_500', 'Yuba City', 'Price for a reception?', 'call', 'Harjit Kaur', '+15305550601', 'email', 'sent');
+values ('a6100000-0000-4000-8000-000000000001', 'a6000000-0000-4000-8000-00000000000f', 'b6000000-0000-4000-8000-000000000001',
+  '2027-06-12', '250_500', 'yuba-city', 'Price for a reception?', 'call', 'Harjit Kaur', '+15305550601', 'email', 'sent');
+insert into public.inquiry_events (inquiry_id, event_slug) values ('a6100000-0000-4000-8000-000000000001', 'reception');
 
 select results_eq(
-  $$ select kind, body, data ->> 'guestBand' from public.messages
+  $$ select kind, body, data ->> 'guestBand', data ->> 'location', data -> 'eventSlugs' from public.messages
      where conversation_id = (select value::uuid from pg_temp.ids where name = 'convo')
      order by created_at desc limit 1 $$,
-  $$ values ('booking'::text, 'Price for a reception?'::text, '250_500'::text) $$,
-  'An inquiry adds its booking details to the same conversation'
+  $$ values ('booking'::text, 'Price for a reception?'::text, '250_500'::text, 'Yuba City'::text, '["reception"]'::jsonb) $$,
+  'An inquiry adds its booking details to the same conversation, its events filled in as they''re added'
 );
 
-insert into public.inquiries (user_id, vendor_id, guest_band, location, message, preferred_contact,
+insert into public.inquiries (user_id, vendor_id, guest_band, city_slug, message, preferred_contact,
   sender_name, sender_phone, channel, status)
-values ('a6000000-0000-4000-8000-00000000000f', 'b6000000-0000-4000-8000-000000000002', '100_250', 'Yuba City',
+values ('a6000000-0000-4000-8000-00000000000f', 'b6000000-0000-4000-8000-000000000002', '100_250', 'yuba-city',
   'Hello', 'text', 'Harjit Kaur', '+15305550601', 'email', 'sent');
 select is(
   (select count(*)::int from public.conversations where family_user_id = 'a6000000-0000-4000-8000-00000000000f'),

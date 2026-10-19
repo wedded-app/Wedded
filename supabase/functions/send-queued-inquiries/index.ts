@@ -49,7 +49,7 @@ Deno.serve(async (request) => {
   const { data: queued, error: queuedError } = await admin
     .from('inquiries')
     .select(
-      'id, user_id, vendor_id, event_slugs, event_date, start_time, guest_band, location, message, preferred_contact, language, details, sender_name, sender_phone, sender_email, channel',
+      'id, user_id, vendor_id, kind, event_date, start_time, guest_band, venue_text, message, preferred_contact, answers, sender_name, sender_phone, sender_email, channel, inquiry_events(event_slug, position), city:cities(name), venue:vendors!inquiries_venue_id_fkey(name)',
     )
     .eq('status', 'queued')
     .order('created_at')
@@ -71,6 +71,15 @@ Deno.serve(async (request) => {
       .select('id');
     if (!claimed || claimed.length === 0) continue;
 
+    // One-to-one embeds come back as objects; the untyped client calls them lists
+    const venue = row.venue as unknown as { name: string } | null;
+    const city = row.city as unknown as { name: string } | null;
+    const place: string = venue?.name ?? row.venue_text ?? city?.name ?? '';
+    // The events in the order the family picked them
+    const eventSlugs: string[] = [...(row.inquiry_events ?? [])]
+      .sort((a: { position: number }, b: { position: number }) => a.position - b.position)
+      .map((e: { event_slug: string }) => e.event_slug);
+
     try {
       const [{ data: vendor }, { data: vendorPrivate }, { data: events }, { data: profile }] =
         await Promise.all([
@@ -82,7 +91,7 @@ Deno.serve(async (request) => {
             .maybeSingle(),
           admin.from('events').select('slug, name').in(
             'slug',
-            row.event_slugs.length > 0 ? row.event_slugs : [''],
+            eventSlugs.length > 0 ? eventSlugs : [''],
           ),
           row.user_id
             ? admin.from('profiles').select('city').eq('id', row.user_id).maybeSingle()
@@ -96,15 +105,17 @@ Deno.serve(async (request) => {
 
       const inquiry: InquiryInput = {
         vendorId: row.vendor_id,
-        eventSlugs: row.event_slugs,
+        eventSlugs,
         eventDate: row.event_date,
         startTime: row.start_time ? String(row.start_time).slice(0, 5) : null,
         guestBand: row.guest_band as GuestBand,
-        location: row.location,
+        location: place,
         message: row.message,
         preferredContact: row.preferred_contact as Contact,
-        language: row.language === 'pa' ? 'pa' : 'en',
-        details: (row.details ?? {}) as Record<string, unknown>,
+        details: {
+          ...((row.answers ?? {}) as Record<string, unknown>),
+          ...(row.kind === 'tour' ? { tour: true } : {}),
+        },
         name: row.sender_name,
         phone: row.sender_phone,
         sendAgain: false,
@@ -115,7 +126,7 @@ Deno.serve(async (request) => {
         vendorName: vendor.name,
         vendorEmail: vendorPrivate?.email ?? null,
         vendorPhone: phone('whatsapp') ?? phone('text') ?? phone('call'),
-        eventNames: row.event_slugs.map((slug: string) => {
+        eventNames: eventSlugs.map((slug: string) => {
           const name = events?.find((event) => event.slug === slug)?.name as
             | { en?: string }
             | undefined;
@@ -126,7 +137,7 @@ Deno.serve(async (request) => {
           name: row.sender_name,
           phone: row.sender_phone,
           email: row.sender_email,
-          city: profile?.city ?? row.location,
+          city: profile?.city ?? place,
         },
       });
       const providerId = await sendEmail(email, row.id);

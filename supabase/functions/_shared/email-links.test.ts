@@ -87,7 +87,6 @@ const input: InquiryEmailInput = {
     location: 'Yuba City',
     message: 'Hello',
     preferredContact: 'email',
-    language: 'en',
     details: {},
     name: null,
     phone: null,
