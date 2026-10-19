@@ -4,7 +4,7 @@
 begin;
 create extension if not exists pgtap with schema extensions;
 
-select plan(54);
+select plan(60);
 
 -- People: Asha (owner), Balwinder (editor), Charan (suggester), Dev (a stranger)
 insert into auth.users (id, instance_id, aud, role, email) values
@@ -402,6 +402,44 @@ select throws_ok(
   $$ select public.log_invite_sends(pg_temp.id('other'), array[pg_temp.id('stranger_guest')], 'email') $$,
   'P0001', 'send_limit',
   'At most 2,000 a day per wedding'
+);
+
+-- Taking a guest off one event ---------------------------------------------------------
+
+select pg_temp.as_user('c8000000-0000-4000-8000-00000000000c');
+select throws_ok(
+  $$ select public.uninvite_from_event(pg_temp.id('wedding'), 'reception', array[pg_temp.id('sandhu')]) $$,
+  '42501', 'not_allowed',
+  'A suggester can''t take a guest off an event'
+);
+select pg_temp.as_user('a8000000-0000-4000-8000-00000000000a');
+select throws_ok(
+  $$ select public.uninvite_from_event(pg_temp.id('wedding'), 'roka', array[pg_temp.id('sandhu')]) $$,
+  'P0002', 'event_not_in_plan',
+  'Only off the wedding''s own events'
+);
+select is(
+  public.uninvite_from_event(pg_temp.id('wedding'), 'reception',
+    array[pg_temp.id('sandhu'), pg_temp.id('stranger_guest')]),
+  1,
+  'The owner takes a guest off one event (another wedding''s guest is ignored)'
+);
+select results_eq(
+  $$ select e.event_slug, i.rsvp from public.guest_invites i
+     join public.wedding_events e on e.id = i.wedding_event_id
+     where i.guest_id = pg_temp.id('sandhu') $$,
+  $$ values ('mehndi'::text, 'yes'::text) $$,
+  'Their other invites and answers stay'
+);
+select throws_ok(
+  $$ select public.rsvp((select value from pg_temp.ids where name = 'sandhu_token'), 'reception', 'yes') $$,
+  'P0002', 'not_invited',
+  'and their RSVP link can''t answer for that event any more'
+);
+select is(
+  public.invite_to_event(pg_temp.id('wedding'), 'reception', array[pg_temp.id('sandhu')]),
+  1,
+  'Inviting them again starts a fresh invite'
 );
 
 -- Removing ----------------------------------------------------------------------------

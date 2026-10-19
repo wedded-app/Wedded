@@ -4528,6 +4528,10 @@ export type Database = {
       track_reel_view: { Args: { p_reel_id: string }; Returns: undefined };
       track_search_appearances: { Args: { p_vendor_ids: string[] }; Returns: undefined };
       track_vendor_activity: { Args: { p_kind: string; p_vendor_id: string }; Returns: undefined };
+      uninvite_from_event: {
+        Args: { p_event_slug: string; p_guest_ids: string[]; p_wedding_id: string };
+        Returns: number;
+      };
       unregister_push_token: { Args: { p_token: string }; Returns: undefined };
       update_guest: {
         Args: {
