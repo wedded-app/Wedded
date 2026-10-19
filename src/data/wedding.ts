@@ -46,6 +46,9 @@ export type AccountWedding = {
   guests: Record<string, string>;
   /** Each event's own day, yyyy-mm-dd, when they've set one. */
   eventDates: Record<string, string>;
+  /** When each event starts (hh:mm:ss) and where, when they've said, for invitations. */
+  eventTimes: Record<string, string>;
+  eventPlaces: Record<string, string>;
   /** Who they booked, keyed "event/category", when a vendor is named. */
   bookedVendors: Record<string, { slug: string; name: string }>;
 };
@@ -74,6 +77,9 @@ type MembershipRow = {
     wedding_events: {
       event_slug: string;
       event_date: string | null;
+      starts_at: string | null;
+      venue_text: string | null;
+      venue: { name: string } | null;
       guest_band: string | null;
       wedding_slots: {
         category_slug: string;
@@ -89,6 +95,8 @@ export function toAccountWedding(row: MembershipRow): AccountWedding | null {
   const booked: Record<string, string[]> = {};
   const guests: Record<string, string> = {};
   const eventDates: Record<string, string> = {};
+  const eventTimes: Record<string, string> = {};
+  const eventPlaces: Record<string, string> = {};
   const bookedVendors: Record<string, { slug: string; name: string }> = {};
   for (const event of row.wedding.wedding_events) {
     const categories: string[] = [];
@@ -101,6 +109,10 @@ export function toAccountWedding(row: MembershipRow): AccountWedding | null {
     if (categories.length > 0) booked[event.event_slug] = categories;
     if (event.guest_band) guests[event.event_slug] = event.guest_band;
     if (event.event_date) eventDates[event.event_slug] = event.event_date;
+    if (event.starts_at) eventTimes[event.event_slug] = event.starts_at;
+    // Typed in, or the listed hall or gurdwara's name
+    const place = event.venue_text ?? event.venue?.name;
+    if (place) eventPlaces[event.event_slug] = place;
   }
   return {
     id: row.wedding.id,
@@ -113,6 +125,8 @@ export function toAccountWedding(row: MembershipRow): AccountWedding | null {
     booked,
     guests,
     eventDates,
+    eventTimes,
+    eventPlaces,
     bookedVendors,
   };
 }
@@ -141,7 +155,7 @@ async function fetchMyWeddings(userId: string): Promise<AccountWedding[]> {
   const { data, error } = await supabase
     .from('wedding_members')
     .select(
-      'role, joined_at, wedding:weddings(id, title, wedding_date, wedding_cultures(culture_slug), wedding_events(event_slug, event_date, guest_band, wedding_slots(category_slug, bookings(status, vendor:vendors(slug, name)))))',
+      'role, joined_at, wedding:weddings(id, title, wedding_date, wedding_cultures(culture_slug), wedding_events(event_slug, event_date, starts_at, venue_text, venue:vendors(name), guest_band, wedding_slots(category_slug, bookings(status, vendor:vendors(slug, name)))))',
     )
     .eq('user_id', userId)
     .order('joined_at');

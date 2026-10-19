@@ -75,6 +75,13 @@ export function cardDate(value: string): string {
   }).format(fromDateString(value));
 }
 
+/** "6:30 PM" or "7 PM", from the plan's hh:mm:ss. */
+export function cardTime(value: string): string {
+  const [hours, minutes] = value.split(':').map(Number);
+  const hour = hours % 12 === 0 ? 12 : hours % 12;
+  return `${hour}${minutes ? `:${String(minutes).padStart(2, '0')}` : ''} ${hours < 12 ? 'AM' : 'PM'}`;
+}
+
 /** One page a card, each card in the middle at 5 by 7 inches (PNGs as base64). */
 export function cardPageHtml(pictures: string[]): string {
   const pages = pictures

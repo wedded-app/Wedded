@@ -104,7 +104,7 @@ function Full({
 }) {
   const styles = useStyles();
   const approve = useApprove(approval);
-  const list = useGuestList(approval.guests?.list);
+  const list = useGuestList(approval.guests?.to);
   // A send to guests waits until their list is found (signed out, Send asks to sign in)
   const blocked = !!approval.guests && list.status !== 'ready' && list.status !== 'signedOut';
   return (

@@ -7,16 +7,28 @@ import { Spacing } from '@/constants/theme';
 import { useLocale } from '@/i18n/locale-context';
 import { selectionHaptic } from '@/lib/haptics';
 
+import { eventName } from './flows';
 import type { GuestListState } from './guest-list';
 import { GUEST_CHANNELS, namesPreview, reachable, type GuestSend } from './send-to-guests';
-import { WedCards } from './wed-cards';
+import { useWedCards, WedCards } from './wed-cards';
 import { wed } from './wed-store';
+
+/** Who a send goes to, for the strings: wedSend.list.* with a list's name, or wedSend.event.*. */
+export function whoOf(to: GuestSend['to']): {
+  key: 'list' | 'event';
+  words: Record<string, string>;
+} {
+  return 'event' in to
+    ? { key: 'event', words: { event: eventName(to.event) } }
+    : { key: 'list', words: { list: to.list } };
+}
 
 /**
  * On a card that sends to guests, everything the family checks before Send:
- * the list, how many people and their first names; how it goes (each person
- * their own text, the default, one group text, or email); and the cards.
- * The message is the card's usual Message box.
+ * who (a list or an event's guests), how many and their first names; how it
+ * goes (each person their own text, the default, one group text, or email);
+ * and the cards, or the Memory Vault's link. The message is the card's usual
+ * Message box.
  */
 export function GuestDetails({
   id,
@@ -31,6 +43,7 @@ export function GuestDetails({
   editable: boolean;
 }) {
   const { t } = useLocale();
+  const cards = useWedCards(send.events);
   return (
     <>
       <Who send={send} list={list} />
@@ -39,7 +52,12 @@ export function GuestDetails({
           <ListRow
             key={channel}
             title={t(`wedSend.channels.${channel}.title`)}
-            subtitle={t(`wedSend.channels.${channel}.body`)}
+            subtitle={t(
+              // A vault link isn't an RSVP link
+              send.vault && channel === 'each'
+                ? 'wedSend.channels.each.vaultBody'
+                : `wedSend.channels.${channel}.body`,
+            )}
             accessibilityRole="radio"
             checked={send.channel === channel}
             onPress={
@@ -53,7 +71,11 @@ export function GuestDetails({
           />
         ))}
       </ListSection>
-      <WedCards events={send.events} width={96} />
+      {send.vault ? (
+        <IconLine icon="images-outline">{t('wedSend.vault')}</IconLine>
+      ) : (
+        cards && <WedCards cards={cards} width={96} />
+      )}
     </>
   );
 }
@@ -61,11 +83,11 @@ export function GuestDetails({
 /** "Mehndi list · 40 people", then "Priya, Aman, Raj and 37 more", or why there's no one yet. */
 function Who({ send, list }: { send: GuestSend; list: GuestListState }) {
   const { t } = useLocale();
-  const asked = { list: send.list };
+  const who = whoOf(send.to);
   if (list.status !== 'ready') {
     return (
       <IconLine icon="people-outline" color="text2">
-        {t(`wedSend.list.${list.status}`, asked)}
+        {t(`wedSend.${who.key}.${list.status}`, who.words)}
       </IconLine>
     );
   }
@@ -75,7 +97,11 @@ function Who({ send, list }: { send: GuestSend; list: GuestListState }) {
   return (
     <View style={{ gap: Spacing.xs }}>
       <AppText weight={600}>
-        {t('wedSend.list.ready', { list: list.name, count: list.recipients.length })}
+        {t(`wedSend.${who.key}.ready`, {
+          ...who.words,
+          list: list.name,
+          count: list.recipients.length,
+        })}
       </AppText>
       {names.length > 0 && (
         <AppText color="text2">

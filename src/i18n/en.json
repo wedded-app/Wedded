@@ -289,15 +289,18 @@
     "saved": {
       "one": "Saved to your Photos.",
       "other": "All {{count}} saved to your Photos."
-    }
+    },
+    "none": "None of those events are in your plan yet. Add them in My Wedding, then ask me again."
   },
   "wedSend": {
     "title": "Sending your cards",
     "how": "How to send",
+    "vault": "Their link to your Memory Vault, to add the photos and videos they took. If the vault isn't open yet, sending opens it.",
     "channels": {
       "each": {
         "title": "Text each person",
-        "body": "Each gets their own text, with their own link to say if they're coming."
+        "body": "Each gets their own text, with their own link to say if they're coming.",
+        "vaultBody": "Each gets their own text with the vault's link."
       },
       "group": {
         "title": "One group text",
@@ -317,6 +320,20 @@
         "one": "{{list}} · 1 person",
         "other": "{{list}} · {{count}} people"
       }
+    },
+    "event": {
+      "signedOut": "Sign in to see who's invited to the {{event}}.",
+      "loading": "Finding who's invited to the {{event}}…",
+      "missing": "No one is invited to the {{event}} yet.",
+      "error": "Your guest list didn't load. Check your connection, then try again.",
+      "ready": {
+        "one": "Everyone at the {{event}} · 1 person",
+        "other": "Everyone at the {{event}} · {{count}} people"
+      }
+    },
+    "who": {
+      "list": "on your {{list}}",
+      "event": "at the {{event}}"
     },
     "names": {
       "more": {
@@ -353,19 +370,21 @@
     "done": "Done: {{sent}} of {{count}} sent",
     "finish": "Done",
     "gone": "This send isn't here any more. Ask Wed again.",
-    "nonePhone": "No one on your {{list}} has a phone number yet.",
-    "noneEmail": "No one on your {{list}} has an email yet.",
+    "nonePhone": "No one {{who}} has a phone number yet.",
+    "noneEmail": "No one {{who}} has an email yet.",
     "unavailable": {
       "each": "This phone can't send texts. Try again from a phone with Messages.",
       "group": "This phone can't send texts. Try again from a phone with Messages.",
       "email": "This phone has no email set up. Add an account in Mail, then try again."
     },
     "subject": "You're invited",
+    "vaultSubject": "Our Memory Vault",
     "rsvpLine": "Tell us if you're coming: {{url}}",
+    "vaultLine": "Add yours here: {{url}}",
     "receipt": {
-      "texted": "Texted {{sent}} of {{count}} on your {{list}}",
-      "emailed": "Emailed {{sent}} of {{count}} on your {{list}}",
-      "nothing": "Nothing went to your {{list}}"
+      "texted": "Texted {{sent}} of {{count}} {{who}}",
+      "emailed": "Emailed {{sent}} of {{count}} {{who}}",
+      "nothing": "Nothing went to anyone {{who}}"
     }
   },
   "forVendors": {

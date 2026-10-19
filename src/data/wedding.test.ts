@@ -22,6 +22,8 @@ const wedding: AccountWedding = {
   booked: { reception: ['banquet-hall'] },
   guests: { reception: '250_500' },
   eventDates: { reception: '2027-06-12' },
+  eventTimes: {},
+  eventPlaces: {},
   bookedVendors: {},
 };
 
@@ -40,6 +42,9 @@ describe('toAccountWedding', () => {
             {
               event_slug: 'reception',
               event_date: '2027-06-12',
+              starts_at: '18:30:00',
+              venue_text: null,
+              venue: { name: 'Royal Orchard Banquet Hall' },
               guest_band: '250_500',
               wedding_slots: [
                 {
@@ -55,6 +60,9 @@ describe('toAccountWedding', () => {
             {
               event_slug: 'jaago',
               event_date: '2027-06-11',
+              starts_at: null,
+              venue_text: 'At home, Yuba City',
+              venue: null,
               guest_band: null,
               wedding_slots: [
                 { category_slug: 'dhol', bookings: [{ status: 'canceled', vendor: null }] },
@@ -74,6 +82,8 @@ describe('toAccountWedding', () => {
       booked: { reception: ['dj'] },
       guests: { reception: '250_500' },
       eventDates: { reception: '2027-06-12', jaago: '2027-06-11' },
+      eventTimes: { reception: '18:30:00' },
+      eventPlaces: { reception: 'Royal Orchard Banquet Hall', jaago: 'At home, Yuba City' },
       bookedVendors: { 'reception/dj': { slug: 'dj-sukh', name: 'DJ Sukh' } },
     });
   });

@@ -2,8 +2,8 @@ import * as MailComposer from 'expo-mail-composer';
 import * as SMS from 'expo-sms';
 
 /**
- * Sending invitations to guests from the family's own phone (#129, and the
- * send part of #127). Nothing goes from our server: Messages or Mail opens
+ * Sending to guests from the family's own phone: invitation cards (#129, and
+ * the send part of #127) or the Memory Vault's link (#306). Nothing goes from our server: Messages or Mail opens
  * filled in, and the phone's own Send button is the final say. Texting from
  * a server needs Twilio and carrier (A2P 10DLC) registration, which waits
  * for the LLC (#149).
@@ -22,10 +22,15 @@ export const GUEST_CHANNELS: GuestChannel[] = ['each', 'group', 'email'];
  * confirm card in the thread, and nothing more until the family taps Send.
  */
 export type GuestSend = {
-  /** The guest list as the family calls it: "Mehndi" finds the "Mehndi list". */
-  list: string;
-  /** The plan's events whose cards go with it, by slug, in order. */
+  /**
+   * Who: a guest list as the family calls it ("Mehndi" finds the "Mehndi
+   * list"), or everyone invited to one of the plan's events, by slug.
+   */
+  to: { list: string } | { event: string };
+  /** The events whose cards go with it, by slug, in order. */
   events: string[];
+  /** The Memory Vault's link instead of cards, so guests add their photos. */
+  vault?: boolean;
   channel: GuestChannel;
 };
 
@@ -77,16 +82,16 @@ export function namesPreview(recipients: Recipient[], show = 3) {
   };
 }
 
-/** The words a batch gets: for "Text each person", the message and that person's own RSVP link. */
-export function messageFor(
-  channel: GuestChannel,
-  message: string,
+/** The link a batch ends with: the vault's for everyone, or each person's own RSVP link when texted one by one. */
+export function linkFor(
+  send: GuestSend,
   to: Recipient[],
-  rsvpLine: (url: string) => string,
-): string {
-  return channel === 'each' && to.length === 1
-    ? `${message}\n\n${rsvpLine(to[0].rsvpUrl)}`
-    : message;
+  vaultUrl: string | null,
+): { line: 'vaultLine' | 'rsvpLine'; url: string } | null {
+  if (send.vault) return vaultUrl ? { line: 'vaultLine', url: vaultUrl } : null;
+  return send.channel === 'each' && to.length === 1
+    ? { line: 'rsvpLine', url: to[0].rsvpUrl }
+    : null;
 }
 
 /** False on the web, in the iOS Simulator, and on a phone with no texting or no Mail account. */

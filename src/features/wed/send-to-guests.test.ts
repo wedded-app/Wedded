@@ -1,10 +1,11 @@
 import {
   batches,
   firstName,
-  messageFor,
+  linkFor,
   namesPreview,
   openComposer,
   sameList,
+  type GuestSend,
   type Recipient,
 } from './send-to-guests';
 
@@ -69,13 +70,23 @@ describe('sending to guests', () => {
     expect(namesPreview([priya])).toEqual({ names: ['Priya'], more: 0 });
   });
 
-  it("adds each person's own RSVP link to their own text only", () => {
-    const line = (url: string) => `RSVP: ${url}`;
-    expect(messageFor('each', 'Come!', [priya], line)).toBe(
-      'Come!\n\nRSVP: https://wedded.app/rsvp/1',
-    );
-    expect(messageFor('group', 'Come!', [priya, aman], line)).toBe('Come!');
-    expect(messageFor('email', 'Come!', [priya], line)).toBe('Come!');
+  it("ends each person's own text with their RSVP link, and every vault message with its link", () => {
+    const cards: GuestSend = { to: { list: 'Mehndi' }, events: ['jaago'], channel: 'each' };
+    expect(linkFor(cards, [priya], null)).toEqual({
+      line: 'rsvpLine',
+      url: 'https://wedded.app/rsvp/1',
+    });
+    expect(linkFor({ ...cards, channel: 'group' }, [priya, aman], null)).toBeNull();
+    expect(linkFor({ ...cards, channel: 'email' }, [priya], null)).toBeNull();
+    const vault: GuestSend = { ...cards, events: [], vault: true };
+    expect(linkFor(vault, [priya], 'https://wedded.app/join-vault/t')).toEqual({
+      line: 'vaultLine',
+      url: 'https://wedded.app/join-vault/t',
+    });
+    expect(linkFor({ ...vault, channel: 'group' }, [priya, aman], 'https://v')).toEqual({
+      line: 'vaultLine',
+      url: 'https://v',
+    });
   });
 
   it('opens Messages with the cards attached, and Mail with everyone on BCC', async () => {

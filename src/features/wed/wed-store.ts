@@ -5,7 +5,15 @@ import type { IconName } from '@/components/icon';
 import { sendToVendor } from '@/data/chat';
 import { selectionHaptic, successHaptic } from '@/lib/haptics';
 
-import { eventsIn, FLOWS, guestApproval, matchFlow, type FlowKey, type Op } from './flows';
+import {
+  eventsIn,
+  FLOWS,
+  guestApproval,
+  guestTarget,
+  matchFlow,
+  type FlowKey,
+  type Op,
+} from './flows';
 import {
   APPS,
   CATERER,
@@ -432,8 +440,14 @@ function apply(op: Op, run: Run) {
       // "Send them": the cards Wed made last, else every event's
       const made = [...state.items].reverse().find((item) => item.kind === 'cards');
       const events = made?.kind === 'cards' ? made.events : EVENTS.map((e) => e.slug);
+      const to = guestTarget(run.q ?? '');
+      apply({ op: 'approval', a: guestApproval({ to, events, channel: 'each' }) }, run);
+      return;
+    }
+    case 'vault': {
+      const to = guestTarget(run.q ?? '');
       apply(
-        { op: 'approval', a: guestApproval({ list: run.q ?? '', events, channel: 'each' }) },
+        { op: 'approval', a: guestApproval({ to, events: [], vault: true, channel: 'each' }) },
         run,
       );
       return;

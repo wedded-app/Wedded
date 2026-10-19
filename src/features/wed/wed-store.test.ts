@@ -1,4 +1,4 @@
-import { eventsIn, matchFlow } from './flows';
+import { eventsIn, guestTarget, matchFlow } from './flows';
 import { activeTasks, doneEntries, getWed, waitingCount, wed } from './wed-store';
 
 jest.mock('expo-haptics', () => ({
@@ -57,6 +57,7 @@ describe('matchFlow', () => {
     ['Make invitations for Jaago, Anand Karaj and Reception', 'cards'],
     ['Send them to my Mehndi list', 'guests'],
     ['Send the invitations to my Mehndi list', 'guests'],
+    ['Send the Memory Vault link to everyone at the Reception', 'vault'],
     ['hello there', 'fallback'],
   ])('%s plays %s', (text, flow) => {
     expect(matchFlow(text).flow).toBe(flow);
@@ -311,7 +312,11 @@ describe('invitations', () => {
       'anand-karaj',
       'reception',
     ]);
-    expect(matchFlow('Send them to my Mehndi list').q).toBe('Mehndi');
+    expect(matchFlow('Send them to my Mehndi list').q).toBe('my Mehndi list');
+    expect(guestTarget('my Mehndi list')).toEqual({ list: 'Mehndi' });
+    expect(guestTarget("Mom's side")).toEqual({ list: "Mom's side" });
+    expect(guestTarget('everyone at the Reception')).toEqual({ event: 'reception' });
+    expect(guestTarget('all the guests at our Anand Karaj')).toEqual({ event: 'anand-karaj' });
   });
 
   it('sends the cards it made to the list only after Send and 10 seconds', () => {
@@ -328,7 +333,11 @@ describe('invitations', () => {
       id: 'send-guests',
       stage: 'waiting',
       title: 'Send the Jaago, Anand Karaj and Reception cards to your Mehndi list',
-      guests: { list: 'Mehndi', events: ['jaago', 'anand-karaj', 'reception'], channel: 'each' },
+      guests: {
+        to: { list: 'Mehndi' },
+        events: ['jaago', 'anand-karaj', 'reception'],
+        channel: 'each',
+      },
     });
 
     wed.setChannel('send-guests', 'group');
@@ -350,12 +359,27 @@ describe('invitations', () => {
   });
 
   it('opens nothing after Undo, and the brain can ask for a send directly', () => {
-    wed.sendToGuests({ list: 'Reception list', events: ['reception'], channel: 'email' });
+    wed.sendToGuests({ to: { list: 'Reception list' }, events: ['reception'], channel: 'email' });
     const card = getWed().approvals.at(-1)!;
     expect(card.title).toBe('Send the Reception cards to your Reception list');
     wed.approve(card.id);
     wed.undo(card.id);
     jest.advanceTimersByTime(20_000);
     expect(mockPush).not.toHaveBeenCalled();
+  });
+
+  it("sends the Memory Vault's link to everyone at an event, with no cards", () => {
+    wed.send('Send the Memory Vault link to everyone at the Reception');
+    jest.advanceTimersByTime(1100);
+    const card = getWed().approvals.at(-1)!;
+    expect(card).toMatchObject({
+      id: 'send-vault',
+      kind: 'invite',
+      title: 'Send the Memory Vault link to everyone at the Reception',
+      guests: { to: { event: 'reception' }, events: [], vault: true, channel: 'each' },
+    });
+    wed.approve('send-vault');
+    jest.advanceTimersByTime(10_000);
+    expect(mockPush).toHaveBeenCalledWith({ pathname: '/wed-send', params: { id: 'send-vault' } });
   });
 });

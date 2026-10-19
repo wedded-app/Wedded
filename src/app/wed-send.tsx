@@ -10,17 +10,13 @@ import { Screen } from '@/components/screen';
 import { SheetHeader } from '@/components/sheet-header';
 import { Sizes, Spacing } from '@/constants/theme';
 import { useInviteToEvent, useLogInviteSends } from '@/data/guests';
+import { useCreateVaultInvite, useOpenMemoryVault } from '@/data/memory-vault';
 import { cardFile } from '@/features/cards/card-export';
+import { whoOf } from '@/features/wed/guest-details';
 import { useGuestList } from '@/features/wed/guest-list';
 import { WED_HREF } from '@/features/wed/open-wed';
-import {
-  batches,
-  canSend,
-  firstName,
-  messageFor,
-  openComposer,
-} from '@/features/wed/send-to-guests';
-import { useCardRefs, WedCards } from '@/features/wed/wed-cards';
+import { batches, canSend, firstName, linkFor, openComposer } from '@/features/wed/send-to-guests';
+import { useCardRefs, useWedCards, WedCards } from '@/features/wed/wed-cards';
 import { useWed, wed } from '@/features/wed/wed-store';
 import { useLocale } from '@/i18n/locale-context';
 import { successHaptic } from '@/lib/haptics';
@@ -35,12 +31,13 @@ type Sheet = {
 
 /**
  * Sending to guests (/wed-send?id=…), opened by Wed once a send-to-guests
- * card's 10 seconds for Undo are up. It first invites the list to the
- * cards' events, so each guest's RSVP link shows them. Then it opens
- * Messages (or Mail) filled in, with the cards attached: for "Text each
- * person" one guest at a time, "Sending 3 of 40", with Skip and Stop
- * between them; otherwise everyone at once. The phone's own Send button is
- * the final say, and each one that goes is logged for the guest list.
+ * card's 10 seconds for Undo are up. For cards it first invites the guests
+ * to the cards' events, so each one's RSVP link shows them; for the Memory
+ * Vault it opens the vault if need be and makes a link. Then it opens
+ * Messages (or Mail) filled in, the cards attached: for "Text each person"
+ * one guest at a time, "Sending 3 of 40", with Skip and Stop between them;
+ * otherwise everyone at once. The phone's own Send button is the final
+ * say, and each invitation that goes is logged for the guest list.
  */
 export default function WedSendSheet() {
   const { t } = useLocale();
@@ -49,13 +46,16 @@ export default function WedSendSheet() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const send = useWed((s) => s.approvals.find((a) => a.id === id)?.guests);
   const message = useWed((s) => s.approvals.find((a) => a.id === id)?.message ?? '');
-  const list = useGuestList(send?.list);
+  const list = useGuestList(send?.to);
   const invite = useInviteToEvent();
   const logSends = useLogInviteSends();
-  const refs = useCardRefs(send?.events.length ?? 0);
+  const openVault = useOpenMemoryVault();
+  const vaultLink = useCreateVaultInvite();
+  const cards = useWedCards(send?.events ?? []);
+  const refs = useCardRefs(cards?.length ?? 0);
 
-  // The cards as files and the invites, once, before the first message opens
-  const files = useRef<string[] | null>(null);
+  // Once, before the first message opens: the invites, then the cards as files or the vault's link
+  const prepared = useRef<{ files: string[]; vaultUrl: string | null } | null>(null);
   const [next, setNext] = useState(0);
   const [sent, setSent] = useState(0);
   const [busy, setBusy] = useState(false);
@@ -71,7 +71,6 @@ export default function WedSendSheet() {
   );
   const people = steps.reduce((sum, to) => sum + to.length, 0);
   const done = steps.length > 0 && next >= steps.length;
-  const listName = list.status === 'ready' ? list.name : (send?.list ?? '');
 
   useEffect(() => {
     void canSend(channel).then(setAvailable);
@@ -87,10 +86,16 @@ export default function WedSendSheet() {
 
   const close = () => (router.canGoBack() ? router.back() : router.replace(WED_HREF));
 
+  // "on your Mehndi list" or "at the Reception", for what the sheet says
+  const who = send ? whoOf(send.to) : null;
+  const whoWords = who
+    ? t(`wedSend.who.${who.key}`, { ...who.words, list: list.status === 'ready' ? list.name : '' })
+    : '';
+
   // What happened goes in Wed's thread, then the sheet closes
   const finish = () => {
     const words = sent === 0 ? 'nothing' : channel === 'email' ? 'emailed' : 'texted';
-    wed.note(t(`wedSend.receipt.${words}`, { sent, count: people, list: listName }));
+    wed.note(t(`wedSend.receipt.${words}`, { sent, count: people, who: whoWords }));
     close();
   };
 
@@ -100,22 +105,39 @@ export default function WedSendSheet() {
     setBusy(true);
     setFailed(false);
     try {
-      if (files.current === null) {
-        // Only the events in the family's plan can have invites
-        const events = send.events.filter((slug) => list.events.includes(slug));
-        for (const eventSlug of events) {
-          await invite.mutateAsync({ weddingId: list.weddingId, eventSlug, listId: list.listId });
+      if (prepared.current === null) {
+        if (send.vault) {
+          // The same vault when it's already open; every link is a new one
+          const vaultId = await openVault.mutateAsync(list.weddingId);
+          prepared.current = { files: [], vaultUrl: await vaultLink.mutateAsync(vaultId) };
+        } else {
+          // Only the events in the family's plan can have invites
+          const events = send.events.filter((slug) => list.events.includes(slug));
+          const guests = list.listId
+            ? { listId: list.listId }
+            : { guestIds: list.recipients.map((r) => r.id) };
+          for (const eventSlug of events) {
+            await invite.mutateAsync({ weddingId: list.weddingId, eventSlug, ...guests });
+          }
+          prepared.current = {
+            files: await Promise.all(refs.map((card) => cardFile(card))),
+            vaultUrl: null,
+          };
         }
-        files.current = await Promise.all(refs.map((card) => cardFile(card)));
       }
-      const body = messageFor(channel, message, to, (url) => t('wedSend.rsvpLine', { url }));
-      const result = await openComposer(channel, to, body, files.current, t('wedSend.subject'));
+      const link = linkFor(send, to, prepared.current.vaultUrl);
+      const body = link ? `${message}\n\n${t(`wedSend.${link.line}`, { url: link.url })}` : message;
+      const subject = t(send.vault ? 'wedSend.vaultSubject' : 'wedSend.subject');
+      const result = await openComposer(channel, to, body, prepared.current.files, subject);
       if (result !== 'cancelled') {
-        logSends.mutate({
-          weddingId: list.weddingId,
-          guestIds: to.map((r) => r.id),
-          channel: channel === 'email' ? 'email' : 'text',
-        });
+        // Invitations only: the vault's link isn't one
+        if (!send.vault) {
+          logSends.mutate({
+            weddingId: list.weddingId,
+            guestIds: to.map((r) => r.id),
+            channel: channel === 'email' ? 'email' : 'text',
+          });
+        }
         setSent((n) => n + to.length);
         if (next + 1 >= steps.length) successHaptic();
       }
@@ -130,9 +152,10 @@ export default function WedSendSheet() {
 
   // Send on the card opens the first message: here, as soon as it can
   const openFirst = useEffectEvent(() => void openNext());
-  const ready = list.status === 'ready' && steps.length > 0 && available === true && shown;
+  const ready =
+    list.status === 'ready' && steps.length > 0 && available === true && shown && !!cards;
   useEffect(() => {
-    if (ready && files.current === null) openFirst();
+    if (ready && prepared.current === null) openFirst();
   }, [ready]);
 
   const nextName = done || steps.length === 0 ? '' : firstName(steps[next][0].name);
@@ -143,14 +166,14 @@ export default function WedSendSheet() {
       <ScrollView contentContainerStyle={styles.content}>
         {!send ? (
           <AppText color="text2">{t('wedSend.gone')}</AppText>
-        ) : list.status !== 'ready' ? (
+        ) : list.status !== 'ready' || !who ? (
           <IconLine icon="people-outline" color="text2">
-            {t(`wedSend.list.${list.status}`, { list: send.list })}
+            {who ? t(`wedSend.${who.key}.${list.status}`, who.words) : ''}
           </IconLine>
         ) : steps.length === 0 ? (
           <AppText color="text2">
             {t(channel === 'email' ? 'wedSend.noneEmail' : 'wedSend.nonePhone', {
-              list: listName,
+              who: whoWords,
             })}
           </AppText>
         ) : available === false ? (
@@ -200,7 +223,9 @@ export default function WedSendSheet() {
             </AppText>
           </View>
         )}
-        {send && <WedCards events={send.events} width={Math.min(320, screen * 0.8)} refs={refs} />}
+        {cards && !send?.vault && (
+          <WedCards cards={cards} width={Math.min(320, screen * 0.8)} refs={refs} />
+        )}
       </ScrollView>
     </Screen>
   );

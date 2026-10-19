@@ -5,13 +5,17 @@ import { AppText } from '@/components/app-text';
 import { Button } from '@/components/button';
 import { FieldError } from '@/components/field-error';
 import { Sizes, Spacing } from '@/constants/theme';
-import { CARD_DESIGNS, type CardText } from '@/features/cards/card-designs';
+import { CARD_DESIGNS, cardTime, type CardText } from '@/features/cards/card-designs';
 import { printCards, saveCard } from '@/features/cards/card-export';
 import { InvitationCard } from '@/features/cards/invitation-card';
+import { usePlanView } from '@/features/planner/use-plan-view';
+import { localized } from '@/i18n/localized';
 import { useLocale } from '@/i18n/locale-context';
 import { successHaptic } from '@/lib/haptics';
 
 import { EVENTS, WEDDING } from './mock';
+
+export type WedCard = { slug: string; text: CardText };
 
 /** A ref for each card, by position. */
 export function useCardRefs(count: number): RefObject<View | null>[] {
@@ -19,22 +23,71 @@ export function useCardRefs(count: number): RefObject<View | null>[] {
 }
 
 /**
- * The cards for some of the family's events, side by side, one look each
- * (Ivory and gold, Maroon and gold, Sage garden...). Filled in from Wed's
- * plan (mock.ts, until the real brain reads the family's own, #124). With
- * `refs`, each card can be saved as a picture.
+ * What each event's card says. From the family's own plan when they have
+ * one: the wedding's title as the names, then the event's name, day, start
+ * time and place (an event not in their plan gets no card). Without a
+ * plan, from Wed's sample family (mock.ts), like the rest of the preview.
+ * Null while their plan loads.
+ */
+export function useWedCards(events: string[]): WedCard[] | null {
+  const { t } = useLocale();
+  const { wedding, loading, events: known } = usePlanView();
+  if (loading) return null;
+  const lines = {
+    opening: t('cards.defaults.opening'),
+    invite: t('cards.defaults.invite'),
+    note: '',
+  };
+  return events.flatMap((slug): WedCard[] => {
+    const sample = EVENTS.find((e) => e.slug === slug);
+    if (wedding) {
+      if (!wedding.events.includes(slug)) return [];
+      const name = known.find((e) => e.slug === slug)?.name;
+      const time = wedding.eventTimes[slug];
+      return [
+        {
+          slug,
+          text: {
+            ...lines,
+            names: wedding.title ?? '',
+            event: name ? localized(name) : (sample?.name ?? ''),
+            date: wedding.eventDates[slug] ?? null,
+            time: time ? cardTime(time) : '',
+            venue: wedding.eventPlaces[slug] ?? '',
+          },
+        },
+      ];
+    }
+    if (!sample) return [];
+    return [
+      {
+        slug,
+        text: {
+          ...lines,
+          names: WEDDING.couple,
+          event: sample.name,
+          date: sample.card.date,
+          time: sample.card.time,
+          venue: sample.card.place,
+        },
+      },
+    ];
+  });
+}
+
+/**
+ * Cards side by side, one look each (Ivory and gold, Maroon and gold, Sage
+ * garden...). With `refs`, each one can be saved as a picture.
  */
 export function WedCards({
-  events,
+  cards,
   width,
   refs,
 }: {
-  events: string[];
+  cards: WedCard[];
   width: number;
   refs?: RefObject<View | null>[];
 }) {
-  const { t } = useLocale();
-  const cards = events.flatMap((slug) => EVENTS.find((e) => e.slug === slug) ?? []);
   return (
     <ScrollView
       horizontal
@@ -45,28 +98,16 @@ export function WedCards({
       style={{ marginHorizontal: -Sizes.pageGutter }}
       contentContainerStyle={{ gap: Spacing.md, paddingHorizontal: Sizes.pageGutter }}
     >
-      {cards.map((event, index) => {
-        const text: CardText = {
-          opening: t('cards.defaults.opening'),
-          names: WEDDING.couple,
-          invite: t('cards.defaults.invite'),
-          event: event.name,
-          date: event.card.date,
-          time: event.card.time,
-          venue: event.card.place,
-          note: '',
-        };
-        return (
-          <InvitationCard
-            key={event.slug}
-            ref={refs?.[index]}
-            design={CARD_DESIGNS[index % CARD_DESIGNS.length]}
-            text={text}
-            namesSample=""
-            width={width}
-          />
-        );
-      })}
+      {cards.map((card, index) => (
+        <InvitationCard
+          key={card.slug}
+          ref={refs?.[index]}
+          design={CARD_DESIGNS[index % CARD_DESIGNS.length]}
+          text={card.text}
+          namesSample=""
+          width={width}
+        />
+      ))}
     </ScrollView>
   );
 }
@@ -77,7 +118,8 @@ type Action = 'save' | 'print';
 export function CardsRow({ events }: { events: string[] }) {
   const { t } = useLocale();
   const { width: screen } = useWindowDimensions();
-  const refs = useCardRefs(events.length);
+  const cards = useWedCards(events);
+  const refs = useCardRefs(cards?.length ?? 0);
   const [busy, setBusy] = useState<Action | null>(null);
   const [saved, setSaved] = useState(false);
   const [failed, setFailed] = useState<Action | null>(null);
@@ -101,13 +143,15 @@ export function CardsRow({ events }: { events: string[] }) {
     }
   }
 
+  if (!cards) return null;
+  if (cards.length === 0) return <AppText color="text2">{t('wedCards.none')}</AppText>;
   return (
     <View style={{ gap: Spacing.md }}>
-      <WedCards events={events} width={Math.min(300, screen * 0.78)} refs={refs} />
+      <WedCards cards={cards} width={Math.min(300, screen * 0.78)} refs={refs} />
       <Button
         variant="secondary"
         icon="images-outline"
-        label={t('wedCards.save', { count: events.length })}
+        label={t('wedCards.save', { count: cards.length })}
         disabled={busy !== null}
         loading={busy === 'save'}
         onPress={() => void run('save')}
@@ -122,7 +166,7 @@ export function CardsRow({ events }: { events: string[] }) {
       />
       {saved && (
         <AppText color="success" weight={600} accessibilityLiveRegion="polite">
-          {t('wedCards.saved', { count: events.length })}
+          {t('wedCards.saved', { count: cards.length })}
         </AppText>
       )}
       {failed && <FieldError message={t(`cards.failed.${failed}`)} />}
