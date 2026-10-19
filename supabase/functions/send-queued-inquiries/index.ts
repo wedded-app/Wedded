@@ -49,7 +49,7 @@ Deno.serve(async (request) => {
   const { data: queued, error: queuedError } = await admin
     .from('inquiries')
     .select(
-      'id, user_id, vendor_id, kind, event_date, start_time, guest_band, venue_text, message, preferred_contact, answers, sender_name, sender_phone, sender_email, channel, inquiry_events(event_slug, position), city:cities(name), venue:vendors!inquiries_venue_id_fkey(name)',
+      'id, user_id, vendor_id, kind, event_date, start_time, guest_band, venue_text, message, preferred_contact, answers, sender_name, sender_phone, sender_email, channel, inquiry_events(event_slug, position), tour_slots(rank, day, part), city:cities(name), venue:vendors!inquiries_venue_id_fkey(name)',
     )
     .eq('status', 'queued')
     .order('created_at')
@@ -79,6 +79,10 @@ Deno.serve(async (request) => {
     const eventSlugs: string[] = [...(row.inquiry_events ?? [])]
       .sort((a: { position: number }, b: { position: number }) => a.position - b.position)
       .map((e: { event_slug: string }) => e.event_slug);
+    // A tour's visit times, in the family's order, as the app sent them
+    const tourSlots = [...(row.tour_slots ?? [])]
+      .sort((a: { rank: number }, b: { rank: number }) => a.rank - b.rank)
+      .map((s: { day: string; part: string }) => ({ date: s.day, part: s.part }));
 
     try {
       const [{ data: vendor }, { data: vendorPrivate }, { data: events }, { data: profile }] =
@@ -115,6 +119,7 @@ Deno.serve(async (request) => {
         details: {
           ...((row.answers ?? {}) as Record<string, unknown>),
           ...(row.kind === 'tour' ? { tour: true } : {}),
+          ...(tourSlots.length > 0 ? { tourSlots } : {}),
         },
         name: row.sender_name,
         phone: row.sender_phone,

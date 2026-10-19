@@ -2,7 +2,7 @@
  * Inquiries (vision S11, S12): sending goes through the send-inquiry Edge
  * Function, which applies the rules (profile, limits, duplicates) and emails
  * the vendor. The app can read its own inquiries; the only thing it writes is
- * the family's answer to "Did they get back to you?" (reply_answer).
+ * the family's answer to the follow-up "Did they get back to you?".
  */
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { FunctionsFetchError, FunctionsHttpError } from '@supabase/supabase-js';
@@ -89,22 +89,19 @@ export async function sendInquiry(draft: InquiryDraft): Promise<SendOutcome> {
 }
 
 const DAY_MS = 24 * 60 * 60 * 1000;
-/** The follow-up question waits 2 days after sending (vision §8: 48 to 72 h). */
-const FOLLOW_UP_AFTER_MS = 2 * DAY_MS;
 
 /**
- * Whether My inquiries should ask "Did they get back to you?": the inquiry
- * was sent at least 2 days ago and not answered yet.
+ * Whether My inquiries should ask "Did they get back to you?": sending
+ * schedules the question two days on (followups.asked_at), until answered.
  */
 export function followUpDue(
-  inquiry: { status: string; sent_at: string | null; reply_answer: string | null },
+  followUp: { asked_at: string; answer: string | null } | undefined,
   now: number,
 ): boolean {
   return (
-    inquiry.status === 'sent' &&
-    inquiry.reply_answer === null &&
-    inquiry.sent_at !== null &&
-    now - new Date(inquiry.sent_at).getTime() >= FOLLOW_UP_AFTER_MS
+    followUp !== undefined &&
+    followUp.answer === null &&
+    new Date(followUp.asked_at).getTime() <= now
   );
 }
 
@@ -133,22 +130,27 @@ async function fetchMyInquiries() {
   const { data, error } = await supabase
     .from('inquiries')
     .select(
-      'id, vendor_id, event_date, guest_band, status, created_at, sent_at, reply_answer, vendor:vendors!inquiries_vendor_id_fkey(slug, name), inquiry_events(event_slug, position)',
+      'id, vendor_id, event_date, guest_band, status, created_at, sent_at, vendor:vendors!inquiries_vendor_id_fkey(slug, name), inquiry_events(event_slug, position), followups(question, asked_at, answer)',
     )
     .order('created_at', { ascending: false });
   if (error) throw error;
   const now = Date.now();
-  return data.map(({ inquiry_events, ...inquiry }) => ({
-    ...inquiry,
-    /** The events in the order the family picked them. */
-    event_slugs: [...inquiry_events]
-      .sort((a, b) => a.position - b.position)
-      .map((e) => e.event_slug),
-    /** "Ask again" shows once 24 hours have passed, or if it didn't send (S16c). */
-    canAskAgain:
-      inquiry.status === 'failed' || now - new Date(inquiry.created_at).getTime() > DAY_MS,
-    followUpDue: followUpDue(inquiry, now),
-  }));
+  return data.map(({ inquiry_events, followups, ...inquiry }) => {
+    const followUp = followups.find((f) => f.question === 'did_they_reply');
+    return {
+      ...inquiry,
+      /** The events in the order the family picked them. */
+      event_slugs: [...inquiry_events]
+        .sort((a, b) => a.position - b.position)
+        .map((e) => e.event_slug),
+      /** "Ask again" shows once 24 hours have passed, or if it didn't send (S16c). */
+      canAskAgain:
+        inquiry.status === 'failed' || now - new Date(inquiry.created_at).getTime() > DAY_MS,
+      /** Their answer to "Did they get back to you?", once they've given one. */
+      followUpAnswer: (followUp?.answer ?? null) as ReplyAnswer | null,
+      followUpDue: followUpDue(followUp, now),
+    };
+  });
 }
 
 /** The signed-in person's inquiries, newest first ("My inquiries", S16c). */
@@ -168,9 +170,10 @@ export function useAnswerFollowUp() {
   return useMutation({
     mutationFn: async ({ inquiryId, answer }: { inquiryId: string; answer: ReplyAnswer }) => {
       const { error } = await supabase
-        .from('inquiries')
-        .update({ reply_answer: answer })
-        .eq('id', inquiryId);
+        .from('followups')
+        .update({ answer })
+        .eq('inquiry_id', inquiryId)
+        .eq('question', 'did_they_reply');
       if (error) throw error;
     },
     onSettled: () => {

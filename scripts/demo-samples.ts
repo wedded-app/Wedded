@@ -819,23 +819,32 @@ async function main() {
         status: 'sent',
         sent_at: new Date(start).toISOString(),
         created_at: new Date(start).toISOString(),
-        reply_answer: c.answer ?? null,
-        reply_answered_at: c.answer ? new Date(start + 5 * DAY).toISOString() : null,
       })
       .select('id')
       .single();
     if (error) fail(`Couldn't send the inquiry to ${c.vendor}: ${error.message}`);
     if (c.events.length > 0) {
-      const { error: eventsError } = await db
-        .from('inquiry_events')
-        .insert(
-          c.events.map((event_slug, i) => ({
-            inquiry_id: inquiry.id,
-            event_slug,
-            position: i + 1,
-          })),
-        );
+      const { error: eventsError } = await db.from('inquiry_events').insert(
+        c.events.map((event_slug, i) => ({
+          inquiry_id: inquiry.id,
+          event_slug,
+          position: i + 1,
+        })),
+      );
       if (eventsError) fail(`Couldn't add the inquiry's events: ${eventsError.message}`);
+    }
+    if (c.answer) {
+      // "Did they get back to you?" (sending asked it); the plan already books these vendors
+      const { error: answerError } = await db
+        .from('followups')
+        .update({ answer: c.answer })
+        .eq('inquiry_id', inquiry.id);
+      if (answerError) fail(`Couldn't answer the follow-up: ${answerError.message}`);
+      // Answered five days after sending, not today (the database stamps now)
+      await db
+        .from('followups')
+        .update({ answered_at: new Date(start + 5 * DAY).toISOString() })
+        .eq('inquiry_id', inquiry.id);
     }
     // The inquiry opened the chat with its booking card just now; move it back in time
     const { data: card } = await db

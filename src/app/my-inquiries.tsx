@@ -164,7 +164,7 @@ export default function MyInquiriesScreen() {
                 <FollowUp
                   inquiryId={item.id}
                   vendorName={vendorName}
-                  answer={item.reply_answer as ReplyAnswer | null}
+                  answer={item.followUpAnswer}
                   due={item.followUpDue}
                 />
               )}

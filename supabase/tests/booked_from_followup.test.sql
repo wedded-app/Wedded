@@ -54,7 +54,8 @@ where m.user_id = 'a4000000-0000-4000-8000-000000000002';
 
 set local role authenticated;
 select pg_temp.as_user('a4000000-0000-4000-8000-000000000001');
-update public.inquiries set reply_answer = 'booked' where user_id = 'a4000000-0000-4000-8000-000000000001';
+update public.followups set answer = 'booked'
+  where inquiry_id in (select id from public.inquiries where user_id = 'a4000000-0000-4000-8000-000000000001');
 reset role;
 
 select is(
@@ -71,11 +72,14 @@ select ok(
 
 set local role authenticated;
 select pg_temp.as_user('a4000000-0000-4000-8000-000000000002');
-update public.inquiries set reply_answer = 'booked' where user_id = 'a4000000-0000-4000-8000-000000000002';
+update public.followups set answer = 'booked'
+  where inquiry_id in (select id from public.inquiries where user_id = 'a4000000-0000-4000-8000-000000000002');
 select pg_temp.as_user('a4000000-0000-4000-8000-000000000003');
-update public.inquiries set reply_answer = 'deciding' where user_id = 'a4000000-0000-4000-8000-000000000003';
+update public.followups set answer = 'deciding'
+  where inquiry_id in (select id from public.inquiries where user_id = 'a4000000-0000-4000-8000-000000000003');
 select pg_temp.as_user('a4000000-0000-4000-8000-000000000006');
-update public.inquiries set reply_answer = 'booked' where user_id = 'a4000000-0000-4000-8000-000000000006';
+update public.followups set answer = 'booked'
+  where inquiry_id in (select id from public.inquiries where user_id = 'a4000000-0000-4000-8000-000000000006');
 reset role;
 
 select is(
@@ -104,14 +108,18 @@ select is(
 reset role;
 
 -- Families 3, 4 and 5 book too (3 changes their mind from "deciding")
-update public.inquiries set reply_answer = null where user_id = 'a4000000-0000-4000-8000-000000000003';
+update public.followups set answer = null
+  where inquiry_id in (select id from public.inquiries where user_id = 'a4000000-0000-4000-8000-000000000003');
 set local role authenticated;
 select pg_temp.as_user('a4000000-0000-4000-8000-000000000003');
-update public.inquiries set reply_answer = 'booked' where user_id = 'a4000000-0000-4000-8000-000000000003';
+update public.followups set answer = 'booked'
+  where inquiry_id in (select id from public.inquiries where user_id = 'a4000000-0000-4000-8000-000000000003');
 select pg_temp.as_user('a4000000-0000-4000-8000-000000000004');
-update public.inquiries set reply_answer = 'booked' where user_id = 'a4000000-0000-4000-8000-000000000004';
+update public.followups set answer = 'booked'
+  where inquiry_id in (select id from public.inquiries where user_id = 'a4000000-0000-4000-8000-000000000004');
 select pg_temp.as_user('a4000000-0000-4000-8000-000000000005');
-update public.inquiries set reply_answer = 'booked' where user_id = 'a4000000-0000-4000-8000-000000000005';
+update public.followups set answer = 'booked'
+  where inquiry_id in (select id from public.inquiries where user_id = 'a4000000-0000-4000-8000-000000000005');
 reset role;
 -- Family 6 books it by hand in their plan's jaago
 select private.book_slot(we.id, 'banquet-hall', 'b4000000-0000-4000-8000-000000000001', null, null, false)

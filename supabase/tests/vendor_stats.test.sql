@@ -83,10 +83,14 @@ select is(
 );
 reset role;
 
-insert into public.inquiries (vendor_id, guest_band, venue_text, message, preferred_contact,
-  channel, status, reply_answer)
-select '60000000-0000-4000-8000-000000000001', '100_250', 'Yuba City', 'Price?', 'call', 'email', 'sent', a
-from unnest(array['booked', 'deciding', 'deciding', 'no_reply']) as a;
+insert into public.inquiries (id, vendor_id, guest_band, venue_text, message, preferred_contact,
+  channel, status)
+select ('6a000000-0000-4000-8000-00000000000' || n)::uuid, '60000000-0000-4000-8000-000000000001',
+  '100_250', 'Yuba City', 'Price?', 'call', 'email', 'sent'
+from generate_series(1, 6) as n;
+update public.followups f set answer = a.answer
+from (values (1, 'booked'), (2, 'deciding'), (3, 'deciding'), (4, 'no_reply')) as a (n, answer)
+where f.inquiry_id = ('6a000000-0000-4000-8000-00000000000' || a.n)::uuid;
 
 set local role anon;
 select is(
@@ -96,11 +100,8 @@ select is(
 );
 reset role;
 
-insert into public.inquiries (vendor_id, guest_band, venue_text, message, preferred_contact,
-  channel, status, reply_answer)
-values
-  ('60000000-0000-4000-8000-000000000001', '100_250', 'Yuba City', 'Price?', 'call', 'email', 'sent', 'booked'),
-  ('60000000-0000-4000-8000-000000000001', '100_250', 'Yuba City', 'Price?', 'call', 'email', 'sent', null);
+-- The fifth answers; the sixth never does
+update public.followups set answer = 'booked' where inquiry_id = '6a000000-0000-4000-8000-000000000005';
 
 set local role anon;
 select results_eq(
