@@ -569,10 +569,10 @@ select set_eq(
 -- The vendors who made this day --------------------------------------------------------
 
 reset role;
-insert into public.vendors (id, slug, status, name, city, location) values
-  ('99000000-0000-4000-8000-000000000001', 'vault-test-dhol', 'published', 'Test Dhol Crew', 'Yuba City',
+insert into public.vendors (id, slug, status, name, base_city_slug, location) values
+  ('99000000-0000-4000-8000-000000000001', 'vault-test-dhol', 'published', 'Test Dhol Crew', 'yuba-city',
    'SRID=4326;POINT(-121.61 39.14)'),
-  ('99000000-0000-4000-8000-000000000002', 'vault-test-draft', 'draft', 'Draft Caterer', 'Yuba City',
+  ('99000000-0000-4000-8000-000000000002', 'vault-test-draft', 'draft', 'Draft Caterer', 'yuba-city',
    'SRID=4326;POINT(-121.61 39.14)');
 -- The dhol crew is booked for the Jaago; the caterer isn't published; the
 -- photographer is only held for the Reception
@@ -584,8 +584,8 @@ from (values
   ('5a000000-0000-4000-8000-000000000003'::uuid, 'reception', 'photographer')
 ) as v (slot, event, category)
 join public.wedding_events we on we.wedding_id = pg_temp.id('wedding') and we.event_slug = v.event;
-insert into public.vendors (id, slug, status, name, city, location) values
-  ('99000000-0000-4000-8000-000000000003', 'vault-test-photos', 'published', 'Test Photos', 'Yuba City',
+insert into public.vendors (id, slug, status, name, base_city_slug, location) values
+  ('99000000-0000-4000-8000-000000000003', 'vault-test-photos', 'published', 'Test Photos', 'yuba-city',
    'SRID=4326;POINT(-121.61 39.14)');
 insert into public.bookings (slot_id, vendor_id, status) values
   ('5a000000-0000-4000-8000-000000000001', '99000000-0000-4000-8000-000000000001', 'confirmed'),
@@ -595,8 +595,8 @@ set local role authenticated;
 
 select pg_temp.as_user('d9000000-0000-4000-8000-00000000000d');
 select results_eq(
-  $$ select slug, category_slugs, event_slugs from public.vault_vendors(pg_temp.id('vault')) $$,
-  $$ values ('vault-test-dhol'::text, array['dhol']::text[], array['jaago']::text[]) $$,
+  $$ select slug, city, category_slugs, event_slugs from public.vault_vendors(pg_temp.id('vault')) $$,
+  $$ values ('vault-test-dhol'::text, 'Yuba City'::text, array['dhol']::text[], array['jaago']::text[]) $$,
   'Guests see the published vendors the family booked, not ones only held'
 );
 select pg_temp.as_user('a9000000-0000-4000-8000-00000000000a');
