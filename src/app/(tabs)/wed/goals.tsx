@@ -11,7 +11,7 @@ import { makeStyles, Radius, Sizes, Spacing, useColors } from '@/constants/theme
 import { AskWedButton } from '@/features/wed/ask-wed-button';
 import { GOALS, WATCHES, type MockGoal, type MockWatch } from '@/features/wed/mock';
 import { openWed, WED_BACK } from '@/features/wed/open-wed';
-import { onWedReset } from '@/features/wed/wed-store';
+import { onWedReset, receiptText, useWed } from '@/features/wed/wed-store';
 import { selectionHaptic } from '@/lib/haptics';
 import { Motion } from '@/lib/motion';
 
@@ -97,6 +97,9 @@ function GoalCard({ goal }: { goal: MockGoal }) {
   const styles = useStyles();
   const scale = useFontScale('body');
   const complete = goal.done >= goal.total;
+  const answered = useWed((s) =>
+    s.approvals.find((a) => a.id === goal.waitsOn && ['done', 'declined'].includes(a.stage)),
+  );
 
   return (
     <View style={styles.card}>
@@ -123,7 +126,9 @@ function GoalCard({ goal }: { goal: MockGoal }) {
         trackColor={Colors.fill}
       />
       {/* "All booked" is already up top */}
-      {complete ? null : <AppText color="text2">{goal.note}</AppText>}
+      {complete ? null : (
+        <AppText color="text2">{answered ? receiptText(answered) : goal.note}</AppText>
+      )}
       <Pressable
         accessibilityRole="button"
         accessibilityLabel={`Talk about the ${goal.name} with Wed`}

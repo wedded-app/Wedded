@@ -256,10 +256,19 @@ const TOUR: ApprovalSpec = {
 // Flow D: invitation cards, then sending them to guests (#129), and the
 // Memory Vault's link (#306)
 
-/** The events named in the words, in the plan's order; every event when none is. */
+/**
+ * The events named in the words, in the plan's order; every event when none
+ * is. One word of a name is enough, so "Anand Karan" (the keyboard's
+ * autocorrect) still finds the Anand Karaj.
+ */
 export function eventsIn(words: string): string[] {
-  const text = words.toLowerCase();
-  const named = EVENTS.filter((event) => text.includes(event.name.toLowerCase()));
+  const said = new Set(words.toLowerCase().match(/[a-z]+/g));
+  const named = EVENTS.filter((event) =>
+    event.name
+      .toLowerCase()
+      .split(' ')
+      .some((word) => said.has(word)),
+  );
   return (named.length > 0 ? named : EVENTS).map((event) => event.slug);
 }
 
@@ -291,7 +300,7 @@ function whoWords(to: GuestSend['to']): string {
 }
 
 /** "Jaago, Anand Karaj and Reception" */
-function eventNames(slugs: string[]): string {
+export function eventNames(slugs: string[]): string {
   const names = slugs.flatMap((slug) => EVENTS.find((e) => e.slug === slug)?.name ?? []);
   return names.length > 1 ? `${names.slice(0, -1).join(', ')} and ${names.at(-1)}` : names.join('');
 }
@@ -930,8 +939,8 @@ export const FLOWS: Record<FlowKey, Flow> = {
     capture: /(?:invitations?|cards?) for (?:the |our )?(.+?)[.?!]*$/i,
     fill: 'your events',
     ops: [
-      { at: 600, do: say('Here are your cards for {q}, filled in from your plan.') },
-      { at: 1000, do: { op: 'cards' } },
+      // Says which cards it made, not what was typed, so a name it missed shows
+      { at: 600, do: { op: 'cards' } },
       {
         at: 1600,
         do: say(
