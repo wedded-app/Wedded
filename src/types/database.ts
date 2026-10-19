@@ -522,6 +522,33 @@ export type Database = {
           },
         ];
       };
+      devices: {
+        Row: {
+          created_at: string;
+          id: string;
+          last_seen_at: string;
+          platform: string;
+          push_token: string;
+          user_id: string;
+        };
+        Insert: {
+          created_at?: string;
+          id?: string;
+          last_seen_at?: string;
+          platform: string;
+          push_token: string;
+          user_id: string;
+        };
+        Update: {
+          created_at?: string;
+          id?: string;
+          last_seen_at?: string;
+          platform?: string;
+          push_token?: string;
+          user_id?: string;
+        };
+        Relationships: [];
+      };
       email_opt_outs: {
         Row: {
           created_at: string;
@@ -645,26 +672,29 @@ export type Database = {
       follows: {
         Row: {
           created_at: string;
+          followee_user_id: string | null;
+          followee_vendor_id: string | null;
           follower_id: string;
-          user_id: string | null;
-          vendor_id: string | null;
+          id: string;
         };
         Insert: {
           created_at?: string;
+          followee_user_id?: string | null;
+          followee_vendor_id?: string | null;
           follower_id?: string;
-          user_id?: string | null;
-          vendor_id?: string | null;
+          id?: string;
         };
         Update: {
           created_at?: string;
+          followee_user_id?: string | null;
+          followee_vendor_id?: string | null;
           follower_id?: string;
-          user_id?: string | null;
-          vendor_id?: string | null;
+          id?: string;
         };
         Relationships: [
           {
-            foreignKeyName: 'follows_vendor_id_fkey';
-            columns: ['vendor_id'];
+            foreignKeyName: 'follows_followee_vendor_id_fkey';
+            columns: ['followee_vendor_id'];
             isOneToOne: false;
             referencedRelation: 'vendors';
             referencedColumns: ['id'];
@@ -1398,30 +1428,6 @@ export type Database = {
         };
         Relationships: [];
       };
-      push_tokens: {
-        Row: {
-          created_at: string;
-          platform: string;
-          token: string;
-          updated_at: string;
-          user_id: string;
-        };
-        Insert: {
-          created_at?: string;
-          platform: string;
-          token: string;
-          updated_at?: string;
-          user_id: string;
-        };
-        Update: {
-          created_at?: string;
-          platform?: string;
-          token?: string;
-          updated_at?: string;
-          user_id?: string;
-        };
-        Relationships: [];
-      };
       reel_comments: {
         Row: {
           body: string;
@@ -1479,67 +1485,6 @@ export type Database = {
             columns: ['reel_id'];
             isOneToOne: false;
             referencedRelation: 'reels';
-            referencedColumns: ['id'];
-          },
-        ];
-      };
-      reel_reports: {
-        Row: {
-          comment_id: string | null;
-          created_at: string;
-          id: string;
-          note: string | null;
-          reason: string;
-          reel_id: string | null;
-          reported_user_id: string | null;
-          reporter_id: string | null;
-          status: string;
-          story_id: string | null;
-        };
-        Insert: {
-          comment_id?: string | null;
-          created_at?: string;
-          id?: string;
-          note?: string | null;
-          reason: string;
-          reel_id?: string | null;
-          reported_user_id?: string | null;
-          reporter_id?: string | null;
-          status?: string;
-          story_id?: string | null;
-        };
-        Update: {
-          comment_id?: string | null;
-          created_at?: string;
-          id?: string;
-          note?: string | null;
-          reason?: string;
-          reel_id?: string | null;
-          reported_user_id?: string | null;
-          reporter_id?: string | null;
-          status?: string;
-          story_id?: string | null;
-        };
-        Relationships: [
-          {
-            foreignKeyName: 'reel_reports_comment_id_fkey';
-            columns: ['comment_id'];
-            isOneToOne: false;
-            referencedRelation: 'reel_comments';
-            referencedColumns: ['id'];
-          },
-          {
-            foreignKeyName: 'reel_reports_reel_id_fkey';
-            columns: ['reel_id'];
-            isOneToOne: false;
-            referencedRelation: 'reels';
-            referencedColumns: ['id'];
-          },
-          {
-            foreignKeyName: 'reel_reports_story_id_fkey';
-            columns: ['story_id'];
-            isOneToOne: false;
-            referencedRelation: 'stories';
             referencedColumns: ['id'];
           },
         ];
@@ -1723,6 +1668,73 @@ export type Database = {
           updated_at?: string;
         };
         Relationships: [];
+      };
+      reports: {
+        Row: {
+          comment_id: string | null;
+          created_at: string;
+          handled_at: string | null;
+          handled_by: string | null;
+          id: string;
+          note: string | null;
+          reason: string;
+          reel_id: string | null;
+          reporter_id: string | null;
+          status: string;
+          story_id: string | null;
+          user_id: string | null;
+        };
+        Insert: {
+          comment_id?: string | null;
+          created_at?: string;
+          handled_at?: string | null;
+          handled_by?: string | null;
+          id?: string;
+          note?: string | null;
+          reason: string;
+          reel_id?: string | null;
+          reporter_id?: string | null;
+          status?: string;
+          story_id?: string | null;
+          user_id?: string | null;
+        };
+        Update: {
+          comment_id?: string | null;
+          created_at?: string;
+          handled_at?: string | null;
+          handled_by?: string | null;
+          id?: string;
+          note?: string | null;
+          reason?: string;
+          reel_id?: string | null;
+          reporter_id?: string | null;
+          status?: string;
+          story_id?: string | null;
+          user_id?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'reports_comment_id_fkey';
+            columns: ['comment_id'];
+            isOneToOne: false;
+            referencedRelation: 'reel_comments';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'reports_reel_id_fkey';
+            columns: ['reel_id'];
+            isOneToOne: false;
+            referencedRelation: 'reels';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'reports_story_id_fkey';
+            columns: ['story_id'];
+            isOneToOne: false;
+            referencedRelation: 'stories';
+            referencedColumns: ['id'];
+          },
+        ];
       };
       request_proposals: {
         Row: {

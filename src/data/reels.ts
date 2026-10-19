@@ -264,7 +264,7 @@ export function useToggleFollow() {
     'vendorId' in t ? r.vendor?.id === t.vendorId : !r.vendor && r.authorId === t.userId;
   return useMutation({
     mutationFn: async ({ target, follow }: { target: FollowTarget; follow: boolean }) => {
-      const column = 'vendorId' in target ? 'vendor_id' : 'user_id';
+      const column = 'vendorId' in target ? 'followee_vendor_id' : 'followee_user_id';
       const value = 'vendorId' in target ? target.vendorId : target.userId;
       const { error } = follow
         ? await supabase.from('follows').insert({ [column]: value })

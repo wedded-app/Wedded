@@ -98,7 +98,7 @@ Deno.serve(async (request) => {
   }
 
   if (gone.length > 0) {
-    const { error: forgetError } = await admin.from('push_tokens').delete().in('token', gone);
+    const { error: forgetError } = await admin.from('devices').delete().in('push_token', gone);
     if (forgetError) console.error('forgetting gone phones failed', forgetError);
   }
   return json({ messages: claims.length + groupClaims.length, sent, failed }, 200);

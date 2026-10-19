@@ -20,7 +20,7 @@ insert into public.profiles (id, full_name, city, phone) values
   ('b7100000-0000-4000-8000-00000000000b', 'Balwinder Singh', 'Yuba City', '+15305550712'),
   ('d7100000-0000-4000-8000-00000000000d', 'Dev Sandhu', 'Fresno', '+15595550714');
 
-insert into public.push_tokens (token, user_id, platform) values
+insert into public.devices (push_token, user_id, platform) values
   ('ExponentPushToken[ashaphone0001]', 'a7100000-0000-4000-8000-00000000000a', 'ios'),
   ('ExponentPushToken[balwinder0001]', 'b7100000-0000-4000-8000-00000000000b', 'android');
 
