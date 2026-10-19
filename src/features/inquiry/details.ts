@@ -7,22 +7,8 @@
  * can move to a column on `categories` once more categories get their own
  * questions.
  */
-export const VENUE_CATEGORIES = [
-  'banquet-hall',
-  'hotel-ballroom',
-  'restaurant-room',
-  'community-center',
-  'outdoor-venue',
-];
-export const CATERER_CATEGORIES = ['caterer', 'halwai'];
-
+/** Which questions a vendor type's inquiry asks (categories.inquiry_questions). */
 export type QuestionSet = 'venue' | 'caterer' | null;
-
-export function questionSetFor(categorySlug: string | null): QuestionSet {
-  if (categorySlug && VENUE_CATEGORIES.includes(categorySlug)) return 'venue';
-  if (categorySlug && CATERER_CATEGORIES.includes(categorySlug)) return 'caterer';
-  return null;
-}
 
 export type DayPart = 'morning' | 'afternoon' | 'evening';
 export type TourSlot = { date: string | null; part: DayPart };
