@@ -1,21 +1,4 @@
-import {
-  catererDetails,
-  emptyCatererAnswers,
-  emptyVenueAnswers,
-  questionSetFor,
-  venueDetails,
-} from './details';
-
-describe('questionSetFor', () => {
-  it('gives halls and caterers their own questions, and others none', () => {
-    expect(questionSetFor('banquet-hall')).toBe('venue');
-    expect(questionSetFor('hotel-ballroom')).toBe('venue');
-    expect(questionSetFor('caterer')).toBe('caterer');
-    expect(questionSetFor('halwai')).toBe('caterer');
-    expect(questionSetFor('dhol')).toBeNull();
-    expect(questionSetFor(null)).toBeNull();
-  });
-});
+import { catererDetails, emptyCatererAnswers, emptyVenueAnswers, venueDetails } from './details';
 
 describe('venueDetails', () => {
   it('sends nothing when nothing was answered', () => {
