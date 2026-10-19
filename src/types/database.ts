@@ -842,6 +842,116 @@ export type Database = {
           },
         ];
       };
+      guest_invites: {
+        Row: {
+          answer_count: number;
+          answered_at: string | null;
+          coming: number | null;
+          created_at: string;
+          guest_id: string;
+          rsvp: string;
+          wedding_event_id: string;
+          wedding_id: string;
+        };
+        Insert: {
+          answer_count?: number;
+          answered_at?: string | null;
+          coming?: number | null;
+          created_at?: string;
+          guest_id: string;
+          rsvp?: string;
+          wedding_event_id: string;
+          wedding_id: string;
+        };
+        Update: {
+          answer_count?: number;
+          answered_at?: string | null;
+          coming?: number | null;
+          created_at?: string;
+          guest_id?: string;
+          rsvp?: string;
+          wedding_event_id?: string;
+          wedding_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'guest_invites_guest_id_fkey';
+            columns: ['guest_id'];
+            isOneToOne: false;
+            referencedRelation: 'wedding_guests';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'guest_invites_wedding_event_fkey';
+            columns: ['wedding_id', 'wedding_event_id'];
+            isOneToOne: false;
+            referencedRelation: 'wedding_events';
+            referencedColumns: ['wedding_id', 'id'];
+          },
+        ];
+      };
+      guest_list_members: {
+        Row: {
+          guest_id: string;
+          list_id: string;
+        };
+        Insert: {
+          guest_id: string;
+          list_id: string;
+        };
+        Update: {
+          guest_id?: string;
+          list_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'guest_list_members_guest_id_fkey';
+            columns: ['guest_id'];
+            isOneToOne: false;
+            referencedRelation: 'wedding_guests';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'guest_list_members_list_id_fkey';
+            columns: ['list_id'];
+            isOneToOne: false;
+            referencedRelation: 'guest_lists';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      guest_lists: {
+        Row: {
+          created_at: string;
+          id: string;
+          name: string;
+          updated_at: string;
+          wedding_id: string;
+        };
+        Insert: {
+          created_at?: string;
+          id?: string;
+          name: string;
+          updated_at?: string;
+          wedding_id: string;
+        };
+        Update: {
+          created_at?: string;
+          id?: string;
+          name?: string;
+          updated_at?: string;
+          wedding_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'guest_lists_wedding_id_fkey';
+            columns: ['wedding_id'];
+            isOneToOne: false;
+            referencedRelation: 'weddings';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
       inquiries: {
         Row: {
           channel: string;
@@ -924,6 +1034,45 @@ export type Database = {
             columns: ['vendor_id'];
             isOneToOne: false;
             referencedRelation: 'vendors';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      invite_sends: {
+        Row: {
+          channel: string;
+          guest_id: string;
+          id: string;
+          sent_at: string;
+          wedding_id: string;
+        };
+        Insert: {
+          channel: string;
+          guest_id: string;
+          id?: string;
+          sent_at?: string;
+          wedding_id: string;
+        };
+        Update: {
+          channel?: string;
+          guest_id?: string;
+          id?: string;
+          sent_at?: string;
+          wedding_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'invite_sends_guest_id_fkey';
+            columns: ['guest_id'];
+            isOneToOne: false;
+            referencedRelation: 'wedding_guests';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'invite_sends_wedding_id_fkey';
+            columns: ['wedding_id'];
+            isOneToOne: false;
+            referencedRelation: 'weddings';
             referencedColumns: ['id'];
           },
         ];
@@ -2574,6 +2723,50 @@ export type Database = {
           },
         ];
       };
+      wedding_guests: {
+        Row: {
+          created_at: string;
+          email: string | null;
+          id: string;
+          name: string;
+          party_size: number;
+          phone: string | null;
+          rsvp_token: string;
+          updated_at: string;
+          wedding_id: string;
+        };
+        Insert: {
+          created_at?: string;
+          email?: string | null;
+          id?: string;
+          name: string;
+          party_size?: number;
+          phone?: string | null;
+          rsvp_token?: string;
+          updated_at?: string;
+          wedding_id: string;
+        };
+        Update: {
+          created_at?: string;
+          email?: string | null;
+          id?: string;
+          name?: string;
+          party_size?: number;
+          phone?: string | null;
+          rsvp_token?: string;
+          updated_at?: string;
+          wedding_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'wedding_guests_wedding_id_fkey';
+            columns: ['wedding_id'];
+            isOneToOne: false;
+            referencedRelation: 'weddings';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
       wedding_invites: {
         Row: {
           created_at: string;
@@ -2935,6 +3128,7 @@ export type Database = {
         Args: { p_thread_id: string; p_user_ids: string[] };
         Returns: undefined;
       };
+      add_guests: { Args: { p_guests: Json; p_wedding_id: string }; Returns: string[] };
       add_reel_comment: { Args: { p_body: string; p_reel_id: string }; Returns: string };
       add_vendor_photo: {
         Args: {
@@ -3091,6 +3285,7 @@ export type Database = {
         Args: { p_member_ids?: string[]; p_name: string; p_wedding_id: string };
         Returns: string;
       };
+      create_guest_list: { Args: { p_name: string; p_wedding_id: string }; Returns: string };
       create_inquiry: {
         Args: {
           p_details: Json;
@@ -3169,6 +3364,7 @@ export type Database = {
         Args: { p_approve: boolean; p_reel_id: string; p_vendor_id: string };
         Returns: undefined;
       };
+      delete_guest_list: { Args: { p_list_id: string }; Returns: undefined };
       deposit_for_payment: {
         Args: { p_deposit_id: string; p_user_id: string };
         Returns: {
@@ -3250,8 +3446,33 @@ export type Database = {
           wedding_role: string;
         }[];
       };
+      guest_summary: {
+        Args: { p_wedding_id: string };
+        Returns: {
+          coming: number;
+          event_slug: string;
+          invited: number;
+          no: number;
+          pending: number;
+          people_invited: number;
+          yes: number;
+        }[];
+      };
       hide_reel_comment: { Args: { p_comment_id: string }; Returns: undefined };
       inquiry_emails_left_today: { Args: Record<PropertyKey, never>; Returns: number };
+      invite_to_event: {
+        Args: {
+          p_event_slug: string;
+          p_guest_ids?: string[];
+          p_list_id?: string;
+          p_wedding_id: string;
+        };
+        Returns: number;
+      };
+      log_invite_sends: {
+        Args: { p_channel: string; p_guest_ids: string[]; p_wedding_id: string };
+        Returns: number;
+      };
       mark_conversation_read: { Args: { p_conversation_id: string }; Returns: undefined };
       mark_group_read: { Args: { p_thread_id: string }; Returns: undefined };
       my_businesses: {
@@ -3399,12 +3620,14 @@ export type Database = {
       refuse_password_sign_in: { Args: { event: Json }; Returns: Json };
       register_push_token: { Args: { p_platform: string; p_token: string }; Returns: undefined };
       remove_group_member: { Args: { p_thread_id: string; p_user_id: string }; Returns: undefined };
+      remove_guest: { Args: { p_guest_id: string }; Returns: undefined };
       remove_vendor_photo: { Args: { p_media_id: string }; Returns: string };
       remove_wedding_member: {
         Args: { p_user_id: string; p_wedding_id: string };
         Returns: undefined;
       };
       rename_group_thread: { Args: { p_name: string; p_thread_id: string }; Returns: undefined };
+      rename_guest_list: { Args: { p_list_id: string; p_name: string }; Returns: undefined };
       reorder_vendor_photos: {
         Args: { p_media_ids: string[]; p_vendor_id: string };
         Returns: undefined;
@@ -3453,6 +3676,27 @@ export type Database = {
       resolve_suggestion: {
         Args: { p_accept: boolean; p_suggestion_id: string };
         Returns: undefined;
+      };
+      rsvp: {
+        Args: { p_answer: string; p_coming?: number; p_event_slug: string; p_token: string };
+        Returns: undefined;
+      };
+      rsvp_preview: {
+        Args: { p_token: string };
+        Returns: {
+          answered_at: string;
+          coming: number;
+          ends_at: string;
+          event_date: string;
+          event_slug: string;
+          guest_name: string;
+          party_size: number;
+          place: string;
+          rsvp: string;
+          starts_at: string;
+          title: string;
+          wedding_date: string;
+        }[];
       };
       save_payment_account: {
         Args: {
@@ -3537,6 +3781,10 @@ export type Database = {
         };
         Returns: undefined;
       };
+      set_guest_list_members: {
+        Args: { p_guest_ids: string[]; p_list_id: string };
+        Returns: undefined;
+      };
       set_vendor_cover: { Args: { p_media_id: string }; Returns: undefined };
       set_wedding_cultures: {
         Args: { p_culture_slugs: string[]; p_wedding_id: string };
@@ -3589,6 +3837,16 @@ export type Database = {
       track_search_appearances: { Args: { p_vendor_ids: string[] }; Returns: undefined };
       track_vendor_activity: { Args: { p_kind: string; p_vendor_id: string }; Returns: undefined };
       unregister_push_token: { Args: { p_token: string }; Returns: undefined };
+      update_guest: {
+        Args: {
+          p_email?: string;
+          p_guest_id: string;
+          p_name: string;
+          p_party_size?: number;
+          p_phone?: string;
+        };
+        Returns: undefined;
+      };
       update_my_listing: { Args: { p_changes: Json; p_vendor_id: string }; Returns: Json };
       update_payment_account: {
         Args: {
