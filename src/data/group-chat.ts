@@ -11,10 +11,9 @@
  * Push alerts and emails are sent by the server (push-chat, notify-chat).
  */
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import * as Linking from 'expo-linking';
 import { useEffect } from 'react';
 
-import { SITE_URL_IS_PLACEHOLDER, siteLink } from '@/constants/links';
+import { shareLink } from '@/constants/links';
 import { useSession } from '@/features/auth/session';
 import { supabase } from '@/lib/supabase';
 import type { Database } from '@/types/database';
@@ -285,9 +284,7 @@ export function useRenameGroupThread(threadId: string) {
 
 /** The join page for a thread's link; the screen (#125) adds the route. */
 export function groupInviteLink(token: string): string {
-  return SITE_URL_IS_PLACEHOLDER
-    ? Linking.createURL(`/join-chat/${token}`)
-    : siteLink(`/join-chat/${token}`);
+  return shareLink(`/join-chat/${token}`);
 }
 
 /** Managers: make a join link (14 days, 20 uses). Returns the link to share. */

@@ -23,11 +23,10 @@ import * as Crypto from 'expo-crypto';
 import { File } from 'expo-file-system';
 import { ImageManipulator, SaveFormat } from 'expo-image-manipulator';
 import type { ImagePickerAsset } from 'expo-image-picker';
-import * as Linking from 'expo-linking';
 import * as VideoThumbnails from 'expo-video-thumbnails';
 import { Platform } from 'react-native';
 
-import { SITE_URL_IS_PLACEHOLDER, siteLink } from '@/constants/links';
+import { shareLink } from '@/constants/links';
 import { useSession } from '@/features/auth/session';
 import { fitWithin } from '@/features/chat/chat-photo';
 import { asLocalizedText, type LocalizedText } from '@/i18n/localized';
@@ -591,13 +590,10 @@ export function useAddVaultItems(vaultId: string) {
 
 /**
  * The link guests open (and the QR card prints): the website's /join-vault
- * page once there's a domain, until then a link into the app (in Expo Go,
- * the development server's address).
+ * page once there's a domain, until then a link into the app (shareLink).
  */
 export function vaultInviteLink(token: string): string {
-  return SITE_URL_IS_PLACEHOLDER
-    ? Linking.createURL(`/join-vault/${token}`)
-    : siteLink(`/join-vault/${token}`);
+  return shareLink(`/join-vault/${token}`);
 }
 
 /**

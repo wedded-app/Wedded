@@ -7,9 +7,8 @@
  * the couple can answer for someone who called them with the same token.
  */
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import * as Linking from 'expo-linking';
 
-import { SITE_URL_IS_PLACEHOLDER, siteLink } from '@/constants/links';
+import { shareLink } from '@/constants/links';
 import { supabase } from '@/lib/supabase';
 
 export type Rsvp = 'pending' | 'yes' | 'no';
@@ -376,7 +375,7 @@ export function useUninviteFromEvent() {
  * opens without the app), until then a link into the app, like inviteLink().
  */
 export function rsvpLink(token: string): string {
-  return SITE_URL_IS_PLACEHOLDER ? Linking.createURL(`/rsvp/${token}`) : siteLink(`/rsvp/${token}`);
+  return shareLink(`/rsvp/${token}`);
 }
 
 export type RsvpEvent = {
