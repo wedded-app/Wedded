@@ -298,7 +298,12 @@ function GroupRow({
       )}
       <SwipeToReply align={mine ? 'right' : 'left'} onReply={() => onReply(message)}>
         <Pressable
-          accessibilityLabel={mine ? undefined : name}
+          // Theirs say who wrote it; the label replaces the bubble's own words
+          accessibilityLabel={
+            mine
+              ? undefined
+              : t('groupChat.messageFrom', { name, text: message.body ?? t('chat.photo') })
+          }
           accessibilityActions={[{ name: 'reply', label: t('chat.reply.action') }]}
           onAccessibilityAction={(e) => {
             if (e.nativeEvent.actionName === 'reply') onReply(message);

@@ -1,9 +1,12 @@
 import { Image } from 'expo-image';
-import type { ReactNode } from 'react';
-import { Pressable, View } from 'react-native';
+import { StatusBar } from 'expo-status-bar';
+import { useState, type ReactNode } from 'react';
+import { Modal, Pressable, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { AppText } from '@/components/app-text';
-import { makeStyles, Radius, Spacing } from '@/constants/theme';
+import { AppText, useFontScale } from '@/components/app-text';
+import { Icon } from '@/components/icon';
+import { makeStyles, Radius, Sizes, Spacing, useColors } from '@/constants/theme';
 import { useLocale } from '@/i18n/locale-context';
 
 /** "2:05 PM". Times keep Latin digits in both languages (vision §4). */
@@ -88,20 +91,68 @@ export function TextBubble({
 }
 
 /** A photo sent in chat; tap to see it full screen. */
-export function PhotoBubble({
+export function PhotoBubble({ url, label }: { url: string; label: string }) {
+  const styles = useStyles();
+  const [open, setOpen] = useState(false);
+  return (
+    <>
+      <Pressable
+        accessibilityRole="imagebutton"
+        accessibilityLabel={label}
+        onPress={() => setOpen(true)}
+      >
+        <Image source={{ uri: url }} contentFit="cover" accessible={false} style={styles.photo} />
+      </Pressable>
+      <PhotoViewer url={url} label={label} visible={open} onClose={() => setOpen(false)} />
+    </>
+  );
+}
+
+/** The whole photo on black, like the gallery: Close is always there, so nobody needs a gesture. */
+function PhotoViewer({
   url,
   label,
-  onPress,
+  visible,
+  onClose,
 }: {
   url: string;
   label: string;
-  onPress?: () => void;
+  visible: boolean;
+  onClose: () => void;
 }) {
+  const Colors = useColors();
   const styles = useStyles();
+  const insets = useSafeAreaInsets();
+  const { t } = useLocale();
+  const scale = Math.min(useFontScale('body'), 1.4);
   return (
-    <Pressable accessibilityRole="imagebutton" accessibilityLabel={label} onPress={onPress}>
-      <Image source={{ uri: url }} contentFit="cover" accessible={false} style={styles.photo} />
-    </Pressable>
+    <Modal visible={visible} animationType="fade" onRequestClose={onClose}>
+      <View style={[styles.viewer, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
+        <StatusBar style="light" />
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={t('gallery.close')}
+          onPress={onClose}
+          style={({ pressed }) => [styles.close, pressed && styles.closePressed]}
+        >
+          <Icon
+            name="close"
+            size={Sizes.iconSmall * scale}
+            color={Colors.onPrimary}
+            weight="bold"
+          />
+          <AppText variant="button" color="onPrimary">
+            {t('gallery.close')}
+          </AppText>
+        </Pressable>
+        <Image
+          source={{ uri: url }}
+          contentFit="contain"
+          accessibilityLabel={label}
+          style={styles.whole}
+        />
+      </View>
+    </Modal>
   );
 }
 
@@ -159,5 +210,29 @@ const useStyles = makeStyles((Colors) => ({
     height: 240,
     borderRadius: Radius.photo,
     backgroundColor: Colors.skeleton,
+  },
+  viewer: {
+    flex: 1,
+    backgroundColor: Colors.viewer,
+  },
+  // The gallery's dark glass capsule
+  close: {
+    alignSelf: 'flex-start',
+    minHeight: Sizes.tapTarget,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.xs,
+    marginHorizontal: Sizes.pageGutter,
+    marginVertical: Spacing.sm,
+    paddingLeft: Spacing.md,
+    paddingRight: Spacing.lg,
+    borderRadius: Radius.chip,
+    backgroundColor: 'rgba(120, 120, 128, 0.36)',
+  },
+  closePressed: {
+    backgroundColor: 'rgba(120, 120, 128, 0.56)',
+  },
+  whole: {
+    flex: 1,
   },
 }));

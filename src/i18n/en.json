@@ -1425,6 +1425,7 @@
     "wed": "Wed",
     "formerMember": "Someone who left",
     "joined": "{{name}} joined",
+    "messageFrom": "{{name}}: {{text}}",
     "left": "{{name}} left",
     "preview": {
       "photo": "{{name}}: Photo",
