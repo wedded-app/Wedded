@@ -7,7 +7,7 @@ import { useSyncExternalStore } from 'react';
 
 import type { GuestBand } from '@/data/inquiries';
 
-/** Who the wedding is for, as weddings.planning_for stores it. */
+/** Who the wedding is for, as profiles.planning_for stores it. */
 export type PlanningFor = 'self' | 'child' | 'sibling' | 'relative' | 'friend';
 
 export type Answers = {

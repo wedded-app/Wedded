@@ -239,10 +239,8 @@ async function checkAsFamily(admin: SupabaseClient, local: boolean, send: boolea
       .upsert({ id: userId, full_name: 'Demo Check', city: 'Yuba City', phone: '+15305550100' });
     check(!profile.error, 'Fills in About you', `About you failed: ${profile.error?.message}`);
 
-    const saved = await family
-      .from('saved_vendors')
-      .insert({ vendor_id: hallId, event_slug: 'reception' });
-    check(!saved.error, 'Saves the hall under Reception', `Saving failed: ${saved.error?.message}`);
+    const saved = await family.rpc('save_vendor', { p_vendor_id: hallId, p_event_slug: 'reception' });
+    check(!saved.error, 'Saves the hall', `Saving failed: ${saved.error?.message}`);
 
     if (mailpitUrl) await fetch(`${mailpitUrl}/api/v1/messages`, { method: 'DELETE' });
     const sent = await family.functions.invoke('send-inquiry', {
