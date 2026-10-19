@@ -216,16 +216,17 @@ All tables are in Postgres (`public` schema) with row-level security. Names that
 
 **People and planning:**
 
-- `profiles`: id (the auth user), full_name, city, phone (E.164), adult_confirmed_at. The email lives in Auth only.
-- `saved_vendors`: user, vendor, event (null = "Not sure yet").
+- `profiles`: id (the auth user), full_name, city, phone (E.164), adult_confirmed_at, planning_for (self / child / sibling / relative / friend). The email lives in Auth only.
+- `saved_vendors`: user, vendor, the wedding and which of its events (null = "Not sure yet"), note, source (heart / inquiry…). Saved through `save_vendor()`.
 - `inquiries`: user, vendor, event_slugs, event_date, start_time, guest_band, location, message, preferred_contact, language, details (venue / caterer / tour answers), sender name / phone / email, channel, status (sent / queued / failed…), failure, sent_at, **reply_answer** (the family's follow-up answer, the only column the app can write).
-- `weddings`: title, wedding_date, planning_for, **traditions**, created_by.
-- `wedding_members`: wedding, user, role (owner / editor / suggester, #104; `private.can_edit_wedding()` is the one owner-or-editor check).
-- `wedding_suggestions`: a member suggests a vendor for one of the plan's events and vendor types, with an optional note; open / accepted / declined (#104).
-- `wedding_events`: wedding, event, event_date, guest_band.
-- `wedding_bookings`: wedding, event, category, vendor (optional), note, updated_by.
-- `wedding_invites`: token (32 hex), role, expires_at (14 days), uses / max_uses (20), revoked_at.
-- `wedding_reactions`: wedding, vendor, user, reaction (love / maybe / no).
+- `weddings`: title, wedding_date, created_by. `wedding_cultures`: the traditions it follows (none = the default).
+- `wedding_sides`: side A and side B ("Bride's side", "Groom's side"), with a home city.
+- `wedding_members`: wedding, user, role (owner / editor / suggester, #104; `private.can_edit_wedding()` is the one owner-or-editor check), side, relation, the invite they joined with.
+- `wedding_events`: an id, wedding, event (one each), host side (null = shared), event_date, starts_at / ends_at, venue (a listed hall) or venue_text, city, guest_band, guest_count, at_home, budget_cents.
+- `wedding_slots`: one vendor type an event needs (quantity, book-by date, note). `bookings`: a vendor booked into a slot (or just ticked off), status held / confirmed / canceled / completed, booked_by, family and vendor confirmations, agreed_cents (private to the family), the inquiry it came from. Ticked through `set_booked()`.
+- `suggestions`: a member suggests a vendor for one of the wedding's events and a vendor type, with an optional note; open / accepted / declined (#104).
+- `wedding_invites`: token_hash (the link's 32-hex token is never stored), role, side, expires_at (14 days), uses / max_uses (20), revoked_at.
+- `shortlist_reactions`: wedding, vendor, user, reaction (love / maybe / no).
 
 **Chat:**
 
@@ -237,7 +238,7 @@ All tables are in Postgres (`public` schema) with row-level security. Names that
 - `reels`: author, vendor (when posted as a business), video_path, thumb_path, duration_s, width, height, caption, event, status.
 - `reel_vendor_tags` (pending / approved / declined by the vendor), `follows` (a person or a vendor), `reel_likes`, `reel_comments` (with hidden), `user_blocks`, `reel_reports`. Public bucket `reels`.
 
-**Main server functions:** `search_vendors` (distance, category, text and fuzzy match, travelers, guests, max price, language, availability, sort), `create_inquiry`, `inquiry_emails_left_today`, `create_wedding`, `create_wedding_invite`, `wedding_invite_preview`, `accept_wedding_invite`, `wedding_members_list`, `remove_wedding_member`, `set_wedding_member_role`, `react_to_vendor`, `wedding_shortlist`, `suggest_vendor`, `resolve_suggestion`, `withdraw_suggestion`, `start_conversation`, `send_message`, `mark_conversation_read`, `my_conversations`, `claim_chat_notifications`, `track_vendor_activity`, `vendor_public_stats`, `vendor_scorecard`, `vendor_date_status`, `touch_vendor_calendar`, and the reels functions (`reels_feed`, `create_reel`, `add_reel_comment`, `hide_reel_comment`, `decide_reel_tag`, `pending_reel_tags`, `report_reel_content`, `reel_person`, `reel_comments_list`).
+**Main server functions:** `search_vendors` (distance, category, text and fuzzy match, travelers, guests, max price, language, availability, sort), `create_inquiry`, `inquiry_emails_left_today`, `create_wedding`, `set_booked`, `set_wedding_cultures`, `save_vendor`, `create_wedding_invite`, `wedding_invite_preview`, `accept_wedding_invite`, `wedding_members_list`, `remove_wedding_member`, `set_wedding_member_role`, `react_to_vendor`, `wedding_shortlist`, `suggest_vendor`, `resolve_suggestion`, `withdraw_suggestion`, `start_conversation`, `send_message`, `mark_conversation_read`, `my_conversations`, `claim_chat_notifications`, `track_vendor_activity`, `vendor_public_stats`, `vendor_scorecard`, `vendor_date_status`, `touch_vendor_calendar`, and the reels functions (`reels_feed`, `create_reel`, `add_reel_comment`, `hide_reel_comment`, `decide_reel_tag`, `pending_reel_tags`, `report_reel_content`, `reel_person`, `reel_comments_list`).
 
 **Sample data:** 149 sample vendors (7 or 8 in the common types, 2 to 4 in most others, including halal, Pakistani and Arab vendors), 5 with founding numbers, sample menus, links and a sample hall (Royal Orchard Banquet Hall) with approved caterers.
 

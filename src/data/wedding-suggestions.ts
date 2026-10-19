@@ -28,7 +28,7 @@ export type WeddingSuggestion = {
 
 type Row = {
   id: string;
-  event_slug: string;
+  wedding_event: { event_slug: string } | null;
   category_slug: string;
   note: string | null;
   status: string;
@@ -42,7 +42,7 @@ type Row = {
 export function toSuggestion(row: Row): WeddingSuggestion {
   return {
     id: row.id,
-    eventSlug: row.event_slug,
+    eventSlug: row.wedding_event?.event_slug ?? '',
     categorySlug: row.category_slug,
     note: row.note,
     status: row.status === 'accepted' || row.status === 'declined' ? row.status : 'open',
@@ -115,9 +115,9 @@ export function useWeddingSuggestions(weddingId: string | null) {
     queryKey: suggestionKeys.list(weddingId ?? ''),
     queryFn: async (): Promise<WeddingSuggestion[]> => {
       const { data, error } = await supabase
-        .from('wedding_suggestions')
+        .from('suggestions')
         .select(
-          'id, event_slug, category_slug, note, status, suggested_by, resolved_by, resolved_at, created_at, vendor:vendors(id, slug, name)',
+          'id, wedding_event:wedding_events(event_slug), category_slug, note, status, suggested_by, resolved_by, resolved_at, created_at, vendor:vendors(id, slug, name)',
         )
         .eq('wedding_id', weddingId ?? '')
         .order('created_at', { ascending: false })

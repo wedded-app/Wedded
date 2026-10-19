@@ -600,7 +600,11 @@ export function vaultInviteLink(token: string): string {
     : siteLink(`/join-vault/${token}`);
 }
 
-/** The vault's link (the couple): the same one each time until it's stopped. */
+/**
+ * Make a link to the vault (the couple). Only a hash of each token is kept, so
+ * every call makes a new one; earlier links, printed ones too, keep working
+ * until stopped or 180 days old.
+ */
 export function useCreateVaultInvite() {
   return useMutation({
     mutationFn: async (vaultId: string): Promise<string> => {

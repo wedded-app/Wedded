@@ -3,18 +3,19 @@ import { View } from 'react-native';
 
 import { AppText } from '@/components/app-text';
 import { PressableScale } from '@/components/pressable-scale';
-import { makeStyles } from '@/constants/theme';
+import { makeStyles, Palettes } from '@/constants/theme';
 import { useLocale } from '@/i18n/locale-context';
 import { selectionHaptic } from '@/lib/haptics';
 
 import { openWed } from './open-wed';
 import { WedMark } from './wed-mark';
 
-const SIZE = 60;
+const SIZE = 46;
 
 /**
- * Wed's round button in the middle of the planning tabs' bar (TabBar's
- * `center`), raised out of it except over Reels. A tap opens the Wed
+ * Wed's button in the middle of the planning tabs' bar (TabBar's `center`),
+ * level with the tabs: the ribbon in the brand's maroon-to-rose on a white
+ * circle, like the app icon, in light and dark alike. A tap opens the Wed
  * chat; press and hold opens Wed's voice screen. The red count is how many
  * of Wed's cards wait for the family's OK.
  */
@@ -36,7 +37,7 @@ export function WedButton({ count }: { count: number }) {
       onLongPress={() => router.push('/wed-voice')}
       style={styles.button}
     >
-      <WedMark size={30} color="onPrimary" />
+      <WedMark size={28} color="ombre" />
       {count > 0 && (
         <View style={styles.badge}>
           <AppText variant="caption" weight={700} color="onPrimary" maxFontSizeMultiplier={1.2}>
@@ -55,13 +56,14 @@ const useStyles = makeStyles((Colors) => ({
     borderRadius: SIZE / 2,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: Colors.primary,
-    boxShadow: '0 6px 18px rgba(0, 0, 0, 0.28)',
+    // Always white, like the app icon
+    backgroundColor: Palettes.light.surface,
+    boxShadow: '0 2px 10px rgba(0, 0, 0, 0.16), 0 0 0 0.5px rgba(0, 0, 0, 0.08)',
   },
   badge: {
     position: 'absolute',
-    top: -4,
-    right: -4,
+    top: -5,
+    right: -7,
     minWidth: 22,
     height: 22,
     paddingHorizontal: 5,
@@ -70,6 +72,6 @@ const useStyles = makeStyles((Colors) => ({
     borderRadius: 11,
     backgroundColor: Colors.errorFill,
     borderWidth: 2,
-    borderColor: Colors.surface,
+    borderColor: Palettes.light.surface,
   },
 }));

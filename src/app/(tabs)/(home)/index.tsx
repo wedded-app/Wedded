@@ -16,6 +16,8 @@ import { useFeed, type FeedPost } from '@/data/feed';
 import { useCategoryGroups, useHomeEvents } from '@/data/reference';
 import { useSession } from '@/features/auth/session';
 import { ChatButton } from '@/features/chat/chat-button';
+import { BookFirst } from '@/features/home/book-first-row';
+import { DateCard } from '@/features/home/date-card';
 import { EventCarousel } from '@/features/home/event-carousel';
 import { HomeCover, useCoverHeight } from '@/features/home/home-cover';
 import { NextUp } from '@/features/home/next-up';
@@ -37,8 +39,9 @@ import { useLocale } from '@/i18n/locale-context';
  * the wedding itself (countdown and a ring that fills as they book), then
  * search, then what to do next, where things stand with each vendor, vendors
  * free on their date, and what the family has been up to. Before there's a
- * plan it's weddings playing with Plan your wedding, then popular vendors,
- * the kinds of vendor and the events, so there's still plenty to look at.
+ * plan it's the wedding card asking when the wedding is (no account needed),
+ * then what to book first (sharper once they've answered), the kinds of
+ * vendor and the events, so there's still plenty to look at.
  * Vendor accounts get their My business card first, under the cover.
  */
 export default function HomeScreen() {
@@ -62,7 +65,10 @@ export default function HomeScreen() {
   // who joined just looking: they came to browse, not to be asked to plan
   const { isVendor } = useIsVendor();
   const { profile } = useSession();
-  const showCover = planning || (!isVendor && profile?.joined_as !== 'looking');
+  const browsing = !isVendor && profile?.joined_as !== 'looking';
+  // With a plan the cover is their wedding; before one, the wedding card asks for the date
+  const showCover = planning || (loading && browsing);
+  const showDateCard = !planning && !loading && browsing;
 
   // The small title and the bar's backdrop come in as the cover scrolls away
   const collapseAt = showCover ? coverHeight - navTop : 0;
@@ -124,6 +130,7 @@ export default function HomeScreen() {
         {showCover && <HomeCover view={view} posts={posts} />}
 
         <View style={[styles.body, !showCover && { paddingTop: navTop + Spacing.lg }]}>
+          {showDateCard && <DateCard />}
           <StoryRings />
           <View style={styles.find}>
             <SearchButton
@@ -179,7 +186,7 @@ export default function HomeScreen() {
   );
 }
 
-/** Home before there's a plan: popular vendors, the kinds of vendor, and the events. */
+/** Home before there's a plan: what to book first, the kinds of vendor, and the events. */
 function BrowseSections({ posts }: { posts: FeedPost[] }) {
   const { t } = useLocale();
   const router = useRouter();
@@ -188,7 +195,7 @@ function BrowseSections({ posts }: { posts: FeedPost[] }) {
 
   return (
     <>
-      <VendorPhotoCards title={t('home.popularNearYou')} />
+      <BookFirst />
 
       <View style={styles.block}>
         <SectionHeader

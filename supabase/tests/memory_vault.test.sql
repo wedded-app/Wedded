@@ -6,7 +6,7 @@
 begin;
 create extension if not exists pgtap with schema extensions;
 
-select plan(104);
+select plan(107);
 
 -- People: Asha (owns the wedding), Balwinder (editor), Charan (suggester),
 -- Dev and Farah (guests who join with the link), Esha (a stranger, later a guest)
@@ -133,13 +133,25 @@ select pg_temp.as_user('a9000000-0000-4000-8000-00000000000a');
 insert into pg_temp.ids select 'token', public.create_vault_invite(pg_temp.id('vault'));
 select matches(pg_temp.val('token'), '^[0-9a-f]{32}$', 'The couple gets a link token');
 select pg_temp.as_user('b9000000-0000-4000-8000-00000000000b');
-select is(
-  public.create_vault_invite(pg_temp.id('vault')), pg_temp.val('token'),
-  'Asking again hands out the same link, so printed cards keep working'
-);
+insert into pg_temp.ids select 'token_b', public.create_vault_invite(pg_temp.id('vault'));
+select isnt(pg_temp.val('token_b'), pg_temp.val('token'), 'Each share makes a new link');
 reset role;
+select is(
+  (select count(*)::integer from public.vault_invites
+   where token_hash = encode(sha256(convert_to(pg_temp.val('token'), 'UTF8')), 'hex')),
+  1,
+  'Only a hash of the token is kept'
+);
+select is_empty(
+  $$ select 1 from public.vault_invites where token_hash = pg_temp.val('token') $$,
+  'never the token itself'
+);
 
 set local role anon;
+select is(
+  (select status from public.vault_invite_preview(pg_temp.val('token_b'))), 'valid',
+  'Both links work'
+);
 select results_eq(
   $$ select status, vault_id, title, inviter_name, item_count
      from public.vault_invite_preview(pg_temp.val('token')) $$,
@@ -210,7 +222,9 @@ select is(
 );
 reset role;
 select is(
-  (select uses from public.vault_invites where token = pg_temp.val('token')), 2,
+  (select uses from public.vault_invites
+   where token_hash = encode(sha256(convert_to(pg_temp.val('token'), 'UTF8')), 'hex')),
+  2,
   'Only the two guests count as uses of the link'
 );
 
@@ -560,16 +574,30 @@ insert into public.vendors (id, slug, status, name, city, location) values
    'SRID=4326;POINT(-121.61 39.14)'),
   ('99000000-0000-4000-8000-000000000002', 'vault-test-draft', 'draft', 'Draft Caterer', 'Yuba City',
    'SRID=4326;POINT(-121.61 39.14)');
-insert into public.wedding_bookings (wedding_id, event_slug, category_slug, vendor_id) values
-  (pg_temp.id('wedding'), 'jaago', 'dhol', '99000000-0000-4000-8000-000000000001'),
-  (pg_temp.id('wedding'), 'reception', 'caterer', '99000000-0000-4000-8000-000000000002');
+-- The dhol crew is booked for the Jaago; the caterer isn't published; the
+-- photographer is only held for the Reception
+insert into public.wedding_slots (id, wedding_event_id, category_slug)
+select v.slot, we.id, v.category
+from (values
+  ('5a000000-0000-4000-8000-000000000001'::uuid, 'jaago', 'dhol'),
+  ('5a000000-0000-4000-8000-000000000002'::uuid, 'reception', 'caterer'),
+  ('5a000000-0000-4000-8000-000000000003'::uuid, 'reception', 'photographer')
+) as v (slot, event, category)
+join public.wedding_events we on we.wedding_id = pg_temp.id('wedding') and we.event_slug = v.event;
+insert into public.vendors (id, slug, status, name, city, location) values
+  ('99000000-0000-4000-8000-000000000003', 'vault-test-photos', 'published', 'Test Photos', 'Yuba City',
+   'SRID=4326;POINT(-121.61 39.14)');
+insert into public.bookings (slot_id, vendor_id, status) values
+  ('5a000000-0000-4000-8000-000000000001', '99000000-0000-4000-8000-000000000001', 'confirmed'),
+  ('5a000000-0000-4000-8000-000000000002', '99000000-0000-4000-8000-000000000002', 'confirmed'),
+  ('5a000000-0000-4000-8000-000000000003', '99000000-0000-4000-8000-000000000003', 'held');
 set local role authenticated;
 
 select pg_temp.as_user('d9000000-0000-4000-8000-00000000000d');
 select results_eq(
   $$ select slug, category_slugs, event_slugs from public.vault_vendors(pg_temp.id('vault')) $$,
   $$ values ('vault-test-dhol'::text, array['dhol']::text[], array['jaago']::text[]) $$,
-  'Guests see the published vendors the family booked'
+  'Guests see the published vendors the family booked, not ones only held'
 );
 select pg_temp.as_user('a9000000-0000-4000-8000-00000000000a');
 select lives_ok(

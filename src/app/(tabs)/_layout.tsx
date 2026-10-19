@@ -2,13 +2,7 @@ import { Redirect, Tabs } from 'expo-router';
 import { useState } from 'react';
 import { View } from 'react-native';
 
-import {
-  CENTER_RISE,
-  TabBar,
-  TabBarSpaceProvider,
-  useTabBarOffset,
-  type TabSpec,
-} from '@/components/tab-bar';
+import { TabBar, TabBarSpaceProvider, useTabBarOffset, type TabSpec } from '@/components/tab-bar';
 import { Sizes, Spacing, useColors } from '@/constants/theme';
 import { useUnreadCount } from '@/data/chat';
 import { useSession } from '@/features/auth/session';
@@ -52,8 +46,8 @@ const TABS: (Omit<TabSpec, 'label'> & { labelKey: string })[] = [
 /**
  * Bottom tabs: Home, Reels (the discover route), Wed's round button in the
  * middle (WedButton, with how many of its cards wait for a yes), Requests and
- * Profile, in a floating bar that content scrolls under (TabBar: the selected
- * tab grows into a pill with its name). Search and Wed's pages are in this
+ * Profile, in a floating glass bar that content scrolls under (TabBar: each
+ * tab's icon over its name, a lens behind the selected one). Search and Wed's pages are in this
  * group without a tab (href: null): Search opens from Home's search box, Wed
  * from its button and the Wed buttons around the app. Expo Router's JS tabs
  * draw it the same on iPhone, Android and the web.
@@ -94,11 +88,16 @@ export default function TabsLayout() {
   if (business) return <Redirect href="/today" />;
 
   return (
-    <TabBarSpaceProvider value={Sizes.tabBar + offset + Spacing.sm + CENTER_RISE}>
+    <TabBarSpaceProvider value={Sizes.tabBar + offset + Spacing.sm}>
       <Tabs
         key={generation}
         tabBar={(props) => (
-          <TabBar {...props} tabs={tabs} center={<WedButton count={canApprove ? waiting : 0} />} />
+          <TabBar
+            {...props}
+            tabs={tabs}
+            center={<WedButton count={canApprove ? waiting : 0} />}
+            centerFor="wed"
+          />
         )}
         screenOptions={{
           headerShown: false,

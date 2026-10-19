@@ -10,8 +10,9 @@
 -- vault_guests    People who joined with a link. They're in the vault only:
 --                 never the plan, the family chats or anything else of the
 --                 wedding's.
--- vault_invites   The join link, like group_invites, but it may be printed on
---                 the tables and used for weeks: 180 days, 2000 uses.
+-- vault_invites   Join links, like wedding_invites: only a hash of the token
+--                 is kept. One may be printed on the tables and used for
+--                 weeks, so each lasts 180 days and 2000 uses.
 -- vault_items     A photo or a video: who added it, its event and its files.
 --
 -- Who's in a vault: everyone in wedding_members, plus its guests.
@@ -69,9 +70,8 @@ create index vault_guests_user_idx on public.vault_guests (user_id);
 create table public.vault_invites (
   id uuid primary key default gen_random_uuid(),
   vault_id uuid not null references public.memory_vaults (id) on delete cascade,
-  -- 122 random bits as 32 hex characters: unguessable, safe in a URL
-  token text not null unique default replace(gen_random_uuid()::text, '-', '')
-    check (token ~ '^[0-9a-f]{32}$'),
+  -- SHA-256 of the link's token (hex); the token itself is only ever in the link
+  token_hash text not null unique check (token_hash ~ '^[0-9a-f]{64}$'),
   -- Kept when its maker deletes their account: the link may be on printed cards
   created_by uuid references auth.users (id) on delete set null,
   created_at timestamptz not null default now(),
@@ -82,7 +82,7 @@ create table public.vault_invites (
 );
 
 comment on table public.vault_invites is
-  'Join links for a Memory Vault. create_vault_invite hands out the open one, vault_invite_preview shows it before joining, accept_vault_invite uses it.';
+  'Join links for a Memory Vault, kept as a hash of the token. Made with create_vault_invite, read before joining with vault_invite_preview, used with accept_vault_invite.';
 
 create index vault_invites_vault_idx on public.vault_invites (vault_id);
 create index vault_invites_created_by_idx on public.vault_invites (created_by);
@@ -445,8 +445,8 @@ $$;
 comment on function public.memory_vault is
   'A Memory Vault by its id or its wedding''s, as the caller sees it: the wedding''s title and date, the caller''s role (couple, family, guest), whether they can add, the settings, counts, and the wedding''s events with how many items each has ([{slug, name, date, count}]). No row when there''s none or the caller isn''t in it.';
 
--- The vault's join link (the couple): the open one, or a new one when there's
--- none with a month or more left.
+-- A join link (the couple): a new token each time, returned once; earlier
+-- links, printed ones included, keep working until stopped or expired.
 create function private.create_vault_invite(p_vault_id uuid)
 returns text
 language plpgsql
@@ -454,30 +454,19 @@ security definer
 set search_path = ''
 as $$
 declare
-  link text;
+  -- 122 random bits as 32 hex characters: unguessable, safe in a URL
+  new_token text := replace(gen_random_uuid()::text, '-', '');
 begin
   if private.vault_role(p_vault_id) is distinct from 'couple' then
     raise exception 'not_allowed' using errcode = '42501';
-  end if;
-  select i.token into link
-  from public.vault_invites i
-  where i.vault_id = p_vault_id
-    and i.revoked_at is null
-    and i.expires_at > now() + interval '30 days'
-    and i.uses < i.max_uses
-  order by i.created_at desc
-  limit 1;
-  if link is not null then
-    return link;
   end if;
   if (select count(*) from public.vault_invites
       where vault_id = p_vault_id and created_at > now() - interval '1 day') >= 20 then
     raise exception 'invite_limit' using errcode = 'P0001';
   end if;
-  insert into public.vault_invites (vault_id, created_by)
-  values (p_vault_id, (select auth.uid()))
-  returning token into link;
-  return link;
+  insert into public.vault_invites (vault_id, created_by, token_hash)
+  values (p_vault_id, (select auth.uid()), encode(sha256(convert_to(new_token, 'UTF8')), 'hex'));
+  return new_token;
 end;
 $$;
 
@@ -491,7 +480,7 @@ as $$
 $$;
 
 comment on function public.create_vault_invite is
-  'The Memory Vault''s join link token (the couple): the open one, or a new one (180 days, 2000 uses). Errors: not_allowed, invite_limit.';
+  'Make a Memory Vault join link token (the couple; 180 days, 2000 uses, 20 a day). Only its hash is kept, so each call makes a new one; earlier ones keep working. Errors: not_allowed, invite_limit.';
 
 -- Stop every open link (the couple), say when one reached the wrong people.
 -- The next create_vault_invite makes a new one.
@@ -544,7 +533,8 @@ declare
   inv public.vault_invites;
   link_status text;
 begin
-  select * into inv from public.vault_invites i where i.token = lower(btrim(p_token));
+  select * into inv from public.vault_invites i
+  where i.token_hash = encode(sha256(convert_to(lower(btrim(p_token)), 'UTF8')), 'hex');
   link_status := case
     when not found then 'not_found'
     when inv.revoked_at is not null then 'revoked'
@@ -615,7 +605,7 @@ begin
     raise exception 'not_signed_in' using errcode = '42501';
   end if;
   select * into inv from public.vault_invites i
-  where i.token = lower(btrim(p_token))
+  where i.token_hash = encode(sha256(convert_to(lower(btrim(p_token)), 'UTF8')), 'hex')
   for update;
   if not found then
     raise exception 'invite_not_found' using errcode = 'P0002';
@@ -1061,8 +1051,9 @@ $$;
 comment on function public.my_vaults is
   'The Memory Vaults the caller is in (their weddings'' and the ones they joined), most recently added to first: the wedding''s title and date, their role, whether uploads are open and how many items they see and added.';
 
--- The published vendors the family booked, for "The vendors who made this
--- day": always for the wedding's own people, for guests when the couple allows.
+-- The published vendors the family booked (confirmed or done, not just held),
+-- for "The vendors who made this day": always for the wedding's own people,
+-- for guests when the couple allows.
 create function private.vault_vendors(p_vault_id uuid)
 returns table (
   vendor_id uuid,
@@ -1084,10 +1075,12 @@ as $$
     vd.name,
     vd.city,
     vd.is_sample,
-    array_agg(distinct b.category_slug order by b.category_slug),
-    array_agg(distinct b.event_slug order by b.event_slug)
+    array_agg(distinct s.category_slug order by s.category_slug),
+    array_agg(distinct we.event_slug order by we.event_slug)
   from public.memory_vaults v
-  join public.wedding_bookings b on b.wedding_id = v.wedding_id
+  join public.wedding_events we on we.wedding_id = v.wedding_id
+  join public.wedding_slots s on s.wedding_event_id = we.id
+  join public.bookings b on b.slot_id = s.id and b.status in ('confirmed', 'completed')
   join public.vendors vd on vd.id = b.vendor_id and vd.status = 'published'
   where v.id = p_vault_id
     and case private.vault_role(v.id)
