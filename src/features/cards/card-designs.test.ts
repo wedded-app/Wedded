@@ -13,6 +13,9 @@ describe('cardTime', () => {
   it('reads the way a card says it', () => {
     expect(cardTime('18:30:00')).toBe('6:30 PM');
     expect(cardTime('19:00:00')).toBe('7 PM');
+    // The plan keeps hh:mm
+    expect(cardTime('19:00')).toBe('7 PM');
+    expect(cardTime('09:30')).toBe('9:30 AM');
     expect(cardTime('09:05:00')).toBe('9:05 AM');
     expect(cardTime('12:00:00')).toBe('12 PM');
     expect(cardTime('00:00:00')).toBe('12 AM');
