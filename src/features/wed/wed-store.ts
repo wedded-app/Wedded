@@ -6,6 +6,7 @@ import { sendToVendor } from '@/data/chat';
 import { selectionHaptic, successHaptic } from '@/lib/haptics';
 
 import {
+  eventNames,
   eventsIn,
   FLOWS,
   guestApproval,
@@ -433,9 +434,15 @@ function apply(op: Op, run: Run) {
     case 'artifact':
       push({ kind: 'artifact', id: op.id });
       return;
-    case 'cards':
-      push({ kind: 'cards', events: eventsIn(run.q ?? '') });
+    case 'cards': {
+      const events = eventsIn(run.q ?? '');
+      push({
+        kind: 'wed',
+        text: `Here are your cards for ${eventNames(events)}, filled in from your plan.`,
+      });
+      later(400, () => push({ kind: 'cards', events }));
       return;
+    }
     case 'guests': {
       // "Send them": the cards Wed made last, else every event's
       const made = [...state.items].reverse().find((item) => item.kind === 'cards');

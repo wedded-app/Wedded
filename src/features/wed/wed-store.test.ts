@@ -305,6 +305,12 @@ describe('invitations', () => {
       'anand-karaj',
       'reception',
     ]);
+    // One word of a name is enough: the keyboard turns Karaj into Karan
+    expect(eventsIn('Jaago, Anand Karan and Reception')).toEqual([
+      'jaago',
+      'anand-karaj',
+      'reception',
+    ]);
     expect(eventsIn('our wedding')).toEqual([
       'roka',
       'mehndi',

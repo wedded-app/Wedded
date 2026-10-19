@@ -193,6 +193,8 @@ export type MockEvent = {
   done: number;
   total: number;
   note: string;
+  /** The approval the note waits on; once it's answered the note says what happened. */
+  waitsOn?: string;
   /** Wed's answer to "What's left to book for the …?" (the Mehndi has its own flow). */
   left: string;
 };
@@ -217,6 +219,7 @@ export const EVENTS: MockEvent[] = [
     done: 0,
     total: 2,
     note: 'A tasting at Saffron Tandoor waits for your OK',
+    waitsOn: 'tasting',
     left: '',
   },
   {
