@@ -23,7 +23,8 @@ type PhoneGuest = Required<GuestDraft> & { id: string };
 async function readContacts(): Promise<PhoneGuest[]> {
   const contacts = await Contact.getAllDetails(
     [ContactField.FULL_NAME, ContactField.PHONES, ContactField.EMAILS],
-    { sortOrder: ContactsSortOrder.UserDefault },
+    // Not UserDefault: expo-contacts sends "userDefault" but iOS only knows "useDefault", so it always failed
+    { sortOrder: ContactsSortOrder.GivenName },
   );
   return contacts.flatMap((contact) => {
     const guest = contactToGuest(contact);
