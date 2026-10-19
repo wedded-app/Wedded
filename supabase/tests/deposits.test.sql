@@ -11,8 +11,8 @@ insert into auth.users (id, instance_id, aud, role, email) values
   ('a1300000-0000-4000-8000-000000000001', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'dep-family@example.com'),
   ('a1300000-0000-4000-8000-000000000002', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'dep-other-family@example.com'),
   ('a1300000-0000-4000-8000-00000000000e', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'dep-owner@example.com');
-insert into public.vendors (id, slug, status, name, city, location) values
-  ('b1300000-0000-4000-8000-000000000001', 'dep-hall', 'published', 'Dep Hall', 'Yuba City', 'SRID=4326;POINT(-121.6169 39.1404)');
+insert into public.vendors (id, slug, status, name, base_city_slug, location) values
+  ('b1300000-0000-4000-8000-000000000001', 'dep-hall', 'published', 'Dep Hall', 'yuba-city', 'SRID=4326;POINT(-121.6169 39.1404)');
 insert into public.vendor_members (vendor_id, user_id) values
   ('b1300000-0000-4000-8000-000000000001', 'a1300000-0000-4000-8000-00000000000e');
 insert into public.conversations (id, vendor_id, family_user_id, family_name) values

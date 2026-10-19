@@ -15,13 +15,13 @@ insert into auth.users (id, instance_id, aud, role, email) values
   ('b0000000-0000-4000-8000-00000000000b', '00000000-0000-0000-0000-000000000000',
     'authenticated', 'authenticated', 'saver-b@example.com');
 
-insert into public.vendors (id, slug, status, name, city, location) values
+insert into public.vendors (id, slug, status, name, base_city_slug, location) values
   ('20000000-0000-4000-8000-000000000001', 'saves-dhol', 'published', 'Saves Dhol',
-    'Yuba City', 'SRID=4326;POINT(-121.6169 39.1404)'),
+    'yuba-city', 'SRID=4326;POINT(-121.6169 39.1404)'),
   ('20000000-0000-4000-8000-000000000002', 'saves-dj', 'published', 'Saves DJ',
-    'Yuba City', 'SRID=4326;POINT(-121.6169 39.1404)'),
+    'yuba-city', 'SRID=4326;POINT(-121.6169 39.1404)'),
   ('20000000-0000-4000-8000-000000000003', 'saves-draft', 'draft', 'Saves Draft',
-    'Yuba City', 'SRID=4326;POINT(-121.6169 39.1404)');
+    'yuba-city', 'SRID=4326;POINT(-121.6169 39.1404)');
 
 -- Logged out ----------------------------------------------------------------------
 

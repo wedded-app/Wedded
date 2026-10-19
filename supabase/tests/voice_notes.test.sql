@@ -9,8 +9,8 @@ select plan(6);
 insert into auth.users (id, instance_id, aud, role, email) values
   ('af000000-0000-4000-8000-000000000001', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'voice-family@example.com'),
   ('af000000-0000-4000-8000-00000000000e', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'voice-vendor@example.com');
-insert into public.vendors (id, slug, status, name, city, location) values
-  ('bf000000-0000-4000-8000-000000000001', 'voice-dhol', 'published', 'Voice Dhol', 'Yuba City', 'SRID=4326;POINT(-121.6169 39.1404)');
+insert into public.vendors (id, slug, status, name, base_city_slug, location) values
+  ('bf000000-0000-4000-8000-000000000001', 'voice-dhol', 'published', 'Voice Dhol', 'yuba-city', 'SRID=4326;POINT(-121.6169 39.1404)');
 insert into public.vendor_members (vendor_id, user_id) values
   ('bf000000-0000-4000-8000-000000000001', 'af000000-0000-4000-8000-00000000000e');
 insert into public.conversations (id, vendor_id, family_user_id, family_name) values

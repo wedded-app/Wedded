@@ -74,7 +74,7 @@ Deno.serve(async (request) => {
     try {
       const [{ data: vendor }, { data: vendorPrivate }, { data: events }, { data: profile }] =
         await Promise.all([
-          admin.from('vendors').select('name, call_phone, text_phone, whatsapp_phone').eq(
+          admin.from('vendors').select('name, vendor_contacts(kind, value)').eq(
             'id',
             row.vendor_id,
           ).single(),
@@ -91,6 +91,8 @@ Deno.serve(async (request) => {
       if (!vendor || !row.sender_name || !row.sender_phone) {
         throw new Error('The vendor or the sender is gone');
       }
+      const phone = (kind: string) =>
+        vendor.vendor_contacts.find((c: { kind: string }) => c.kind === kind)?.value ?? null;
 
       const inquiry: InquiryInput = {
         vendorId: row.vendor_id,
@@ -112,7 +114,7 @@ Deno.serve(async (request) => {
         channel: row.channel === 'relay' ? 'relay' : 'email',
         vendorName: vendor.name,
         vendorEmail: vendorPrivate?.email ?? null,
-        vendorPhone: vendor.whatsapp_phone ?? vendor.text_phone ?? vendor.call_phone,
+        vendorPhone: phone('whatsapp') ?? phone('text') ?? phone('call'),
         eventNames: row.event_slugs.map((slug: string) => {
           const name = events?.find((event) => event.slug === slug)?.name as
             | { en?: string }

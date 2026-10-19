@@ -61,7 +61,9 @@ describe('compareRows', () => {
   });
 
   it('leaves out rows where nobody has anything, so DJs get no hall rows', () => {
-    const keys = compareRows([vendor({}), vendor({ languages: ['pa'] })], t).map((r) => r.key);
+    const keys = compareRows([vendor({}), vendor({ languages: [{ en: 'Punjabi' }] })], t).map(
+      (r) => r.key,
+    );
     expect(keys).not.toContain('seats');
     expect(keys).not.toContain('curfew');
     expect(keys).toContain('languages');

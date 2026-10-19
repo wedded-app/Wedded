@@ -147,12 +147,6 @@
     "travelsUpTo": "Travels up to {{miles}} mi.",
     "travelsNorcal": "Travels anywhere in Northern California.",
     "speaks": "Speaks {{languages}}",
-    "languages": {
-      "en": "English",
-      "pa": "Punjabi",
-      "hi": "Hindi",
-      "ur": "Urdu"
-    },
     "price": "Price",
     "priceRange": "{{from}} to {{to}}",
     "priceRangePer": "{{from}} to {{to}} / {{unit}}",
@@ -2121,8 +2115,7 @@
         "call": "Call",
         "text": "Text",
         "whatsapp": "WhatsApp",
-        "instagram": "Instagram",
-        "email": "Email"
+        "instagram": "Instagram"
       },
       "instagram": "Instagram",
       "instagramHint": "Your handle, like @royalorchard",

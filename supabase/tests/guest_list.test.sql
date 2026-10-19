@@ -13,8 +13,8 @@ insert into auth.users (id, instance_id, aud, role, email) values
   ('c8000000-0000-4000-8000-00000000000c', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'charan-g@example.com'),
   ('d8000000-0000-4000-8000-00000000000d', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'dev-g@example.com');
 
-insert into public.vendors (id, slug, status, name, city, location) values
-  ('98000000-0000-4000-8000-000000000001', 'guests-test-hall', 'published', 'Guests Test Hall', 'Yuba City', 'SRID=4326;POINT(-121.6169 39.1404)');
+insert into public.vendors (id, slug, status, name, base_city_slug, location) values
+  ('98000000-0000-4000-8000-000000000001', 'guests-test-hall', 'published', 'Guests Test Hall', 'yuba-city', 'SRID=4326;POINT(-121.6169 39.1404)');
 
 create function pg_temp.as_user(uid uuid) returns void language sql as $$
   select set_config('request.jwt.claims',

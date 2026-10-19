@@ -44,11 +44,11 @@
     "links": [
       {
         "vendor": "saffron-tandoor-catering",
-        "kind": "approved_at"
+        "kind": "approved_caterer"
       },
       {
         "vendor": "royal-feast-caterers",
-        "kind": "approved_at"
+        "kind": "approved_caterer"
       }
     ],
     "menus": [

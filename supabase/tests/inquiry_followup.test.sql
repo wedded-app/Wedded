@@ -10,8 +10,8 @@ insert into auth.users (id, instance_id, aud, role, email) values
   ('a1000000-0000-4000-8000-00000000000a', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'followup-a@example.com'),
   ('b1000000-0000-4000-8000-00000000000b', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'followup-b@example.com');
 
-insert into public.vendors (id, slug, status, name, city, location) values
-  ('41000000-0000-4000-8000-000000000001', 'followup-vendor', 'published', 'Followup Vendor', 'Yuba City',
+insert into public.vendors (id, slug, status, name, base_city_slug, location) values
+  ('41000000-0000-4000-8000-000000000001', 'followup-vendor', 'published', 'Followup Vendor', 'yuba-city',
     'SRID=4326;POINT(-121.6169 39.1404)');
 
 insert into public.inquiries (id, user_id, vendor_id, guest_band, location, message, preferred_contact,

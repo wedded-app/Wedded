@@ -93,7 +93,7 @@ async function checkProfile(db: SupabaseClient, hallSlug: string) {
   console.log('\n3. The hall’s profile');
   const { data: hall } = await db
     .from('vendors')
-    .select('id, status, is_sample, founding_number, address_line, call_phone, details')
+    .select('id, status, is_sample, founding_number, public_address, details, vendor_contacts(kind)')
     .eq('slug', hallSlug)
     .maybeSingle();
   if (!hall) {
@@ -118,9 +118,13 @@ async function checkProfile(db: SupabaseClient, hallSlug: string) {
     `Fact chips missing: ${missing.join(', ')}`,
     'warn',
   );
-  check(Boolean(hall.call_phone), 'Call works (phone number set)', 'No call phone: Call is hidden');
   check(
-    Boolean(hall.address_line),
+    (hall.vendor_contacts ?? []).some((c: { kind: string }) => c.kind === 'call'),
+    'Call works (phone number set)',
+    'No call phone: Call is hidden',
+  );
+  check(
+    Boolean(hall.public_address),
     'Directions works (public address set)',
     'No public address: Directions is hidden',
   );
@@ -156,10 +160,11 @@ async function checkProfile(db: SupabaseClient, hallSlug: string) {
 
   const { data: links } = await db
     .from('vendor_links')
-    .select('vendor:vendors!vendor_links_vendor_id_fkey(slug, status)')
-    .eq('venue_vendor_id', hall.id)
-    .eq('kind', 'approved_at')
-    .eq('confirmed_by_both', true);
+    .select('vendor:vendors!vendor_links_to_vendor_id_fkey(slug, status)')
+    .eq('from_vendor_id', hall.id)
+    .eq('kind', 'approved_caterer')
+    .not('from_confirmed_at', 'is', null)
+    .not('to_confirmed_at', 'is', null);
   const caterers = (links ?? []).filter(
     (link) => (link.vendor as unknown as { status: string } | null)?.status === 'published',
   );

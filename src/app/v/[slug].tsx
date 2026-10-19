@@ -296,9 +296,7 @@ export default function VendorProfileScreen() {
     const isVenue = v.categories.some((category) => category.groupSlug === 'venues');
     const allPhotos = photos.data ?? [];
     const cover = allPhotos.find((photo) => photo.isCover) ?? allPhotos[0];
-    const languages = v.languages
-      .map((code) => t(`vendor.languages.${code}`, { defaultValue: code }))
-      .join(', ');
+    const languages = v.languages.map((name) => localized(name)).join(', ');
     const categoryNames = v.categories.map((category) => localized(category.name));
 
     const actions: {
