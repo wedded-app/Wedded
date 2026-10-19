@@ -8,9 +8,9 @@ select ('a2180000-0000-4000-8000-' || lpad(n::text,12,'0'))::uuid,
 from generate_series(1,4) n;
 insert into public.profiles (id, full_name, city, phone) values
  ('a2180000-0000-4000-8000-000000000001','Harjit Kaur','Yuba City','+15305550218');
-insert into public.vendors (id,slug,status,name,city,location)
+insert into public.vendors (id,slug,status,name,base_city_slug,location)
 select ('b2180000-0000-4000-8000-' || lpad(n::text,12,'0'))::uuid,
- 'r1-vendor-' || n, 'published', 'R1 Vendor ' || n, 'Yuba City', 'SRID=4326;POINT(-121.6169 39.1404)'
+ 'r1-vendor-' || n, 'published', 'R1 Vendor ' || n, 'yuba-city', 'SRID=4326;POINT(-121.6169 39.1404)'
 from generate_series(1,12) n;
 insert into public.vendor_categories (vendor_id,category_slug,position)
 select id, case when slug='r1-vendor-12' then 'dj' else 'dhol' end, 1

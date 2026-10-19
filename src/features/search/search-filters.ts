@@ -7,14 +7,14 @@
 import { useSyncExternalStore } from 'react';
 
 export type SearchSort = 'distance' | 'price_low' | 'founding';
-export type SearchLanguage = 'en' | 'pa' | 'hi' | 'ur';
 
 export type SearchFilters = {
   /** Venues that seat at least this many. */
   minGuests: number | null;
   /** A shown starting price at or under this, in dollars. */
   maxPrice: number | null;
-  language: SearchLanguage | null;
+  /** A code from the languages table, or any. */
+  language: string | null;
   /** Leave out vendors booked all day on this yyyy-mm-dd date. */
   availableOn: string | null;
   sort: SearchSort;

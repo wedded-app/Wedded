@@ -7,10 +7,10 @@ create extension if not exists pgtap with schema extensions;
 
 select plan(13);
 
-insert into public.vendors (id, slug, status, name, city, location) values
-  ('60000000-0000-4000-8000-000000000001', 'stats-live', 'published', 'Stats Live', 'Yuba City',
+insert into public.vendors (id, slug, status, name, base_city_slug, location) values
+  ('60000000-0000-4000-8000-000000000001', 'stats-live', 'published', 'Stats Live', 'yuba-city',
     'SRID=4326;POINT(-121.6169 39.1404)'),
-  ('60000000-0000-4000-8000-000000000002', 'stats-draft', 'draft', 'Stats Draft', 'Yuba City',
+  ('60000000-0000-4000-8000-000000000002', 'stats-draft', 'draft', 'Stats Draft', 'yuba-city',
     'SRID=4326;POINT(-121.6169 39.1404)');
 
 insert into auth.users (id, instance_id, aud, role, email)

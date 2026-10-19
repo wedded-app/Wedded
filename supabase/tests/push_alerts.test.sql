@@ -10,8 +10,8 @@ insert into auth.users (id, instance_id, aud, role, email) values
   ('a1100000-0000-4000-8000-000000000001', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'push-family@example.com'),
   ('a1100000-0000-4000-8000-00000000000e', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'push-owner@example.com'),
   ('a1100000-0000-4000-8000-00000000000f', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'push-staff@example.com');
-insert into public.vendors (id, slug, status, name, city, location) values
-  ('b1100000-0000-4000-8000-000000000001', 'push-hall', 'published', 'Push Hall', 'Yuba City', 'SRID=4326;POINT(-121.6169 39.1404)');
+insert into public.vendors (id, slug, status, name, base_city_slug, location) values
+  ('b1100000-0000-4000-8000-000000000001', 'push-hall', 'published', 'Push Hall', 'yuba-city', 'SRID=4326;POINT(-121.6169 39.1404)');
 insert into public.vendor_members (vendor_id, user_id, role) values
   ('b1100000-0000-4000-8000-000000000001', 'a1100000-0000-4000-8000-00000000000e', 'owner'),
   ('b1100000-0000-4000-8000-000000000001', 'a1100000-0000-4000-8000-00000000000f', 'staff');

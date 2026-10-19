@@ -1,5 +1,4 @@
 import type {
-  ListingLanguage,
   Listing,
   ContactMethod,
   PriceDisplay,
@@ -48,7 +47,7 @@ export type ListingDraft = {
   preferredContact: ContactMethod | null;
   instagramHandle: string;
   websiteUrl: string;
-  languages: ListingLanguage[];
+  languages: string[];
   yearsInBusiness: string;
   teamSize: string;
   serviceRadiusMiles: ServiceRadius | null;

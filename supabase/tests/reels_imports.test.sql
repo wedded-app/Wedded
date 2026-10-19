@@ -16,9 +16,9 @@ insert into public.profiles (id, full_name, city, phone) values
   ('a8000000-0000-4000-8000-00000000000a', 'Asha Kaur', 'Yuba City', '+15305550401'),
   ('b8000000-0000-4000-8000-00000000000b', 'Bal Singh', 'Yuba City', '+15305550402'),
   ('d8000000-0000-4000-8000-00000000000d', 'Dev Sandhu', 'Fremont', '+15105550404');
-insert into public.vendors (id, slug, status, name, city, location) values
-  ('98000000-0000-4000-8000-000000000001', 'link-hall', 'published', 'Link Hall', 'Yuba City', 'SRID=4326;POINT(-121.6169 39.1404)'),
-  ('98000000-0000-4000-8000-000000000002', 'link-dhol', 'published', 'Link Dhol', 'Yuba City', 'SRID=4326;POINT(-121.6169 39.1404)');
+insert into public.vendors (id, slug, status, name, base_city_slug, location) values
+  ('98000000-0000-4000-8000-000000000001', 'link-hall', 'published', 'Link Hall', 'yuba-city', 'SRID=4326;POINT(-121.6169 39.1404)'),
+  ('98000000-0000-4000-8000-000000000002', 'link-dhol', 'published', 'Link Dhol', 'yuba-city', 'SRID=4326;POINT(-121.6169 39.1404)');
 insert into public.vendor_members (vendor_id, user_id) values
   ('98000000-0000-4000-8000-000000000001', 'd8000000-0000-4000-8000-00000000000d');
 -- Asha linked her TikTok, Bal his Instagram (written by an Edge Function in real life)

@@ -6,17 +6,21 @@ create extension if not exists pgtap with schema extensions;
 
 select plan(8);
 
-insert into public.vendors (id, slug, status, name, city, location, languages,
-  price_display, price_from, price_unit, founding_number, details) values
-  ('50000000-0000-4000-8000-000000000001', 'ff-big-hall', 'published', 'Ff Big Hall', 'Yuba City',
-    (select location from public.cities where slug = 'yuba-city'), '{en,pa}',
-    'starting_at', 60, 'plate', null, '{"seated_capacity": 700}'),
-  ('50000000-0000-4000-8000-000000000002', 'ff-small-hall', 'published', 'Ff Small Hall', 'Yuba City',
-    (select location from public.cities where slug = 'yuba-city'), '{en}',
-    'starting_at', 30, 'plate', 7, '{"seated_capacity": 150}'),
-  ('50000000-0000-4000-8000-000000000003', 'ff-dj', 'published', 'Ff DJ', 'Yuba City',
-    (select location from public.cities where slug = 'yuba-city'), '{en,hi}',
+insert into public.vendors (id, slug, status, name, base_city_slug, location,
+  price_display, price_from_cents, price_unit, founding_number, details) values
+  ('50000000-0000-4000-8000-000000000001', 'ff-big-hall', 'published', 'Ff Big Hall', 'yuba-city',
+    (select location from public.cities where slug = 'yuba-city'),
+    'starting_at', 6000, 'plate', null, '{"seated_capacity": 700}'),
+  ('50000000-0000-4000-8000-000000000002', 'ff-small-hall', 'published', 'Ff Small Hall', 'yuba-city',
+    (select location from public.cities where slug = 'yuba-city'),
+    'starting_at', 3000, 'plate', 7, '{"seated_capacity": 150}'),
+  ('50000000-0000-4000-8000-000000000003', 'ff-dj', 'published', 'Ff DJ', 'yuba-city',
+    (select location from public.cities where slug = 'yuba-city'),
     'contact', null, null, null, '{}');
+insert into public.vendor_languages (vendor_id, language_code) values
+  ('50000000-0000-4000-8000-000000000001', 'en'), ('50000000-0000-4000-8000-000000000001', 'pa'),
+  ('50000000-0000-4000-8000-000000000002', 'en'),
+  ('50000000-0000-4000-8000-000000000003', 'en'), ('50000000-0000-4000-8000-000000000003', 'hi');
 
 insert into public.vendor_categories (vendor_id, category_slug, position)
 select id, 'kids-entertainment', 1 from public.vendors where slug like 'ff-%';
@@ -30,7 +34,7 @@ select set_eq(
 );
 
 select set_eq(
-  $$ select slug from public.search_vendors(category_slug => 'kids-entertainment', max_miles => null, max_price => 40) $$,
+  $$ select slug from public.search_vendors(category_slug => 'kids-entertainment', max_miles => null, max_price_cents => 4000) $$,
   array['ff-small-hall', 'ff-dj'],
   'A price ceiling drops pricier vendors and keeps "contact for price"'
 );
@@ -67,7 +71,7 @@ select is(
 
 select set_eq(
   $$ select slug from public.search_vendors(category_slug => 'kids-entertainment', max_miles => null,
-       min_guests => 400, max_price => 40, language => 'en') $$,
+       min_guests => 400, max_price_cents => 4000, language => 'en') $$,
   array['ff-dj'],
   'Filters combine: no hall seats 400 for under $40, so only the DJ is left'
 );

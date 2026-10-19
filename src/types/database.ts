@@ -1077,6 +1077,27 @@ export type Database = {
           },
         ];
       };
+      languages: {
+        Row: {
+          code: string;
+          created_at: string;
+          name: NonNullable<Json>;
+          sort_order: number;
+        };
+        Insert: {
+          code: string;
+          created_at?: string;
+          name: NonNullable<Json>;
+          sort_order: number;
+        };
+        Update: {
+          code?: string;
+          created_at?: string;
+          name?: NonNullable<Json>;
+          sort_order?: number;
+        };
+        Relationships: [];
+      };
       linked_account_tokens: {
         Row: {
           access_token: string;
@@ -2176,6 +2197,98 @@ export type Database = {
           },
         ];
       };
+      vendor_contacts: {
+        Row: {
+          created_at: string;
+          id: string;
+          is_preferred: boolean;
+          kind: string;
+          sort_order: number;
+          updated_at: string;
+          value: string;
+          vendor_id: string;
+        };
+        Insert: {
+          created_at?: string;
+          id?: string;
+          is_preferred?: boolean;
+          kind: string;
+          sort_order?: number;
+          updated_at?: string;
+          value: string;
+          vendor_id: string;
+        };
+        Update: {
+          created_at?: string;
+          id?: string;
+          is_preferred?: boolean;
+          kind?: string;
+          sort_order?: number;
+          updated_at?: string;
+          value?: string;
+          vendor_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'vendor_contacts_vendor_id_fkey';
+            columns: ['vendor_id'];
+            isOneToOne: false;
+            referencedRelation: 'vendors';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      vendor_days: {
+        Row: {
+          booking_id: string | null;
+          capacity: number | null;
+          created_at: string;
+          day: string;
+          part: string;
+          source: string;
+          status: string;
+          taken: number | null;
+          vendor_id: string;
+        };
+        Insert: {
+          booking_id?: string | null;
+          capacity?: number | null;
+          created_at?: string;
+          day: string;
+          part?: string;
+          source?: string;
+          status?: string;
+          taken?: number | null;
+          vendor_id: string;
+        };
+        Update: {
+          booking_id?: string | null;
+          capacity?: number | null;
+          created_at?: string;
+          day?: string;
+          part?: string;
+          source?: string;
+          status?: string;
+          taken?: number | null;
+          vendor_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'vendor_days_booking_id_fkey';
+            columns: ['booking_id'];
+            isOneToOne: false;
+            referencedRelation: 'bookings';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'vendor_days_vendor_id_fkey';
+            columns: ['vendor_id'];
+            isOneToOne: false;
+            referencedRelation: 'vendors';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
       vendor_events: {
         Row: {
           created_at: string;
@@ -2205,6 +2318,39 @@ export type Database = {
           },
           {
             foreignKeyName: 'vendor_events_vendor_id_fkey';
+            columns: ['vendor_id'];
+            isOneToOne: false;
+            referencedRelation: 'vendors';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      vendor_languages: {
+        Row: {
+          created_at: string;
+          language_code: string;
+          vendor_id: string;
+        };
+        Insert: {
+          created_at?: string;
+          language_code: string;
+          vendor_id: string;
+        };
+        Update: {
+          created_at?: string;
+          language_code?: string;
+          vendor_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'vendor_languages_language_code_fkey';
+            columns: ['language_code'];
+            isOneToOne: false;
+            referencedRelation: 'languages';
+            referencedColumns: ['code'];
+          },
+          {
+            foreignKeyName: 'vendor_languages_vendor_id_fkey';
             columns: ['vendor_id'];
             isOneToOne: false;
             referencedRelation: 'vendors';
@@ -2273,49 +2419,49 @@ export type Database = {
       };
       vendor_links: {
         Row: {
-          confirmed_by_both: boolean | null;
-          confirmed_by_vendor: boolean;
-          confirmed_by_venue: boolean;
           created_at: string;
+          from_confirmed_at: string | null;
+          from_vendor_id: string;
+          hidden_by_venue: boolean;
           id: string;
           kind: string;
+          to_confirmed_at: string | null;
+          to_vendor_id: string;
           updated_at: string;
-          vendor_id: string;
-          venue_vendor_id: string;
         };
         Insert: {
-          confirmed_by_both?: never;
-          confirmed_by_vendor?: boolean;
-          confirmed_by_venue?: boolean;
           created_at?: string;
+          from_confirmed_at?: string | null;
+          from_vendor_id: string;
+          hidden_by_venue?: boolean;
           id?: string;
           kind: string;
+          to_confirmed_at?: string | null;
+          to_vendor_id: string;
           updated_at?: string;
-          vendor_id: string;
-          venue_vendor_id: string;
         };
         Update: {
-          confirmed_by_both?: never;
-          confirmed_by_vendor?: boolean;
-          confirmed_by_venue?: boolean;
           created_at?: string;
+          from_confirmed_at?: string | null;
+          from_vendor_id?: string;
+          hidden_by_venue?: boolean;
           id?: string;
           kind?: string;
+          to_confirmed_at?: string | null;
+          to_vendor_id?: string;
           updated_at?: string;
-          vendor_id?: string;
-          venue_vendor_id?: string;
         };
         Relationships: [
           {
-            foreignKeyName: 'vendor_links_vendor_id_fkey';
-            columns: ['vendor_id'];
+            foreignKeyName: 'vendor_links_from_vendor_id_fkey';
+            columns: ['from_vendor_id'];
             isOneToOne: false;
             referencedRelation: 'vendors';
             referencedColumns: ['id'];
           },
           {
-            foreignKeyName: 'vendor_links_venue_vendor_id_fkey';
-            columns: ['venue_vendor_id'];
+            foreignKeyName: 'vendor_links_to_vendor_id_fkey';
+            columns: ['to_vendor_id'];
             isOneToOne: false;
             referencedRelation: 'vendors';
             referencedColumns: ['id'];
@@ -2530,33 +2676,33 @@ export type Database = {
       };
       vendor_private: {
         Row: {
-          checks_email: boolean | null;
+          checks_email: boolean;
           created_at: string;
           email: string | null;
           exact_location: unknown;
-          notes: string | null;
+          founder_notes: string | null;
           owner_name: string | null;
           street_address: string | null;
           updated_at: string;
           vendor_id: string;
         };
         Insert: {
-          checks_email?: boolean | null;
+          checks_email?: boolean;
           created_at?: string;
           email?: string | null;
           exact_location?: unknown;
-          notes?: string | null;
+          founder_notes?: string | null;
           owner_name?: string | null;
           street_address?: string | null;
           updated_at?: string;
           vendor_id: string;
         };
         Update: {
-          checks_email?: boolean | null;
+          checks_email?: boolean;
           created_at?: string;
           email?: string | null;
           exact_location?: unknown;
-          notes?: string | null;
+          founder_notes?: string | null;
           owner_name?: string | null;
           street_address?: string | null;
           updated_at?: string;
@@ -2619,154 +2765,122 @@ export type Database = {
           },
         ];
       };
-      vendor_unavailable_days: {
+      vendors: {
         Row: {
+          address_visibility: string;
+          base_city_slug: string;
+          bio: string | null;
+          calendar_updated_at: string | null;
           created_at: string;
-          day: string;
-          part: string;
+          details: NonNullable<Json>;
+          founding_number: number | null;
+          id: string;
+          is_sample: boolean;
+          last_verified_at: string | null;
+          location: unknown;
+          merged_into_id: string | null;
+          name: string;
+          office_hours: string | null;
+          price_display: string;
+          price_from_cents: number | null;
+          price_note: string | null;
+          price_to_cents: number | null;
+          price_unit: string | null;
+          provenance: string;
+          public_address: string | null;
+          published_at: string | null;
+          service_radius_miles: number;
+          slug: string;
           status: string;
-          vendor_id: string;
+          tagline: string | null;
+          team_size: number | null;
+          travel_fee_note: string | null;
+          updated_at: string;
+          will_travel: boolean;
+          years_in_business: number | null;
         };
         Insert: {
+          address_visibility?: string;
+          base_city_slug: string;
+          bio?: string | null;
+          calendar_updated_at?: string | null;
           created_at?: string;
-          day: string;
-          part?: string;
+          details?: NonNullable<Json>;
+          founding_number?: number | null;
+          id?: string;
+          is_sample?: boolean;
+          last_verified_at?: string | null;
+          location: unknown;
+          merged_into_id?: string | null;
+          name: string;
+          office_hours?: string | null;
+          price_display?: string;
+          price_from_cents?: number | null;
+          price_note?: string | null;
+          price_to_cents?: number | null;
+          price_unit?: string | null;
+          provenance?: string;
+          public_address?: string | null;
+          published_at?: string | null;
+          service_radius_miles?: number;
+          slug: string;
           status?: string;
-          vendor_id: string;
+          tagline?: string | null;
+          team_size?: number | null;
+          travel_fee_note?: string | null;
+          updated_at?: string;
+          will_travel?: boolean;
+          years_in_business?: number | null;
         };
         Update: {
+          address_visibility?: string;
+          base_city_slug?: string;
+          bio?: string | null;
+          calendar_updated_at?: string | null;
           created_at?: string;
-          day?: string;
-          part?: string;
+          details?: NonNullable<Json>;
+          founding_number?: number | null;
+          id?: string;
+          is_sample?: boolean;
+          last_verified_at?: string | null;
+          location?: unknown;
+          merged_into_id?: string | null;
+          name?: string;
+          office_hours?: string | null;
+          price_display?: string;
+          price_from_cents?: number | null;
+          price_note?: string | null;
+          price_to_cents?: number | null;
+          price_unit?: string | null;
+          provenance?: string;
+          public_address?: string | null;
+          published_at?: string | null;
+          service_radius_miles?: number;
+          slug?: string;
           status?: string;
-          vendor_id?: string;
+          tagline?: string | null;
+          team_size?: number | null;
+          travel_fee_note?: string | null;
+          updated_at?: string;
+          will_travel?: boolean;
+          years_in_business?: number | null;
         };
         Relationships: [
           {
-            foreignKeyName: 'vendor_unavailable_days_vendor_id_fkey';
-            columns: ['vendor_id'];
+            foreignKeyName: 'vendors_base_city_slug_fkey';
+            columns: ['base_city_slug'];
+            isOneToOne: false;
+            referencedRelation: 'cities';
+            referencedColumns: ['slug'];
+          },
+          {
+            foreignKeyName: 'vendors_merged_into_id_fkey';
+            columns: ['merged_into_id'];
             isOneToOne: false;
             referencedRelation: 'vendors';
             referencedColumns: ['id'];
           },
         ];
-      };
-      vendors: {
-        Row: {
-          address_line: string | null;
-          address_visibility: string;
-          bio: string | null;
-          calendar_updated_at: string | null;
-          call_phone: string | null;
-          city: string;
-          created_at: string;
-          details: NonNullable<Json>;
-          founding_number: number | null;
-          id: string;
-          instagram_handle: string | null;
-          is_sample: boolean;
-          languages: string[];
-          last_verified_at: string | null;
-          location: unknown;
-          name: string;
-          office_hours: string | null;
-          preferred_contact: string | null;
-          price_display: string;
-          price_from: number | null;
-          price_note: string | null;
-          price_to: number | null;
-          price_unit: string | null;
-          service_radius_miles: number;
-          slug: string;
-          source: string;
-          status: string;
-          tagline: string | null;
-          team_size: number | null;
-          text_phone: string | null;
-          travel_note: string | null;
-          updated_at: string;
-          website_url: string | null;
-          whatsapp_phone: string | null;
-          will_travel: boolean;
-          years_in_business: number | null;
-        };
-        Insert: {
-          address_line?: string | null;
-          address_visibility?: string;
-          bio?: string | null;
-          calendar_updated_at?: string | null;
-          call_phone?: string | null;
-          city: string;
-          created_at?: string;
-          details?: NonNullable<Json>;
-          founding_number?: number | null;
-          id?: string;
-          instagram_handle?: string | null;
-          is_sample?: boolean;
-          languages?: string[];
-          last_verified_at?: string | null;
-          location: unknown;
-          name: string;
-          office_hours?: string | null;
-          preferred_contact?: string | null;
-          price_display?: string;
-          price_from?: number | null;
-          price_note?: string | null;
-          price_to?: number | null;
-          price_unit?: string | null;
-          service_radius_miles?: number;
-          slug: string;
-          source?: string;
-          status?: string;
-          tagline?: string | null;
-          team_size?: number | null;
-          text_phone?: string | null;
-          travel_note?: string | null;
-          updated_at?: string;
-          website_url?: string | null;
-          whatsapp_phone?: string | null;
-          will_travel?: boolean;
-          years_in_business?: number | null;
-        };
-        Update: {
-          address_line?: string | null;
-          address_visibility?: string;
-          bio?: string | null;
-          calendar_updated_at?: string | null;
-          call_phone?: string | null;
-          city?: string;
-          created_at?: string;
-          details?: NonNullable<Json>;
-          founding_number?: number | null;
-          id?: string;
-          instagram_handle?: string | null;
-          is_sample?: boolean;
-          languages?: string[];
-          last_verified_at?: string | null;
-          location?: unknown;
-          name?: string;
-          office_hours?: string | null;
-          preferred_contact?: string | null;
-          price_display?: string;
-          price_from?: number | null;
-          price_note?: string | null;
-          price_to?: number | null;
-          price_unit?: string | null;
-          service_radius_miles?: number;
-          slug?: string;
-          source?: string;
-          status?: string;
-          tagline?: string | null;
-          team_size?: number | null;
-          text_phone?: string | null;
-          travel_note?: string | null;
-          updated_at?: string;
-          website_url?: string | null;
-          whatsapp_phone?: string | null;
-          will_travel?: boolean;
-          years_in_business?: number | null;
-        };
-        Relationships: [];
       };
       wedding_cultures: {
         Row: {
@@ -3950,7 +4064,7 @@ export type Database = {
           lat?: number;
           lng?: number;
           max_miles?: number;
-          max_price?: number;
+          max_price_cents?: number;
           min_guests?: number;
           query?: string;
           result_limit?: number;
@@ -3968,8 +4082,8 @@ export type Database = {
           longitude: number;
           name: string;
           price_display: string;
-          price_from: number;
-          price_to: number;
+          price_from_cents: number;
+          price_to_cents: number;
           price_unit: string;
           primary_category_name: Json;
           primary_category_slug: string;
