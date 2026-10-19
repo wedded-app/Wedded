@@ -18,7 +18,10 @@
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
       "predictiveBackGestureEnabled": false,
-      "blockedPermissions": ["android.permission.ACCESS_FINE_LOCATION"]
+      "blockedPermissions": [
+        "android.permission.ACCESS_FINE_LOCATION",
+        "android.permission.WRITE_CONTACTS"
+      ]
     },
     "web": {
       "output": "static",
@@ -65,6 +68,12 @@
         }
       ],
       "expo-sharing",
+      [
+        "expo-contacts",
+        {
+          "contactsPermission": "Wedded App opens your contacts only when you add wedding guests from them. Only the people you tick are saved: their name, phone number and email."
+        }
+      ],
       [
         "expo-audio",
         {

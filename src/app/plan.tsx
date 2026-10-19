@@ -21,11 +21,13 @@ import { NavScreen } from '@/components/nav';
 import { ProgressBar } from '@/components/progress-bar';
 import { StateView } from '@/components/state-view';
 import { makeStyles, Radius, Sizes, Spacing, Springs, useColors } from '@/constants/theme';
+import { useGuests } from '@/data/guests';
 import type { EventNeed, EventNeedsSection, TraditionEvent } from '@/data/reference';
 import { formatDate, GUEST_BANDS } from '@/features/inquiry/inquiry-helpers';
 import { CountdownCard } from '@/features/planner/countdown-card';
 import { openCounts, useWeddingSuggestions } from '@/data/wedding-suggestions';
 import { FamilyChats } from '@/features/group-chat/family-chats';
+import { totalsLine } from '@/features/guests/guest-helpers';
 import { FamilyShortlist } from '@/features/planner/family-shortlist';
 import { findForPlan } from '@/features/planner/find-for-plan';
 import { essentialNeeds } from '@/features/planner/plan';
@@ -57,6 +59,8 @@ export default function PlanScreen() {
   const { plan, wedding, canEdit, saveFailed, active, chosen, needsByEvent, progress } = view;
   const suggestions = useWeddingSuggestions(wedding?.id ?? null);
   const suggested = openCounts(suggestions.data ?? []);
+  // Only the owner and editors see the guest list: it's other people's numbers
+  const guests = useGuests(canEdit ? (wedding?.id ?? null) : null);
 
   // Every event starts folded, so the page reads as one list; a tap opens one
   const [openSlugs, setOpen] = useState<string[]>([]);
@@ -223,6 +227,14 @@ export default function PlanScreen() {
 
       {!view.loading && (
         <ListSection>
+          {canEdit && (
+            <ListRow
+              icon="people-outline"
+              title={t('guests.title')}
+              subtitle={totalsLine(guests.data ?? [], t) ?? t('guests.planEntryBody')}
+              onPress={() => router.push('/guests')}
+            />
+          )}
           <ListRow
             icon="mail-outline"
             title={t('cards.planEntry')}

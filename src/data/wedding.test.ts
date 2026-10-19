@@ -22,6 +22,8 @@ const wedding: AccountWedding = {
   booked: { reception: ['banquet-hall'] },
   guests: { reception: '250_500' },
   eventDates: { reception: '2027-06-12' },
+  eventTimes: { reception: '18:00' },
+  eventPlaces: { reception: 'Royal Orchard, Yuba City' },
   bookedVendors: {},
 };
 
@@ -40,6 +42,8 @@ describe('toAccountWedding', () => {
             {
               event_slug: 'reception',
               event_date: '2027-06-12',
+              starts_at: '18:00:00',
+              venue_text: 'Royal Orchard, Yuba City',
               guest_band: '250_500',
               wedding_slots: [
                 {
@@ -55,6 +59,8 @@ describe('toAccountWedding', () => {
             {
               event_slug: 'jaago',
               event_date: '2027-06-11',
+              starts_at: null,
+              venue_text: null,
               guest_band: null,
               wedding_slots: [
                 { category_slug: 'dhol', bookings: [{ status: 'canceled', vendor: null }] },
@@ -74,6 +80,8 @@ describe('toAccountWedding', () => {
       booked: { reception: ['dj'] },
       guests: { reception: '250_500' },
       eventDates: { reception: '2027-06-12', jaago: '2027-06-11' },
+      eventTimes: { reception: '18:00' },
+      eventPlaces: { reception: 'Royal Orchard, Yuba City' },
       bookedVendors: { 'reception/dj': { slug: 'dj-sukh', name: 'DJ Sukh' } },
     });
   });
@@ -95,12 +103,24 @@ describe('applyChange', () => {
     expect(applyChange(wedding, { kind: 'date', date: null }).weddingDate).toBeNull();
   });
 
-  it('removing an event removes what was booked for it, its guest count and its date', () => {
+  it('removing an event removes what was booked for it, its guest count, date, time and place', () => {
     const next = applyChange(wedding, { kind: 'event', slug: 'reception', on: false });
     expect(next.events).toEqual(['jaago']);
     expect(next.booked).toEqual({});
     expect(next.guests).toEqual({});
     expect(next.eventDates).toEqual({});
+    expect(next.eventTimes).toEqual({});
+    expect(next.eventPlaces).toEqual({});
+  });
+
+  it("sets the couple's names, and an event's start time and place", () => {
+    expect(applyChange(wedding, { kind: 'title', title: 'Simran & Arjun' }).title).toBe(
+      'Simran & Arjun',
+    );
+    const timed = applyChange(wedding, { kind: 'eventTime', event: 'jaago', time: '19:30' });
+    expect(timed.eventTimes).toEqual({ reception: '18:00', jaago: '19:30' });
+    const moved = applyChange(timed, { kind: 'eventPlace', event: 'reception', place: null });
+    expect(moved.eventPlaces).toEqual({});
   });
 
   it("sets and clears an event's own date", () => {
