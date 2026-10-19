@@ -15,7 +15,12 @@ import {
   type Guest,
   type EventGuestSummary,
 } from '@/data/guests';
-import { answerLabel, matchesSearch, totalsLine } from '@/features/guests/guest-helpers';
+import {
+  answerLabel,
+  guestTotals,
+  matchesSearch,
+  totalsLine,
+} from '@/features/guests/guest-helpers';
 import { StartPlanCard } from '@/features/planner/start-plan-card';
 import { usePlanView } from '@/features/planner/use-plan-view';
 import { localized } from '@/i18n/localized';
@@ -143,7 +148,12 @@ export default function GuestsScreen() {
                   key={list.id}
                   icon="list-outline"
                   title={list.name}
-                  value={t('guests.people', { count: list.guestIds.length })}
+                  // People, like the page's header: a family of 4 is 4, not 1
+                  value={t('guests.people', {
+                    count: guestTotals(
+                      (guests.data ?? []).filter((guest) => list.guestIds.includes(guest.id)),
+                    ).people,
+                  })}
                   onPress={() => router.push({ pathname: '/guest-list', params: { id: list.id } })}
                 />
               ))}

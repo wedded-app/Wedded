@@ -63,6 +63,8 @@ export function Stepper({ value, min, max, onChange, accessibilityLabel }: Stepp
       aria-valuemin={min}
       aria-valuemax={max}
       aria-valuenow={value}
+      // Without the text, iOS reads min/max/now as a percentage ("100%")
+      aria-valuetext={String(value)}
       accessibilityActions={[{ name: 'increment' }, { name: 'decrement' }]}
       onAccessibilityAction={(event) => step(event.nativeEvent.actionName === 'increment' ? 1 : -1)}
       style={styles.row}

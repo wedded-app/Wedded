@@ -15,6 +15,7 @@ import {
   type GuestList,
 } from '@/data/guests';
 import { useWeddingPlan } from '@/data/wedding';
+import { guestTotals } from '@/features/guests/guest-helpers';
 import { closeGuestSheet, confirm, PickSheet } from '@/features/guests/pick-sheet';
 import { useLocale } from '@/i18n/locale-context';
 import { successHaptic } from '@/lib/haptics';
@@ -126,7 +127,9 @@ function ListSheet({
         <>
           {error && <FieldError message={error} />}
           <Button
-            label={t('guests.list.save', { count: picked.length })}
+            label={t('guests.list.save', {
+              count: guestTotals(guests.filter((guest) => picked.includes(guest.id))).people,
+            })}
             loading={save.isPending}
             onPress={onSave}
           />

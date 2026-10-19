@@ -93,6 +93,12 @@ function GuestForm({
   const [error, setError] = useState<string>();
   const [copied, setCopied] = useState(false);
   const failed = (e: unknown) => setError(t(`guests.errors.${guestErrorKind(e)}`));
+  // Typing in a box clears its error, so a fixed name doesn't still say "Type their name"
+  const edit =
+    (field: 'name' | 'phone' | 'email', set: (text: string) => void) => (text: string) => {
+      set(text);
+      setErrors((current) => ({ ...current, [field]: undefined }));
+    };
 
   const save = () => {
     const cleanName = name.trim().replace(/\s+/g, ' ');
@@ -151,7 +157,7 @@ function GuestForm({
           hint={t('guests.form.nameHint')}
           type="name"
           value={name}
-          onChangeText={setName}
+          onChangeText={edit('name', setName)}
           maxLength={80}
           error={errors.name}
         />
@@ -160,14 +166,14 @@ function GuestForm({
           hint={t('guests.form.phoneHint')}
           type="phone"
           value={phone}
-          onChangeText={setPhone}
+          onChangeText={edit('phone', setPhone)}
           error={errors.phone}
         />
         <TextField
           label={t('guests.form.email')}
           type="email"
           value={email}
-          onChangeText={setEmail}
+          onChangeText={edit('email', setEmail)}
           maxLength={254}
           error={errors.email}
         />

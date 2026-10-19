@@ -92,6 +92,8 @@ function DetailsForm({
           value={names}
           onChangeText={setNames}
           maxLength={80}
+          // Autocorrect made "Kirat" "Kirsten" (not type="name": that offers the user's own name)
+          autoCorrect={false}
         />
         {events.map((event) => {
           const name = localized(event.name);

@@ -884,6 +884,7 @@
     "delete": "Delete this story",
     "deleteTitle": "Delete this story?",
     "cardSpoken": "Watch {{name}}'s story, {{time}}",
+    "mineSpoken": "Watch your story, {{time}}",
     "empty": "No one else has shared a story today. Stories last 24 hours, so check back later."
   },
   "postStory": {
@@ -2010,6 +2011,8 @@
     "bookNone": "These vendors aren't listed any more.",
     "shareMessage": "A wedding reel from {{name}} on Wedded App",
     "delete": "Delete this reel",
+    "deleteTitle": "Delete this reel?",
+    "deleteBody": "It comes off Reels for everyone, with its likes and comments.",
     "report": "Report",
     "block": "Block {{name}}",
     "unblock": "Unblock {{name}}",
