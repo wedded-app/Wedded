@@ -45,7 +45,7 @@ select throws_ok(
   'Not before their Stripe account can take payments'
 );
 select throws_ok(
-  $$ insert into public.vendor_payment_accounts (vendor_id, stripe_account_id, charges_enabled)
+  $$ insert into public.payout_accounts (vendor_id, stripe_account_id, charges_enabled)
      values ('b1300000-0000-4000-8000-000000000001', 'acct_fake123', true) $$,
   '42501', null,
   'Nobody marks their own account ready'
@@ -54,8 +54,8 @@ reset role;
 
 set local role service_role;
 select lives_ok(
-  $$ select public.save_payment_account('b1300000-0000-4000-8000-000000000001', 'acct_1TestHall', false, true, false);
-     select public.update_payment_account('acct_1TestHall', true, true) $$,
+  $$ select public.save_payout_account('b1300000-0000-4000-8000-000000000001', 'acct_1TestHall', false, true, false);
+     select public.update_payout_account('acct_1TestHall', true, true) $$,
   'The Edge Functions save the connected account and Stripe''s word that it''s ready'
 );
 reset role;
@@ -63,7 +63,7 @@ reset role;
 set local role authenticated;
 select pg_temp.as_user('a1300000-0000-4000-8000-00000000000e');
 select is(
-  (select charges_enabled from public.vendor_payment_accounts),
+  (select charges_enabled from public.payout_accounts),
   true,
   'The vendor''s people see their account is ready'
 );

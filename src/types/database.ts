@@ -1497,6 +1497,44 @@ export type Database = {
           },
         ];
       };
+      payout_accounts: {
+        Row: {
+          charges_enabled: boolean;
+          created_at: string;
+          details_submitted: boolean;
+          livemode: boolean;
+          stripe_account_id: string;
+          updated_at: string;
+          vendor_id: string;
+        };
+        Insert: {
+          charges_enabled?: boolean;
+          created_at?: string;
+          details_submitted?: boolean;
+          livemode?: boolean;
+          stripe_account_id: string;
+          updated_at?: string;
+          vendor_id: string;
+        };
+        Update: {
+          charges_enabled?: boolean;
+          created_at?: string;
+          details_submitted?: boolean;
+          livemode?: boolean;
+          stripe_account_id?: string;
+          updated_at?: string;
+          vendor_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'payout_accounts_vendor_id_fkey';
+            columns: ['vendor_id'];
+            isOneToOne: true;
+            referencedRelation: 'vendors';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
       profiles: {
         Row: {
           adult_confirmed_at: string;
@@ -2837,44 +2875,6 @@ export type Database = {
             foreignKeyName: 'vendor_menus_vendor_id_fkey';
             columns: ['vendor_id'];
             isOneToOne: false;
-            referencedRelation: 'vendors';
-            referencedColumns: ['id'];
-          },
-        ];
-      };
-      vendor_payment_accounts: {
-        Row: {
-          charges_enabled: boolean;
-          created_at: string;
-          details_submitted: boolean;
-          livemode: boolean;
-          stripe_account_id: string;
-          updated_at: string;
-          vendor_id: string;
-        };
-        Insert: {
-          charges_enabled?: boolean;
-          created_at?: string;
-          details_submitted?: boolean;
-          livemode?: boolean;
-          stripe_account_id: string;
-          updated_at?: string;
-          vendor_id: string;
-        };
-        Update: {
-          charges_enabled?: boolean;
-          created_at?: string;
-          details_submitted?: boolean;
-          livemode?: boolean;
-          stripe_account_id?: string;
-          updated_at?: string;
-          vendor_id?: string;
-        };
-        Relationships: [
-          {
-            foreignKeyName: 'vendor_payment_accounts_vendor_id_fkey';
-            columns: ['vendor_id'];
-            isOneToOne: true;
             referencedRelation: 'vendors';
             referencedColumns: ['id'];
           },
@@ -4376,7 +4376,7 @@ export type Database = {
           wedding_date: string;
         }[];
       };
-      save_payment_account: {
+      save_payout_account: {
         Args: {
           p_charges_enabled: boolean;
           p_details_submitted: boolean;
@@ -4540,7 +4540,7 @@ export type Database = {
         Returns: undefined;
       };
       update_my_listing: { Args: { p_changes: Json; p_vendor_id: string }; Returns: Json };
-      update_payment_account: {
+      update_payout_account: {
         Args: {
           p_charges_enabled: boolean;
           p_details_submitted: boolean;
