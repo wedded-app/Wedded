@@ -1,7 +1,6 @@
-import * as Print from 'expo-print';
 import { useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
-import { Platform, ScrollView, StyleSheet, View } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
 
 import { AppText } from '@/components/app-text';
 import { BackButton } from '@/components/back-button';
@@ -13,6 +12,7 @@ import { StateView } from '@/components/state-view';
 import { SITE_URL_IS_PLACEHOLDER, siteLink } from '@/constants/links';
 import { BorderWidth, Palettes, Radius, Spacing } from '@/constants/theme';
 import { useVendor } from '@/data/vendors';
+import { printHtml } from '@/features/tent/print-html';
 import { tableTentHtml, type TableTent } from '@/features/tent/table-tent';
 import { useLocale } from '@/i18n/locale-context';
 
@@ -60,22 +60,7 @@ export default function TableTentScreen() {
 
   async function print() {
     setPrintFailed(false);
-    const html = tableTentHtml(tent);
-    try {
-      if (Platform.OS === 'web') {
-        // expo-print on the web prints the current page, not this HTML.
-        const page = globalThis.open('', '_blank');
-        if (!page) throw new Error('Pop-up blocked');
-        page.document.write(html);
-        page.document.close();
-        page.focus();
-        page.print();
-      } else {
-        await Print.printAsync({ html });
-      }
-    } catch {
-      setPrintFailed(true);
-    }
+    setPrintFailed(!(await printHtml(tableTentHtml(tent))));
   }
 
   return (

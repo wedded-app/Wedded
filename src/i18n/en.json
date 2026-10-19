@@ -961,6 +961,116 @@
     "editorExplain": "You'll see the plan and can change it: tick off vendors as they're booked, and add events.",
     "suggesterExplain": "You'll see the plan and can suggest vendors for each event. The family decides."
   },
+  "memoryVault": {
+    "title": "Memory Vault",
+    "count": {
+      "one": "1 photo or video",
+      "other": "{{count}} photos and videos"
+    },
+    "eventRow": "Memory Vault · {{count}}",
+    "openTitle": "Open your Memory Vault",
+    "openBody": "One shared album: guests add the photos and videos they took, by event.",
+    "opening": "Opening…",
+    "openFailed": "We couldn't open it. Check your internet, then try again.",
+    "profileHeader": "Memory Vaults",
+    "signIn": "Sign in to see this Memory Vault.",
+    "notFound": "This Memory Vault isn't available. Ask the couple for a new link.",
+    "add": "Add photos",
+    "addTo": "Add photos to the {{event}}",
+    "adding": "Adding {{done}} of {{total}}",
+    "added": {
+      "one": "1 added. Thank you!",
+      "other": "{{count}} added. Thank you!"
+    },
+    "problems": {
+      "locked": "The couple has closed the vault to new photos.",
+      "tooBig": {
+        "one": "1 was too big. Photos can be up to 15 MB and videos up to 100 MB.",
+        "other": "{{count}} were too big. Photos can be up to 15 MB and videos up to 100 MB."
+      },
+      "tooLong": {
+        "one": "1 video is longer than 60 seconds. Trim it in Photos, then add it.",
+        "other": "{{count}} videos are longer than 60 seconds. Trim them in Photos, then add them."
+      },
+      "tooMany": "You've added the most one guest can, 300.",
+      "failed": {
+        "one": "1 didn't go in. Check your internet, then try again.",
+        "other": "{{count}} didn't go in. Check your internet, then try again."
+      }
+    },
+    "blocked": "Wedded can't see your photos. Turn on Photos for Wedded in Settings.",
+    "locked": "The couple has closed the vault to new photos. You can still look at them and save them.",
+    "invite": "Invite guests",
+    "inviteMessage": "Add the photos you took at our wedding to our Memory Vault on Wedded: {{link}}",
+    "link": {
+      "failed": "We couldn't make the link. Check your internet, then try again.",
+      "copied": "Link copied. Paste it in your family group."
+    },
+    "onlyYours": "You see the photos you added. The couple sees everyone's.",
+    "allEvents": "All",
+    "empty": "No photos yet. Add the first ones.",
+    "emptyEvent": "No photos from the {{event}} yet.",
+    "photoLabel": "Photo {{number}}, added by {{name}}",
+    "videoLabel": "Video {{number}}, added by {{name}}",
+    "someone": "a guest",
+    "showMore": "Show more",
+    "saveAll": "Save all to Photos",
+    "saving": "Saving {{done}} of {{total}}",
+    "savedAll": {
+      "one": "1 saved to your Photos.",
+      "other": "{{count}} saved to your Photos."
+    },
+    "saveFailed": {
+      "one": "1 didn't save. Allow Wedded to add to Photos in Settings, then try again.",
+      "other": "{{count}} didn't save. Allow Wedded to add to Photos in Settings, then try again."
+    },
+    "save": "Save to Photos",
+    "savingOne": "Saving…",
+    "savedOne": "Saved",
+    "addedBy": "Added by {{name}}",
+    "addedBySomeone": "Added by a guest",
+    "hiddenTag": "Hidden from guests",
+    "hide": "Hide from guests",
+    "unhide": "Show to guests",
+    "delete": "Delete",
+    "deletePhoto": "Delete this photo?",
+    "deleteVideo": "Delete this video?",
+    "deleteBody": "It's taken out of the Memory Vault for everyone.",
+    "cancel": "Cancel",
+    "vendors": "The vendors who made this day",
+    "planTitle": "Planning a wedding too?",
+    "planBody": "Find vendors for every event and keep the plan in one place. It's free.",
+    "card": {
+      "top": "Add your photos to our Memory Vault",
+      "scan": "Scan with your phone camera to add the photos you take today"
+    },
+    "settings": {
+      "title": "Memory Vault settings",
+      "invite": "Invite guests",
+      "inviteFooter": "Guests who join see only the Memory Vault, never your plan or your chats.",
+      "share": "Share the link",
+      "print": "Print a QR card for the tables",
+      "printHint": "It folds to stand on a table. Guests scan it with their phone camera.",
+      "uploadsOpen": "Guests can add photos",
+      "uploadsOpenHint": "Turn this off to lock the vault once the wedding is over. You can still add yours.",
+      "guestsSeeAll": "Guests see everyone's photos",
+      "guestsSeeAllHint": "When this is off, each guest sees only their own. You always see them all.",
+      "showVendors": "Show our vendors",
+      "showVendorsHint": "Guests see the vendors you booked, under the photos.",
+      "failed": "That didn't save. Check your internet, then try again."
+    },
+    "join": {
+      "pageTitle": "Add your photos · Wedded App",
+      "pageDescription": "Add the photos you took to the couple's Memory Vault on Wedded App.",
+      "invited": "You're invited to add your photos",
+      "invitedBy": "{{name}} invited you to add your photos",
+      "explain": "Add the photos and videos you took, so the couple has them all in one place.",
+      "join": "Join and add photos",
+      "openInApp": "Open in the Wedded app",
+      "needsApp": "Adding photos needs the Wedded app. It's free on iPhone and Android.",
+      "askForNewLink": "Ask the couple for a new link."
+    }
+  },
   "groupChat": {
     "title": "Family chats",
     "planBody": "Chat with family and friends about the wedding, all in one place. Write @Wed to ask Wed for help.",

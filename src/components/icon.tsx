@@ -157,6 +157,10 @@ const SF_SYMBOLS: Partial<Record<IconName, SFSymbol>> = {
   'stats-chart-outline': 'chart.bar',
   'at-outline': 'at',
   'hourglass-outline': 'hourglass',
+  // Memory Vault
+  'eye-outline': 'eye',
+  'eye-off-outline': 'eye.slash',
+  'arrow-down-circle-outline': 'arrow.down.circle',
 };
 
 export type IconProps = {

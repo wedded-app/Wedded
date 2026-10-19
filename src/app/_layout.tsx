@@ -209,6 +209,11 @@ function AppShell() {
             name="story"
             options={{ presentation: 'fullScreenModal', animation: 'fade' }}
           />
+          <Stack.Screen
+            name="vault-viewer"
+            options={{ presentation: 'fullScreenModal', animation: 'fade' }}
+          />
+          <Stack.Screen name="vault-settings" options={{ presentation: 'modal' }} />
         </Stack>
       </WebFrame>
       <OfflineBanner />
