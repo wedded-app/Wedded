@@ -25,7 +25,6 @@ import {
   catererDetails,
   emptyCatererAnswers,
   emptyVenueAnswers,
-  questionSetFor,
   venueDetails,
   type CatererAnswers,
   type VenueAnswers,
@@ -103,7 +102,7 @@ export default function AskScreen() {
   const [touched, setTouched] = useState(false);
   const [venueAnswers, setVenueAnswers] = useState<VenueAnswers>(emptyVenueAnswers);
   const [catererAnswers, setCatererAnswers] = useState<CatererAnswers>(emptyCatererAnswers);
-  const questionSet = questionSetFor(vendor.data?.categorySlug ?? null);
+  const questionSet = vendor.data?.questionSet ?? null;
 
   const allEvents = events.data?.flatMap((section) => section.events) ?? [];
   // Each chosen event's own day from My Wedding, by name, for the message and the note

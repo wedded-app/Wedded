@@ -178,6 +178,7 @@ export type Database = {
           aliases: string[];
           created_at: string;
           group_slug: string;
+          inquiry_questions: string | null;
           is_religious: boolean;
           name: NonNullable<Json>;
           serves_alcohol: boolean;
@@ -189,6 +190,7 @@ export type Database = {
           aliases?: string[];
           created_at?: string;
           group_slug: string;
+          inquiry_questions?: string | null;
           is_religious?: boolean;
           name: NonNullable<Json>;
           serves_alcohol?: boolean;
@@ -200,6 +202,7 @@ export type Database = {
           aliases?: string[];
           created_at?: string;
           group_slug?: string;
+          inquiry_questions?: string | null;
           is_religious?: boolean;
           name?: NonNullable<Json>;
           serves_alcohol?: boolean;

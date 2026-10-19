@@ -4,6 +4,8 @@ import type { GuestBand } from '@/data/inquiries';
 import { asLocalizedText, localized, type LocalizedText } from '@/i18n/localized';
 import { supabase } from '@/lib/supabase';
 
+import type { QuestionSet } from './details';
+
 export const GUEST_BANDS: GuestBand[] = [
   'under_50',
   '50_100',
@@ -122,8 +124,8 @@ export type InquiryVendor = {
   name: LocalizedText;
   city: string;
   category: LocalizedText | null;
-  /** The primary category's slug, which decides the category questions. */
-  categorySlug: string | null;
+  /** The primary category's own questions (categories.inquiry_questions). */
+  questionSet: QuestionSet;
   callPhone: string | null;
   textPhone: string | null;
   whatsappPhone: string | null;
@@ -135,7 +137,7 @@ async function fetchInquiryVendor(vendorId: string): Promise<InquiryVendor | nul
   const { data, error } = await supabase
     .from('vendors')
     .select(
-      'id, slug, name, base_city:cities(name), vendor_contacts(kind, value), vendor_categories(position, category:categories(slug, name)), vendor_events(event_slug)',
+      'id, slug, name, base_city:cities(name), vendor_contacts(kind, value), vendor_categories(position, category:categories(name, inquiry_questions)), vendor_events(event_slug)',
     )
     .eq('id', vendorId)
     .maybeSingle();
@@ -150,7 +152,7 @@ async function fetchInquiryVendor(vendorId: string): Promise<InquiryVendor | nul
     name: { en: data.name },
     city: data.base_city.name,
     category: primary ? asLocalizedText(primary.category?.name) : null,
-    categorySlug: primary?.category?.slug ?? null,
+    questionSet: (primary?.category?.inquiry_questions ?? null) as QuestionSet,
     callPhone: contact('call'),
     textPhone: contact('text'),
     whatsappPhone: contact('whatsapp'),

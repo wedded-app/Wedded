@@ -5,7 +5,7 @@
 begin;
 create extension if not exists pgtap with schema extensions;
 
-select plan(27);
+select plan(28);
 
 -- Security ----------------------------------------------------------------
 
@@ -213,6 +213,14 @@ select is(
   (select count(*)::int from public.events),
   25,
   'Logged-out users can read events'
+);
+
+select results_eq(
+  $$ select inquiry_questions, string_agg(slug, ' ' order by slug)
+     from public.categories where inquiry_questions is not null group by 1 order by 1 $$,
+  $$ values ('caterer'::text, 'caterer halwai'::text),
+            ('venue'::text, 'banquet-hall community-center hotel-ballroom outdoor-venue restaurant-room'::text) $$,
+  'Halls and caterers say which questions their inquiry asks; other types ask none'
 );
 
 select throws_ok(
