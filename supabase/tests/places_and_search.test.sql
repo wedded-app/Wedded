@@ -5,7 +5,7 @@
 begin;
 create extension if not exists pgtap with schema extensions;
 
-select plan(17);
+select plan(20);
 
 -- Places ------------------------------------------------------------------------------
 
@@ -28,6 +28,25 @@ select ok(
    from public.cities y, public.cities s
    where y.slug = 'yuba-city' and s.slug = 'sacramento'),
   'City points are real: Yuba City to Sacramento is about 40 miles'
+);
+
+select is(
+  (select count(*)::int from public.cities where region_slug is null), 0,
+  'Every city belongs to a region'
+);
+
+select is(
+  (select region_slug from public.cities where slug = 'stockton') || ' ' ||
+  (select region_slug from public.cities where slug = 'modesto') || ' ' ||
+  (select region_slug from public.cities where slug = 'davis'),
+  '209-north 209-south sacramento',
+  'Cities sit in the right market: Stockton 209 North, Modesto 209 South, Davis Sacramento'
+);
+
+select ok(
+  (select city_slug = 'yuba-city' from public.zip_codes where zip = '95993')
+  and (select city_slug is null from public.zip_codes where zip = '90210'),
+  'A ZIP reads as its nearest listed city (95993 is Yuba City); one far from every listed city has none'
 );
 
 -- Test vendors (as the table owner) ---------------------------------------------------

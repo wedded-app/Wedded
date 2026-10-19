@@ -2,12 +2,12 @@ import { matchCities, type City } from './places';
 
 jest.mock('@/lib/supabase', () => ({ supabase: {} }));
 
-const city = (name: string, aliases: string[] = []): City => ({
+const city = (name: string, nicknames: string[] = []): City => ({
   slug: name.toLowerCase().replace(/ /g, '-'),
   name,
   label: name,
   areaCode: '000',
-  aliases,
+  nicknames,
   latitude: 38,
   longitude: -121,
 });

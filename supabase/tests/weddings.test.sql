@@ -1,10 +1,11 @@
--- Plan together: weddings, members, events, bookings and invites. Who can see
--- and change what, joining with invites, and what happens when people leave.
+-- Plan together: weddings, sides, members, events, slots, bookings and invites.
+-- Who can see and change what, joining with invites, and what happens when
+-- people leave.
 
 begin;
 create extension if not exists pgtap with schema extensions;
 
-select plan(27);
+select plan(32);
 
 -- People: Asha (sets up the wedding), Balwinder (joins as an editor),
 -- Charan (joins as a suggester), Dev (a stranger)
@@ -45,7 +46,9 @@ select 'wedding', public.create_wedding(
   p_title => 'Jaspreet & Amrit',
   p_wedding_date => '2027-06-12',
   p_planning_for => 'child',
+  p_cultures => array['punjabi-sikh', 'not-a-tradition'],
   p_events => array['reception', 'jaago'],
+  p_guests => '{"jaago": "100_250", "reception": "lots"}',
   p_booked => '{"reception": ["banquet-hall", "dj"], "jaago": ["dhol"], "roka": ["caterer"]}'
 )::text;
 
@@ -64,9 +67,34 @@ select set_eq(
 );
 
 select set_eq(
-  $$ select event_slug || '/' || category_slug from public.wedding_bookings $$,
+  $$ select we.event_slug || '/' || s.category_slug
+     from public.bookings b
+     join public.wedding_slots s on s.id = b.slot_id
+     join public.wedding_events we on we.id = s.wedding_event_id $$,
   array['reception/banquet-hall', 'reception/dj', 'jaago/dhol'],
   'and what was booked, only for events they''re having'
+);
+
+select results_eq(
+  $$ select (select array_agg(culture_slug) from public.wedding_cultures),
+       (select array_agg(event_slug || '=' || coalesce(guest_band, '-') order by event_slug) from public.wedding_events) $$,
+  $$ values (array['punjabi-sikh'], array['jaago=100_250', 'reception=-']) $$,
+  'and its traditions and guest counts, skipping ones that don''t exist'
+);
+
+select results_eq(
+  $$ select s.side_key || ' ' || s.label || ' hosts ' || coalesce(string_agg(we.event_slug, ','), 'nothing')
+     from public.wedding_sides s
+     left join public.wedding_events we on we.side_id = s.id
+     group by s.side_key, s.label order by s.side_key $$,
+  $$ values ('a Bride''s side hosts nothing'::text), ('b Groom''s side hosts reception') $$,
+  'A wedding has two sides; the reception is the groom''s side''s, and a jaago (each side has one) is shared'
+);
+
+select is(
+  (select planning_for from public.profiles where id = 'a2000000-0000-4000-8000-00000000000a'),
+  'child',
+  'Who they''re planning for goes on their profile'
 );
 
 -- Strangers see nothing --------------------------------------------------------------
@@ -74,9 +102,11 @@ select set_eq(
 select pg_temp.as_user('d2000000-0000-4000-8000-00000000000d');
 select is(
   (select count(*)::int from public.weddings) + (select count(*)::int from public.wedding_events)
-    + (select count(*)::int from public.wedding_bookings) + (select count(*)::int from public.wedding_members),
+    + (select count(*)::int from public.wedding_slots) + (select count(*)::int from public.bookings)
+    + (select count(*)::int from public.wedding_sides) + (select count(*)::int from public.wedding_cultures)
+    + (select count(*)::int from public.wedding_members),
   0,
-  'Someone who isn''t a member sees no wedding, events, bookings or members'
+  'Someone who isn''t a member sees no wedding, events, slots, bookings, sides, traditions or members'
 );
 select is(
   (select count(*)::int from public.wedding_members_list((select value::uuid from pg_temp.ids where name = 'wedding'))),
@@ -97,6 +127,14 @@ select ok(
   'An invite is a 32-character unguessable token'
 );
 reset role;
+
+select is(
+  (select count(*)::int from public.wedding_invites i
+   join pg_temp.ids t on t.name in ('editor_invite', 'suggester_invite')
+     and i.token_hash = encode(sha256(convert_to(t.value, 'UTF8')), 'hex')),
+  2,
+  'The database keeps only a hash of each link''s token'
+);
 
 set local role anon;
 select results_eq(
@@ -132,18 +170,26 @@ select is(
 
 -- Editors change things; suggesters can only suggest --------------------------------------------
 
-insert into public.wedding_bookings (wedding_id, event_slug, category_slug)
-values ((select value::uuid from pg_temp.ids where name = 'wedding'), 'jaago', 'photographer');
+select public.set_booked((select value::uuid from pg_temp.ids where name = 'wedding'), 'jaago', 'photographer', true);
 select is(
-  (select updated_by from public.wedding_bookings where category_slug = 'photographer'),
+  (select b.booked_by from public.bookings b
+   join public.wedding_slots s on s.id = b.slot_id where s.category_slug = 'photographer'),
   'b2000000-0000-4000-8000-00000000000b'::uuid,
   'An editor can tick off a booking, and it records who did'
 );
 
-update public.weddings set traditions = '{punjabi-sikh,pakistani}';
+select public.set_booked((select value::uuid from pg_temp.ids where name = 'wedding'), 'jaago', 'dhol', false);
 select is(
-  (select traditions from public.weddings),
-  '{punjabi-sikh,pakistani}'::text[],
+  (select count(*)::int from public.bookings b
+   join public.wedding_slots s on s.id = b.slot_id where s.category_slug = 'dhol'),
+  0,
+  'and untick one, which removes the booking'
+);
+
+select public.set_wedding_cultures((select value::uuid from pg_temp.ids where name = 'wedding'), '{punjabi-sikh,pakistani}');
+select set_eq(
+  $$ select culture_slug from public.wedding_cultures $$,
+  array['punjabi-sikh', 'pakistani'],
   'An editor can set the wedding''s traditions'
 );
 
@@ -153,8 +199,7 @@ select lives_ok(
   'A suggester link lets a relative join'
 );
 select throws_ok(
-  $$ insert into public.wedding_bookings (wedding_id, event_slug, category_slug)
-     values ((select value::uuid from pg_temp.ids where name = 'wedding'), 'jaago', 'caterer') $$,
+  $$ select public.set_booked((select value::uuid from pg_temp.ids where name = 'wedding'), 'jaago', 'caterer', true) $$,
   '42501', null,
   'A suggester cannot change the plan'
 );
@@ -186,7 +231,7 @@ select throws_ok(
 
 select pg_temp.as_user('a2000000-0000-4000-8000-00000000000a');
 update public.wedding_invites set revoked_at = now()
-where token = (select value from pg_temp.ids where name = 'suggester_invite');
+where token_hash = (select encode(sha256(convert_to(value, 'UTF8')), 'hex') from pg_temp.ids where name = 'suggester_invite');
 
 select pg_temp.as_user('d2000000-0000-4000-8000-00000000000d');
 select throws_ok(
@@ -196,7 +241,7 @@ select throws_ok(
 );
 reset role;
 update public.wedding_invites set expires_at = now() - interval '1 minute'
-where token = (select value from pg_temp.ids where name = 'editor_invite');
+where token_hash = (select encode(sha256(convert_to(value, 'UTF8')), 'hex') from pg_temp.ids where name = 'editor_invite');
 set local role authenticated;
 select pg_temp.as_user('d2000000-0000-4000-8000-00000000000d');
 select throws_ok(
@@ -225,8 +270,9 @@ select is(
   'When an owner deletes their account, the next member takes over'
 );
 select is(
-  (select updated_by from public.wedding_bookings where category_slug = 'photographer'),
-  null,
+  (select b.booked_by from public.bookings b
+   join public.wedding_slots s on s.id = b.slot_id where s.category_slug = 'photographer'),
+  null::uuid,
   'and their name comes off what they changed'
 );
 
@@ -242,9 +288,11 @@ select is(
   'When the last member leaves, the wedding is deleted'
 );
 select is(
-  (select count(*)::int from public.wedding_events) + (select count(*)::int from public.wedding_invites),
+  (select count(*)::int from public.wedding_events) + (select count(*)::int from public.wedding_slots)
+    + (select count(*)::int from public.bookings) + (select count(*)::int from public.wedding_sides)
+    + (select count(*)::int from public.wedding_invites),
   0,
-  'along with its events, bookings and links'
+  'along with its events, slots, bookings, sides and links'
 );
 
 select * from finish();

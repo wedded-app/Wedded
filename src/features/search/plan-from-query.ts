@@ -14,7 +14,7 @@ import type { LocalizedText } from '@/i18n/localized';
 type Named = { slug: string; name: LocalizedText };
 /** An event and every name a tradition gives it (Mayun, Maiyan / Vatna...). */
 export type NamedEvent = { slug: string; names: string[] };
-type NamedCity = { slug: string; name: string; areaCode: string; aliases: string[] };
+type NamedCity = { slug: string; name: string; areaCode: string; nicknames: string[] };
 
 export type PlanHint = {
   backgrounds: string[];
@@ -133,7 +133,7 @@ export function planFromQuery(
   const city =
     [...data.cities]
       .filter((c) =>
-        [c.name, ...c.aliases].some((name) => text.includes(` ${clean(name).trim()} `)),
+        [c.name, ...c.nicknames].some((name) => text.includes(` ${clean(name).trim()} `)),
       )
       .sort((a, b) => b.name.length - a.name.length)[0] ?? null;
   const hint: PlanHint = {

@@ -7,7 +7,7 @@ const city = (name: string, latitude: number, longitude: number): City => ({
   name,
   label: name,
   areaCode: '000',
-  aliases: [],
+  nicknames: [],
   latitude,
   longitude,
 });

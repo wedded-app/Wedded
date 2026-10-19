@@ -25,7 +25,7 @@ describe('suggestions', () => {
   it('turns a row into a suggestion, with the vendor name', () => {
     const s = toSuggestion({
       id: 's1',
-      event_slug: 'reception',
+      wedding_event: { event_slug: 'reception' },
       category_slug: 'banquet-hall',
       note: 'Big parking lot',
       status: 'accepted',

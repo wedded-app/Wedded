@@ -103,6 +103,76 @@ export type Database = {
         };
         Relationships: [];
       };
+      bookings: {
+        Row: {
+          agreed_cents: number | null;
+          booked_by: string | null;
+          canceled_reason: string | null;
+          created_at: string;
+          family_confirmed_at: string | null;
+          id: string;
+          inquiry_id: string | null;
+          slot_id: string;
+          status: string;
+          updated_at: string;
+          vendor_confirmed_at: string | null;
+          vendor_id: string | null;
+          vendor_name: string | null;
+        };
+        Insert: {
+          agreed_cents?: number | null;
+          booked_by?: string | null;
+          canceled_reason?: string | null;
+          created_at?: string;
+          family_confirmed_at?: string | null;
+          id?: string;
+          inquiry_id?: string | null;
+          slot_id: string;
+          status?: string;
+          updated_at?: string;
+          vendor_confirmed_at?: string | null;
+          vendor_id?: string | null;
+          vendor_name?: string | null;
+        };
+        Update: {
+          agreed_cents?: number | null;
+          booked_by?: string | null;
+          canceled_reason?: string | null;
+          created_at?: string;
+          family_confirmed_at?: string | null;
+          id?: string;
+          inquiry_id?: string | null;
+          slot_id?: string;
+          status?: string;
+          updated_at?: string;
+          vendor_confirmed_at?: string | null;
+          vendor_id?: string | null;
+          vendor_name?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'bookings_inquiry_id_fkey';
+            columns: ['inquiry_id'];
+            isOneToOne: false;
+            referencedRelation: 'inquiries';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'bookings_slot_id_fkey';
+            columns: ['slot_id'];
+            isOneToOne: false;
+            referencedRelation: 'wedding_slots';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'bookings_vendor_id_fkey';
+            columns: ['vendor_id'];
+            isOneToOne: false;
+            referencedRelation: 'vendors';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
       categories: {
         Row: {
           aliases: string[];
@@ -173,42 +243,53 @@ export type Database = {
       };
       cities: {
         Row: {
-          aliases: string[];
           area_code: string;
-          census_geoid: string | null;
           created_at: string;
           latitude: number;
           location: unknown;
           longitude: number;
           name: string;
+          nicknames: string[];
+          region_slug: string;
           slug: string;
+          state: string;
           updated_at: string;
         };
         Insert: {
-          aliases?: string[];
           area_code: string;
-          census_geoid?: string | null;
           created_at?: string;
           latitude: number;
           location?: never;
           longitude: number;
           name: string;
+          nicknames?: string[];
+          region_slug: string;
           slug: string;
+          state?: string;
           updated_at?: string;
         };
         Update: {
-          aliases?: string[];
           area_code?: string;
-          census_geoid?: string | null;
           created_at?: string;
           latitude?: number;
           location?: never;
           longitude?: number;
           name?: string;
+          nicknames?: string[];
+          region_slug?: string;
           slug?: string;
+          state?: string;
           updated_at?: string;
         };
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: 'cities_region_slug_fkey';
+            columns: ['region_slug'];
+            isOneToOne: false;
+            referencedRelation: 'regions';
+            referencedColumns: ['slug'];
+          },
+        ];
       };
       conversations: {
         Row: {
@@ -1039,6 +1120,7 @@ export type Database = {
           is_sample: boolean;
           joined_as: string | null;
           phone: string;
+          planning_for: string | null;
           updated_at: string;
         };
         Insert: {
@@ -1050,6 +1132,7 @@ export type Database = {
           is_sample?: boolean;
           joined_as?: string | null;
           phone: string;
+          planning_for?: string | null;
           updated_at?: string;
         };
         Update: {
@@ -1061,6 +1144,7 @@ export type Database = {
           is_sample?: boolean;
           joined_as?: string | null;
           phone?: string;
+          planning_for?: string | null;
           updated_at?: string;
         };
         Relationships: [];
@@ -1361,6 +1445,36 @@ export type Database = {
           },
         ];
       };
+      regions: {
+        Row: {
+          created_at: string;
+          is_live: boolean;
+          launch_vendor_target: number;
+          name: NonNullable<Json>;
+          slug: string;
+          sort_order: number;
+          updated_at: string;
+        };
+        Insert: {
+          created_at?: string;
+          is_live?: boolean;
+          launch_vendor_target?: number;
+          name: NonNullable<Json>;
+          slug: string;
+          sort_order: number;
+          updated_at?: string;
+        };
+        Update: {
+          created_at?: string;
+          is_live?: boolean;
+          launch_vendor_target?: number;
+          name?: NonNullable<Json>;
+          slug?: string;
+          sort_order?: number;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
       request_proposals: {
         Row: {
           answered_at: string | null;
@@ -1448,38 +1562,93 @@ export type Database = {
       saved_vendors: {
         Row: {
           created_at: string;
-          event_slug: string | null;
           id: string;
+          note: string | null;
+          source: string;
           user_id: string;
           vendor_id: string;
+          wedding_event_id: string | null;
+          wedding_id: string | null;
         };
         Insert: {
           created_at?: string;
-          event_slug?: string | null;
           id?: string;
+          note?: string | null;
+          source?: string;
           user_id?: string;
           vendor_id: string;
+          wedding_event_id?: string | null;
+          wedding_id?: string | null;
         };
         Update: {
           created_at?: string;
-          event_slug?: string | null;
           id?: string;
+          note?: string | null;
+          source?: string;
           user_id?: string;
           vendor_id?: string;
+          wedding_event_id?: string | null;
+          wedding_id?: string | null;
         };
         Relationships: [
-          {
-            foreignKeyName: 'saved_vendors_event_slug_fkey';
-            columns: ['event_slug'];
-            isOneToOne: false;
-            referencedRelation: 'events';
-            referencedColumns: ['slug'];
-          },
           {
             foreignKeyName: 'saved_vendors_vendor_id_fkey';
             columns: ['vendor_id'];
             isOneToOne: false;
             referencedRelation: 'vendors';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'saved_vendors_wedding_event_id_fkey';
+            columns: ['wedding_event_id'];
+            isOneToOne: false;
+            referencedRelation: 'wedding_events';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'saved_vendors_wedding_id_fkey';
+            columns: ['wedding_id'];
+            isOneToOne: false;
+            referencedRelation: 'weddings';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      shortlist_reactions: {
+        Row: {
+          reaction: string;
+          updated_at: string;
+          user_id: string;
+          vendor_id: string;
+          wedding_id: string;
+        };
+        Insert: {
+          reaction: string;
+          updated_at?: string;
+          user_id?: string;
+          vendor_id: string;
+          wedding_id: string;
+        };
+        Update: {
+          reaction?: string;
+          updated_at?: string;
+          user_id?: string;
+          vendor_id?: string;
+          wedding_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'shortlist_reactions_vendor_id_fkey';
+            columns: ['vendor_id'];
+            isOneToOne: false;
+            referencedRelation: 'vendors';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'shortlist_reactions_wedding_id_fkey';
+            columns: ['wedding_id'];
+            isOneToOne: false;
+            referencedRelation: 'weddings';
             referencedColumns: ['id'];
           },
         ];
@@ -1534,6 +1703,70 @@ export type Database = {
             isOneToOne: false;
             referencedRelation: 'vendors';
             referencedColumns: ['id'];
+          },
+        ];
+      };
+      suggestions: {
+        Row: {
+          category_slug: string;
+          created_at: string;
+          id: string;
+          note: string | null;
+          resolved_at: string | null;
+          resolved_by: string | null;
+          status: string;
+          suggested_by: string | null;
+          vendor_id: string;
+          wedding_event_id: string;
+          wedding_id: string;
+        };
+        Insert: {
+          category_slug: string;
+          created_at?: string;
+          id?: string;
+          note?: string | null;
+          resolved_at?: string | null;
+          resolved_by?: string | null;
+          status?: string;
+          suggested_by?: string | null;
+          vendor_id: string;
+          wedding_event_id: string;
+          wedding_id: string;
+        };
+        Update: {
+          category_slug?: string;
+          created_at?: string;
+          id?: string;
+          note?: string | null;
+          resolved_at?: string | null;
+          resolved_by?: string | null;
+          status?: string;
+          suggested_by?: string | null;
+          vendor_id?: string;
+          wedding_event_id?: string;
+          wedding_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'suggestions_category_slug_fkey';
+            columns: ['category_slug'];
+            isOneToOne: false;
+            referencedRelation: 'categories';
+            referencedColumns: ['slug'];
+          },
+          {
+            foreignKeyName: 'suggestions_vendor_id_fkey';
+            columns: ['vendor_id'];
+            isOneToOne: false;
+            referencedRelation: 'vendors';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'suggestions_wedding_event_fkey';
+            columns: ['wedding_id', 'wedding_event_id'];
+            isOneToOne: false;
+            referencedRelation: 'wedding_events';
+            referencedColumns: ['wedding_id', 'id'];
           },
         ];
       };
@@ -2215,93 +2448,122 @@ export type Database = {
         };
         Relationships: [];
       };
-      wedding_bookings: {
+      wedding_cultures: {
         Row: {
-          category_slug: string;
           created_at: string;
-          event_slug: string;
-          note: string | null;
-          updated_at: string;
-          updated_by: string | null;
-          vendor_id: string | null;
+          culture_slug: string;
           wedding_id: string;
         };
         Insert: {
-          category_slug: string;
           created_at?: string;
-          event_slug: string;
-          note?: string | null;
-          updated_at?: string;
-          updated_by?: string | null;
-          vendor_id?: string | null;
+          culture_slug: string;
           wedding_id: string;
         };
         Update: {
-          category_slug?: string;
           created_at?: string;
-          event_slug?: string;
-          note?: string | null;
-          updated_at?: string;
-          updated_by?: string | null;
-          vendor_id?: string | null;
+          culture_slug?: string;
           wedding_id?: string;
         };
         Relationships: [
           {
-            foreignKeyName: 'wedding_bookings_category_slug_fkey';
-            columns: ['category_slug'];
+            foreignKeyName: 'wedding_cultures_culture_slug_fkey';
+            columns: ['culture_slug'];
             isOneToOne: false;
-            referencedRelation: 'categories';
+            referencedRelation: 'cultures';
             referencedColumns: ['slug'];
           },
           {
-            foreignKeyName: 'wedding_bookings_vendor_id_fkey';
-            columns: ['vendor_id'];
+            foreignKeyName: 'wedding_cultures_wedding_id_fkey';
+            columns: ['wedding_id'];
             isOneToOne: false;
-            referencedRelation: 'vendors';
+            referencedRelation: 'weddings';
             referencedColumns: ['id'];
-          },
-          {
-            foreignKeyName: 'wedding_bookings_wedding_id_event_slug_fkey';
-            columns: ['wedding_id', 'event_slug'];
-            isOneToOne: false;
-            referencedRelation: 'wedding_events';
-            referencedColumns: ['wedding_id', 'event_slug'];
           },
         ];
       };
       wedding_events: {
         Row: {
+          at_home: boolean;
+          budget_cents: number | null;
+          city_slug: string | null;
           created_at: string;
+          ends_at: string | null;
           event_date: string | null;
           event_slug: string;
           guest_band: string | null;
+          guest_count: number | null;
+          id: string;
+          side_id: string | null;
+          starts_at: string | null;
           updated_at: string;
+          venue_id: string | null;
+          venue_text: string | null;
           wedding_id: string;
         };
         Insert: {
+          at_home?: boolean;
+          budget_cents?: number | null;
+          city_slug?: string | null;
           created_at?: string;
+          ends_at?: string | null;
           event_date?: string | null;
           event_slug: string;
           guest_band?: string | null;
+          guest_count?: number | null;
+          id?: string;
+          side_id?: string | null;
+          starts_at?: string | null;
           updated_at?: string;
+          venue_id?: string | null;
+          venue_text?: string | null;
           wedding_id: string;
         };
         Update: {
+          at_home?: boolean;
+          budget_cents?: number | null;
+          city_slug?: string | null;
           created_at?: string;
+          ends_at?: string | null;
           event_date?: string | null;
           event_slug?: string;
           guest_band?: string | null;
+          guest_count?: number | null;
+          id?: string;
+          side_id?: string | null;
+          starts_at?: string | null;
           updated_at?: string;
+          venue_id?: string | null;
+          venue_text?: string | null;
           wedding_id?: string;
         };
         Relationships: [
+          {
+            foreignKeyName: 'wedding_events_city_slug_fkey';
+            columns: ['city_slug'];
+            isOneToOne: false;
+            referencedRelation: 'cities';
+            referencedColumns: ['slug'];
+          },
           {
             foreignKeyName: 'wedding_events_event_slug_fkey';
             columns: ['event_slug'];
             isOneToOne: false;
             referencedRelation: 'events';
             referencedColumns: ['slug'];
+          },
+          {
+            foreignKeyName: 'wedding_events_side_fkey';
+            columns: ['wedding_id', 'side_id'];
+            isOneToOne: false;
+            referencedRelation: 'wedding_sides';
+            referencedColumns: ['wedding_id', 'id'];
+          },
+          {
+            foreignKeyName: 'wedding_events_venue_id_fkey';
+            columns: ['venue_id'];
+            isOneToOne: false;
+            referencedRelation: 'vendors';
+            referencedColumns: ['id'];
           },
           {
             foreignKeyName: 'wedding_events_wedding_id_fkey';
@@ -2321,7 +2583,8 @@ export type Database = {
           max_uses: number;
           revoked_at: string | null;
           role: string;
-          token: string;
+          side_id: string | null;
+          token_hash: string;
           uses: number;
           wedding_id: string;
         };
@@ -2333,7 +2596,8 @@ export type Database = {
           max_uses?: number;
           revoked_at?: string | null;
           role?: string;
-          token?: string;
+          side_id?: string | null;
+          token_hash: string;
           uses?: number;
           wedding_id: string;
         };
@@ -2345,11 +2609,19 @@ export type Database = {
           max_uses?: number;
           revoked_at?: string | null;
           role?: string;
-          token?: string;
+          side_id?: string | null;
+          token_hash?: string;
           uses?: number;
           wedding_id?: string;
         };
         Relationships: [
+          {
+            foreignKeyName: 'wedding_invites_side_fkey';
+            columns: ['wedding_id', 'side_id'];
+            isOneToOne: false;
+            referencedRelation: 'wedding_sides';
+            referencedColumns: ['wedding_id', 'id'];
+          },
           {
             foreignKeyName: 'wedding_invites_wedding_id_fkey';
             columns: ['wedding_id'];
@@ -2361,68 +2633,49 @@ export type Database = {
       };
       wedding_members: {
         Row: {
-          invited_by: string | null;
+          invite_id: string | null;
           joined_at: string;
+          relation: string | null;
           role: string;
+          side_id: string | null;
           user_id: string;
           wedding_id: string;
         };
         Insert: {
-          invited_by?: string | null;
+          invite_id?: string | null;
           joined_at?: string;
+          relation?: string | null;
           role: string;
+          side_id?: string | null;
           user_id: string;
           wedding_id: string;
         };
         Update: {
-          invited_by?: string | null;
+          invite_id?: string | null;
           joined_at?: string;
+          relation?: string | null;
           role?: string;
+          side_id?: string | null;
           user_id?: string;
           wedding_id?: string;
         };
         Relationships: [
+          {
+            foreignKeyName: 'wedding_members_invite_id_fkey';
+            columns: ['invite_id'];
+            isOneToOne: false;
+            referencedRelation: 'wedding_invites';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'wedding_members_side_fkey';
+            columns: ['wedding_id', 'side_id'];
+            isOneToOne: false;
+            referencedRelation: 'wedding_sides';
+            referencedColumns: ['wedding_id', 'id'];
+          },
           {
             foreignKeyName: 'wedding_members_wedding_id_fkey';
-            columns: ['wedding_id'];
-            isOneToOne: false;
-            referencedRelation: 'weddings';
-            referencedColumns: ['id'];
-          },
-        ];
-      };
-      wedding_reactions: {
-        Row: {
-          reaction: string;
-          updated_at: string;
-          user_id: string;
-          vendor_id: string;
-          wedding_id: string;
-        };
-        Insert: {
-          reaction: string;
-          updated_at?: string;
-          user_id?: string;
-          vendor_id: string;
-          wedding_id: string;
-        };
-        Update: {
-          reaction?: string;
-          updated_at?: string;
-          user_id?: string;
-          vendor_id?: string;
-          wedding_id?: string;
-        };
-        Relationships: [
-          {
-            foreignKeyName: 'wedding_reactions_vendor_id_fkey';
-            columns: ['vendor_id'];
-            isOneToOne: false;
-            referencedRelation: 'vendors';
-            referencedColumns: ['id'];
-          },
-          {
-            foreignKeyName: 'wedding_reactions_wedding_id_fkey';
             columns: ['wedding_id'];
             isOneToOne: false;
             referencedRelation: 'weddings';
@@ -2519,67 +2772,96 @@ export type Database = {
           },
         ];
       };
-      wedding_suggestions: {
+      wedding_sides: {
         Row: {
-          category_slug: string;
           created_at: string;
-          event_slug: string;
+          home_city_slug: string | null;
           id: string;
-          note: string | null;
-          resolved_at: string | null;
-          resolved_by: string | null;
-          status: string;
-          suggested_by: string | null;
-          vendor_id: string;
+          label: string;
+          side_key: string;
+          updated_at: string;
           wedding_id: string;
         };
         Insert: {
-          category_slug: string;
           created_at?: string;
-          event_slug: string;
+          home_city_slug?: string | null;
           id?: string;
-          note?: string | null;
-          resolved_at?: string | null;
-          resolved_by?: string | null;
-          status?: string;
-          suggested_by?: string | null;
-          vendor_id: string;
+          label: string;
+          side_key: string;
+          updated_at?: string;
           wedding_id: string;
         };
         Update: {
-          category_slug?: string;
           created_at?: string;
-          event_slug?: string;
+          home_city_slug?: string | null;
           id?: string;
-          note?: string | null;
-          resolved_at?: string | null;
-          resolved_by?: string | null;
-          status?: string;
-          suggested_by?: string | null;
-          vendor_id?: string;
+          label?: string;
+          side_key?: string;
+          updated_at?: string;
           wedding_id?: string;
         };
         Relationships: [
           {
-            foreignKeyName: 'wedding_suggestions_category_slug_fkey';
+            foreignKeyName: 'wedding_sides_home_city_slug_fkey';
+            columns: ['home_city_slug'];
+            isOneToOne: false;
+            referencedRelation: 'cities';
+            referencedColumns: ['slug'];
+          },
+          {
+            foreignKeyName: 'wedding_sides_wedding_id_fkey';
+            columns: ['wedding_id'];
+            isOneToOne: false;
+            referencedRelation: 'weddings';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      wedding_slots: {
+        Row: {
+          book_by: string | null;
+          category_slug: string;
+          created_at: string;
+          id: string;
+          note: string | null;
+          quantity: number;
+          updated_at: string;
+          wedding_event_id: string;
+        };
+        Insert: {
+          book_by?: string | null;
+          category_slug: string;
+          created_at?: string;
+          id?: string;
+          note?: string | null;
+          quantity?: number;
+          updated_at?: string;
+          wedding_event_id: string;
+        };
+        Update: {
+          book_by?: string | null;
+          category_slug?: string;
+          created_at?: string;
+          id?: string;
+          note?: string | null;
+          quantity?: number;
+          updated_at?: string;
+          wedding_event_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'wedding_slots_category_slug_fkey';
             columns: ['category_slug'];
             isOneToOne: false;
             referencedRelation: 'categories';
             referencedColumns: ['slug'];
           },
           {
-            foreignKeyName: 'wedding_suggestions_vendor_id_fkey';
-            columns: ['vendor_id'];
-            isOneToOne: false;
-            referencedRelation: 'vendors';
-            referencedColumns: ['id'];
-          },
-          {
-            foreignKeyName: 'wedding_suggestions_wedding_id_event_slug_fkey';
-            columns: ['wedding_id', 'event_slug'];
+            foreignKeyName: 'wedding_slots_wedding_event_id_fkey';
+            columns: ['wedding_event_id'];
             isOneToOne: false;
             referencedRelation: 'wedding_events';
-            referencedColumns: ['wedding_id', 'event_slug'];
+            referencedColumns: ['id'];
           },
         ];
       };
@@ -2588,9 +2870,7 @@ export type Database = {
           created_at: string;
           created_by: string | null;
           id: string;
-          planning_for: string | null;
           title: string | null;
-          traditions: string[];
           updated_at: string;
           wedding_date: string | null;
         };
@@ -2598,9 +2878,7 @@ export type Database = {
           created_at?: string;
           created_by?: string | null;
           id?: string;
-          planning_for?: string | null;
           title?: string | null;
-          traditions?: string[];
           updated_at?: string;
           wedding_date?: string | null;
         };
@@ -2608,9 +2886,7 @@ export type Database = {
           created_at?: string;
           created_by?: string | null;
           id?: string;
-          planning_for?: string | null;
           title?: string | null;
-          traditions?: string[];
           updated_at?: string;
           wedding_date?: string | null;
         };
@@ -2618,24 +2894,35 @@ export type Database = {
       };
       zip_codes: {
         Row: {
+          city_slug: string | null;
           latitude: number;
           location: unknown;
           longitude: number;
           zip: string;
         };
         Insert: {
+          city_slug?: string | null;
           latitude: number;
           location?: never;
           longitude: number;
           zip: string;
         };
         Update: {
+          city_slug?: string | null;
           latitude?: number;
           location?: never;
           longitude?: number;
           zip?: string;
         };
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: 'zip_codes_city_slug_fkey';
+            columns: ['city_slug'];
+            isOneToOne: false;
+            referencedRelation: 'cities';
+            referencedColumns: ['slug'];
+          },
+        ];
       };
     };
     Views: {
@@ -2868,7 +3155,9 @@ export type Database = {
       create_wedding: {
         Args: {
           p_booked?: Json;
+          p_cultures?: string[];
           p_events?: string[];
+          p_guests?: Json;
           p_planning_for?: string;
           p_title?: string;
           p_wedding_date?: string;
@@ -3175,6 +3464,7 @@ export type Database = {
         };
         Returns: undefined;
       };
+      save_vendor: { Args: { p_event_slug?: string; p_vendor_id: string }; Returns: string };
       search_vendors: {
         Args: {
           available_on?: string;
@@ -3238,7 +3528,20 @@ export type Database = {
         };
         Returns: string;
       };
+      set_booked: {
+        Args: {
+          p_booked: boolean;
+          p_category_slug: string;
+          p_event_slug: string;
+          p_wedding_id: string;
+        };
+        Returns: undefined;
+      };
       set_vendor_cover: { Args: { p_media_id: string }; Returns: undefined };
+      set_wedding_cultures: {
+        Args: { p_culture_slugs: string[]; p_wedding_id: string };
+        Returns: undefined;
+      };
       set_wedding_member_role: {
         Args: { p_role: string; p_user_id: string; p_wedding_id: string };
         Returns: undefined;
