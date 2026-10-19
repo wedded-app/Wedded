@@ -176,7 +176,18 @@ export function ReelsPager({
             {
               text: t('reels.delete'),
               style: 'destructive',
-              onPress: () => remove.mutate(reel),
+              // Gone for everyone at once, so ask first, like a story
+              onPress: () =>
+                Platform.OS === 'web'
+                  ? remove.mutate(reel)
+                  : Alert.alert(t('reels.deleteTitle'), t('reels.deleteBody'), [
+                      { text: t('reels.cancel'), style: 'cancel' },
+                      {
+                        text: t('reels.delete'),
+                        style: 'destructive',
+                        onPress: () => remove.mutate(reel),
+                      },
+                    ]),
             },
           ]
         : [

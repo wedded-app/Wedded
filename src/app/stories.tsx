@@ -142,7 +142,11 @@ function StoryCard({
   return (
     <Pressable
       accessibilityRole="button"
-      accessibilityLabel={t('stories.cardSpoken', { name, time: when })}
+      accessibilityLabel={
+        group.isMine
+          ? t('stories.mineSpoken', { time: when })
+          : t('stories.cardSpoken', { name, time: when })
+      }
       onPress={onPress}
       // A clip without a still shows the brand's maroon behind the name
       style={({ pressed }) => [

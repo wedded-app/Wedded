@@ -29,14 +29,15 @@ type Action = 'save' | 'share' | 'print';
  */
 export default function CardsScreen() {
   const { t } = useLocale();
-  const { plan, chosen } = usePlanView();
+  const { plan, chosen, wedding } = usePlanView();
   const card = useRef<View>(null);
   const [width, setWidth] = useState(0);
   const [designId, setDesignId] = useState(CARD_DESIGNS[0].id);
   const [eventSlug, setEventSlug] = useState<string | null>(null);
   const [text, setText] = useState<CardText>(() => ({
     opening: t('cards.defaults.opening'),
-    names: '',
+    // The couple's names from Invitation details, so the guest list and the cards match
+    names: wedding?.title ?? '',
     invite: t('cards.defaults.invite'),
     event: '',
     date: null,
