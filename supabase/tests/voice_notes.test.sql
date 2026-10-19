@@ -13,7 +13,7 @@ insert into public.vendors (id, slug, status, name, base_city_slug, location) va
   ('bf000000-0000-4000-8000-000000000001', 'voice-dhol', 'published', 'Voice Dhol', 'yuba-city', 'SRID=4326;POINT(-121.6169 39.1404)');
 insert into public.vendor_members (vendor_id, user_id) values
   ('bf000000-0000-4000-8000-000000000001', 'af000000-0000-4000-8000-00000000000e');
-insert into public.conversations (id, vendor_id, family_user_id, family_name) values
+insert into public.conversations (id, vendor_id, family_user_id, family_label) values
   ('cf000000-0000-4000-8000-000000000001', 'bf000000-0000-4000-8000-000000000001',
    'af000000-0000-4000-8000-000000000001', 'Harjit K.');
 

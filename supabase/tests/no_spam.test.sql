@@ -119,7 +119,7 @@ select throws_ok(
 -- An inquiry counts as writing first --------------------------------------------------------
 
 reset role;
-insert into public.conversations (id, vendor_id, family_user_id, family_name)
+insert into public.conversations (id, vendor_id, family_user_id, family_label)
 values ('d9000000-0000-4000-8000-000000000001', 'b9000000-0000-4000-8000-000000000001',
   'a9000000-0000-4000-8000-00000000000a', 'Asha G.');
 insert into public.messages (conversation_id, sender_user_id, sender_role, kind, body)

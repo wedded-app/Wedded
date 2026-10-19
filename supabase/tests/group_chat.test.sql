@@ -4,7 +4,7 @@
 begin;
 create extension if not exists pgtap with schema extensions;
 
-select plan(47);
+select plan(48);
 
 -- People: Asha (owns the wedding), Balwinder (editor), Charan (suggester),
 -- Dev (a friend outside the wedding, joins with a link), Esha (a stranger)
@@ -127,6 +127,12 @@ select throws_ok(
 select pg_temp.as_user('a6000000-0000-4000-8000-00000000000a');
 insert into pg_temp.ids select 'token', public.create_group_invite(pg_temp.id('family'));
 reset role;
+select ok(
+  not exists (select 1 from public.group_invites where token_hash = (select value from pg_temp.ids where name = 'token'))
+  and exists (select 1 from public.group_invites
+    where token_hash = encode(sha256(convert_to((select value from pg_temp.ids where name = 'token'), 'UTF8')), 'hex')),
+  'Only a hash of the link is stored'
+);
 
 set local role anon;
 select results_eq(
@@ -162,7 +168,8 @@ select ok(
 select public.accept_group_invite((select value from pg_temp.ids where name = 'token'));
 reset role;
 select is(
-  (select uses from public.group_invites where token = (select value from pg_temp.ids where name = 'token')),
+  (select uses from public.group_invites
+   where token_hash = encode(sha256(convert_to((select value from pg_temp.ids where name = 'token'), 'UTF8')), 'hex')),
   1,
   'Joining again is harmless and doesn''t use the link up'
 );

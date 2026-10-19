@@ -294,7 +294,7 @@ export type Database = {
       conversations: {
         Row: {
           created_at: string;
-          family_name: string | null;
+          family_label: string | null;
           family_notified_at: string | null;
           family_read_at: string | null;
           family_user_id: string | null;
@@ -306,7 +306,7 @@ export type Database = {
         };
         Insert: {
           created_at?: string;
-          family_name?: string | null;
+          family_label?: string | null;
           family_notified_at?: string | null;
           family_read_at?: string | null;
           family_user_id?: string | null;
@@ -318,7 +318,7 @@ export type Database = {
         };
         Update: {
           created_at?: string;
-          family_name?: string | null;
+          family_label?: string | null;
           family_notified_at?: string | null;
           family_read_at?: string | null;
           family_user_id?: string | null;
@@ -748,7 +748,7 @@ export type Database = {
           max_uses: number;
           revoked_at: string | null;
           thread_id: string;
-          token: string;
+          token_hash: string;
           uses: number;
         };
         Insert: {
@@ -759,7 +759,7 @@ export type Database = {
           max_uses?: number;
           revoked_at?: string | null;
           thread_id: string;
-          token?: string;
+          token_hash: string;
           uses?: number;
         };
         Update: {
@@ -770,7 +770,7 @@ export type Database = {
           max_uses?: number;
           revoked_at?: string | null;
           thread_id?: string;
-          token?: string;
+          token_hash?: string;
           uses?: number;
         };
         Relationships: [

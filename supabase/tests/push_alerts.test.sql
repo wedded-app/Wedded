@@ -17,7 +17,7 @@ insert into public.vendor_members (vendor_id, user_id, role) values
   ('b1100000-0000-4000-8000-000000000001', 'a1100000-0000-4000-8000-00000000000f', 'staff');
 insert into public.profiles (id, full_name, city, phone) values
   ('a1100000-0000-4000-8000-000000000001', 'Harjit Kaur', 'Yuba City', '+15305550101');
-insert into public.conversations (id, vendor_id, family_user_id, family_name) values
+insert into public.conversations (id, vendor_id, family_user_id, family_label) values
   ('c1100000-0000-4000-8000-000000000001', 'b1100000-0000-4000-8000-000000000001',
    'a1100000-0000-4000-8000-000000000001', 'Harjit K.');
 
