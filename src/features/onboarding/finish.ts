@@ -2,6 +2,7 @@ import { matchCities, useCities } from '@/data/places';
 import { useTraditions } from '@/data/reference';
 import { useStartWedding, useWeddingPlan } from '@/data/wedding';
 import { useSession } from '@/features/auth/session';
+import { clearWeddingDraft } from '@/features/home/wedding-draft';
 import { useSearchLocation } from '@/features/location/search-location';
 import { EMPTY_PLAN, startingEvents } from '@/features/planner/plan';
 
@@ -61,6 +62,8 @@ export function useFinishOnboarding() {
     const city = searchedCity ?? (place ? undefined : matchCities(cities.data ?? [], typed, 1)[0]);
     if (city) setPlace({ label: city.name, latitude: city.latitude, longitude: city.longitude });
 
+    // The account has the wedding now; the phone's draft has done its job
+    clearWeddingDraft();
     markOnboarding('done');
   };
 
