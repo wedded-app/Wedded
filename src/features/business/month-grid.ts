@@ -30,10 +30,3 @@ export function monthWeeks(month: string): (string | null)[][] {
   for (let i = 0; i < cells.length; i += 7) weeks.push(cells.slice(i, i + 7));
   return weeks;
 }
-
-export type DayStatus = 'open' | 'booked' | 'held';
-
-/** Tapping a day moves it on: open, then booked, then held, then open again. */
-export function nextStatus(status: DayStatus): DayStatus {
-  return status === 'open' ? 'booked' : status === 'booked' ? 'held' : 'open';
-}

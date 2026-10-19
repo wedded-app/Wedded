@@ -1,4 +1,4 @@
-import { isoMonth, monthWeeks, nextStatus, shiftMonth } from './month-grid';
+import { isoMonth, monthWeeks, shiftMonth } from './month-grid';
 
 describe('monthWeeks', () => {
   it('starts on Sunday and pads the first and last weeks', () => {
@@ -23,13 +23,5 @@ describe('shiftMonth and isoMonth', () => {
     expect(shiftMonth('2026-12', 1)).toBe('2027-01');
     expect(shiftMonth('2027-01', -1)).toBe('2026-12');
     expect(isoMonth(new Date(2026, 9, 5))).toBe('2026-10');
-  });
-});
-
-describe('nextStatus', () => {
-  it('cycles open, booked, held', () => {
-    expect(nextStatus('open')).toBe('booked');
-    expect(nextStatus('booked')).toBe('held');
-    expect(nextStatus('held')).toBe('open');
   });
 });

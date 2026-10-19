@@ -471,19 +471,6 @@ export function useSendProposal(vendorId: string) {
   });
 }
 
-/** Take back a proposal the family hasn't answered. */
-export function useWithdrawProposal(vendorId: string) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: async (proposalId: string) => {
-      const { error } = await supabase.rpc('withdraw_proposal', { p_proposal_id: proposalId });
-      if (error) throw new Error(error.message);
-    },
-    onSettled: () =>
-      void queryClient.invalidateQueries({ queryKey: requestKeys.myProposals(vendorId) }),
-  });
-}
-
 export type SentProposal = {
   id: string;
   requestId: string;
