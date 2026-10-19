@@ -28,7 +28,7 @@ const wedding: AccountWedding = {
 };
 
 describe('toAccountWedding', () => {
-  it('turns the API rows into the plan shape', () => {
+  it('turns the API rows into the plan shape: a slot is booked by its live booking', () => {
     expect(
       toAccountWedding({
         role: 'editor',
@@ -37,25 +37,34 @@ describe('toAccountWedding', () => {
           id: 'w1',
           title: 'Jaspreet & Amrit',
           wedding_date: '2027-06-12',
-          traditions: ['punjabi-sikh', 'pakistani'],
+          wedding_cultures: [{ culture_slug: 'punjabi-sikh' }, { culture_slug: 'pakistani' }],
           wedding_events: [
             {
               event_slug: 'reception',
               event_date: '2027-06-12',
-              start_time: '18:00:00',
-              place: 'Royal Orchard, Yuba City',
+              starts_at: '18:00:00',
+              venue_text: 'Royal Orchard, Yuba City',
               guest_band: '250_500',
-              wedding_bookings: [
-                { category_slug: 'dj', vendor: { slug: 'dj-sukh', name: 'DJ Sukh' } },
+              wedding_slots: [
+                {
+                  category_slug: 'dj',
+                  bookings: [
+                    { status: 'canceled', vendor: { slug: 'dj-old', name: 'DJ Old' } },
+                    { status: 'confirmed', vendor: { slug: 'dj-sukh', name: 'DJ Sukh' } },
+                  ],
+                },
+                { category_slug: 'photographer', bookings: [] },
               ],
             },
             {
               event_slug: 'jaago',
               event_date: '2027-06-11',
-              start_time: null,
-              place: null,
+              starts_at: null,
+              venue_text: null,
               guest_band: null,
-              wedding_bookings: [],
+              wedding_slots: [
+                { category_slug: 'dhol', bookings: [{ status: 'canceled', vendor: null }] },
+              ],
             },
           ],
         },

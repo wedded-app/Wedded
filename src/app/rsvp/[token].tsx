@@ -178,13 +178,13 @@ function EventAnswer({
   const { t } = useLocale();
   const details = useEvent(event.eventSlug);
   const name = details.data ? localized(details.data.name) : '';
-  const when = [
-    event.eventDate ? formatDate(event.eventDate) : null,
-    // The database's time is "19:00:00"
-    event.startTime ? formatTime(event.startTime.slice(0, 5)) : null,
-  ]
-    .filter(Boolean)
-    .join(' · ');
+  // The database's times are "19:00:00"
+  const clock = (time: string) => formatTime(time.slice(0, 5));
+  const hours =
+    event.startsAt && event.endsAt
+      ? t('rsvp.fromTo', { from: clock(event.startsAt), to: clock(event.endsAt) })
+      : event.startsAt && clock(event.startsAt);
+  const when = [event.eventDate && formatDate(event.eventDate), hours].filter(Boolean).join(' · ');
   const directions = (place: string) => {
     const destination = encodeURIComponent(place);
     void Linking.openURL(

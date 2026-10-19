@@ -58,8 +58,7 @@ select is(
 -- Suggesting ----------------------------------------------------------------------------
 
 select throws_ok(
-  $$ insert into public.wedding_bookings (wedding_id, event_slug, category_slug)
-     values ((select value::uuid from pg_temp.ids where name = 'wedding'), 'reception', 'banquet-hall') $$,
+  $$ select public.set_booked((select value::uuid from pg_temp.ids where name = 'wedding'), 'reception', 'banquet-hall', true) $$,
   '42501', null,
   'A suggester cannot change the plan itself'
 );
@@ -70,7 +69,7 @@ select 'suggestion', public.suggest_vendor(
   '99000000-0000-4000-8000-000000000001', '  Big parking lot  ')::text;
 
 select results_eq(
-  $$ select status, note, suggested_by::text from public.wedding_suggestions
+  $$ select status, note, suggested_by::text from public.suggestions
      where id = (select value::uuid from pg_temp.ids where name = 'suggestion') $$,
   $$ values ('open'::text, 'Big parking lot'::text, 'c9000000-0000-4000-8000-00000000000c'::text) $$,
   'but can suggest a vendor for an event, with a note'
@@ -107,7 +106,7 @@ select throws_ok(
   'Someone outside the plan cannot suggest'
 );
 select is(
-  (select count(*)::int from public.wedding_suggestions),
+  (select count(*)::int from public.suggestions),
   0,
   'or see the suggestions'
 );
@@ -123,19 +122,21 @@ select throws_ok(
 
 select pg_temp.as_user('b9000000-0000-4000-8000-00000000000b');
 select is(
-  (select count(*)::int from public.wedding_suggestions),
+  (select count(*)::int from public.suggestions),
   1,
   'Editors see the suggestions'
 );
 select public.resolve_suggestion((select value::uuid from pg_temp.ids where name = 'suggestion'), true);
 select results_eq(
-  $$ select vendor_id::text, updated_by::text from public.wedding_bookings
-     where event_slug = 'reception' and category_slug = 'banquet-hall' $$,
+  $$ select b.vendor_id::text, b.booked_by::text from public.bookings b
+     join public.wedding_slots s on s.id = b.slot_id
+     join public.wedding_events we on we.id = s.wedding_event_id
+     where we.event_slug = 'reception' and s.category_slug = 'banquet-hall' $$,
   $$ values ('99000000-0000-4000-8000-000000000001'::text, 'b9000000-0000-4000-8000-00000000000b'::text) $$,
   'Accepting books the vendor in the plan'
 );
 select results_eq(
-  $$ select status, resolved_by::text from public.wedding_suggestions
+  $$ select status, resolved_by::text from public.suggestions
      where id = (select value::uuid from pg_temp.ids where name = 'suggestion') $$,
   $$ values ('accepted'::text, 'b9000000-0000-4000-8000-00000000000b'::text) $$,
   'and marks the suggestion accepted, by whom'
@@ -153,7 +154,10 @@ select 'second', public.suggest_vendor((select value::uuid from pg_temp.ids wher
 select pg_temp.as_user('a9000000-0000-4000-8000-00000000000a');
 select public.resolve_suggestion((select value::uuid from pg_temp.ids where name = 'second'), false);
 select is(
-  (select vendor_id::text from public.wedding_bookings where event_slug = 'reception' and category_slug = 'banquet-hall'),
+  (select b.vendor_id::text from public.bookings b
+   join public.wedding_slots s on s.id = b.slot_id
+   join public.wedding_events we on we.id = s.wedding_event_id
+   where we.event_slug = 'reception' and s.category_slug = 'banquet-hall'),
   '99000000-0000-4000-8000-000000000001',
   'Declining leaves the plan as it was'
 );
@@ -167,14 +171,14 @@ select 'third', public.suggest_vendor((select value::uuid from pg_temp.ids where
 select pg_temp.as_user('b9000000-0000-4000-8000-00000000000b');
 select public.withdraw_suggestion((select value::uuid from pg_temp.ids where name = 'third'));
 select is(
-  (select count(*)::int from public.wedding_suggestions where id = (select value::uuid from pg_temp.ids where name = 'third')),
+  (select count(*)::int from public.suggestions where id = (select value::uuid from pg_temp.ids where name = 'third')),
   1,
   'Nobody can withdraw someone else''s suggestion'
 );
 select pg_temp.as_user('c9000000-0000-4000-8000-00000000000c');
 select public.withdraw_suggestion((select value::uuid from pg_temp.ids where name = 'third'));
 select is(
-  (select count(*)::int from public.wedding_suggestions where id = (select value::uuid from pg_temp.ids where name = 'third')),
+  (select count(*)::int from public.suggestions where id = (select value::uuid from pg_temp.ids where name = 'third')),
   0,
   'but you can take back your own'
 );

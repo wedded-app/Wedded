@@ -19,6 +19,14 @@ insert into public.profiles (id, full_name, city, phone) values
   ('c0000000-0000-4000-8000-00000000000c', 'Asker C', 'Fremont', '+15105550112'),
   ('d0000000-0000-4000-8000-00000000000d', 'Asker D', 'Tracy', '+12095550113');
 
+-- A's wedding is having a jaago
+insert into public.weddings (id, created_by)
+values ('aa000000-0000-4000-8000-00000000000a', 'a0000000-0000-4000-8000-00000000000a');
+insert into public.wedding_members (wedding_id, user_id, role)
+values ('aa000000-0000-4000-8000-00000000000a', 'a0000000-0000-4000-8000-00000000000a', 'owner');
+insert into public.wedding_events (wedding_id, event_slug)
+values ('aa000000-0000-4000-8000-00000000000a', 'jaago');
+
 insert into public.vendors (id, slug, status, name, city, location)
 select ('40000000-0000-4000-8000-00000000000' || n)::uuid, 'ask-vendor-' || n,
   case when n = 3 then 'draft' else 'published' end,
@@ -83,10 +91,12 @@ select results_eq(
 );
 
 select ok(
-  exists (select 1 from public.saved_vendors
-          where user_id = 'a0000000-0000-4000-8000-00000000000a'
-            and vendor_id = '40000000-0000-4000-8000-000000000001' and event_slug = 'jaago'),
-  'Asking a vendor saves them under that event'
+  exists (select 1 from public.saved_vendors s
+          join public.wedding_events we on we.id = s.wedding_event_id
+          where s.user_id = 'a0000000-0000-4000-8000-00000000000a'
+            and s.vendor_id = '40000000-0000-4000-8000-000000000001' and we.event_slug = 'jaago'
+            and s.source = 'inquiry'),
+  'Asking a vendor saves them under that event of the family''s wedding'
 );
 
 select ok(
@@ -108,7 +118,7 @@ select results_eq(
 select ok(
   exists (select 1 from public.saved_vendors
           where user_id = 'a0000000-0000-4000-8000-00000000000a'
-            and vendor_id = '40000000-0000-4000-8000-000000000002' and event_slug is null),
+            and vendor_id = '40000000-0000-4000-8000-000000000002' and wedding_event_id is null),
   'Asking without an event saves the vendor under Not sure yet'
 );
 

@@ -28,8 +28,8 @@ insert into public.vendor_activity_daily (vendor_id, day, kind, count) values
   ('bc000000-0000-4000-8000-000000000001', (now() at time zone 'America/Los_Angeles')::date, 'call', 1),
   ('bc000000-0000-4000-8000-000000000001', (now() at time zone 'America/Los_Angeles')::date, 'whatsapp', 1),
   ('bc000000-0000-4000-8000-000000000001', (now() at time zone 'America/Los_Angeles')::date - 365, 'view', 9);
-insert into public.saved_vendors (user_id, vendor_id, event_slug) values
-  ('ac000000-0000-4000-8000-000000000001', 'bc000000-0000-4000-8000-000000000001', 'reception');
+insert into public.saved_vendors (user_id, vendor_id) values
+  ('ac000000-0000-4000-8000-000000000001', 'bc000000-0000-4000-8000-000000000001');
 
 -- Two inquiries: family 1 asked yesterday and the vendor replied; family 2
 -- asked for a tour today and hasn't heard back.
