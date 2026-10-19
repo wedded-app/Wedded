@@ -1156,6 +1156,44 @@ export type Database = {
           },
         ];
       };
+      memory_vaults: {
+        Row: {
+          created_at: string;
+          created_by: string | null;
+          guests_see_all: boolean;
+          id: string;
+          show_vendors: boolean;
+          uploads_open: boolean;
+          wedding_id: string;
+        };
+        Insert: {
+          created_at?: string;
+          created_by?: string | null;
+          guests_see_all?: boolean;
+          id?: string;
+          show_vendors?: boolean;
+          uploads_open?: boolean;
+          wedding_id: string;
+        };
+        Update: {
+          created_at?: string;
+          created_by?: string | null;
+          guests_see_all?: boolean;
+          id?: string;
+          show_vendors?: boolean;
+          uploads_open?: boolean;
+          wedding_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'memory_vaults_wedding_id_fkey';
+            columns: ['wedding_id'];
+            isOneToOne: true;
+            referencedRelation: 'weddings';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
       message_reactions: {
         Row: {
           conversation_id: string;
@@ -1936,6 +1974,139 @@ export type Database = {
           created_at?: string;
         };
         Relationships: [];
+      };
+      vault_guests: {
+        Row: {
+          joined_at: string;
+          user_id: string;
+          vault_id: string;
+        };
+        Insert: {
+          joined_at?: string;
+          user_id: string;
+          vault_id: string;
+        };
+        Update: {
+          joined_at?: string;
+          user_id?: string;
+          vault_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'vault_guests_vault_id_fkey';
+            columns: ['vault_id'];
+            isOneToOne: false;
+            referencedRelation: 'memory_vaults';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      vault_invites: {
+        Row: {
+          created_at: string;
+          created_by: string | null;
+          expires_at: string;
+          id: string;
+          max_uses: number;
+          revoked_at: string | null;
+          token_hash: string;
+          uses: number;
+          vault_id: string;
+        };
+        Insert: {
+          created_at?: string;
+          created_by?: string | null;
+          expires_at?: string;
+          id?: string;
+          max_uses?: number;
+          revoked_at?: string | null;
+          token_hash: string;
+          uses?: number;
+          vault_id: string;
+        };
+        Update: {
+          created_at?: string;
+          created_by?: string | null;
+          expires_at?: string;
+          id?: string;
+          max_uses?: number;
+          revoked_at?: string | null;
+          token_hash?: string;
+          uses?: number;
+          vault_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'vault_invites_vault_id_fkey';
+            columns: ['vault_id'];
+            isOneToOne: false;
+            referencedRelation: 'memory_vaults';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      vault_items: {
+        Row: {
+          created_at: string;
+          duration_ms: number | null;
+          event_slug: string | null;
+          height: number;
+          hidden_at: string | null;
+          id: string;
+          kind: string;
+          path: string;
+          taken_at: string | null;
+          thumb_path: string | null;
+          user_id: string;
+          vault_id: string;
+          width: number;
+        };
+        Insert: {
+          created_at?: string;
+          duration_ms?: number | null;
+          event_slug?: string | null;
+          height: number;
+          hidden_at?: string | null;
+          id: string;
+          kind: string;
+          path: string;
+          taken_at?: string | null;
+          thumb_path?: string | null;
+          user_id: string;
+          vault_id: string;
+          width: number;
+        };
+        Update: {
+          created_at?: string;
+          duration_ms?: number | null;
+          event_slug?: string | null;
+          height?: number;
+          hidden_at?: string | null;
+          id?: string;
+          kind?: string;
+          path?: string;
+          taken_at?: string | null;
+          thumb_path?: string | null;
+          user_id?: string;
+          vault_id?: string;
+          width?: number;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'vault_items_event_slug_fkey';
+            columns: ['event_slug'];
+            isOneToOne: false;
+            referencedRelation: 'events';
+            referencedColumns: ['slug'];
+          },
+          {
+            foreignKeyName: 'vault_items_vault_id_fkey';
+            columns: ['vault_id'];
+            isOneToOne: false;
+            referencedRelation: 'memory_vaults';
+            referencedColumns: ['id'];
+          },
+        ];
       };
       vendor_activity_daily: {
         Row: {
@@ -3123,6 +3294,7 @@ export type Database = {
     };
     Functions: {
       accept_group_invite: { Args: { p_token: string }; Returns: string };
+      accept_vault_invite: { Args: { p_token: string }; Returns: string };
       accept_wedding_invite: { Args: { p_token: string }; Returns: string };
       add_group_members: {
         Args: { p_thread_id: string; p_user_ids: string[] };
@@ -3130,6 +3302,21 @@ export type Database = {
       };
       add_guests: { Args: { p_guests: Json; p_wedding_id: string }; Returns: string[] };
       add_reel_comment: { Args: { p_body: string; p_reel_id: string }; Returns: string };
+      add_vault_item: {
+        Args: {
+          p_duration_ms?: number;
+          p_event_slug?: string;
+          p_height: number;
+          p_item_id: string;
+          p_kind: string;
+          p_path: string;
+          p_taken_at?: string;
+          p_thumb_path?: string;
+          p_vault_id: string;
+          p_width: number;
+        };
+        Returns: string;
+      };
       add_vendor_photo: {
         Args: {
           p_event_slug?: string;
@@ -3347,6 +3534,7 @@ export type Database = {
         };
         Returns: string;
       };
+      create_vault_invite: { Args: { p_vault_id: string }; Returns: string };
       create_wedding: {
         Args: {
           p_booked?: Json;
@@ -3459,6 +3647,7 @@ export type Database = {
         }[];
       };
       hide_reel_comment: { Args: { p_comment_id: string }; Returns: undefined };
+      hide_vault_item: { Args: { p_hidden?: boolean; p_item_id: string }; Returns: undefined };
       inquiry_emails_left_today: { Args: Record<PropertyKey, never>; Returns: number };
       invite_to_event: {
         Args: {
@@ -3475,6 +3664,24 @@ export type Database = {
       };
       mark_conversation_read: { Args: { p_conversation_id: string }; Returns: undefined };
       mark_group_read: { Args: { p_thread_id: string }; Returns: undefined };
+      memory_vault: {
+        Args: { p_vault_id?: string; p_wedding_id?: string };
+        Returns: {
+          can_add: boolean;
+          events: Json;
+          guest_count: number;
+          guests_see_all: boolean;
+          id: string;
+          item_count: number;
+          my_item_count: number;
+          my_role: string;
+          show_vendors: boolean;
+          title: string;
+          uploads_open: boolean;
+          wedding_date: string;
+          wedding_id: string;
+        }[];
+      };
       my_businesses: {
         Args: Record<PropertyKey, never>;
         Returns: {
@@ -3521,6 +3728,27 @@ export type Database = {
         }[];
       };
       my_listing: { Args: { p_vendor_id: string }; Returns: Json };
+      my_vaults: {
+        Args: Record<PropertyKey, never>;
+        Returns: {
+          id: string;
+          item_count: number;
+          last_item_at: string;
+          my_item_count: number;
+          my_role: string;
+          title: string;
+          uploads_open: boolean;
+          wedding_date: string;
+          wedding_id: string;
+        }[];
+      };
+      open_memory_vault: { Args: { p_wedding_id: string }; Returns: string };
+      orphan_vault_files: {
+        Args: { p_limit?: number };
+        Returns: {
+          name: string;
+        }[];
+      };
       pending_reel_tags: {
         Args: { p_vendor_id: string };
         Returns: {
@@ -3621,6 +3849,8 @@ export type Database = {
       register_push_token: { Args: { p_platform: string; p_token: string }; Returns: undefined };
       remove_group_member: { Args: { p_thread_id: string; p_user_id: string }; Returns: undefined };
       remove_guest: { Args: { p_guest_id: string }; Returns: undefined };
+      remove_vault_guest: { Args: { p_user_id: string; p_vault_id: string }; Returns: undefined };
+      remove_vault_item: { Args: { p_item_id: string }; Returns: undefined };
       remove_vendor_photo: { Args: { p_media_id: string }; Returns: string };
       remove_wedding_member: {
         Args: { p_user_id: string; p_wedding_id: string };
@@ -3677,6 +3907,7 @@ export type Database = {
         Args: { p_accept: boolean; p_suggestion_id: string };
         Returns: undefined;
       };
+      revoke_vault_invite: { Args: { p_vault_id: string }; Returns: undefined };
       rsvp: {
         Args: { p_answer: string; p_coming?: number; p_event_slug: string; p_token: string };
         Returns: undefined;
@@ -3785,6 +4016,15 @@ export type Database = {
         Args: { p_guest_ids: string[]; p_list_id: string };
         Returns: undefined;
       };
+      set_vault_settings: {
+        Args: {
+          p_guests_see_all?: boolean;
+          p_show_vendors?: boolean;
+          p_uploads_open?: boolean;
+          p_vault_id: string;
+        };
+        Returns: undefined;
+      };
       set_vendor_cover: { Args: { p_media_id: string }; Returns: undefined };
       set_wedding_cultures: {
         Args: { p_culture_slugs: string[]; p_wedding_id: string };
@@ -3855,6 +4095,54 @@ export type Database = {
           p_stripe_account_id: string;
         };
         Returns: undefined;
+      };
+      vault_invite_preview: {
+        Args: { p_token: string };
+        Returns: {
+          events: Json;
+          inviter_name: string;
+          item_count: number;
+          status: string;
+          title: string;
+          vault_id: string;
+        }[];
+      };
+      vault_items: {
+        Args: {
+          p_before_at?: string;
+          p_before_id?: string;
+          p_event_slug?: string;
+          p_limit?: number;
+          p_vault_id: string;
+        };
+        Returns: {
+          added_by_name: string;
+          created_at: string;
+          duration_ms: number;
+          event_slug: string;
+          height: number;
+          hidden: boolean;
+          id: string;
+          is_mine: boolean;
+          kind: string;
+          path: string;
+          taken_at: string;
+          thumb_path: string;
+          user_id: string;
+          width: number;
+        }[];
+      };
+      vault_vendors: {
+        Args: { p_vault_id: string };
+        Returns: {
+          category_slugs: string[];
+          city: string;
+          event_slugs: string[];
+          is_sample: boolean;
+          name: string;
+          slug: string;
+          vendor_id: string;
+        }[];
       };
       vendor_date_status: { Args: { p_day: string; p_vendor_id: string }; Returns: string };
       vendor_public_stats: {
