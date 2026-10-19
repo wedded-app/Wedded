@@ -74,7 +74,7 @@ const LIMITS = { name: 80, description: 500, cuisine: 60, title: 60, item: 80, i
 export function menuProblem(draft: MenuDraft): MenuProblem | null {
   const row = menuRow(draft);
   if (!row.name) return 'name';
-  if (row.price_from !== null && (!Number.isInteger(row.price_from) || row.price_from <= 0)) {
+  if (draft.price !== null && (!Number.isInteger(draft.price) || draft.price <= 0)) {
     return 'price';
   }
   if (row.min_guests !== null && (!Number.isInteger(row.min_guests) || row.min_guests <= 0)) {
@@ -100,7 +100,10 @@ export function menuProblem(draft: MenuDraft): MenuProblem | null {
   return null;
 }
 
-/** The vendor_menus columns for a draft: trimmed, blanks as null, empty rows dropped. */
+/**
+ * What save_vendor_menu() takes for a draft: trimmed, blanks as null, empty
+ * rows dropped, the price in cents.
+ */
 export function menuRow(draft: MenuDraft) {
   const orNull = (value: string) => value.trim() || null;
   const sections = draft.sections
@@ -111,7 +114,7 @@ export function menuRow(draft: MenuDraft) {
         .map((item) => ({
           name: item.name.trim(),
           ...(item.description.trim() ? { description: item.description.trim() } : {}),
-          ...(item.dietTags.length ? { diet: item.dietTags } : {}),
+          ...(item.dietTags.length ? { diet_tags: item.dietTags } : {}),
         })),
     }))
     .filter((section) => section.title || section.items.length > 0);
@@ -119,8 +122,8 @@ export function menuRow(draft: MenuDraft) {
     name: draft.name.trim(),
     description: orNull(draft.description),
     cuisine: orNull(draft.cuisine),
-    diet: draft.dietTags,
-    price_from: draft.price,
+    diet_tags: draft.dietTags,
+    price_from_cents: draft.price === null ? null : draft.price * 100,
     price_unit: draft.price === null ? null : draft.unit,
     min_guests: draft.minGuests,
     sections,
@@ -132,19 +135,13 @@ export function useSaveMenu(vendorId: string) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (draft: MenuDraft): Promise<string> => {
-      const row = menuRow(draft);
-      if (draft.id) {
-        const { error } = await supabase.from('vendor_menus').update(row).eq('id', draft.id);
-        if (error) throw error;
-        return draft.id;
-      }
-      const { data, error } = await supabase
-        .from('vendor_menus')
-        .insert({ ...row, vendor_id: vendorId })
-        .select('id')
-        .single();
+      const { data, error } = await supabase.rpc('save_vendor_menu', {
+        p_vendor_id: vendorId,
+        p_menu: menuRow(draft),
+        p_menu_id: draft.id,
+      });
       if (error) throw error;
-      return data.id;
+      return data;
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['vendor-menus', vendorId] }),
   });

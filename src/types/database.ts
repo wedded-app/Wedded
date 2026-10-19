@@ -1215,6 +1215,47 @@ export type Database = {
           },
         ];
       };
+      menu_items: {
+        Row: {
+          created_at: string;
+          description: string | null;
+          diet_tags: string[];
+          id: string;
+          menu_id: string;
+          name: string;
+          section: string;
+          sort_order: number;
+        };
+        Insert: {
+          created_at?: string;
+          description?: string | null;
+          diet_tags?: string[];
+          id?: string;
+          menu_id: string;
+          name: string;
+          section: string;
+          sort_order: number;
+        };
+        Update: {
+          created_at?: string;
+          description?: string | null;
+          diet_tags?: string[];
+          id?: string;
+          menu_id?: string;
+          name?: string;
+          section?: string;
+          sort_order?: number;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'menu_items_menu_id_fkey';
+            columns: ['menu_id'];
+            isOneToOne: false;
+            referencedRelation: 'vendor_menus';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
       message_reactions: {
         Row: {
           conversation_id: string;
@@ -2585,13 +2626,13 @@ export type Database = {
           created_at: string;
           cuisine: string | null;
           description: string | null;
-          diet: string[];
+          diet_tags: string[];
+          event_slug: string | null;
           id: string;
           min_guests: number | null;
           name: string;
-          price_from: number | null;
+          price_from_cents: number | null;
           price_unit: string | null;
-          sections: NonNullable<Json>;
           sort_order: number;
           updated_at: string;
           vendor_id: string;
@@ -2600,13 +2641,13 @@ export type Database = {
           created_at?: string;
           cuisine?: string | null;
           description?: string | null;
-          diet?: string[];
+          diet_tags?: string[];
+          event_slug?: string | null;
           id?: string;
           min_guests?: number | null;
           name: string;
-          price_from?: number | null;
+          price_from_cents?: number | null;
           price_unit?: string | null;
-          sections?: NonNullable<Json>;
           sort_order?: number;
           updated_at?: string;
           vendor_id: string;
@@ -2615,18 +2656,25 @@ export type Database = {
           created_at?: string;
           cuisine?: string | null;
           description?: string | null;
-          diet?: string[];
+          diet_tags?: string[];
+          event_slug?: string | null;
           id?: string;
           min_guests?: number | null;
           name?: string;
-          price_from?: number | null;
+          price_from_cents?: number | null;
           price_unit?: string | null;
-          sections?: NonNullable<Json>;
           sort_order?: number;
           updated_at?: string;
           vendor_id?: string;
         };
         Relationships: [
+          {
+            foreignKeyName: 'vendor_menus_event_slug_fkey';
+            columns: ['event_slug'];
+            isOneToOne: false;
+            referencedRelation: 'events';
+            referencedColumns: ['slug'];
+          },
           {
             foreignKeyName: 'vendor_menus_vendor_id_fkey';
             columns: ['vendor_id'];
@@ -4054,6 +4102,10 @@ export type Database = {
         Returns: undefined;
       };
       save_vendor: { Args: { p_event_slug?: string; p_vendor_id: string }; Returns: string };
+      save_vendor_menu: {
+        Args: { p_menu: Json; p_menu_id?: string; p_vendor_id: string };
+        Returns: string;
+      };
       search_vendors: {
         Args: {
           available_on?: string;

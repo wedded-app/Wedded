@@ -645,7 +645,22 @@ drop table extra_samples;
 
 -- Sample menus (vendor_menus) ------------------------------------------------------------
 
-insert into public.vendor_menus (vendor_id, name, description, cuisine, diet, price_from, price_unit, min_guests, sort_order, sections)
+-- Written flat like the vendors above: whole dollars and the dishes as a list
+-- of titled sections, moved into vendor_menus and menu_items.
+create temporary table seed_menus (
+  vendor_id uuid not null,
+  name text not null,
+  description text,
+  cuisine text,
+  diet text[] not null default '{}',
+  price_from integer,
+  price_unit text,
+  min_guests integer,
+  sort_order smallint not null default 0,
+  sections jsonb not null default '[]'
+);
+
+insert into seed_menus (vendor_id, name, description, cuisine, diet, price_from, price_unit, min_guests, sort_order, sections)
 select v.id, m.name, m.description, m.cuisine, m.diet, m.price_from, m.price_unit, m.min_guests, m.sort_order, m.sections::jsonb
 from (values
   ('saffron-tandoor-catering', 'Classic Punjabi', 'Our most booked reception menu, cooked on site with a live tandoor.', 'Punjabi',
@@ -670,3 +685,19 @@ from (values
       {"title": "Dessert", "items": [{"name": "Gajar halwa"}, {"name": "Wedding cake cutting service"}]}]')
 ) as m (slug, name, description, cuisine, diet, price_from, price_unit, min_guests, sort_order, sections)
 join public.vendors v on v.slug = m.slug;
+
+with menus as (
+  insert into public.vendor_menus
+    (vendor_id, name, description, cuisine, diet_tags, price_from_cents, price_unit, min_guests, sort_order)
+  select vendor_id, name, description, cuisine, diet, price_from * 100, price_unit, min_guests, sort_order
+  from seed_menus
+  returning id, vendor_id, name
+)
+insert into public.menu_items (menu_id, section, name, diet_tags, sort_order)
+select menus.id, s.value ->> 'title', i.value ->> 'name',
+  array(select jsonb_array_elements_text(coalesce(i.value -> 'diet', '[]'::jsonb))),
+  row_number() over (partition by menus.id order by s.ordinality, i.ordinality)
+from menus
+join seed_menus m on m.vendor_id = menus.vendor_id and m.name = menus.name
+cross join lateral jsonb_array_elements(m.sections) with ordinality as s (value, ordinality)
+cross join lateral jsonb_array_elements(s.value -> 'items') with ordinality as i (value, ordinality);

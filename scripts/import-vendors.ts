@@ -31,7 +31,13 @@ function point(latitude: number, longitude: number): string {
   return `SRID=4326;POINT(${longitude} ${latitude})`;
 }
 
-type City = { slug: string; name: string; nicknames: string[]; latitude: number; longitude: number };
+type City = {
+  slug: string;
+  name: string;
+  nicknames: string[];
+  latitude: number;
+  longitude: number;
+};
 
 /** The file's contact fields and the vendor_contacts kind each becomes. */
 const CONTACT_KINDS = {
@@ -41,7 +47,16 @@ const CONTACT_KINDS = {
   instagram_handle: 'instagram',
   website_url: 'website',
 } as const;
-const CONTACT_ORDER = ['call', 'text', 'whatsapp', 'email', 'instagram', 'tiktok', 'facebook', 'website'];
+const CONTACT_ORDER = [
+  'call',
+  'text',
+  'whatsapp',
+  'email',
+  'instagram',
+  'tiktok',
+  'facebook',
+  'website',
+];
 const PROVENANCE: Record<string, string> = {
   founder: 'founder_entered',
   claimed: 'claimed',
@@ -55,8 +70,15 @@ function cents(value: unknown): number | null | undefined {
 
 /** The vendors row for a file's vendor: everything but contacts and languages, renamed. */
 function vendorRecord(row: VendorInput['row'], citySlug: string, location: string) {
-  const { city: _city, address_line, travel_note, price_from, price_to, source, ...rest } =
-    row as Record<string, unknown>;
+  const {
+    city: _city,
+    address_line,
+    travel_note,
+    price_from,
+    price_to,
+    source,
+    ...rest
+  } = row as Record<string, unknown>;
   const record: Record<string, unknown> = {
     ...rest,
     base_city_slug: citySlug,
@@ -74,7 +96,10 @@ function vendorRecord(row: VendorInput['row'], citySlug: string, location: strin
 }
 
 /** Miles between two points, near enough for picking the nearest city. */
-function miles(a: { latitude: number; longitude: number }, b: { latitude: number; longitude: number }) {
+function miles(
+  a: { latitude: number; longitude: number },
+  b: { latitude: number; longitude: number },
+) {
   const rad = Math.PI / 180;
   const x = (b.longitude - a.longitude) * rad * Math.cos(((a.latitude + b.latitude) / 2) * rad);
   const y = (b.latitude - a.latitude) * rad;
@@ -214,10 +239,12 @@ async function write(supabase: SupabaseClient, vendors: VendorInput[], checked: 
       const { error: contactError } =
         value === null
           ? await supabase.from('vendor_contacts').delete().eq('vendor_id', id).eq('kind', kind)
-          : await supabase.from('vendor_contacts').upsert(
-              { vendor_id: id, kind, value, sort_order: CONTACT_ORDER.indexOf(kind) + 1 },
-              { onConflict: 'vendor_id,kind' },
-            );
+          : await supabase
+              .from('vendor_contacts')
+              .upsert(
+                { vendor_id: id, kind, value, sort_order: CONTACT_ORDER.indexOf(kind) + 1 },
+                { onConflict: 'vendor_id,kind' },
+              );
       if (contactError) fail(`Could not save ${slug}'s ${field}: ${contactError.message}`);
     }
     const preferred = vendor.row.preferred_contact;
@@ -229,7 +256,8 @@ async function write(supabase: SupabaseClient, vendors: VendorInput[], checked: 
           .update({ is_preferred: true })
           .eq('vendor_id', id)
           .eq('kind', preferred as string);
-        if (preferredError) fail(`Could not save ${slug}'s preferred contact: ${preferredError.message}`);
+        if (preferredError)
+          fail(`Could not save ${slug}'s preferred contact: ${preferredError.message}`);
       }
     }
     const spoken = vendor.row.languages as string[] | undefined;
@@ -249,14 +277,12 @@ async function write(supabase: SupabaseClient, vendors: VendorInput[], checked: 
           : vendor.point
             ? point(vendor.point.latitude, vendor.point.longitude)
             : undefined;
-      const { error: privateError } = await supabase
-        .from('vendor_private')
-        .upsert({
-          vendor_id: id,
-          ...rest,
-          ...(notes !== undefined ? { founder_notes: notes } : {}),
-          ...(exact ? { exact_location: exact } : {}),
-        });
+      const { error: privateError } = await supabase.from('vendor_private').upsert({
+        vendor_id: id,
+        ...rest,
+        ...(notes !== undefined ? { founder_notes: notes } : {}),
+        ...(exact ? { exact_location: exact } : {}),
+      });
       if (privateError) fail(`Could not save ${slug}'s private details: ${privateError.message}`);
     }
 
@@ -293,11 +319,36 @@ async function write(supabase: SupabaseClient, vendors: VendorInput[], checked: 
         .delete()
         .eq('vendor_id', id);
       if (menuClearError) fail(`Could not update ${slug}'s menus: ${menuClearError.message}`);
-      if (vendor.menus.length > 0) {
-        const { error: menuError } = await supabase
+      for (const [i, menu] of vendor.menus.entries()) {
+        const { sections, diet, price_from, ...rest } = menu;
+        const { data: saved, error: menuError } = await supabase
           .from('vendor_menus')
-          .insert(vendor.menus.map((menu, i) => ({ ...menu, vendor_id: id, sort_order: i + 1 })));
+          .insert({
+            ...rest,
+            vendor_id: id,
+            sort_order: i + 1,
+            diet_tags: diet ?? [],
+            price_from_cents: price_from === undefined ? undefined : price_from * 100,
+          })
+          .select('id')
+          .single();
         if (menuError) fail(`Could not save ${slug}'s menus: ${menuError.message}`);
+        // Each dish under its section's title, in the file's order
+        const dishes = sections.flatMap((section) =>
+          section.items.map((item) => ({ section: section.title, ...item })),
+        );
+        if (dishes.length === 0) continue;
+        const { error: dishError } = await supabase.from('menu_items').insert(
+          dishes.map((dish, n) => ({
+            menu_id: saved.id,
+            section: dish.section,
+            name: dish.name,
+            description: dish.description ?? null,
+            diet_tags: dish.diet ?? [],
+            sort_order: n + 1,
+          })),
+        );
+        if (dishError) fail(`Could not save ${slug}'s dishes: ${dishError.message}`);
       }
     }
 
