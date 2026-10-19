@@ -14,6 +14,11 @@ export const queryClient = new QueryClient({
       retry: 2,
       staleTime: 60 * 1000,
     },
+    // A save always tries once, then succeeds or fails where the person can
+    // see it. Waiting for "online" kept it only in memory: closing the app
+    // lost it, and the phone's offline check can be wrong (seen in the
+    // simulator, where the edit never went though the server was reachable).
+    mutations: { networkMode: 'offlineFirst' },
   },
 });
 
@@ -27,7 +32,8 @@ if (Platform.OS !== 'web') {
     return () => subscription.remove();
   });
   // Offline, reads wait (keeping what's on screen) and run again once the
-  // phone is back online, instead of failing; OfflineBanner says so. The web
+  // phone is back online, instead of failing; OfflineBanner says so. Saves
+  // don't wait (above). The web
   // build already follows the browser's online state.
   onlineManager.setEventListener((setOnline) =>
     NetInfo.addEventListener((state) => setOnline(state.isConnected !== false)),
