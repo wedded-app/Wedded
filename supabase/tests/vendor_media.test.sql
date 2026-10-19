@@ -12,9 +12,9 @@ select results_eq(
   'vendor-media is a public bucket with a 5 MB limit'
 );
 
-insert into public.vendors (id, slug, status, name, city, location) values
-  ('60000000-0000-4000-8000-000000000001', 'media-published', 'published', 'Media Published', 'Yuba City', 'SRID=4326;POINT(-121.6 39.1)'),
-  ('60000000-0000-4000-8000-000000000002', 'media-draft', 'draft', 'Media Draft', 'Yuba City', 'SRID=4326;POINT(-121.6 39.1)');
+insert into public.vendors (id, slug, status, name, base_city_slug, location) values
+  ('60000000-0000-4000-8000-000000000001', 'media-published', 'published', 'Media Published', 'yuba-city', 'SRID=4326;POINT(-121.6 39.1)'),
+  ('60000000-0000-4000-8000-000000000002', 'media-draft', 'draft', 'Media Draft', 'yuba-city', 'SRID=4326;POINT(-121.6 39.1)');
 
 insert into public.vendor_media (vendor_id, storage_path, width, height, is_cover, sort_order) values
   ('60000000-0000-4000-8000-000000000001', '60000000-0000-4000-8000-000000000001/a', 1600, 1067, true, 1),

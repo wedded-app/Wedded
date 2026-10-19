@@ -11,9 +11,9 @@ insert into auth.users (id, instance_id, aud, role, email) values
   ('ac000000-0000-4000-8000-00000000000d', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'biz-stranger@example.com'),
   ('ac000000-0000-4000-8000-000000000001', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'biz-family1@example.com'),
   ('ac000000-0000-4000-8000-000000000002', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'biz-family2@example.com');
-insert into public.vendors (id, slug, status, name, city, location) values
-  ('bc000000-0000-4000-8000-000000000001', 'biz-hall', 'published', 'Biz Hall', 'Yuba City', 'SRID=4326;POINT(-121.6169 39.1404)'),
-  ('bc000000-0000-4000-8000-000000000002', 'biz-draft', 'draft', 'Biz Draft', 'Yuba City', 'SRID=4326;POINT(-121.6169 39.1404)');
+insert into public.vendors (id, slug, status, name, base_city_slug, location) values
+  ('bc000000-0000-4000-8000-000000000001', 'biz-hall', 'published', 'Biz Hall', 'yuba-city', 'SRID=4326;POINT(-121.6169 39.1404)'),
+  ('bc000000-0000-4000-8000-000000000002', 'biz-draft', 'draft', 'Biz Draft', 'yuba-city', 'SRID=4326;POINT(-121.6169 39.1404)');
 insert into public.vendor_members (vendor_id, user_id) values
   ('bc000000-0000-4000-8000-000000000001', 'ac000000-0000-4000-8000-00000000000e'),
   ('bc000000-0000-4000-8000-000000000002', 'ac000000-0000-4000-8000-00000000000e');

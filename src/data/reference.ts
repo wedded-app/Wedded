@@ -24,6 +24,7 @@ export const referenceKeys = {
   allEventNeeds: () => [...referenceKeys.all, 'all-event-needs'] as const,
   backgrounds: () => [...referenceKeys.all, 'backgrounds'] as const,
   faiths: () => [...referenceKeys.all, 'faiths'] as const,
+  languages: () => [...referenceKeys.all, 'languages'] as const,
 };
 
 /** The row's name, or its slug if the name is somehow unreadable. */
@@ -370,4 +371,20 @@ export function useFaiths() {
     queryFn: () => fetchChoices('faiths'),
     ...REFERENCE,
   });
+}
+
+// Languages ---------------------------------------------------------------
+
+/** A language vendors speak (Punjabi, Hindi, Urdu, English, Arabic). */
+export type Language = { code: string; name: LocalizedText };
+
+async function fetchLanguages(): Promise<Language[]> {
+  const { data, error } = await supabase.from('languages').select('code, name').order('sort_order');
+  if (error) throw error;
+  return data.map((row) => ({ code: row.code, name: nameOf({ slug: row.code, name: row.name }) }));
+}
+
+/** Every language a vendor can speak, in the founders' order. */
+export function useLanguages() {
+  return useQuery({ queryKey: referenceKeys.languages(), queryFn: fetchLanguages, ...REFERENCE });
 }

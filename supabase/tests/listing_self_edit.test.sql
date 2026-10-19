@@ -9,9 +9,11 @@ select plan(14);
 insert into auth.users (id, instance_id, aud, role, email) values
   ('a1200000-0000-4000-8000-00000000000e', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'edit-owner@example.com'),
   ('a1200000-0000-4000-8000-00000000000d', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'edit-stranger@example.com');
-insert into public.vendors (id, slug, status, name, city, location, tagline, languages) values
-  ('b1200000-0000-4000-8000-000000000001', 'edit-dhol', 'draft', 'Edit Dhol', 'Yuba City',
-   'SRID=4326;POINT(-121.6169 39.1404)', 'Old tagline', array['pa']);
+insert into public.vendors (id, slug, status, name, base_city_slug, location, tagline) values
+  ('b1200000-0000-4000-8000-000000000001', 'edit-dhol', 'draft', 'Edit Dhol', 'yuba-city',
+   'SRID=4326;POINT(-121.6169 39.1404)', 'Old tagline');
+insert into public.vendor_languages (vendor_id, language_code) values
+  ('b1200000-0000-4000-8000-000000000001', 'pa');
 insert into public.vendor_members (vendor_id, user_id) values
   ('b1200000-0000-4000-8000-000000000001', 'a1200000-0000-4000-8000-00000000000e');
 
@@ -52,7 +54,7 @@ select is(
     'whatsappPhone', '+15305550111',
     'instagramHandle', 'edit.dhol',
     'websiteUrl', 'https://editdhol.com',
-    'languages', jsonb_build_array('pa', 'en', 'hi'),
+    'languages', jsonb_build_array('pa', 'hi', 'en'),
     'serviceRadiusMiles', 50,
     'willTravel', true
   ),

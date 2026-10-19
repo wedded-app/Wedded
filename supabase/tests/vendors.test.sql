@@ -9,13 +9,13 @@ select plan(17);
 
 -- Fixtures, inserted as the table owner (bypasses RLS) ------------------------
 
-insert into public.vendors (id, slug, status, name, city, location) values
+insert into public.vendors (id, slug, status, name, base_city_slug, location) values
   ('10000000-0000-4000-8000-000000000001', 'test-published', 'published', 'Test Published',
-    'Yuba City', 'SRID=4326;POINT(-121.6169 39.1404)'),
+    'yuba-city', 'SRID=4326;POINT(-121.6169 39.1404)'),
   ('10000000-0000-4000-8000-000000000002', 'test-draft', 'draft', 'Test Draft',
-    'Yuba City', 'SRID=4326;POINT(-121.6169 39.1404)'),
+    'yuba-city', 'SRID=4326;POINT(-121.6169 39.1404)'),
   ('10000000-0000-4000-8000-000000000003', 'test-hidden', 'hidden', 'Test Hidden',
-    'Yuba City', 'SRID=4326;POINT(-121.6169 39.1404)');
+    'yuba-city', 'SRID=4326;POINT(-121.6169 39.1404)');
 
 insert into public.vendor_private (vendor_id, email, street_address) values
   ('10000000-0000-4000-8000-000000000001', 'owner@example.com', '1 Private Lane, Yuba City, CA');
@@ -31,42 +31,42 @@ insert into public.vendor_events (vendor_id, event_slug) values
 -- Data rules ------------------------------------------------------------------
 
 select throws_ok(
-  $$ insert into public.vendors (slug, name, city, location, address_visibility, address_line)
-     values ('t-address', 'T', 'Yuba City', 'SRID=4326;POINT(-121.6 39.1)', 'city_only', '1 Main St') $$,
+  $$ insert into public.vendors (slug, name, base_city_slug, location, address_visibility, public_address)
+     values ('t-address', 'T', 'yuba-city', 'SRID=4326;POINT(-121.6 39.1)', 'city_only', '1 Main St') $$,
   '23514', null,
   'A home-based (city only) vendor cannot have a public street address'
 );
 
 select lives_ok(
-  $$ insert into public.vendors (slug, name, city, location, address_visibility, address_line)
-     values ('t-hall', 'T', 'Yuba City', 'SRID=4326;POINT(-121.6 39.1)', 'public', '1 Main St') $$,
+  $$ insert into public.vendors (slug, name, base_city_slug, location, address_visibility, public_address)
+     values ('t-hall', 'T', 'yuba-city', 'SRID=4326;POINT(-121.6 39.1)', 'public', '1 Main St') $$,
   'A vendor with a public address (a hall) can list its street address'
 );
 
 select throws_ok(
-  $$ insert into public.vendors (slug, name, city, location, price_display, price_unit)
-     values ('t-start', 'T', 'Yuba City', 'SRID=4326;POINT(-121.6 39.1)', 'starting_at', 'event') $$,
+  $$ insert into public.vendors (slug, name, base_city_slug, location, price_display, price_unit)
+     values ('t-start', 'T', 'yuba-city', 'SRID=4326;POINT(-121.6 39.1)', 'starting_at', 'event') $$,
   '23514', null,
   'A "starting at" price needs an amount'
 );
 
 select throws_ok(
-  $$ insert into public.vendors (slug, name, city, location, price_display, price_from, price_unit)
-     values ('t-range1', 'T', 'Yuba City', 'SRID=4326;POINT(-121.6 39.1)', 'range', 500, 'event') $$,
+  $$ insert into public.vendors (slug, name, base_city_slug, location, price_display, price_from_cents, price_unit)
+     values ('t-range1', 'T', 'yuba-city', 'SRID=4326;POINT(-121.6 39.1)', 'range', 50000, 'event') $$,
   '23514', null,
   'A price range needs both ends'
 );
 
 select throws_ok(
-  $$ insert into public.vendors (slug, name, city, location, price_display, price_from, price_to, price_unit)
-     values ('t-range2', 'T', 'Yuba City', 'SRID=4326;POINT(-121.6 39.1)', 'range', 500, 100, 'event') $$,
+  $$ insert into public.vendors (slug, name, base_city_slug, location, price_display, price_from_cents, price_to_cents, price_unit)
+     values ('t-range2', 'T', 'yuba-city', 'SRID=4326;POINT(-121.6 39.1)', 'range', 50000, 10000, 'event') $$,
   '23514', null,
   'A price range cannot end below where it starts'
 );
 
 select throws_ok(
-  $$ insert into public.vendors (slug, name, city, location, call_phone)
-     values ('t-phone', 'T', 'Yuba City', 'SRID=4326;POINT(-121.6 39.1)', '530-555-0100') $$,
+  $$ insert into public.vendor_contacts (vendor_id, kind, value)
+     values ('10000000-0000-4000-8000-000000000001', 'call', '530-555-0100') $$,
   '23514', null,
   'Phone numbers must be stored as +1 and 10 digits'
 );
@@ -116,8 +116,8 @@ select throws_ok(
 );
 
 select throws_ok(
-  $$ insert into public.vendors (slug, name, city, location)
-     values ('t-anon', 'T', 'Yuba City', 'SRID=4326;POINT(-121.6 39.1)') $$,
+  $$ insert into public.vendors (slug, name, base_city_slug, location)
+     values ('t-anon', 'T', 'yuba-city', 'SRID=4326;POINT(-121.6 39.1)') $$,
   '42501', null,
   'Logged-out users cannot add vendors'
 );

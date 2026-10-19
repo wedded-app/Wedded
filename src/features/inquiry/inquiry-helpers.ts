@@ -135,23 +135,25 @@ async function fetchInquiryVendor(vendorId: string): Promise<InquiryVendor | nul
   const { data, error } = await supabase
     .from('vendors')
     .select(
-      'id, slug, name, city, call_phone, text_phone, whatsapp_phone, vendor_categories(position, category:categories(slug, name)), vendor_events(event_slug)',
+      'id, slug, name, base_city:cities(name), vendor_contacts(kind, value), vendor_categories(position, category:categories(slug, name)), vendor_events(event_slug)',
     )
     .eq('id', vendorId)
     .maybeSingle();
   if (error) throw error;
   if (!data) return null;
   const primary = [...data.vendor_categories].sort((a, b) => a.position - b.position)[0];
+  const contact = (kind: string) =>
+    data.vendor_contacts.find((c) => c.kind === kind)?.value ?? null;
   return {
     id: data.id,
     slug: data.slug,
     name: { en: data.name },
-    city: data.city,
+    city: data.base_city.name,
     category: primary ? asLocalizedText(primary.category?.name) : null,
     categorySlug: primary?.category?.slug ?? null,
-    callPhone: data.call_phone,
-    textPhone: data.text_phone,
-    whatsappPhone: data.whatsapp_phone,
+    callPhone: contact('call'),
+    textPhone: contact('text'),
+    whatsappPhone: contact('whatsapp'),
     eventSlugs: data.vendor_events.map((row) => row.event_slug),
   };
 }

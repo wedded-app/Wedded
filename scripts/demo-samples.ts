@@ -913,7 +913,7 @@ async function main() {
   // Vendors the family is talking to stay free on the family's dates
   const theirs = new Set([...booked.map(([, , s]) => s), ...SAVED.map(([, s]) => s), ...FAMILY_CHATS.map((c) => c.vendor)]);
   const familyDates = new Set(Object.values(eventDate));
-  await db.from('vendor_unavailable_days').delete().in('vendor_id', sampleIds).gte('day', laDate(0));
+  await db.from('vendor_days').delete().in('vendor_id', sampleIds).gte('day', laDate(0));
   const days: { vendor_id: string; day: string; part: string; status: string }[] = [];
   for (const v of vendorRows.filter((row) => row.is_sample)) {
     const rand = randomFrom(`calendar-${v.id as string}`);
@@ -936,7 +936,7 @@ async function main() {
     }
   }
   const { error: dayError } = await db
-    .from('vendor_unavailable_days')
+    .from('vendor_days')
     .upsert(days, { onConflict: 'vendor_id,day,part' });
   if (dayError) fail(`Couldn't fill the calendars: ${dayError.message}`);
   console.log(`Marked ${days.length} booked or held days.\n\nDone.`);

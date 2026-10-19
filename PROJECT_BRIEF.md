@@ -203,13 +203,14 @@ All tables are in Postgres (`public` schema) with row-level security. Names that
 
 **Vendors:**
 
-- `vendors`: id, slug, status (published…), is_sample, name / name_pa, tagline(_pa), bio(_pa), city, `location` (PostGIS point), address_visibility, address_line, service_radius_miles, will_travel, call / text / whatsapp phones, instagram_handle, website_url, preferred_contact, office_hours, languages, price_display / price_from / price_to / price_unit / price_note, years_in_business, team_size, **founding_number**, details (jsonb hall facts: seats, alcohol, outside caterers, ghori, curfew, parking…), calendar_updated_at.
-- `vendor_private`: email, checks_email, street address, exact location, owner name, notes. **The API can never read it.**
+- `vendors`: id, slug, status (draft / in_review / published / slow / hidden / retired), provenance, is_sample, name, tagline, bio, base_city_slug (a city), `location` (PostGIS point), address_visibility, public_address, service_radius_miles, will_travel, travel_fee_note, office_hours, price_display / price_from_cents / price_to_cents / price_unit / price_note, years_in_business, team_size, **founding_number**, details (jsonb hall facts: seats, alcohol, outside caterers, ghori, curfew, parking…), calendar_updated_at, published_at, merged_into_id.
+- `vendor_contacts`: call / text / whatsapp / instagram / website… one row each, one preferred. `vendor_languages`: codes from `languages`.
+- `vendor_private`: email, checks_email, street address, exact location, owner name, founder_notes. **The API can never read it.**
 - `vendor_categories` (up to 3 per vendor, position 1 is the main one), `vendor_events`.
 - `vendor_media`: storage_path (files at `{400,1080,1600}.webp`), width, height, blurhash, is_cover, sort_order, event, venue (where it was taken), credit vendor or text. Public bucket `vendor-media`.
 - `vendor_menus`: name(_pa), description(_pa), cuisine, diet tags, price_from, price_unit, min_guests, `sections` (jsonb: titled sections of dishes).
-- `vendor_links`: a venue and a vendor, kind (approved caterer / worked with), confirmed by each side; shown only when both confirm.
-- `vendor_unavailable_days`: day, part (all day / morning / evening), status (booked / held). Public, no client details.
+- `vendor_links`: from a venue (or the first vendor) to another, kind (approved_caterer / worked_at / often_works_with / partner), each side's confirmation time, hidden_by_venue; shown only when both confirm.
+- `vendor_days`: day, part (all day / morning / evening), status (open / held / booked), capacity and taken, source, the booking behind it. Public, no client details.
 - `vendor_members`: a user's role on a vendor account (owner / staff).
 - `vendor_leads`: sign-ups and claims from `/for-vendors` (insert only; founders read them).
 - `vendor_activity_daily`: anonymous daily counts per vendor and kind (view, call, text, whatsapp, directions, share, instagram, website).

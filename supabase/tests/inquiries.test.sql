@@ -27,10 +27,10 @@ values ('aa000000-0000-4000-8000-00000000000a', 'a0000000-0000-4000-8000-0000000
 insert into public.wedding_events (wedding_id, event_slug)
 values ('aa000000-0000-4000-8000-00000000000a', 'jaago');
 
-insert into public.vendors (id, slug, status, name, city, location)
+insert into public.vendors (id, slug, status, name, base_city_slug, location)
 select ('40000000-0000-4000-8000-00000000000' || n)::uuid, 'ask-vendor-' || n,
   case when n = 3 then 'draft' else 'published' end,
-  'Ask Vendor ' || n, 'Yuba City', 'SRID=4326;POINT(-121.6169 39.1404)'
+  'Ask Vendor ' || n, 'yuba-city', 'SRID=4326;POINT(-121.6169 39.1404)'
 from generate_series(1, 7) as n;
 
 -- Vendor 1 reads email; vendor 2 has none (relay); the rest read email

@@ -20,8 +20,8 @@ select ok(
 
 insert into auth.users (id, instance_id, aud, role, email) values
   ('e0000000-0000-4000-8000-00000000000e', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'cap@example.com');
-insert into public.vendors (id, slug, status, name, city, location) values
-  ('70000000-0000-4000-8000-000000000001', 'cap-vendor', 'published', 'Cap Vendor', 'Yuba City', 'SRID=4326;POINT(-121.6 39.1)');
+insert into public.vendors (id, slug, status, name, base_city_slug, location) values
+  ('70000000-0000-4000-8000-000000000001', 'cap-vendor', 'published', 'Cap Vendor', 'yuba-city', 'SRID=4326;POINT(-121.6 39.1)');
 
 update public.app_config set value = '10' where key = 'inquiry_daily_cap';
 -- Nothing else sent today in this test database

@@ -9,9 +9,9 @@ select plan(7);
 insert into auth.users (id, instance_id, aud, role, email) values
   ('a7000000-0000-4000-8000-00000000000f', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'notify-family@example.com'),
   ('a7000000-0000-4000-8000-00000000000e', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'notify-owner@example.com');
-insert into public.vendors (id, slug, status, name, city, location) values
-  ('b7000000-0000-4000-8000-000000000001', 'notify-hall', 'published', 'Notify Hall', 'Yuba City', 'SRID=4326;POINT(-121.6169 39.1404)'),
-  ('b7000000-0000-4000-8000-000000000002', 'notify-dj', 'published', 'Notify DJ', 'Yuba City', 'SRID=4326;POINT(-121.6169 39.1404)');
+insert into public.vendors (id, slug, status, name, base_city_slug, location) values
+  ('b7000000-0000-4000-8000-000000000001', 'notify-hall', 'published', 'Notify Hall', 'yuba-city', 'SRID=4326;POINT(-121.6169 39.1404)'),
+  ('b7000000-0000-4000-8000-000000000002', 'notify-dj', 'published', 'Notify DJ', 'yuba-city', 'SRID=4326;POINT(-121.6169 39.1404)');
 insert into public.vendor_members (vendor_id, user_id) values
   ('b7000000-0000-4000-8000-000000000001', 'a7000000-0000-4000-8000-00000000000e');
 insert into public.vendor_private (vendor_id, email, checks_email) values

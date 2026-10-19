@@ -34,8 +34,8 @@ select is(
 );
 reset role;
 select results_eq(
-  $$ select status, source, city, name from public.vendors where id = (select (r ->> 'vendorId')::uuid from made) $$,
-  $$ values ('draft'::text, 'self_signup'::text, 'Yuba City'::text, 'Jas Dhol Beats'::text) $$,
+  $$ select status, provenance, base_city_slug, name from public.vendors where id = (select (r ->> 'vendorId')::uuid from made) $$,
+  $$ values ('draft'::text, 'self_signup'::text, 'yuba-city'::text, 'Jas Dhol Beats'::text) $$,
   'It starts as a draft in the chosen city'
 );
 set local role authenticated;
