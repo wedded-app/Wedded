@@ -11,11 +11,10 @@
  * layout), so Home and Profile show it straight away; signing out clears it.
  */
 import { useMutation, useQuery, useQueryClient, type QueryClient } from '@tanstack/react-query';
-import * as Linking from 'expo-linking';
 import { useEffect } from 'react';
 import { Platform, Share } from 'react-native';
 
-import { SITE_URL_IS_PLACEHOLDER, siteLink } from '@/constants/links';
+import { shareLink } from '@/constants/links';
 import { useSession } from '@/features/auth/session';
 import {
   clearPlan,
@@ -574,11 +573,11 @@ export function useSetMemberRole() {
 
 /**
  * The link a family member shares: the website's /join page once there's a
- * domain (it opens without the app), until then a link into the app (in Expo
- * Go, the development server's address).
+ * domain (it opens without the app), until then a link into the app
+ * (shareLink).
  */
 export function inviteLink(token: string): string {
-  return SITE_URL_IS_PLACEHOLDER ? Linking.createURL(`/join/${token}`) : siteLink(`/join/${token}`);
+  return shareLink(`/join/${token}`);
 }
 
 /** Make a join link for relatives: role editor (changes the plan) or suggester (suggests vendors). */
