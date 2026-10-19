@@ -7,16 +7,22 @@ create extension if not exists pgtap with schema extensions;
 select plan(8);
 
 insert into public.vendors (id, slug, status, name, base_city_slug, location,
-  price_display, price_from_cents, price_unit, founding_number, details) values
+  price_display, price_from_cents, price_unit, founding_number) values
   ('50000000-0000-4000-8000-000000000001', 'ff-big-hall', 'published', 'Ff Big Hall', 'yuba-city',
     (select location from public.cities where slug = 'yuba-city'),
-    'starting_at', 6000, 'plate', null, '{"seated_capacity": 700}'),
+    'starting_at', 6000, 'plate', null),
   ('50000000-0000-4000-8000-000000000002', 'ff-small-hall', 'published', 'Ff Small Hall', 'yuba-city',
     (select location from public.cities where slug = 'yuba-city'),
-    'starting_at', 3000, 'plate', 7, '{"seated_capacity": 150}'),
+    'starting_at', 3000, 'plate', 7),
   ('50000000-0000-4000-8000-000000000003', 'ff-dj', 'published', 'Ff DJ', 'yuba-city',
     (select location from public.cities where slug = 'yuba-city'),
-    'contact', null, null, null, '{}');
+    'contact', null, null, null);
+-- The big hall's biggest room seats 700; the small hall has two small rooms
+insert into public.venue_rooms (vendor_id, name, seated) values
+  ('50000000-0000-4000-8000-000000000001', 'Main hall', 700),
+  ('50000000-0000-4000-8000-000000000001', 'Garden room', 120),
+  ('50000000-0000-4000-8000-000000000002', 'Main hall', 150),
+  ('50000000-0000-4000-8000-000000000002', 'Side room', 60);
 insert into public.vendor_languages (vendor_id, language_code) values
   ('50000000-0000-4000-8000-000000000001', 'en'), ('50000000-0000-4000-8000-000000000001', 'pa'),
   ('50000000-0000-4000-8000-000000000002', 'en'),

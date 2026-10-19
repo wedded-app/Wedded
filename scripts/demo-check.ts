@@ -35,12 +35,12 @@ function check(ok: boolean, text: string, problem: string, level: Result = 'fail
 }
 
 const YUBA_CITY = { lat: 39.1404, lng: -121.6169 };
+/** The hall's fact chips: venue_policies columns, and seats from its rooms. */
 const FACTS = [
-  'seated_capacity',
   'outside_catering',
   'alcohol_policy',
   'ghori_allowed',
-  'curfew',
+  'music_curfew',
   'parking_spaces',
 ];
 
@@ -93,7 +93,9 @@ async function checkProfile(db: SupabaseClient, hallSlug: string) {
   console.log('\n3. The hall’s profile');
   const { data: hall } = await db
     .from('vendors')
-    .select('id, status, is_sample, founding_number, public_address, details, vendor_contacts(kind)')
+    .select(
+      'id, status, is_sample, founding_number, public_address, vendor_contacts(kind), venue_policies(*), venue_rooms(seated)',
+    )
     .eq('slug', hallSlug)
     .maybeSingle();
   if (!hall) {
@@ -110,8 +112,12 @@ async function checkProfile(db: SupabaseClient, hallSlug: string) {
       : 'Not a founding vendor',
     'warn',
   );
-  const details = (hall.details ?? {}) as Record<string, unknown>;
-  const missing = FACTS.filter((key) => details[key] === undefined);
+  // One-to-one, so PostgREST sends an object (or null)
+  const policies = (hall.venue_policies ?? {}) as unknown as Record<string, unknown>;
+  const missing = FACTS.filter((key) => policies[key] == null);
+  if (!(hall.venue_rooms ?? []).some((room: { seated: number | null }) => room.seated)) {
+    missing.unshift('seats');
+  }
   check(
     missing.length === 0,
     'All six fact chips (seats, catering, alcohol, ghori, curfew, parking)',
@@ -244,7 +250,10 @@ async function checkAsFamily(admin: SupabaseClient, local: boolean, send: boolea
       .upsert({ id: userId, full_name: 'Demo Check', city: 'Yuba City', phone: '+15305550100' });
     check(!profile.error, 'Fills in About you', `About you failed: ${profile.error?.message}`);
 
-    const saved = await family.rpc('save_vendor', { p_vendor_id: hallId, p_event_slug: 'reception' });
+    const saved = await family.rpc('save_vendor', {
+      p_vendor_id: hallId,
+      p_event_slug: 'reception',
+    });
     check(!saved.error, 'Saves the hall', `Saving failed: ${saved.error?.message}`);
 
     if (mailpitUrl) await fetch(`${mailpitUrl}/api/v1/messages`, { method: 'DELETE' });

@@ -203,7 +203,8 @@ All tables are in Postgres (`public` schema) with row-level security. Names that
 
 **Vendors:**
 
-- `vendors`: id, slug, status (draft / in_review / published / slow / hidden / retired), provenance, is_sample, name, tagline, bio, base_city_slug (a city), `location` (PostGIS point), address_visibility, public_address, service_radius_miles, will_travel, travel_fee_note, office_hours, price_display / price_from_cents / price_to_cents / price_unit / price_note, years_in_business, team_size, **founding_number**, details (jsonb hall facts: seats, alcohol, outside caterers, ghori, curfew, parking…), calendar_updated_at, published_at, merged_into_id.
+- `vendors`: id, slug, status (draft / in_review / published / slow / hidden / retired), provenance, is_sample, name, tagline, bio, base_city_slug (a city), `location` (PostGIS point), address_visibility, public_address, service_radius_miles, will_travel, travel_fee_note, office_hours, price_display / price_from_cents / price_to_cents / price_unit / price_note, years_in_business, team_size, **founding_number**, details (jsonb: facts particular to the vendor's type, like a DJ's genres), calendar_updated_at, published_at, merged_into_id.
+- `venue_policies` (one per hall: catering, alcohol, corkage_cents, ghori, dhol outside, curfew, minimums, fees, parking, tour booking) and `venue_rooms` (seated, standing, ceiling).
 - `vendor_contacts`: call / text / whatsapp / instagram / website… one row each, one preferred. `vendor_languages`: codes from `languages`.
 - `vendor_private`: email, checks_email, street address, exact location, owner name, founder_notes. **The API can never read it.**
 - `vendor_categories` (up to 3 per vendor, position 1 is the main one), `vendor_events`.

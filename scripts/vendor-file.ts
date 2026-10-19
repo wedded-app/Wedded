@@ -48,12 +48,16 @@ const CHOICES = {
 
 const RADII = [10, 25, 50, 100, 250];
 
-/** Hall facts the profile shows as chips, and what each must be. */
+/**
+ * Hall facts the profile shows as chips, and what each must be. The importer
+ * moves them into venue_policies and the hall's main room (set_hall_facts);
+ * other details keys stay in vendors.details.
+ */
 const DETAIL_CHECKS: Record<string, (value: unknown) => boolean> = {
   seated_capacity: (v) => Number.isInteger(v) && (v as number) > 0,
   in_house_catering: (v) => ['yes', 'no', 'optional'].includes(v as string),
   outside_catering: (v) => ['yes', 'approved_list', 'no'].includes(v as string),
-  alcohol_policy: (v) => ['byob', 'full_bar', 'none'].includes(v as string),
+  alcohol_policy: (v) => ['full_bar', 'beer_wine', 'byob', 'dry'].includes(v as string),
   corkage: (v) => Number.isInteger(v) && (v as number) >= 0,
   ghori_allowed: (v) => typeof v === 'boolean',
   dhol_outside_allowed: (v) => typeof v === 'boolean',
@@ -61,6 +65,8 @@ const DETAIL_CHECKS: Record<string, (value: unknown) => boolean> = {
   parking_spaces: (v) => Number.isInteger(v) && (v as number) > 0,
   security_required: (v) => typeof v === 'boolean',
 };
+
+export const HALL_FACT_KEYS = Object.keys(DETAIL_CHECKS);
 
 const VENDOR_KEYS = new Set([
   'slug',

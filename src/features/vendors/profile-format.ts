@@ -67,7 +67,7 @@ export function factLabels(facts: HallFacts, t: Translate): string[] {
     );
   }
   if (facts.alcoholPolicy === 'full_bar') labels.push(t('vendor.facts.fullBar'));
-  if (facts.alcoholPolicy === 'none') labels.push(t('vendor.facts.noAlcohol'));
+  if (facts.alcoholPolicy === 'dry') labels.push(t('vendor.facts.noAlcohol'));
   if (facts.ghoriAllowed === true) labels.push(t('vendor.facts.ghoriYes'));
   if (facts.ghoriAllowed === false) labels.push(t('vendor.facts.ghoriNo'));
   if (facts.curfew) labels.push(t('vendor.facts.curfew', { time: formatTime(facts.curfew) }));
