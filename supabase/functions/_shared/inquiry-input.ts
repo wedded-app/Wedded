@@ -28,7 +28,6 @@ export type InquiryInput = {
   location: string;
   message: string;
   preferredContact: Contact;
-  language: 'en' | 'pa';
   /** Answers to the category's own questions (catering preference, ghori...). */
   details: Record<string, unknown>;
   /** Name and phone default to the profile; the form lets people edit them. */
@@ -101,9 +100,6 @@ export function parseInquiry(body: unknown): ParseResult {
     return { ok: false, field: 'preferredContact' };
   }
 
-  const language = b.language ?? 'en';
-  if (language !== 'en' && language !== 'pa') return { ok: false, field: 'language' };
-
   const details = b.details ?? {};
   if (
     typeof details !== 'object' ||
@@ -137,7 +133,6 @@ export function parseInquiry(body: unknown): ParseResult {
       location,
       message,
       preferredContact: b.preferredContact as Contact,
-      language,
       details: details as Record<string, unknown>,
       name,
       phone,

@@ -28,11 +28,14 @@ select pg_temp.as_user(('a4000000-0000-4000-8000-00000000000' || n)::uuid),
 from generate_series(1, 6) as n;
 reset role;
 
-insert into public.inquiries (user_id, vendor_id, event_slugs, guest_band, location, message, preferred_contact,
+insert into public.inquiries (id, user_id, vendor_id, guest_band, city_slug, message, preferred_contact,
   sender_name, sender_phone, channel, status, sent_at)
-select ('a4000000-0000-4000-8000-00000000000' || n)::uuid, 'b4000000-0000-4000-8000-000000000001',
-  case when n = 6 then array['mehndi'] else array['reception'] end,
-  '250_500', 'Yuba City', 'Price?', 'call', 'Family ' || n, '+15305550400', 'email', 'sent', now() - interval '3 days'
+select ('a4100000-0000-4000-8000-00000000000' || n)::uuid, ('a4000000-0000-4000-8000-00000000000' || n)::uuid,
+  'b4000000-0000-4000-8000-000000000001',
+  '250_500', 'yuba-city', 'Price?', 'call', 'Family ' || n, '+15305550400', 'email', 'sent', now() - interval '3 days'
+from generate_series(1, 6) as n;
+insert into public.inquiry_events (inquiry_id, event_slug)
+select ('a4100000-0000-4000-8000-00000000000' || n)::uuid, case when n = 6 then 'mehndi' else 'reception' end
 from generate_series(1, 6) as n;
 
 -- Each family's bookings, by event and vendor type

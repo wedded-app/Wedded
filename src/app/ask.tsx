@@ -249,7 +249,6 @@ export default function AskScreen() {
       location: place.trim(),
       message: message.trim(),
       preferredContact: replyBy,
-      language: 'en' as const,
       name: name.trim() || undefined,
       phone: cleanPhone ?? undefined,
       details: {

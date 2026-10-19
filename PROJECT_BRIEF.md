@@ -220,7 +220,8 @@ All tables are in Postgres (`public` schema) with row-level security. Names that
 
 - `profiles`: id (the auth user), full_name, city, phone (E.164), adult_confirmed_at, planning_for (self / child / sibling / relative / friend). The email lives in Auth only.
 - `saved_vendors`: user, vendor, the wedding and which of its events (null = "Not sure yet"), note, source (heart / inquiry…). Saved through `save_vendor()`.
-- `inquiries`: user, vendor, event_slugs, event_date, start_time, guest_band, location, message, preferred_contact, language, details (venue / caterer / tour answers), sender name / phone / email, channel, status (sent / queued / failed…), failure, sent_at, **reply_answer** (the family's follow-up answer, the only column the app can write).
+- `inquiries`: user, vendor, wedding, kind (price_date / tour), event_date, date_flex, start_time, guest_band, city_slug / venue_id / venue_text, message, preferred_contact, answers (the vendor type's questions), sender name / phone / email, channel, status (sent / queued / failed…), failure, sent_at, **reply_answer** (the family's follow-up answer, the only column the app can write).
+- `inquiry_events`: the events an inquiry is about, in the order picked, with the family's wedding event.
 - `weddings`: title, wedding_date, created_by. `wedding_cultures`: the traditions it follows (none = the default).
 - `wedding_sides`: side A and side B ("Bride's side", "Groom's side"), with a home city.
 - `wedding_members`: wedding, user, role (owner / editor / suggester, #104; `private.can_edit_wedding()` is the one owner-or-editor check), side, relation, the invite they joined with.

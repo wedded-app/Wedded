@@ -4,7 +4,7 @@
 begin;
 create extension if not exists pgtap with schema extensions;
 
-select plan(22);
+select plan(24);
 
 -- Accounts (A, C and D have profiles; B doesn't) and vendors -----------------------
 
@@ -41,14 +41,15 @@ from generate_series(1, 7) as n where n <> 2;
 -- A short way to ask, as the Edge Function does
 create function pg_temp.ask(
   who uuid, vendor_n integer, events text[] default array['jaago'],
-  on_date date default current_date + 30, again boolean default false
+  on_date date default current_date + 30, again boolean default false,
+  place text default 'Yuba City', answers jsonb default '{}'
 ) returns jsonb language sql as $$
   select public.create_inquiry(
     p_user_id => who,
     p_vendor_id => ('40000000-0000-4000-8000-00000000000' || vendor_n)::uuid,
     p_event_slugs => events, p_event_date => on_date, p_start_time => null,
-    p_guest_band => '100_250', p_location => 'Yuba City', p_message => 'Sat Sri Akal, price please?',
-    p_preferred_contact => 'text', p_language => 'en', p_details => '{}',
+    p_guest_band => '100_250', p_location => place, p_message => 'Sat Sri Akal, price please?',
+    p_preferred_contact => 'text', p_details => answers,
     p_sender_name => 'Asker', p_sender_phone => '+15305550111', p_sender_email => 'asker@example.com',
     p_send_again => again)
 $$;
@@ -65,7 +66,7 @@ select set_config('request.jwt.claims', '{"sub": "a0000000-0000-4000-8000-000000
 select throws_ok($$ select pg_temp.ask('a0000000-0000-4000-8000-00000000000a', 1) $$,
   '42501', null, 'Signed-in users cannot call create_inquiry directly (rate limits live behind the Edge Function)');
 select throws_ok(
-  $$ insert into public.inquiries (user_id, vendor_id, guest_band, location, message, preferred_contact, sender_name, sender_phone, channel)
+  $$ insert into public.inquiries (user_id, vendor_id, guest_band, venue_text, message, preferred_contact, sender_name, sender_phone, channel)
      values ('a0000000-0000-4000-8000-00000000000a', '40000000-0000-4000-8000-000000000001', 'not_sure', 'x', 'x', 'text', 'x', '+15305550111', 'email') $$,
   '42501', null, 'Signed-in users cannot write inquiries directly');
 reset role;
@@ -97,6 +98,25 @@ select ok(
             and s.vendor_id = '40000000-0000-4000-8000-000000000001' and we.event_slug = 'jaago'
             and s.source = 'inquiry'),
   'Asking a vendor saves them under that event of the family''s wedding'
+);
+
+select results_eq(
+  $$ select i.city_slug, i.venue_text, i.kind, i.date_flex, i.wedding_id is not null, ie.event_slug,
+       ie.wedding_event_id is not null
+     from public.inquiries i join public.inquiry_events ie on ie.inquiry_id = i.id
+     where i.user_id = 'a0000000-0000-4000-8000-00000000000a' and i.vendor_id = '40000000-0000-4000-8000-000000000001' $$,
+  $$ values ('yuba-city'::text, null::text, 'price_date'::text, 'exact'::text, true, 'jaago'::text, true) $$,
+  'The inquiry names a listed city, belongs to the family''s wedding, and its jaago is the wedding''s'
+);
+
+select pg_temp.ask('d0000000-0000-4000-8000-00000000000d', 4, array[]::text[], on_date => null,
+  place => 'Gill family farm', answers => '{"tour": true, "visit": "weekend"}');
+select results_eq(
+  $$ select city_slug, venue_text, kind, date_flex, answers, (select count(*)::int from public.inquiry_events ie where ie.inquiry_id = i.id)
+     from public.inquiries i
+     where user_id = 'd0000000-0000-4000-8000-00000000000d' and vendor_id = '40000000-0000-4000-8000-000000000004' $$,
+  $$ values (null::text, 'Gill family farm'::text, 'tour'::text, 'not_sure'::text, '{"visit": "weekend"}'::jsonb, 0) $$,
+  'A place that isn''t a listed city stays as typed; a tour is its kind; no date is not sure; no events is Not sure'
 );
 
 select ok(
@@ -134,7 +154,7 @@ select results_eq(
 reset role;
 
 -- C already sent 15 today (2 hours ago)
-insert into public.inquiries (user_id, vendor_id, guest_band, location, message, preferred_contact,
+insert into public.inquiries (user_id, vendor_id, guest_band, venue_text, message, preferred_contact,
   sender_name, sender_phone, channel, status, created_at)
 select 'c0000000-0000-4000-8000-00000000000c', '40000000-0000-4000-8000-000000000001', 'not_sure',
   'Fremont', 'Earlier', 'call', 'Asker C', '+15105550112', 'email', 'sent', now() - interval '2 hours'
@@ -165,7 +185,7 @@ set local role authenticated;
 select set_config('request.jwt.claims', '{"sub": "a0000000-0000-4000-8000-00000000000a", "role": "authenticated"}', true);
 select is((select count(*)::int from public.inquiries), 5, 'People see their own inquiries (A sent 5)');
 select set_config('request.jwt.claims', '{"sub": "d0000000-0000-4000-8000-00000000000d", "role": "authenticated"}', true);
-select is((select count(*)::int from public.inquiries), 1, 'and nobody else''s');
+select is((select count(*)::int from public.inquiries), 2, 'and nobody else''s (D sent 2)');
 select throws_ok($$ select * from public.app_config $$, '42501', null, 'App settings are not readable through the API');
 reset role;
 

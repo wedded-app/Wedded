@@ -984,16 +984,16 @@ export type Database = {
       };
       inquiries: {
         Row: {
+          answers: NonNullable<Json>;
           channel: string;
+          city_slug: string | null;
           created_at: string;
-          details: NonNullable<Json>;
+          date_flex: string;
           event_date: string | null;
-          event_slugs: string[];
           failure: string | null;
           guest_band: string;
           id: string;
-          language: string;
-          location: string;
+          kind: string;
           message: string;
           preferred_contact: string;
           provider_message_id: string | null;
@@ -1007,18 +1007,21 @@ export type Database = {
           status: string;
           user_id: string | null;
           vendor_id: string;
+          venue_id: string | null;
+          venue_text: string | null;
+          wedding_id: string | null;
         };
         Insert: {
+          answers?: NonNullable<Json>;
           channel: string;
+          city_slug?: string | null;
           created_at?: string;
-          details?: NonNullable<Json>;
+          date_flex?: string;
           event_date?: string | null;
-          event_slugs?: string[];
           failure?: string | null;
           guest_band: string;
           id?: string;
-          language?: string;
-          location: string;
+          kind?: string;
           message: string;
           preferred_contact: string;
           provider_message_id?: string | null;
@@ -1032,18 +1035,21 @@ export type Database = {
           status?: string;
           user_id?: string | null;
           vendor_id: string;
+          venue_id?: string | null;
+          venue_text?: string | null;
+          wedding_id?: string | null;
         };
         Update: {
+          answers?: NonNullable<Json>;
           channel?: string;
+          city_slug?: string | null;
           created_at?: string;
-          details?: NonNullable<Json>;
+          date_flex?: string;
           event_date?: string | null;
-          event_slugs?: string[];
           failure?: string | null;
           guest_band?: string;
           id?: string;
-          language?: string;
-          location?: string;
+          kind?: string;
           message?: string;
           preferred_contact?: string;
           provider_message_id?: string | null;
@@ -1057,13 +1063,80 @@ export type Database = {
           status?: string;
           user_id?: string | null;
           vendor_id?: string;
+          venue_id?: string | null;
+          venue_text?: string | null;
+          wedding_id?: string | null;
         };
         Relationships: [
+          {
+            foreignKeyName: 'inquiries_city_slug_fkey';
+            columns: ['city_slug'];
+            isOneToOne: false;
+            referencedRelation: 'cities';
+            referencedColumns: ['slug'];
+          },
           {
             foreignKeyName: 'inquiries_vendor_id_fkey';
             columns: ['vendor_id'];
             isOneToOne: false;
             referencedRelation: 'vendors';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'inquiries_venue_id_fkey';
+            columns: ['venue_id'];
+            isOneToOne: false;
+            referencedRelation: 'vendors';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'inquiries_wedding_id_fkey';
+            columns: ['wedding_id'];
+            isOneToOne: false;
+            referencedRelation: 'weddings';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      inquiry_events: {
+        Row: {
+          event_slug: string;
+          inquiry_id: string;
+          position: number;
+          wedding_event_id: string | null;
+        };
+        Insert: {
+          event_slug: string;
+          inquiry_id: string;
+          position?: number;
+          wedding_event_id?: string | null;
+        };
+        Update: {
+          event_slug?: string;
+          inquiry_id?: string;
+          position?: number;
+          wedding_event_id?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'inquiry_events_event_slug_fkey';
+            columns: ['event_slug'];
+            isOneToOne: false;
+            referencedRelation: 'events';
+            referencedColumns: ['slug'];
+          },
+          {
+            foreignKeyName: 'inquiry_events_inquiry_id_fkey';
+            columns: ['inquiry_id'];
+            isOneToOne: false;
+            referencedRelation: 'inquiries';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'inquiry_events_wedding_event_id_fkey';
+            columns: ['wedding_event_id'];
+            isOneToOne: false;
+            referencedRelation: 'wedding_events';
             referencedColumns: ['id'];
           },
         ];
@@ -3781,7 +3854,6 @@ export type Database = {
           p_event_date: string;
           p_event_slugs: string[];
           p_guest_band: string;
-          p_language: string;
           p_location: string;
           p_message: string;
           p_preferred_contact: string;

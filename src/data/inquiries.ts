@@ -31,7 +31,6 @@ export type InquiryDraft = {
   location: string;
   message: string;
   preferredContact: ReplyBy;
-  language: 'en';
   /** Answers to the category's own questions. */
   details?: Record<string, unknown>;
   /** Defaults to the profile; the form lets people edit them. */
@@ -134,13 +133,17 @@ async function fetchMyInquiries() {
   const { data, error } = await supabase
     .from('inquiries')
     .select(
-      'id, vendor_id, event_slugs, event_date, guest_band, status, created_at, sent_at, reply_answer, vendor:vendors(slug, name)',
+      'id, vendor_id, event_date, guest_band, status, created_at, sent_at, reply_answer, vendor:vendors!inquiries_vendor_id_fkey(slug, name), inquiry_events(event_slug, position)',
     )
     .order('created_at', { ascending: false });
   if (error) throw error;
   const now = Date.now();
-  return data.map((inquiry) => ({
+  return data.map(({ inquiry_events, ...inquiry }) => ({
     ...inquiry,
+    /** The events in the order the family picked them. */
+    event_slugs: [...inquiry_events]
+      .sort((a, b) => a.position - b.position)
+      .map((e) => e.event_slug),
     /** "Ask again" shows once 24 hours have passed, or if it didn't send (S16c). */
     canAskAgain:
       inquiry.status === 'failed' || now - new Date(inquiry.created_at).getTime() > DAY_MS,
