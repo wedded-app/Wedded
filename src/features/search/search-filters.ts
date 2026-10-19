@@ -31,6 +31,14 @@ export const NO_FILTERS: SearchFilters = {
 /** Guest counts offered for venues. */
 export const GUEST_STEPS = [100, 250, 400, 600, 800] as const;
 
+/** The steps, plus a count that came from the plan ("250 to 500" seats 500), so it shows as picked. */
+export function guestSteps(picked: number | null): number[] {
+  const steps: number[] = [...GUEST_STEPS];
+  return picked === null || steps.includes(picked)
+    ? steps
+    : [...steps, picked].sort((a, b) => a - b);
+}
+
 /**
  * Price ceilings that make sense for the kind of vendor: venues and food are
  * priced per plate or person, most others per event.

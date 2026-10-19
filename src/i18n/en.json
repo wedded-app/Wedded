@@ -2529,7 +2529,7 @@
       "travelNoteHint": "For example: No travel fee within 25 miles",
       "years": "Years in business",
       "team": "People on your team",
-      "teamNote": "To change your name, address, vendor types or photos, message the Wedded team.",
+      "teamNote": "To change your name, address or vendor types, message the Wedded team.",
       "teamMessage": "Hi Wedded team, please help me change something on {{name}}'s page:",
       "save": "Save",
       "saved": "Saved",
@@ -2749,8 +2749,8 @@
       "continue": "Continue",
       "budgetHint": "Vendors see the range, so the prices you get fit.",
       "vendorCount": {
-        "one": "1 near you",
-        "other": "{{count}} near you"
+        "one": "1 on Wedded",
+        "other": "{{count}} on Wedded"
       },
       "everyKind": "See every kind of vendor ({{count}})"
     },
@@ -2886,7 +2886,7 @@
         "one": "family near you needs a {{category}}",
         "other": "families near you need a {{category}}"
       },
-      "hint": "Opens Families looking"
+      "hint": "Opens Wedded Pro"
     },
     "more": "Show more",
     "full": "This family has all the proposals they can take"

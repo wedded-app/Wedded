@@ -62,7 +62,7 @@ function TeaserCard({ vendorId }: { vendorId: string }) {
       accessibilityRole="button"
       accessibilityLabel={`${total} ${what}`}
       accessibilityHint={t('looking.teaser.hint')}
-      onPress={() => router.navigate('/wanted')}
+      onPress={() => router.push('/business/pro')}
       pressedScale={0.98}
       style={[styles.card, glow(Colors.glowBlush, Colors.glowGold)]}
     >

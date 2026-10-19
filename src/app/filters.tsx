@@ -12,7 +12,7 @@ import { formatDate } from '@/features/inquiry/inquiry-helpers';
 import { usePlan } from '@/features/planner/plan';
 import {
   clearSearchFilters,
-  GUEST_STEPS,
+  guestSteps,
   priceSteps,
   setSearchFilters,
   useSearchFilters,
@@ -62,7 +62,7 @@ export default function FiltersScreen() {
               selected={filters.minGuests === null}
               onPress={() => set({ minGuests: null })}
             />
-            {GUEST_STEPS.map((count) => (
+            {guestSteps(filters.minGuests).map((count) => (
               <Chip
                 key={count}
                 label={t('filters.guestsStep', { count })}
