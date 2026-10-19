@@ -701,6 +701,44 @@ export type Database = {
           },
         ];
       };
+      followups: {
+        Row: {
+          answer: string | null;
+          answered_at: string | null;
+          asked_at: string;
+          created_at: string;
+          id: string;
+          inquiry_id: string;
+          question: string;
+        };
+        Insert: {
+          answer?: string | null;
+          answered_at?: string | null;
+          asked_at: string;
+          created_at?: string;
+          id?: string;
+          inquiry_id: string;
+          question: string;
+        };
+        Update: {
+          answer?: string | null;
+          answered_at?: string | null;
+          asked_at?: string;
+          created_at?: string;
+          id?: string;
+          inquiry_id?: string;
+          question?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'followups_inquiry_id_fkey';
+            columns: ['inquiry_id'];
+            isOneToOne: false;
+            referencedRelation: 'inquiries';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
       group_invites: {
         Row: {
           created_at: string;
@@ -997,8 +1035,6 @@ export type Database = {
           message: string;
           preferred_contact: string;
           provider_message_id: string | null;
-          reply_answer: string | null;
-          reply_answered_at: string | null;
           sender_email: string | null;
           sender_name: string | null;
           sender_phone: string | null;
@@ -1025,8 +1061,6 @@ export type Database = {
           message: string;
           preferred_contact: string;
           provider_message_id?: string | null;
-          reply_answer?: string | null;
-          reply_answered_at?: string | null;
           sender_email?: string | null;
           sender_name?: string | null;
           sender_phone?: string | null;
@@ -1053,8 +1087,6 @@ export type Database = {
           message?: string;
           preferred_contact?: string;
           provider_message_id?: string | null;
-          reply_answer?: string | null;
-          reply_answered_at?: string | null;
           sender_email?: string | null;
           sender_name?: string | null;
           sender_phone?: string | null;
@@ -2101,6 +2133,35 @@ export type Database = {
             isOneToOne: false;
             referencedRelation: 'wedding_events';
             referencedColumns: ['wedding_id', 'id'];
+          },
+        ];
+      };
+      tour_slots: {
+        Row: {
+          day: string;
+          inquiry_id: string;
+          part: string;
+          rank: number;
+        };
+        Insert: {
+          day: string;
+          inquiry_id: string;
+          part: string;
+          rank: number;
+        };
+        Update: {
+          day?: string;
+          inquiry_id?: string;
+          part?: string;
+          rank?: number;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'tour_slots_inquiry_id_fkey';
+            columns: ['inquiry_id'];
+            isOneToOne: false;
+            referencedRelation: 'inquiries';
+            referencedColumns: ['id'];
           },
         ];
       };

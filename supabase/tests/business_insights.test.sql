@@ -114,7 +114,7 @@ select c.id, 'ae000000-0000-4000-8000-00000000000e', 'vendor', 'text', 'Yes!', p
 from public.conversations c
 where c.vendor_id = 'be000000-0000-4000-8000-000000000001'
   and c.family_user_id = 'ae000000-0000-4000-8000-000000000001';
-update public.inquiries set reply_answer = 'booked' where id = 'de000000-0000-4000-8000-000000000001';
+update public.followups set answer = 'booked' where inquiry_id = 'de000000-0000-4000-8000-000000000001';
 
 set local role authenticated;
 select pg_temp.as_user('ae000000-0000-4000-8000-00000000000e');

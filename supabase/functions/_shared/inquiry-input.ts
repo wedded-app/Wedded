@@ -44,6 +44,7 @@ const SLUG = /^[a-z0-9]+(-[a-z0-9]+)*$/;
 const DATE = /^\d{4}-\d{2}-\d{2}$/;
 const TIME = /^([01]\d|2[0-3]):[0-5]\d$/;
 const PHONE = /^\+[1-9]\d{7,14}$/;
+const DAY_PARTS = ['morning', 'afternoon', 'evening'];
 
 function text(value: unknown, min: number, max: number): string | null {
   if (typeof value !== 'string') return null;
@@ -106,6 +107,19 @@ export function parseInquiry(body: unknown): ParseResult {
     details === null ||
     Array.isArray(details) ||
     JSON.stringify(details).length > 4000
+  ) {
+    return { ok: false, field: 'details' };
+  }
+  // A tour's visit times become rows (tour_slots): up to 3 real days, each with a part of the day
+  const tourSlots = (details as Record<string, unknown>).tourSlots;
+  if (
+    tourSlots !== undefined &&
+    (!Array.isArray(tourSlots) ||
+      tourSlots.length > 3 ||
+      !tourSlots.every((slot) =>
+        typeof slot?.date === 'string' && DATE.test(slot.date) && isRealDate(slot.date) &&
+        DAY_PARTS.includes(slot.part)
+      ))
   ) {
     return { ok: false, field: 'details' };
   }

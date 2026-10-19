@@ -4,7 +4,7 @@
 begin;
 create extension if not exists pgtap with schema extensions;
 
-select plan(13);
+select plan(14);
 
 insert into auth.users (id, instance_id, aud, role, email) values
   ('ac000000-0000-4000-8000-00000000000e', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'biz-owner@example.com'),
@@ -46,6 +46,8 @@ values
    now(), 'tour', 'not_sure');
 insert into public.inquiry_events (inquiry_id, event_slug) values
   ('dc000000-0000-4000-8000-000000000001', 'reception'), ('dc000000-0000-4000-8000-000000000002', 'anand-karaj');
+insert into public.tour_slots (inquiry_id, rank, day, part) values
+  ('dc000000-0000-4000-8000-000000000002', 1, '2027-01-16', 'morning');
 
 -- The vendor's reply to family 1, straight into the thread
 insert into public.messages (conversation_id, sender_user_id, sender_role, kind, body)
@@ -135,6 +137,12 @@ select results_eq(
   $$ values ('Simran G.', true, false, 'simran@example.com', true),
             ('Harjit K.', false, true, null::text, true) $$,
   'Leads come newest first with the short name, tour, reply state, and email only when asked for'
+);
+select is(
+  (select details from public.business_leads('bc000000-0000-4000-8000-000000000001')
+   where family_name = 'Simran G.'),
+  '{"tour": true, "tourSlots": [{"date": "2027-01-16", "part": "morning"}]}'::jsonb,
+  'A tour lead shows the times the family could visit'
 );
 select is(
   (select phone from public.business_leads('bc000000-0000-4000-8000-000000000001')

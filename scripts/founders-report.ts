@@ -119,12 +119,13 @@ async function weekly(db: SupabaseClient, days: number) {
   line('New vendor sign-ups and claims', await count(db, 'vendor_leads', since));
 
   const { data: answers } = await db
-    .from('inquiries')
-    .select('reply_answer')
-    .gte('reply_answered_at', since)
-    .not('reply_answer', 'is', null);
+    .from('followups')
+    .select('answer')
+    .eq('question', 'did_they_reply')
+    .gte('answered_at', since)
+    .not('answer', 'is', null);
   if (answers) {
-    const by = (a: string) => answers.filter((r) => r.reply_answer === a).length;
+    const by = (a: string) => answers.filter((r) => r.answer === a).length;
     out.push(
       `Follow-up answers: ${by('booked')} booked, ${by('deciding')} replied and deciding, ${by('no_reply')} no reply yet`,
     );

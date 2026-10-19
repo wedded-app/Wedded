@@ -4,7 +4,7 @@
 begin;
 create extension if not exists pgtap with schema extensions;
 
-select plan(24);
+select plan(26);
 
 -- Accounts (A, C and D have profiles; B doesn't) and vendors -----------------------
 
@@ -110,13 +110,28 @@ select results_eq(
 );
 
 select pg_temp.ask('d0000000-0000-4000-8000-00000000000d', 4, array[]::text[], on_date => null,
-  place => 'Gill family farm', answers => '{"tour": true, "visit": "weekend"}');
+  place => 'Gill family farm', answers => '{"tour": true, "visit": "weekend",
+    "tourSlots": [{"date": "2027-01-16", "part": "morning"}, {"date": "2027-01-17", "part": "evening"}]}');
 select results_eq(
   $$ select city_slug, venue_text, kind, date_flex, answers, (select count(*)::int from public.inquiry_events ie where ie.inquiry_id = i.id)
      from public.inquiries i
      where user_id = 'd0000000-0000-4000-8000-00000000000d' and vendor_id = '40000000-0000-4000-8000-000000000004' $$,
   $$ values (null::text, 'Gill family farm'::text, 'tour'::text, 'not_sure'::text, '{"visit": "weekend"}'::jsonb, 0) $$,
   'A place that isn''t a listed city stays as typed; a tour is its kind; no date is not sure; no events is Not sure'
+);
+select results_eq(
+  $$ select ts.rank::int, ts.day, ts.part
+     from public.tour_slots ts join public.inquiries i on i.id = ts.inquiry_id
+     where i.user_id = 'd0000000-0000-4000-8000-00000000000d' and i.vendor_id = '40000000-0000-4000-8000-000000000004'
+     order by ts.rank $$,
+  $$ values (1, '2027-01-16'::date, 'morning'::text), (2, '2027-01-17'::date, 'evening'::text) $$,
+  'A tour''s visit times become rows, in the family''s order'
+);
+select is(
+  (select m.data -> 'details' from public.messages m join public.inquiries i on i.id = m.inquiry_id
+   where i.user_id = 'd0000000-0000-4000-8000-00000000000d' and i.vendor_id = '40000000-0000-4000-8000-000000000004'),
+  '{"tour": true, "visit": "weekend", "tourSlots": [{"date": "2027-01-16", "part": "morning"}, {"date": "2027-01-17", "part": "evening"}]}'::jsonb,
+  'and the chat card shows them with the answers'
 );
 
 select ok(
