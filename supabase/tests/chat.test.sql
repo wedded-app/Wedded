@@ -170,7 +170,7 @@ select is(
 
 delete from auth.users where id = 'a6000000-0000-4000-8000-00000000000f';
 select is(
-  (select family_name from public.conversations where id = (select value::uuid from pg_temp.ids where name = 'convo')),
+  (select family_label from public.conversations where id = (select value::uuid from pg_temp.ids where name = 'convo')),
   null,
   'Deleting the family''s account removes their name from the vendor''s copy'
 );

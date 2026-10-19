@@ -18,7 +18,7 @@ insert into public.vendor_private (vendor_id, email, checks_email) values
   ('b7000000-0000-4000-8000-000000000002', 'dj@example.com', true);
 
 -- A family wrote to the hall (has an account) and the DJ (no account) 10 minutes ago
-insert into public.conversations (id, vendor_id, family_user_id, family_name, last_message_at, family_read_at) values
+insert into public.conversations (id, vendor_id, family_user_id, family_label, last_message_at, family_read_at) values
   ('d7000000-0000-4000-8000-000000000001', 'b7000000-0000-4000-8000-000000000001', 'a7000000-0000-4000-8000-00000000000f', 'Harjit K.', now() - interval '10 minutes', now() - interval '10 minutes'),
   ('d7000000-0000-4000-8000-000000000002', 'b7000000-0000-4000-8000-000000000002', 'a7000000-0000-4000-8000-00000000000f', 'Harjit K.', now() - interval '10 minutes', now() - interval '10 minutes');
 insert into public.messages (conversation_id, sender_user_id, sender_role, body, created_at) values

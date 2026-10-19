@@ -15,7 +15,7 @@ insert into public.vendors (id, slug, status, name, base_city_slug, location) va
   ('b1300000-0000-4000-8000-000000000001', 'dep-hall', 'published', 'Dep Hall', 'yuba-city', 'SRID=4326;POINT(-121.6169 39.1404)');
 insert into public.vendor_members (vendor_id, user_id) values
   ('b1300000-0000-4000-8000-000000000001', 'a1300000-0000-4000-8000-00000000000e');
-insert into public.conversations (id, vendor_id, family_user_id, family_name) values
+insert into public.conversations (id, vendor_id, family_user_id, family_label) values
   ('c1300000-0000-4000-8000-000000000001', 'b1300000-0000-4000-8000-000000000001',
    'a1300000-0000-4000-8000-000000000001', 'Harjit K.');
 
