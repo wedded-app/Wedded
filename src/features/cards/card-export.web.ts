@@ -23,16 +23,30 @@ export async function shareCard(card: RefObject<View | null>): Promise<void> {
   await download(card);
 }
 
-/** expo-print on the web prints the current page, so the card goes in its own window. */
-export async function printCard(card: RefObject<View | null>): Promise<void> {
-  const base64 = await captureRef(card, { format: 'png', result: 'base64' });
+/** expo-print on the web prints the current page, so the cards go in their own window. */
+export async function printCards(cards: RefObject<View | null>[]): Promise<void> {
+  const pictures: string[] = [];
+  for (const card of cards)
+    pictures.push(await captureRef(card, { format: 'png', result: 'base64' }));
   const page = globalThis.open('', '_blank');
   if (!page) throw new Error('Pop-up blocked');
-  page.document.write(cardPageHtml(base64));
+  page.document.write(cardPageHtml(pictures));
   page.document.close();
   page.focus();
-  // Print once the picture has loaded, or the page prints blank.
-  const picture = page.document.images[0];
-  if (picture.complete) page.print();
-  else picture.onload = () => page.print();
+  // Print once the pictures have loaded, or the page prints blank.
+  const images = [...page.document.images];
+  let left = images.filter((picture) => !picture.complete).length;
+  if (left === 0) page.print();
+  for (const picture of images) {
+    if (picture.complete) continue;
+    picture.onload = () => {
+      left -= 1;
+      if (left === 0) page.print();
+    };
+  }
+}
+
+/** No texting or Mail on the web; the picture, for parity with the phone. */
+export function cardFile(card: RefObject<View | null>): Promise<string> {
+  return captureRef(card, { format: 'png', result: 'data-uri' });
 }

@@ -230,6 +230,93 @@
     },
     "private": "Your card stays on this phone until you send it."
   },
+  "wedCards": {
+    "save": {
+      "one": "Save the card to Photos",
+      "other": "Save all {{count}} to Photos"
+    },
+    "saved": {
+      "one": "Saved to your Photos.",
+      "other": "All {{count}} saved to your Photos."
+    }
+  },
+  "wedSend": {
+    "title": "Sending your cards",
+    "how": "How to send",
+    "channels": {
+      "each": {
+        "title": "Text each person",
+        "body": "Each gets their own text, with their own link to say if they're coming."
+      },
+      "group": {
+        "title": "One group text",
+        "body": "One text to everyone at once. They all see each other's numbers."
+      },
+      "email": {
+        "title": "Email",
+        "body": "One email, with everyone on BCC so no one sees the others."
+      }
+    },
+    "list": {
+      "signedOut": "Sign in to see who's on your {{list}} list.",
+      "loading": "Finding your {{list}} list…",
+      "missing": "You don't have a list called {{list}} yet.",
+      "error": "Your guest list didn't load. Check your connection, then try again.",
+      "ready": {
+        "one": "{{list}} · 1 person",
+        "other": "{{list}} · {{count}} people"
+      }
+    },
+    "names": {
+      "more": {
+        "one": "{{names}} and 1 more",
+        "other": "{{names}} and {{count}} more"
+      }
+    },
+    "noPhone": {
+      "one": "1 has no phone number, so won't get a text.",
+      "other": "{{count}} have no phone number, so won't get a text."
+    },
+    "noEmail": {
+      "one": "1 has no email, so won't get one.",
+      "other": "{{count}} have no email, so won't get one."
+    },
+    "progress": "Sending {{at}} of {{count}}",
+    "everyone": {
+      "one": "Sending to 1 person",
+      "other": "Sending to all {{count}} at once"
+    },
+    "textNext": "Text {{name}}",
+    "skip": "Skip {{name}}",
+    "stop": "Stop sending",
+    "open": {
+      "group": "Open Messages",
+      "email": "Open Mail"
+    },
+    "yourSend": {
+      "each": "Messages opens with it filled in. It only goes when you tap Send there.",
+      "group": "Messages opens with it filled in. It only goes when you tap Send there.",
+      "email": "Mail opens with it filled in. It only goes when you tap Send there."
+    },
+    "failed": "That didn't open. Try again.",
+    "done": "Done: {{sent}} of {{count}} sent",
+    "finish": "Done",
+    "gone": "This send isn't here any more. Ask Wed again.",
+    "nonePhone": "No one on your {{list}} has a phone number yet.",
+    "noneEmail": "No one on your {{list}} has an email yet.",
+    "unavailable": {
+      "each": "This phone can't send texts. Try again from a phone with Messages.",
+      "group": "This phone can't send texts. Try again from a phone with Messages.",
+      "email": "This phone has no email set up. Add an account in Mail, then try again."
+    },
+    "subject": "You're invited",
+    "rsvpLine": "Tell us if you're coming: {{url}}",
+    "receipt": {
+      "texted": "Texted {{sent}} of {{count}} on your {{list}}",
+      "emailed": "Emailed {{sent}} of {{count}} on your {{list}}",
+      "nothing": "Nothing went to your {{list}}"
+    }
+  },
   "forVendors": {
     "title": "List your business, free",
     "intro": "Listing your business on Wedded is free. Families browsing find you for exactly what you do. Leave your details and we'll call or text you to set up your page.",

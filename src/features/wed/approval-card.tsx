@@ -11,6 +11,8 @@ import { makeStyles, Radius, Sizes, Spacing, useColors } from '@/constants/theme
 import { useSession } from '@/features/auth/session';
 import { Motion } from '@/lib/motion';
 
+import { GuestDetails } from './guest-details';
+import { useGuestList } from './guest-list';
 import { FAMILY } from './mock';
 import { openWed } from './open-wed';
 import { receiptText, SENDS, useWed, wed, type Approval, type Role } from './wed-store';
@@ -102,6 +104,9 @@ function Full({
 }) {
   const styles = useStyles();
   const approve = useApprove(approval);
+  const list = useGuestList(approval.guests?.list);
+  // A send to guests waits until their list is found (signed out, Send asks to sign in)
+  const blocked = !!approval.guests && list.status !== 'ready' && list.status !== 'signedOut';
   return (
     <>
       {/* On Updates the section title already says it: just Coming later */}
@@ -109,7 +114,16 @@ function Full({
       <AppText variant="heading" accessibilityRole="header">
         {approval.title}
       </AppText>
-      <People people={approval.to} ring={on === 'canvas' ? 'canvasCard' : 'surface'} />
+      {approval.guests ? (
+        <GuestDetails
+          id={approval.id}
+          send={approval.guests}
+          list={list}
+          editable={role === 'owner'}
+        />
+      ) : (
+        <People people={approval.to} ring={on === 'canvas' ? 'canvasCard' : 'surface'} />
+      )}
       <View style={styles.facts}>
         <Fact icon="calendar-outline" label="For" text={approval.forLine} />
         <Fact icon="lock-closed-outline" label="Shares" text={approval.shares} />
@@ -126,7 +140,7 @@ function Full({
       <View style={styles.buttons}>
         {role === 'owner' ? (
           <>
-            <Button label={approval.verb} onPress={approve} />
+            <Button label={approval.verb} disabled={blocked} onPress={approve} />
             {approval.altLabel ? (
               <Button
                 label={approval.altLabel}
@@ -296,7 +310,7 @@ export function ReceiptLine({
 function useApprove(approval: Approval) {
   const { requireSignIn } = useSession();
   return () =>
-    SENDS.includes(approval.kind) && !approval.preview
+    (SENDS.includes(approval.kind) || approval.kind === 'invite') && !approval.preview
       ? requireSignIn(() => wed.approve(approval.id))
       : wed.approve(approval.id);
 }

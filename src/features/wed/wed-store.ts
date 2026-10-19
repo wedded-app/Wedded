@@ -1,13 +1,15 @@
+import { router } from 'expo-router';
 import { useRef, useSyncExternalStore } from 'react';
 
 import type { IconName } from '@/components/icon';
 import { sendToVendor } from '@/data/chat';
 import { selectionHaptic, successHaptic } from '@/lib/haptics';
 
-import { FLOWS, matchFlow, type FlowKey, type Op } from './flows';
+import { eventsIn, FLOWS, guestApproval, matchFlow, type FlowKey, type Op } from './flows';
 import {
   APPS,
   CATERER,
+  EVENTS,
   FACTS,
   FAMILY,
   type AppId,
@@ -15,6 +17,7 @@ import {
   type FoundPage,
   type MockVendor,
 } from './mock';
+import type { GuestChannel, GuestSend } from './send-to-guests';
 import type { Step } from './step-list';
 
 /**
@@ -102,7 +105,7 @@ export type Task = {
   startedAt: number;
 };
 
-export type ApprovalKind = 'ask' | 'message' | 'tour' | 'markBooked' | 'pay';
+export type ApprovalKind = 'ask' | 'message' | 'tour' | 'markBooked' | 'pay' | 'invite';
 
 /** A card as a flow writes it: everything the family sees before saying yes. */
 export type ApprovalSpec = {
@@ -141,6 +144,8 @@ export type ApprovalSpec = {
   waiting?: string;
   /** A flow that plays `after` ms once it's done, e.g. the vendor's reply. */
   then?: { flow: FlowKey; after: number };
+  /** An `invite` card: the guest list, the cards and how they go (the family can change it). */
+  guests?: GuestSend;
 };
 
 export type ApprovalStage = 'waiting' | 'held' | 'done' | 'declined';
@@ -173,6 +178,8 @@ export type ChatItem = (
   | { kind: 'approval'; id: string }
   | { kind: 'receipt'; text: string; undoFlow?: FlowKey; undone?: boolean }
   | { kind: 'reply'; vendor: MockVendor; who: string; text: string }
+  /** Invitation cards Wed made, one per event (EVENTS slugs). */
+  | { kind: 'cards'; events: string[] }
   /** A list Wed made, by LIBRARY id (libraryList() in mock.ts); `gone` once its app is disconnected. */
   | { kind: 'artifact'; id: string; gone?: boolean }
   /** The STARTERS rows, after the fallback answer. */
@@ -418,6 +425,19 @@ function apply(op: Op, run: Run) {
     case 'artifact':
       push({ kind: 'artifact', id: op.id });
       return;
+    case 'cards':
+      push({ kind: 'cards', events: eventsIn(run.q ?? '') });
+      return;
+    case 'guests': {
+      // "Send them": the cards Wed made last, else every event's
+      const made = [...state.items].reverse().find((item) => item.kind === 'cards');
+      const events = made?.kind === 'cards' ? made.events : EVENTS.map((e) => e.slug);
+      apply(
+        { op: 'approval', a: guestApproval({ list: run.q ?? '', events, channel: 'each' }) },
+        run,
+      );
+      return;
+    }
     case 'starters':
       push({ kind: 'starters' });
       return;
@@ -505,6 +525,11 @@ export const SENDS: ApprovalKind[] = ['ask', 'message', 'tour'];
 // A final yes really sends: each vendor's chat with the family gets the
 // message, so it's in Messages like anything they typed, to carry on there.
 function deliver(approval: Approval) {
+  // Guests: the sending sheet opens Messages (or Mail) on the family's phone
+  if (approval.kind === 'invite') {
+    router.push({ pathname: '/wed-send', params: { id: approval.id } });
+    return;
+  }
   const text = approval.message;
   if (!text || approval.preview || !SENDS.includes(approval.kind)) return;
   for (const vendor of approval.to) {
@@ -629,6 +654,24 @@ export const wed = {
   /** The family changed the message on a card. */
   editMessage(id: string, text: string) {
     patchApproval(id, { message: text });
+  },
+  /**
+   * What Wed's brain (#124) calls to send something to a guest list: a
+   * confirm card in the thread, and nothing goes until the family taps
+   * Send. After the 10 seconds for Undo, /wed-send opens Messages or Mail.
+   */
+  sendToGuests(send: GuestSend) {
+    apply({ op: 'approval', a: guestApproval(send) }, { flow: 'guests', ids: new Map() });
+  },
+  /** Text each person, one group text or email, on an `invite` card. */
+  setChannel(id: string, channel: GuestChannel) {
+    const approval = state.approvals.find((a) => a.id === id);
+    if (!approval?.guests || approval.stage !== 'waiting') return;
+    patchApproval(id, { guests: { ...approval.guests, channel } });
+  },
+  /** A line in the thread for something done outside it ("Texted 38 of 40 on your Mehndi list"). */
+  note(text: string) {
+    push({ kind: 'receipt', text });
   },
   /** Undo on a receipt row ("Saved 3 to your Jaago list"): marks it undone and plays its undoFlow. */
   undoReceipt(itemKey: string) {

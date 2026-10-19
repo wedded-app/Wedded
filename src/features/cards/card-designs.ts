@@ -75,12 +75,17 @@ export function cardDate(value: string): string {
   }).format(fromDateString(value));
 }
 
-/** A page with the card in the middle at 5 by 7 inches. */
-export function cardPageHtml(base64: string): string {
+/** One page a card, each card in the middle at 5 by 7 inches (PNGs as base64). */
+export function cardPageHtml(pictures: string[]): string {
+  const pages = pictures
+    .map((base64) => `<div class="page"><img src="data:image/png;base64,${base64}" alt=""></div>`)
+    .join('');
+  // 1.5 + 7 + 1.5 inches fills a letter page inside its margins
   return `<!doctype html><html><head><meta charset="utf-8"><style>
 @page { margin: 0.5in; }
-html, body { margin: 0; height: 100%; }
-body { display: flex; align-items: center; justify-content: center; }
+html, body { margin: 0; }
+.page { padding-top: 1.5in; text-align: center; break-after: page; }
+.page:last-child { break-after: auto; }
 img { width: 5in; height: 7in; }
-</style></head><body><img src="data:image/png;base64,${base64}" alt=""></body></html>`;
+</style></head><body>${pages}</body></html>`;
 }

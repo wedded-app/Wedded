@@ -9,6 +9,7 @@ import {
   type FoundPage,
   type MockVendor,
 } from './mock';
+import type { GuestSend } from './send-to-guests';
 import type { ApprovalSpec, Source, TaskSpec, WedContext } from './wed-store';
 
 /**
@@ -52,6 +53,8 @@ export type FlowKey =
   | 'photo'
   | 'unsave'
   | 'untour'
+  | 'cards'
+  | 'guests'
   | 'fallback';
 
 export type Op =
@@ -67,6 +70,10 @@ export type Op =
   | { op: 'reply'; vendor: MockVendor; who: string; text: string }
   | { op: 'receipt'; text: string; undoFlow?: FlowKey }
   | { op: 'artifact'; id: string }
+  /** Invitation cards for the events named in "{q}" (all of them when none is). */
+  | { op: 'cards' }
+  /** The confirm card that sends the last cards to the guest list named "{q}". */
+  | { op: 'guests' }
   /** The STARTERS rows. */
   | { op: 'starters' }
   /** Only when the family chose "Do the small things". */
@@ -242,6 +249,47 @@ const TOUR: ApprovalSpec = {
   receipt: 'Booked a tour at Royal Orchard, Sat, Oct 17 at 11 AM',
   then: { flow: 'tourBooked', after: 1500 },
 };
+
+// Flow D: invitation cards, then sending them to a guest list (#129)
+
+/** The events named in the words, in the plan's order; every event when none is. */
+export function eventsIn(words: string): string[] {
+  const text = words.toLowerCase();
+  const named = EVENTS.filter((event) => text.includes(event.name.toLowerCase()));
+  return (named.length > 0 ? named : EVENTS).map((event) => event.slug);
+}
+
+/** "Jaago, Anand Karaj and Reception" */
+function eventNames(slugs: string[]): string {
+  const names = slugs.flatMap((slug) => EVENTS.find((e) => e.slug === slug)?.name ?? []);
+  return names.length > 1 ? `${names.slice(0, -1).join(', ')} and ${names.at(-1)}` : names.join('');
+}
+
+/** The confirm card for a send to guests: everything the family sees before Send. */
+export function guestApproval(send: GuestSend): ApprovalSpec {
+  // "Mehndi" and "Mehndi list" both read "your Mehndi list"
+  const list = `${send.list.trim().replace(/\s+list$/i, '') || 'guest'} list`;
+  const events = eventNames(send.events);
+  const what = events ? `the ${events} cards` : 'your invitation';
+  return {
+    id: 'send-guests',
+    kind: 'invite',
+    title: `Send ${what} to your ${list}`,
+    verb: 'Send',
+    to: [],
+    forLine: events,
+    message: `Sat Sri Akal! With love, we invite you to our ${events || 'wedding'}. Your ${send.events.length > 1 ? 'cards are' : 'card is'} attached. ${SIGNED}`,
+    shares: 'The cards and this message, sent from your own phone, as you.',
+    sharesShort: 'Goes from your own phone',
+    cost: "Free. It's your phone's usual texting or email",
+    undo: 'You can undo for 10 seconds',
+    footer: 'Your phone opens each one filled in. Nothing goes until you tap Send there too.',
+    heldText: `Sending to your ${list}`,
+    // The sheet adds how many really went, once Messages has opened for them
+    receipt: `Started sending ${what} to your ${list}`,
+    guests: { ...send, list: send.list.trim() },
+  };
+}
 
 // Flow C: a deposit, shown as a later feature
 
@@ -837,6 +885,36 @@ export const FLOWS: Record<FlowKey, Flow> = {
       },
     ],
   },
+  cards: {
+    triggers: ['invitation', 'invite card', 'cards for'],
+    capture: /(?:invitations?|cards?) for (?:the |our )?(.+?)[.?!]*$/i,
+    fill: 'your events',
+    ops: [
+      { at: 600, do: say('Here are your cards for {q}, filled in from your plan.') },
+      { at: 1000, do: { op: 'cards' } },
+      {
+        at: 1600,
+        do: say(
+          'Save them to Photos or print them. Or I can send them: try "Send them to my Mehndi list". You\'ll see who gets them before anything goes.',
+        ),
+      },
+    ],
+  },
+  guests: {
+    triggers: [
+      'send them',
+      'send the cards',
+      'send the invitations',
+      'send these',
+      'send our cards',
+    ],
+    capture: /\bto (?:my |our |the )?(.+?)(?: list)?[.?!]*$/i,
+    fill: 'guest',
+    ops: [
+      { at: 600, do: say("Here's who gets them and how. Nothing goes until you tap Send.") },
+      { at: 1000, do: { op: 'guests' } },
+    ],
+  },
   unsave: {
     triggers: [],
     ops: [{ at: 300, do: say('Okay, I took them off your Jaago list.') }],
@@ -860,6 +938,9 @@ export const FLOWS: Record<FlowKey, Flow> = {
 // Earlier flows win: "Pay Royal Orchard's deposit" is the deposit, not the
 // hall, and "Find a Mehndi artist free on Jun 10" isn't a date question.
 const ORDER: FlowKey[] = [
+  // "Send the invitations" is a send, not new cards
+  'guests',
+  'cards',
   'reel',
   'compare',
   'deposit',

@@ -11,7 +11,7 @@ import { NavScreen } from '@/components/nav';
 import { TextField } from '@/components/text-field';
 import { Spacing } from '@/constants/theme';
 import { CARD_DESIGNS, cardDate, type CardText } from '@/features/cards/card-designs';
-import { printCard, saveCard, shareCard } from '@/features/cards/card-export';
+import { printCards, saveCard, shareCard } from '@/features/cards/card-export';
 import { InvitationCard } from '@/features/cards/invitation-card';
 import { usePlanView } from '@/features/planner/use-plan-view';
 import { localized } from '@/i18n/localized';
@@ -66,7 +66,7 @@ export default function CardsScreen() {
       } else if (action === 'share') {
         await shareCard(card, t('cards.shareTitle'));
       } else {
-        await printCard(card);
+        await printCards([card]);
       }
     } catch {
       setFailed(action);
