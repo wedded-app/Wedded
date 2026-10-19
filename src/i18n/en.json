@@ -961,6 +961,148 @@
     "editorExplain": "You'll see the plan and can change it: tick off vendors as they're booked, and add events.",
     "suggesterExplain": "You'll see the plan and can suggest vendors for each event. The family decides."
   },
+  "guests": {
+    "title": "Guests",
+    "planEntryBody": "Add who you're inviting, and see who's coming",
+    "onList": {
+      "one": "{{count}} person on your list",
+      "other": "{{count}} people on your list"
+    },
+    "totals": "{{invited}} invited · {{coming}} coming",
+    "people": {
+      "one": "{{count}} person",
+      "other": "{{count}} people"
+    },
+    "notInvited": "Not invited to an event yet",
+    "editorsOnly": "Only the people who can change the wedding plan see the guest list.",
+    "fromContacts": "Add from contacts",
+    "byHand": "Type in a guest",
+    "empty": "Add the people you're inviting. Only you and the family planning with you can see this list.",
+    "eventsHeader": "Who's invited to each event",
+    "eventsFooter": "Guests see only the events they're invited to.",
+    "pickEvents": "Choose your events first",
+    "invitedCount": "{{count}} invited",
+    "comingCount": "{{count}} coming",
+    "waitingCount": "{{count}} still to answer",
+    "noneInvited": "No one invited yet",
+    "listsHeader": "Lists",
+    "listsFooter": "Group people, like \"Mehndi list\" or \"Mom's side\", to invite them together.",
+    "newList": "Make a list",
+    "everyone": "Everyone ({{count}})",
+    "search": "Search by name or number",
+    "noMatch": "No one matches \"{{query}}\".",
+    "answer": {
+      "yes": "Coming ({{count}})",
+      "no": "Not coming",
+      "pending": "No answer yet"
+    },
+    "errors": {
+      "tooMany": "Add up to 500 people at a time.",
+      "limit": "A guest list can have up to 1,000 guests.",
+      "phoneTaken": "Someone on your list already has this phone number.",
+      "nameTaken": "You already have a list with this name.",
+      "listLimit": "You can have up to 50 lists.",
+      "notFound": "This link doesn't work anymore. Ask the family for a new one.",
+      "notInvited": "This event isn't on your invitation anymore. Open the link again to see the latest.",
+      "rsvpLimit": "This answer has been changed too many times. Call the family to change it.",
+      "failed": "That didn't save. Check your internet, then try again."
+    },
+    "contacts": {
+      "title": "Add from contacts",
+      "intro": "Tick the people you're inviting. Only their name, phone number and email are saved. Nothing else leaves your phone.",
+      "onList": "Already on your guest list",
+      "web": "Adding from contacts works in the app on your phone.",
+      "denied": "Wedded App can't see your contacts. To add guests from them, allow Contacts in Settings, or type names in instead.",
+      "failed": "Your contacts didn't open. Try again, or type names in instead.",
+      "openSettings": "Open Settings",
+      "none": "There are no contacts with a name on this phone.",
+      "add": {
+        "one": "Add 1 guest",
+        "other": "Add {{count}} guests"
+      },
+      "tick": "Tick the people to add",
+      "limited": "You've shared only some of your contacts with Wedded App.",
+      "chooseMore": "Choose more contacts"
+    },
+    "form": {
+      "newTitle": "Add a guest",
+      "noPlan": "Start your wedding plan first, then add guests.",
+      "gone": "This guest isn't on your list anymore.",
+      "name": "Name",
+      "nameHint": "A person or a family, like \"Bains family\".",
+      "nameRequired": "Type their name.",
+      "phone": "Phone (optional)",
+      "phoneHint": "For sending their invitation by text.",
+      "phoneInvalid": "Check the number: 10 digits, or + and the country code.",
+      "phoneTaken": "{{name}} on your list already has this number.",
+      "email": "Email (optional)",
+      "emailInvalid": "Check the email address.",
+      "party": "How many people is this invitation for?",
+      "partyHint": "Count everyone in the family you're inviting.",
+      "share": "Send their RSVP link",
+      "shareMessage": "You're invited! Tap to tell us if you can come: {{link}}",
+      "copied": "Link copied. Paste it in a message to them.",
+      "remove": "Remove from guest list",
+      "removeTitle": "Take {{name}} off the guest list?",
+      "removeBody": "Their invitations and answers go too.",
+      "keep": "Keep",
+      "save": "Save",
+      "add": "Add guest"
+    },
+    "list": {
+      "newTitle": "New list",
+      "intro": "Tick who's on this list. Then you can invite everyone on it to an event at once.",
+      "name": "List name",
+      "namePlaceholder": "Mehndi list",
+      "nameRequired": "Give the list a name.",
+      "noGuests": "Add guests first, then make lists of them.",
+      "gone": "This list isn't there anymore.",
+      "save": {
+        "zero": "Save list",
+        "one": "Save list with 1 person",
+        "other": "Save list with {{count}} people"
+      },
+      "delete": "Delete list",
+      "deleteTitle": "Delete the list \"{{name}}\"?",
+      "deleteBody": "The people on it stay on your guest list and keep their invitations.",
+      "keep": "Keep it"
+    },
+    "invite": {
+      "title": "Who's invited to the {{event}}?",
+      "intro": "Tick the people to invite. On their RSVP page, they'll see only the events they're invited to.",
+      "wholeList": "Tick a whole list",
+      "everyone": "Everyone",
+      "already": "Invited · {{answer}}",
+      "noEvent": "This event isn't in your plan anymore.",
+      "noGuests": "Add guests first, then invite them to your events.",
+      "send": {
+        "one": "Invite 1 guest",
+        "other": "Invite {{count}} guests"
+      },
+      "tick": "Tick the people to invite"
+    }
+  },
+  "rsvp": {
+    "title": "You're invited",
+    "pageTitle": "You're invited · Wedded App",
+    "pageDescription": "Tell the family if you can come to each event.",
+    "notFound": "This RSVP link doesn't work",
+    "askFamily": "Ask the family who sent it for a new link.",
+    "hello": "Hello {{name}}",
+    "aWedding": "A family wedding",
+    "party": {
+      "one": "This invitation is for 1 person.",
+      "other": "This invitation is for {{count}} people."
+    },
+    "noEvents": "The family hasn't added you to an event yet. Please open this link again later.",
+    "question": "Will you come?",
+    "yes": "Yes, coming",
+    "no": "Can't come",
+    "howMany": "How many of you are coming?",
+    "directions": "Directions",
+    "send": "Send my answers",
+    "saved": "Thank you! Your answers are saved and the family can see them. You can change them here any time."
+  },
   "groupChat": {
     "title": "Family chats",
     "planBody": "Chat with family and friends about the wedding, all in one place. Write @Wed to ask Wed for help.",
