@@ -25,7 +25,7 @@ import { readFileSync } from 'node:fs';
 import type { SupabaseClient } from '@supabase/supabase-js';
 
 import { connect, fail } from './connect';
-import { parseVendorFile, type VendorInput } from './vendor-file';
+import { HALL_FACT_KEYS, parseVendorFile, type VendorInput } from './vendor-file';
 
 function point(latitude: number, longitude: number): string {
   return `SRID=4326;POINT(${longitude} ${latitude})`;
@@ -77,10 +77,20 @@ function vendorRecord(row: VendorInput['row'], citySlug: string, location: strin
     price_from,
     price_to,
     source,
+    details,
     ...rest
   } = row as Record<string, unknown>;
   const record: Record<string, unknown> = {
     ...rest,
+    // Hall facts go to set_hall_facts(); the rest are the type's own details
+    details:
+      details === undefined
+        ? undefined
+        : Object.fromEntries(
+            Object.entries(details as Record<string, unknown>).filter(
+              ([key]) => !HALL_FACT_KEYS.includes(key),
+            ),
+          ),
     base_city_slug: citySlug,
     location,
     public_address: address_line,
@@ -231,6 +241,19 @@ async function write(supabase: SupabaseClient, vendors: VendorInput[], checked: 
     if (error) fail(`Could not save ${slug}: ${error.message}`);
     const id = data.id as string;
     ids.set(slug, id);
+
+    const hallFacts = Object.fromEntries(
+      Object.entries((vendor.row.details ?? {}) as Record<string, unknown>).filter(([key]) =>
+        HALL_FACT_KEYS.includes(key),
+      ),
+    );
+    if (Object.keys(hallFacts).length > 0) {
+      const { error: factsError } = await supabase.rpc('set_hall_facts', {
+        p_vendor_id: id,
+        p_facts: hallFacts,
+      });
+      if (factsError) fail(`Could not save ${slug}'s hall facts: ${factsError.message}`);
+    }
 
     // Contacts: a field left out keeps its contact, null removes it
     for (const [field, kind] of Object.entries(CONTACT_KINDS)) {

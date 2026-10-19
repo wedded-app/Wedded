@@ -74,7 +74,7 @@ export function compareRows(
             : t('vendor.facts.byob')
           : v.facts.alcoholPolicy === 'full_bar'
             ? t('vendor.facts.fullBar')
-            : v.facts.alcoholPolicy === 'none'
+            : v.facts.alcoholPolicy === 'dry'
               ? t('vendor.facts.noAlcohol')
               : null,
       ),

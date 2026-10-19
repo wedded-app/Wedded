@@ -2930,6 +2930,134 @@ export type Database = {
           },
         ];
       };
+      venue_policies: {
+        Row: {
+          alcohol_policy: string | null;
+          bartender_required: boolean | null;
+          cold_sparks_allowed: boolean | null;
+          corkage_cents: number | null;
+          created_at: string;
+          deposit_percent: number | null;
+          dhol_outside_allowed: boolean | null;
+          ghori_allowed: boolean | null;
+          in_house_catering: string | null;
+          min_guests: number | null;
+          music_curfew: string | null;
+          outside_catering: string | null;
+          parking_spaces: number | null;
+          per_plate_min_cents: number | null;
+          rental_fees: Json | null;
+          same_day_two_events: boolean | null;
+          security_rule: string | null;
+          tour_booking: string | null;
+          updated_at: string;
+          vendor_id: string;
+        };
+        Insert: {
+          alcohol_policy?: string | null;
+          bartender_required?: boolean | null;
+          cold_sparks_allowed?: boolean | null;
+          corkage_cents?: number | null;
+          created_at?: string;
+          deposit_percent?: number | null;
+          dhol_outside_allowed?: boolean | null;
+          ghori_allowed?: boolean | null;
+          in_house_catering?: string | null;
+          min_guests?: number | null;
+          music_curfew?: string | null;
+          outside_catering?: string | null;
+          parking_spaces?: number | null;
+          per_plate_min_cents?: number | null;
+          rental_fees?: Json | null;
+          same_day_two_events?: boolean | null;
+          security_rule?: string | null;
+          tour_booking?: string | null;
+          updated_at?: string;
+          vendor_id: string;
+        };
+        Update: {
+          alcohol_policy?: string | null;
+          bartender_required?: boolean | null;
+          cold_sparks_allowed?: boolean | null;
+          corkage_cents?: number | null;
+          created_at?: string;
+          deposit_percent?: number | null;
+          dhol_outside_allowed?: boolean | null;
+          ghori_allowed?: boolean | null;
+          in_house_catering?: string | null;
+          min_guests?: number | null;
+          music_curfew?: string | null;
+          outside_catering?: string | null;
+          parking_spaces?: number | null;
+          per_plate_min_cents?: number | null;
+          rental_fees?: Json | null;
+          same_day_two_events?: boolean | null;
+          security_rule?: string | null;
+          tour_booking?: string | null;
+          updated_at?: string;
+          vendor_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'venue_policies_vendor_id_fkey';
+            columns: ['vendor_id'];
+            isOneToOne: true;
+            referencedRelation: 'vendors';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      venue_rooms: {
+        Row: {
+          ceiling_ft: number | null;
+          combines_with_id: string | null;
+          created_at: string;
+          id: string;
+          name: string;
+          seated: number | null;
+          standing: number | null;
+          updated_at: string;
+          vendor_id: string;
+        };
+        Insert: {
+          ceiling_ft?: number | null;
+          combines_with_id?: string | null;
+          created_at?: string;
+          id?: string;
+          name: string;
+          seated?: number | null;
+          standing?: number | null;
+          updated_at?: string;
+          vendor_id: string;
+        };
+        Update: {
+          ceiling_ft?: number | null;
+          combines_with_id?: string | null;
+          created_at?: string;
+          id?: string;
+          name?: string;
+          seated?: number | null;
+          standing?: number | null;
+          updated_at?: string;
+          vendor_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'venue_rooms_combines_with_id_fkey';
+            columns: ['combines_with_id'];
+            isOneToOne: false;
+            referencedRelation: 'venue_rooms';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'venue_rooms_vendor_id_fkey';
+            columns: ['vendor_id'];
+            isOneToOne: false;
+            referencedRelation: 'vendors';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
       wedding_cultures: {
         Row: {
           created_at: string;
@@ -4182,6 +4310,7 @@ export type Database = {
         Args: { p_guest_ids: string[]; p_list_id: string };
         Returns: undefined;
       };
+      set_hall_facts: { Args: { p_facts: Json; p_vendor_id: string }; Returns: undefined };
       set_vault_settings: {
         Args: {
           p_guests_see_all?: boolean;

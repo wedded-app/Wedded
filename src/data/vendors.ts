@@ -47,12 +47,13 @@ export type VendorPrice =
   | { kind: 'packages' }
   | { kind: 'contact' };
 
-/** Hall facts from vendors.details; each is missing when the vendor didn't say. */
+/** Hall facts from venue_policies and venue_rooms; each is missing when the hall didn't say. */
 export type HallFacts = {
+  /** The biggest room's seats. */
   seatedCapacity?: number;
   /** yes, approved_list or no */
   outsideCatering?: string;
-  /** byob, full_bar or none */
+  /** full_bar, beer_wine, byob or dry */
   alcoholPolicy?: string;
   /** Corkage fee in dollars, with byob. */
   corkage?: number;
@@ -116,19 +117,26 @@ function priceOf(row: {
   }
 }
 
-function factsOf(details: unknown): HallFacts {
-  if (typeof details !== 'object' || details === null || Array.isArray(details)) return {};
-  const d = details as Record<string, unknown>;
-  const num = (value: unknown) => (typeof value === 'number' ? value : undefined);
-  const str = (value: unknown) => (typeof value === 'string' ? value : undefined);
+type PolicyRow = {
+  outside_catering: string | null;
+  alcohol_policy: string | null;
+  corkage_cents: number | null;
+  ghori_allowed: boolean | null;
+  music_curfew: string | null;
+  parking_spaces: number | null;
+};
+
+function factsOf(policies: PolicyRow | null, rooms: { seated: number | null }[]): HallFacts {
+  const seats = rooms.flatMap((room) => (room.seated === null ? [] : [room.seated]));
   return {
-    seatedCapacity: num(d.seated_capacity),
-    outsideCatering: str(d.outside_catering),
-    alcoholPolicy: str(d.alcohol_policy),
-    corkage: num(d.corkage),
-    ghoriAllowed: typeof d.ghori_allowed === 'boolean' ? d.ghori_allowed : undefined,
-    curfew: str(d.curfew),
-    parkingSpaces: num(d.parking_spaces),
+    seatedCapacity: seats.length > 0 ? Math.max(...seats) : undefined,
+    outsideCatering: policies?.outside_catering ?? undefined,
+    alcoholPolicy: policies?.alcohol_policy ?? undefined,
+    corkage: policies?.corkage_cents == null ? undefined : policies.corkage_cents / 100,
+    ghoriAllowed: policies?.ghori_allowed ?? undefined,
+    // "01:00:00" from the database; the screens take "01:00"
+    curfew: policies?.music_curfew?.slice(0, 5) ?? undefined,
+    parkingSpaces: policies?.parking_spaces ?? undefined,
   };
 }
 
@@ -136,7 +144,7 @@ async function fetchVendor(slug: string): Promise<VendorProfile | null> {
   const { data, error } = await supabase
     .from('vendors')
     .select(
-      'id, slug, name, tagline, bio, base_city:cities(name), public_address, service_radius_miles, will_travel, travel_fee_note, vendor_contacts(kind, value), vendor_languages(language:languages(name, sort_order)), price_display, price_from_cents, price_to_cents, price_unit, price_note, founding_number, is_sample, details, vendor_categories(position, category:categories(slug, name, group_slug))',
+      'id, slug, name, tagline, bio, base_city:cities(name), public_address, service_radius_miles, will_travel, travel_fee_note, vendor_contacts(kind, value), vendor_languages(language:languages(name, sort_order)), price_display, price_from_cents, price_to_cents, price_unit, price_note, founding_number, is_sample, venue_policies(outside_catering, alcohol_policy, corkage_cents, ghori_allowed, music_curfew, parking_spaces), venue_rooms(seated), vendor_categories(position, category:categories(slug, name, group_slug))',
     )
     .eq('slug', slug)
     .maybeSingle();
@@ -167,7 +175,7 @@ async function fetchVendor(slug: string): Promise<VendorProfile | null> {
     priceNote: data.price_note,
     foundingNumber: data.founding_number,
     isSample: data.is_sample,
-    facts: factsOf(data.details),
+    facts: factsOf(data.venue_policies, data.venue_rooms),
     categories: [...data.vendor_categories]
       .sort((a, b) => a.position - b.position)
       .map((link) => ({

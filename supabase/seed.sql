@@ -701,3 +701,22 @@ from menus
 join seed_menus m on m.vendor_id = menus.vendor_id and m.name = menus.name
 cross join lateral jsonb_array_elements(m.sections) with ordinality as s (value, ordinality)
 cross join lateral jsonb_array_elements(s.value -> 'items') with ordinality as i (value, ordinality);
+
+-- Hall facts are written in details above, the way a founder's vendor file
+-- has them; they move into venue_policies and each hall's main room
+select private.set_hall_facts(v.id, v.details)
+from public.vendors v
+where exists (
+    select 1 from public.vendor_categories vc join public.categories c on c.slug = vc.category_slug
+    where vc.vendor_id = v.id and c.group_slug = 'venues')
+  and v.details ?| array['seated_capacity', 'in_house_catering', 'outside_catering', 'alcohol_policy',
+    'corkage', 'security_required', 'ghori_allowed', 'dhol_outside_allowed', 'curfew', 'min_headcount',
+    'parking_spaces'];
+
+update public.vendors v
+set details = details - array['seated_capacity', 'in_house_catering', 'outside_catering', 'alcohol_policy',
+  'corkage', 'security_required', 'ghori_allowed', 'dhol_outside_allowed', 'curfew', 'min_headcount',
+  'parking_spaces']
+where exists (
+    select 1 from public.vendor_categories vc join public.categories c on c.slug = vc.category_slug
+    where vc.vendor_id = v.id and c.group_slug = 'venues');
