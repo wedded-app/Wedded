@@ -18,20 +18,18 @@ export type VendorLead = {
   instagramHandle?: string;
   /** Set for "Claim your profile". */
   claimedVendorId?: string;
-  language: 'en';
 };
 
 async function submitVendorLead(lead: VendorLead) {
   const { error } = await supabase.from('vendor_leads').insert({
-    kind: lead.claimedVendorId ? 'claim' : 'new_listing',
-    claimed_vendor_id: lead.claimedVendorId ?? null,
+    kind: lead.claimedVendorId ? 'claim' : 'signup',
+    vendor_id: lead.claimedVendorId ?? null,
     business_name: lead.businessName,
     contact_name: lead.contactName,
     category: lead.category || null,
     city: lead.city,
     phone: lead.phone,
-    instagram_handle: lead.instagramHandle || null,
-    language: lead.language,
+    instagram: lead.instagramHandle || null,
   });
   if (error) throw error;
 }
