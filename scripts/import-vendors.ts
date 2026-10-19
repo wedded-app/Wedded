@@ -29,7 +29,7 @@ function point(latitude: number, longitude: number): string {
   return `SRID=4326;POINT(${longitude} ${latitude})`;
 }
 
-type City = { slug: string; name: string; aliases: string[]; latitude: number; longitude: number };
+type City = { slug: string; name: string; nicknames: string[]; latitude: number; longitude: number };
 
 function findCity(cities: City[], name: string): City | undefined {
   const wanted = name.trim().toLowerCase();
@@ -37,7 +37,7 @@ function findCity(cities: City[], name: string): City | undefined {
     (city) =>
       city.name.toLowerCase() === wanted ||
       city.slug === wanted ||
-      city.aliases.some((alias) => alias.toLowerCase() === wanted),
+      city.nicknames.some((alias) => alias.toLowerCase() === wanted),
   );
 }
 
@@ -54,7 +54,7 @@ async function selectAll<T>(
 /** Checks that need the database. Returns the map point for each vendor. */
 async function checkAgainstDatabase(supabase: SupabaseClient, vendors: VendorInput[]) {
   const [cities, categories, events] = await Promise.all([
-    selectAll<City>(supabase, 'cities', 'slug, name, aliases, latitude, longitude'),
+    selectAll<City>(supabase, 'cities', 'slug, name, nicknames, latitude, longitude'),
     selectAll<{ slug: string }>(supabase, 'categories', 'slug'),
     selectAll<{ slug: string }>(supabase, 'events', 'slug'),
   ]);

@@ -173,42 +173,53 @@ export type Database = {
       };
       cities: {
         Row: {
-          aliases: string[];
           area_code: string;
-          census_geoid: string | null;
           created_at: string;
           latitude: number;
           location: unknown;
           longitude: number;
           name: string;
+          nicknames: string[];
+          region_slug: string;
           slug: string;
+          state: string;
           updated_at: string;
         };
         Insert: {
-          aliases?: string[];
           area_code: string;
-          census_geoid?: string | null;
           created_at?: string;
           latitude: number;
           location?: never;
           longitude: number;
           name: string;
+          nicknames?: string[];
+          region_slug: string;
           slug: string;
+          state?: string;
           updated_at?: string;
         };
         Update: {
-          aliases?: string[];
           area_code?: string;
-          census_geoid?: string | null;
           created_at?: string;
           latitude?: number;
           location?: never;
           longitude?: number;
           name?: string;
+          nicknames?: string[];
+          region_slug?: string;
           slug?: string;
+          state?: string;
           updated_at?: string;
         };
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: 'cities_region_slug_fkey';
+            columns: ['region_slug'];
+            isOneToOne: false;
+            referencedRelation: 'regions';
+            referencedColumns: ['slug'];
+          },
+        ];
       };
       conversations: {
         Row: {
@@ -1360,6 +1371,36 @@ export type Database = {
             referencedColumns: ['id'];
           },
         ];
+      };
+      regions: {
+        Row: {
+          created_at: string;
+          is_live: boolean;
+          launch_vendor_target: number;
+          name: NonNullable<Json>;
+          slug: string;
+          sort_order: number;
+          updated_at: string;
+        };
+        Insert: {
+          created_at?: string;
+          is_live?: boolean;
+          launch_vendor_target?: number;
+          name: NonNullable<Json>;
+          slug: string;
+          sort_order: number;
+          updated_at?: string;
+        };
+        Update: {
+          created_at?: string;
+          is_live?: boolean;
+          launch_vendor_target?: number;
+          name?: NonNullable<Json>;
+          slug?: string;
+          sort_order?: number;
+          updated_at?: string;
+        };
+        Relationships: [];
       };
       request_proposals: {
         Row: {
@@ -2618,24 +2659,35 @@ export type Database = {
       };
       zip_codes: {
         Row: {
+          city_slug: string | null;
           latitude: number;
           location: unknown;
           longitude: number;
           zip: string;
         };
         Insert: {
+          city_slug?: string | null;
           latitude: number;
           location?: never;
           longitude: number;
           zip: string;
         };
         Update: {
+          city_slug?: string | null;
           latitude?: number;
           location?: never;
           longitude?: number;
           zip?: string;
         };
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: 'zip_codes_city_slug_fkey';
+            columns: ['city_slug'];
+            isOneToOne: false;
+            referencedRelation: 'cities';
+            referencedColumns: ['slug'];
+          },
+        ];
       };
     };
     Views: {
