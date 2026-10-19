@@ -13,11 +13,20 @@ import { StateView } from '@/components/state-view';
 import { VaultIcon } from '@/components/vault-icon';
 import { appLink } from '@/constants/links';
 import { makeStyles, Radius, Spacing, useColors } from '@/constants/theme';
-import { useAcceptVaultInvite, useVaultInvitePreview } from '@/data/memory-vault';
-import { joinErrorKind } from '@/data/wedding';
+import { useAcceptVaultInvite, useVaultInvitePreview, vaultProblem } from '@/data/memory-vault';
 import { useSession } from '@/features/auth/session';
 import { useLocale } from '@/i18n/locale-context';
 import { successHaptic } from '@/lib/haptics';
+
+// What joining can run into; anything else reads as "didn't work, try again"
+const JOIN_ERRORS: string[] = [
+  'revoked',
+  'expired',
+  'usedUp',
+  'notFound',
+  'tooManyVaults',
+  'offline',
+];
 
 /**
  * A guest joining the couple's Memory Vault from the link or the QR card on
@@ -44,7 +53,12 @@ export default function JoinVaultScreen() {
         // The vault opens on today's event by itself (the preview has no dates)
         router.replace({ pathname: '/vault/[id]', params: { id: vaultId, add: '1' } });
       },
-      onError: (e) => setError(t(`join.errors.${joinErrorKind(e)}`)),
+      onError: (e) => {
+        const problem = vaultProblem(e);
+        setError(
+          t(`memoryVault.join.errors.${JOIN_ERRORS.includes(problem) ? problem : 'failed'}`),
+        );
+      },
     });
   };
 

@@ -35,11 +35,11 @@ export default function VaultSettingsScreen() {
 
   return (
     <Screen edges={['top', 'bottom']}>
-      <SheetHeader onClose={close} title={t('memoryVault.settings.title')} />
+      <SheetHeader onClose={close} title={t('memoryVault.title')} />
       {vault.isPending ? (
         <StateView state="loading" />
       ) : vault.data?.role !== 'couple' ? (
-        <StateView state="empty" message={t('memoryVault.notFound')} />
+        <StateView state="empty" icon="lock-closed-outline" message={t('memoryVault.notFound')} />
       ) : (
         <Settings vault={vault.data} />
       )}
@@ -121,7 +121,7 @@ function Settings({ vault }: { vault: MemoryVault }) {
         </AppText>
       )}
 
-      <ListSection header={t('memoryVault.settings.title')}>
+      <ListSection header={t('memoryVault.settings.section')}>
         {SETTINGS.map((setting) => (
           <ListRow
             key={setting}

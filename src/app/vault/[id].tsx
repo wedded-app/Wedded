@@ -64,6 +64,7 @@ export default function VaultScreen() {
     body = (
       <StateView
         state="empty"
+        icon="lock-closed-outline"
         message={t('memoryVault.signIn')}
         action={{ label: t('profile.account.signIn'), onPress: () => requireSignIn(() => {}) }}
       />
@@ -76,6 +77,7 @@ export default function VaultScreen() {
     body = (
       <StateView
         state="empty"
+        icon="lock-closed-outline"
         message={t('memoryVault.notFound')}
         action={{ label: t('common.goHome'), onPress: () => router.replace('/') }}
       />
@@ -325,6 +327,7 @@ function Vault({
       ) : list.length === 0 ? (
         <StateView
           state="empty"
+          icon="images-outline"
           message={
             event
               ? t('memoryVault.emptyEvent', { event: localized(event.name) })
@@ -415,13 +418,20 @@ function Tile({ item, spoken, onPress }: { item: VaultItem; spoken: string; onPr
       onPress={onPress}
       style={({ pressed }) => [styles.tile, pressed && styles.pressed]}
     >
-      <Image
-        source={{ uri: item.thumbUrl }}
-        contentFit="cover"
-        recyclingKey={item.id}
-        style={[styles.image, item.hidden && styles.hidden]}
-        accessible={false}
-      />
+      {item.thumbUrl ? (
+        <Image
+          source={{ uri: item.thumbUrl }}
+          contentFit="cover"
+          recyclingKey={item.id}
+          style={[styles.image, item.hidden && styles.hidden]}
+          accessible={false}
+        />
+      ) : (
+        // A clip whose still couldn't be made
+        <View style={[styles.image, styles.noThumb]}>
+          <Icon name="film-outline" size={28} color={Colors.text2} />
+        </View>
+      )}
       {item.kind === 'video' && item.durationMs != null && (
         <View style={styles.badge}>
           <Icon name="play" size={11} color={Colors.onPrimary} />
@@ -453,7 +463,7 @@ function Vendors({ vaultId }: { vaultId: string }) {
     <ListSection inset header={t('memoryVault.vendors')}>
       {vendors.data.map((vendor) => (
         <ListRow
-          key={vendor.vendorId}
+          key={vendor.id}
           icon="storefront-outline"
           title={vendor.name}
           subtitle={[...vendor.categorySlugs.map(categoryName), vendor.city]
@@ -551,6 +561,10 @@ const useStyles = makeStyles((Colors) => ({
   hidden: {
     opacity: 0.4,
   },
+  noThumb: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   badge: {
     position: 'absolute',
     right: Spacing.xs,
@@ -591,7 +605,9 @@ const useStyles = makeStyles((Colors) => ({
     justifyContent: 'center',
     backgroundColor: Colors.primaryTint,
   },
+  // A text button's own padding would indent it from the words above
   planButton: {
     alignSelf: 'flex-start',
+    marginLeft: -Spacing.lg,
   },
 }));

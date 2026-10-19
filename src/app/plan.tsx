@@ -258,9 +258,10 @@ export default function PlanScreen() {
               subtitle={
                 vault.data
                   ? t('memoryVault.count', { count: vault.data.itemCount })
-                  : t('memoryVault.openBody')
+                  : openVault.isPending
+                    ? t('memoryVault.opening')
+                    : t('memoryVault.openBody')
               }
-              value={openVault.isPending ? t('memoryVault.opening') : undefined}
               onPress={openTheVault}
             />
           </ListSection>

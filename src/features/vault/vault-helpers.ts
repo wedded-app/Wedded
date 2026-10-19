@@ -14,8 +14,8 @@ export function todaysEvent<T extends { date: string | null }>(
   return events.find((event) => event.date === today);
 }
 
-/** The file name to save a vault item under, keeping its extension so Photos knows the kind. */
-export function savedName(id: string, url: string, kind: 'photo' | 'video'): string {
-  const ext = /\.(\w{3,4})$/.exec(url.split('?')[0] ?? '')?.[1];
+/** The file name to save a vault item under, keeping its file's extension so Photos knows the kind. */
+export function savedName(id: string, path: string, kind: 'photo' | 'video'): string {
+  const ext = /\.(\w{3,4})$/.exec(path.split('?')[0] ?? '')?.[1];
   return `vault-${id}.${ext ?? (kind === 'video' ? 'mp4' : 'jpg')}`;
 }

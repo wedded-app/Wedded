@@ -25,8 +25,11 @@ describe('todaysEvent', () => {
 });
 
 describe('savedName', () => {
-  it('keeps the extension from a signed link', () => {
-    expect(savedName('x', 'https://s3/v/u/x.mov?X-Amz-Signature=abc', 'video')).toBe('vault-x.mov');
+  it('keeps the extension of the stored file', () => {
+    expect(savedName('x', 'vault/user/x/video.mov', 'video')).toBe('vault-x.mov');
+    expect(savedName('x', 'https://s3/v/u/x/photo.jpg?X-Amz-Signature=abc', 'photo')).toBe(
+      'vault-x.jpg',
+    );
   });
   it('falls back by kind', () => {
     expect(savedName('x', 'https://cdn/render/x', 'photo')).toBe('vault-x.jpg');

@@ -1042,14 +1042,20 @@
     "problems": {
       "locked": "The couple has closed the vault to new photos.",
       "tooBig": {
-        "one": "1 was too big. Photos can be up to 15 MB and videos up to 100 MB.",
-        "other": "{{count}} were too big. Photos can be up to 15 MB and videos up to 100 MB."
+        "one": "1 video was too big. Videos can be up to 50 MB.",
+        "other": "{{count}} videos were too big. Videos can be up to 50 MB."
       },
       "tooLong": {
         "one": "1 video is longer than 60 seconds. Trim it in Photos, then add it.",
         "other": "{{count}} videos are longer than 60 seconds. Trim them in Photos, then add them."
       },
-      "tooMany": "You've added the most one guest can, 300.",
+      "tooMany": "You've added as many as one person can.",
+      "full": "The Memory Vault is full.",
+      "notAllowed": "You can't add to this Memory Vault. Ask the couple for a new link.",
+      "offline": {
+        "one": "1 didn't go in because you're offline. Check your internet, then try again.",
+        "other": "{{count}} didn't go in because you're offline. Check your internet, then try again."
+      },
       "failed": {
         "one": "1 didn't go in. Check your internet, then try again.",
         "other": "{{count}} didn't go in. Check your internet, then try again."
@@ -1103,6 +1109,7 @@
     },
     "settings": {
       "title": "Memory Vault settings",
+      "section": "Settings",
       "invite": "Invite guests",
       "inviteFooter": "Guests who join see only the Memory Vault, never your plan or your chats.",
       "share": "Share the link",
@@ -1125,7 +1132,16 @@
       "join": "Join and add photos",
       "openInApp": "Open in the Wedded app",
       "needsApp": "Adding photos needs the Wedded app. It's free on iPhone and Android.",
-      "askForNewLink": "Ask the couple for a new link."
+      "askForNewLink": "Ask the couple for a new link.",
+      "errors": {
+        "revoked": "This link was stopped. Ask the couple for a new one.",
+        "expired": "This link has expired. Ask the couple for a new one.",
+        "usedUp": "This link has been used up. Ask the couple for a new one.",
+        "notFound": "This link doesn't work. Ask the couple for a new one.",
+        "tooManyVaults": "You're already in 50 Memory Vaults. Leave one to join this.",
+        "offline": "You're offline. Check your internet, then try again.",
+        "failed": "Joining didn't work. Check your internet, then try again."
+      }
     }
   },
   "groupChat": {

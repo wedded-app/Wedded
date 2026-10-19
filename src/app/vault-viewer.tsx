@@ -4,13 +4,20 @@ import { StatusBar } from 'expo-status-bar';
 import { useVideoPlayer, VideoView } from 'expo-video';
 import { useEffect, useState } from 'react';
 import { Alert, FlatList, Platform, Pressable, View, type ViewStyle } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AppText, useFontScale } from '@/components/app-text';
 import { Icon, type IconName } from '@/components/icon';
 import { StateView } from '@/components/state-view';
 import { makeStyles, Radius, Sizes, Spacing, useColors } from '@/constants/theme';
-import { useHideVaultItem, useRemoveVaultItem, useVault, useVaultItems } from '@/data/memory-vault';
+import {
+  useHideVaultItem,
+  useRemoveVaultItem,
+  useVault,
+  useVaultItems,
+  useVaultMediaUrl,
+  type VaultItem,
+} from '@/data/memory-vault';
 import { saveMediaToPhotos } from '@/features/vault/save-media';
 import { useLocale } from '@/i18n/locale-context';
 import { successHaptic } from '@/lib/haptics';
@@ -19,11 +26,12 @@ import { successHaptic } from '@/lib/haptics';
  * A Memory Vault's photos and videos full screen on black: swipe sideways,
  * "3 / 48", who added it, Save to Photos. Whoever added one can delete it;
  * the couple can also hide any from guests. Close is always visible, as in
- * the vendor gallery. /vault-viewer?id={vault}&event={event id or ''}&index=…
+ * the vendor gallery. /vault-viewer?id={vault}&event={event slug or ''}&index=…
  */
 export default function VaultViewerScreen() {
   const Colors = useColors();
   const styles = useStyles();
+  const insets = useSafeAreaInsets();
   const router = useRouter();
   const { t } = useLocale();
   const scale = Math.min(useFontScale('body'), 1.4);
@@ -83,7 +91,8 @@ export default function VaultViewerScreen() {
   };
 
   return (
-    <SafeAreaView edges={['top', 'bottom']} style={styles.screen}>
+    // Insets from the root: SafeAreaView reads none inside a full-screen modal
+    <View style={[styles.screen, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
       <StatusBar style="light" />
       <View style={styles.top}>
         <Pressable
@@ -138,21 +147,15 @@ export default function VaultViewerScreen() {
             }}
             renderItem={({ item: it, index: i }) => (
               <View style={{ width, height: page.height }}>
-                {it.kind === 'video' && Math.abs(i - at) <= 1 ? (
-                  <VaultVideo url={it.url} playing={i === at} />
-                ) : (
-                  <Image
-                    source={{ uri: it.kind === 'video' ? it.thumbUrl : it.url }}
-                    placeholder={{ uri: it.thumbUrl }}
-                    contentFit="contain"
-                    accessible
-                    accessibilityLabel={t(
-                      it.kind === 'video' ? 'memoryVault.videoLabel' : 'memoryVault.photoLabel',
-                      { number: i + 1, name: it.addedByName ?? t('memoryVault.someone') },
-                    )}
-                    style={styles.photo}
-                  />
-                )}
+                <ViewerPage
+                  item={it}
+                  near={Math.abs(i - at) <= 1}
+                  playing={i === at}
+                  label={t(
+                    it.kind === 'video' ? 'memoryVault.videoLabel' : 'memoryVault.photoLabel',
+                    { number: i + 1, name: it.addedByName ?? t('memoryVault.someone') },
+                  )}
+                />
               </View>
             )}
             style={styles.list}
@@ -212,7 +215,41 @@ export default function VaultViewerScreen() {
           )}
         </View>
       )}
-    </SafeAreaView>
+    </View>
+  );
+}
+
+/**
+ * One photo or clip. The thumb shows at once; the full photo (or the clip)
+ * loads only for the one on screen and those either side, since each needs
+ * its own signed link.
+ */
+function ViewerPage({
+  item,
+  near,
+  playing,
+  label,
+}: {
+  item: VaultItem;
+  near: boolean;
+  playing: boolean;
+  label: string;
+}) {
+  const styles = useStyles();
+  const full = useVaultMediaUrl(near ? item.path : null);
+  if (item.kind === 'video' && full.data) {
+    return <VaultVideo url={full.data} playing={playing} />;
+  }
+  const photo = item.kind === 'photo' ? (full.data ?? item.thumbUrl) : item.thumbUrl;
+  return (
+    <Image
+      source={photo ? { uri: photo } : null}
+      placeholder={item.thumbUrl ? { uri: item.thumbUrl } : undefined}
+      contentFit="contain"
+      accessible
+      accessibilityLabel={label}
+      style={styles.photo}
+    />
   );
 }
 
