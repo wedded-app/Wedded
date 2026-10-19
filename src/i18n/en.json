@@ -281,6 +281,112 @@
     },
     "private": "Your card stays on this phone until you send it."
   },
+  "wedCards": {
+    "save": {
+      "one": "Save the card to Photos",
+      "other": "Save all {{count}} to Photos"
+    },
+    "saved": {
+      "one": "Saved to your Photos.",
+      "other": "All {{count}} saved to your Photos."
+    },
+    "none": "None of those events are in your plan yet. Add them in My Wedding, then ask me again."
+  },
+  "wedSend": {
+    "title": "Sending your cards",
+    "how": "How to send",
+    "vault": "Their link to your Memory Vault, to add the photos and videos they took. If the vault isn't open yet, sending opens it.",
+    "channels": {
+      "each": {
+        "title": "Text each person",
+        "body": "Each gets their own text, with their own link to say if they're coming.",
+        "vaultBody": "Each gets their own text with the vault's link."
+      },
+      "group": {
+        "title": "One group text",
+        "body": "One text to everyone at once. They all see each other's numbers."
+      },
+      "email": {
+        "title": "Email",
+        "body": "One email, with everyone on BCC so no one sees the others."
+      }
+    },
+    "list": {
+      "signedOut": "Sign in to see who's on your {{list}} list.",
+      "loading": "Finding your {{list}} list…",
+      "missing": "You don't have a list called {{list}} yet.",
+      "error": "Your guest list didn't load. Check your connection, then try again.",
+      "ready": {
+        "one": "{{list}} · 1 person",
+        "other": "{{list}} · {{count}} people"
+      }
+    },
+    "event": {
+      "signedOut": "Sign in to see who's invited to the {{event}}.",
+      "loading": "Finding who's invited to the {{event}}…",
+      "missing": "No one is invited to the {{event}} yet.",
+      "error": "Your guest list didn't load. Check your connection, then try again.",
+      "ready": {
+        "one": "Everyone at the {{event}} · 1 person",
+        "other": "Everyone at the {{event}} · {{count}} people"
+      }
+    },
+    "who": {
+      "list": "on your {{list}}",
+      "event": "at the {{event}}"
+    },
+    "names": {
+      "more": {
+        "one": "{{names}} and 1 more",
+        "other": "{{names}} and {{count}} more"
+      }
+    },
+    "noPhone": {
+      "one": "1 has no phone number, so won't get a text.",
+      "other": "{{count}} have no phone number, so won't get a text."
+    },
+    "noEmail": {
+      "one": "1 has no email, so won't get one.",
+      "other": "{{count}} have no email, so won't get one."
+    },
+    "progress": "Sending {{at}} of {{count}}",
+    "everyone": {
+      "one": "Sending to 1 person",
+      "other": "Sending to all {{count}} at once"
+    },
+    "textNext": "Text {{name}}",
+    "skip": "Skip {{name}}",
+    "stop": "Stop sending",
+    "open": {
+      "group": "Open Messages",
+      "email": "Open Mail"
+    },
+    "yourSend": {
+      "each": "Messages opens with it filled in. It only goes when you tap Send there.",
+      "group": "Messages opens with it filled in. It only goes when you tap Send there.",
+      "email": "Mail opens with it filled in. It only goes when you tap Send there."
+    },
+    "failed": "That didn't open. Try again.",
+    "done": "Done: {{sent}} of {{count}} sent",
+    "finish": "Done",
+    "gone": "This send isn't here any more. Ask Wed again.",
+    "nonePhone": "No one {{who}} has a phone number yet.",
+    "noneEmail": "No one {{who}} has an email yet.",
+    "unavailable": {
+      "each": "This phone can't send texts. Try again from a phone with Messages.",
+      "group": "This phone can't send texts. Try again from a phone with Messages.",
+      "email": "This phone has no email set up. Add an account in Mail, then try again."
+    },
+    "subject": "You're invited",
+    "vaultSubject": "Our Memory Vault",
+    "rsvpLine": "Tell us if you're coming: {{url}}",
+    "vaultLine": "Add yours here: {{url}}",
+    "receipt": {
+      "texted": "Texted {{sent}} of {{count}} {{who}}",
+      "emailed": "Emailed {{sent}} of {{count}} {{who}}",
+      "nothing": "Nothing went to anyone {{who}}"
+    }
+  },
   "forVendors": {
     "title": "List your business, free",
     "intro": "Listing your business on Wedded is free. Families browsing find you for exactly what you do. Leave your details and we'll call or text you to set up your page.",

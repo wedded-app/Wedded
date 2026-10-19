@@ -188,6 +188,8 @@ export type MockEvent = {
   slug: string;
   /** "Jun 10, 2027" */
   when: string;
+  /** What its invitation card says: the day (yyyy-mm-dd), the time and the place. */
+  card: { date: string; time: string; place: string };
   done: number;
   total: number;
   note: string;
@@ -201,6 +203,7 @@ export const EVENTS: MockEvent[] = [
     name: 'Roka',
     slug: 'roka',
     when: 'Mar 20, 2027',
+    card: { date: '2027-03-20', time: '11 in the morning', place: 'At home, Yuba City' },
     done: 2,
     total: 2,
     note: 'All booked',
@@ -210,6 +213,7 @@ export const EVENTS: MockEvent[] = [
     name: 'Mehndi',
     slug: 'mehndi',
     when: 'Jun 10, 2027',
+    card: { date: '2027-06-10', time: '6 in the evening', place: 'At home, Yuba City' },
     done: 0,
     total: 2,
     note: 'A tasting at Saffron Tandoor waits for your OK',
@@ -219,6 +223,7 @@ export const EVENTS: MockEvent[] = [
     name: 'Jaago',
     slug: 'jaago',
     when: 'Fri, Jun 12, 2027',
+    card: { date: '2027-06-12', time: '8 at night', place: 'At home, Yuba City' },
     done: 1,
     total: 3,
     note: 'Wed is finding a dhol player',
@@ -228,6 +233,7 @@ export const EVENTS: MockEvent[] = [
     name: 'Anand Karaj',
     slug: 'anand-karaj',
     when: 'Sat, Jun 13, 2027',
+    card: { date: '2027-06-13', time: '9:30 in the morning', place: 'Gurdwara Sahib, Yuba City' },
     done: 1,
     total: 2,
     note: 'Next: a photographer',
@@ -237,6 +243,11 @@ export const EVENTS: MockEvent[] = [
     name: 'Reception',
     slug: 'reception',
     when: 'Sat, Jun 13, 2027',
+    card: {
+      date: '2027-06-13',
+      time: '6 in the evening',
+      place: 'Royal Orchard Banquet Hall, Yuba City',
+    },
     done: 1,
     total: 3,
     note: 'Tour at Royal Orchard to book',
