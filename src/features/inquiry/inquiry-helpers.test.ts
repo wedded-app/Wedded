@@ -97,7 +97,7 @@ describe('suggestedMessage', () => {
         ],
       }),
     ).toBe(
-      "Sat Sri Akal, we're planning Jaago on Fri, Jun 11, 2027 and Anand Karaj on Sat, Jun 12, 2027 in Yuba City for about 100 to 250 guests. Could you share your price and whether you're available? Thank you.",
+      "Sat Sri Akal, we're planning our Jaago on Fri, Jun 11, 2027 and Anand Karaj on Sat, Jun 12, 2027 in Yuba City for about 100 to 250 guests. Could you share your price and whether you're available? Thank you.",
     );
   });
 
@@ -110,7 +110,7 @@ describe('suggestedMessage', () => {
         guests: '100_250',
       }),
     ).toBe(
-      "Sat Sri Akal, we're planning Jaago on Sat, Jun 12, 2027 in Yuba City for about 100 to 250 guests. Could you share your price and whether you're available? Thank you.",
+      "Sat Sri Akal, we're planning our Jaago on Sat, Jun 12, 2027 in Yuba City for about 100 to 250 guests. Could you share your price and whether you're available? Thank you.",
     );
   });
 

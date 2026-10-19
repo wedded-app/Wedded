@@ -291,6 +291,9 @@ export function TabBar({
           weight={selected ? 600 : 500}
           numberOfLines={1}
           maxFontSizeMultiplier={1.2}
+          // Settings' Extra large text scales past maxFontSizeMultiplier: shrink rather than cut "Requests"
+          adjustsFontSizeToFit
+          minimumFontScale={0.75}
           style={[styles.label, { color }]}
         >
           {spec.label}

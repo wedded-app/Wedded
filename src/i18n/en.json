@@ -725,6 +725,7 @@
       "withDate": "Sat Sri Akal, we're planning {{events}} on {{date}} in {{place}}. Could you share your price and whether you're available? Thank you.",
       "withGuests": "Sat Sri Akal, we're planning {{events}} in {{place}} for about {{guests}} guests. Could you share your price? Thank you.",
       "plain": "Sat Sri Akal, we're planning {{events}} in {{place}}. Could you share your price? Thank you.",
+      "our": "our {{events}}",
       "and": "and",
       "wedding": "a wedding",
       "ourCity": "our city",
@@ -813,6 +814,8 @@
     "items": {
       "profile": "Your name, city and phone",
       "saved": "Your saved vendors",
+      "posts": "Your reels and stories",
+      "wedding": "Your wedding plan, with its guest list and Memory Vault, unless family plan it with you. Then it stays with them.",
       "inquiries": "Your list of inquiries in the app"
     },
     "vendorsKeep": "Vendors you already asked keep the email you sent them. Nobody else sees your details.",
@@ -833,7 +836,7 @@
     "signInFirst": "Sign in to delete your account."
   },
   "myInquiries": {
-    "title": "My requests",
+    "title": "Vendors you asked",
     "empty": "You haven't asked any vendors yet. Tap \"Ask about price & date\" on a vendor to start.",
     "askedOn": "Asked on {{date}}",
     "viewVendor": "View vendor",

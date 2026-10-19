@@ -168,7 +168,7 @@ export default function DeleteAccountScreen() {
       <>
         <Card style={styles.list}>
           <AppText weight={700}>{t('deleteAccount.removes')}</AppText>
-          {['profile', 'saved', 'inquiries'].map((item) => (
+          {['profile', 'saved', 'inquiries', 'posts', 'wedding'].map((item) => (
             <View key={item} style={styles.row}>
               <Icon name="close-circle-outline" size={Sizes.iconSmall} color={Colors.error} />
               <AppText style={styles.grow}>{t(`deleteAccount.items.${item}`)}</AppText>

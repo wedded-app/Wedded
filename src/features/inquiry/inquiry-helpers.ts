@@ -83,9 +83,12 @@ export function suggestedMessage(
   },
 ): string {
   const joiner = t('inquiry.auto.and');
+  // "our Jaago and Anand Karaj", or "a wedding" when none is picked
   const events =
     parts.events.length > 0
-      ? parts.events.map((event) => localized(event)).join(` ${joiner} `)
+      ? t('inquiry.auto.our', {
+          events: parts.events.map((event) => localized(event)).join(` ${joiner} `),
+        })
       : t('inquiry.auto.wedding');
   const knownGuests = parts.guests && parts.guests !== 'not_sure' ? parts.guests : null;
   // "Jaago on Fri, Jun 11 and Anand Karaj on Sat, Jun 12"
@@ -96,7 +99,7 @@ export function suggestedMessage(
       )
       .join(` ${joiner} `);
     return t(`inquiry.auto.${knownGuests ? 'datesAndGuests' : 'dates'}`, {
-      dates,
+      dates: t('inquiry.auto.our', { events: dates }),
       place: parts.place.trim() || t('inquiry.auto.ourCity'),
       guests: knownGuests ? t(`inquiry.guestsInMessage.${knownGuests}`) : '',
     });
