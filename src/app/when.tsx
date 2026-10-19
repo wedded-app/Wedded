@@ -215,13 +215,14 @@ function WhenSteps() {
                       icon="location-outline"
                       label={city.name}
                       selected={place?.label === city.name}
-                      onPress={() =>
+                      onPress={() => {
+                        setTyped(city.name);
                         setPlace({
                           label: city.name,
                           latitude: city.latitude,
                           longitude: city.longitude,
-                        })
-                      }
+                        });
+                      }}
                     />
                   ))}
                   {matches.length === 0 &&

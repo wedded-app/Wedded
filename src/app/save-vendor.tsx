@@ -12,6 +12,7 @@ import { StateView } from '@/components/state-view';
 import { Sizes, Spacing, useColors } from '@/constants/theme';
 import { useHomeEvents } from '@/data/reference';
 import { useSavedEventsFor, useSaveVendor } from '@/data/saved';
+import { usePlan } from '@/features/planner/plan';
 import { type LocalizedText, localized } from '@/i18n/localized';
 import { useLocale } from '@/i18n/locale-context';
 import { saveHaptic } from '@/lib/haptics';
@@ -26,7 +27,10 @@ export default function SaveVendorScreen() {
   const { t } = useLocale();
   const { vendorId = '' } = useLocalSearchParams<{ vendorId?: string }>();
   const events = useHomeEvents();
+  const plan = usePlan();
   const savedFor = useSavedEventsFor(vendorId);
+  // With a plan, its events first; the tradition's others stay one tap away
+  const [showAll, setShowAll] = useState(false);
   const { saveFor, saving } = useSaveVendor();
   const [error, setError] = useState<string>();
 
@@ -47,8 +51,11 @@ export default function SaveVendorScreen() {
   } else if (events.isPending) {
     content = <StateView state="loading" />;
   } else {
+    const all = events.data.flatMap((section) => section.events);
+    const planned = all.filter((event) => plan.events.includes(event.slug));
+    const short = !showAll && planned.length > 0 && planned.length < all.length;
     const options: { slug: string | null; name: LocalizedText }[] = [
-      ...events.data.flatMap((section) => section.events),
+      ...(short ? planned : all),
       { slug: null, name: { en: t('saved.notSure') } },
     ];
     content = (
@@ -86,6 +93,15 @@ export default function SaveVendorScreen() {
             );
           })}
         </ListSection>
+        {short && (
+          <ListSection>
+            <ListRow
+              title={t('inquiry.otherEvents')}
+              titleVariant="bodyLg"
+              onPress={() => setShowAll(true)}
+            />
+          </ListSection>
+        )}
       </ScrollView>
     );
   }
