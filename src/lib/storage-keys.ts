@@ -9,6 +9,8 @@ export const StorageKeys = {
   haptics: 'settings.haptics',
   /** My Wedding planner, as JSON (src/features/planner). */
   weddingPlan: 'planner.wedding',
+  /** The date and guests told before signing in, as JSON (features/home/wedding-draft). */
+  weddingDraft: 'planner.draft',
   /** The welcome screen and first questions: "seen" (they chose to browse) or "done". */
   onboarding: 'settings.onboarding',
   /** Which side of the app this phone last chose: "business" or "planning" (features/business/app-mode). */

@@ -86,8 +86,8 @@ insert into public.vendor_activity_daily (vendor_id, day, kind, count) values
   ('be000000-0000-4000-8000-000000000012', pg_temp.today(), 'view', 2),
   ('be000000-0000-4000-8000-000000000013', pg_temp.today(), 'view', 3),
   ('be000000-0000-4000-8000-000000000014', pg_temp.today(), 'view', 4);
-insert into public.saved_vendors (user_id, vendor_id, event_slug) values
-  ('ae000000-0000-4000-8000-000000000001', 'be000000-0000-4000-8000-000000000001', 'reception');
+insert into public.saved_vendors (user_id, vendor_id) values
+  ('ae000000-0000-4000-8000-000000000001', 'be000000-0000-4000-8000-000000000001');
 
 -- Two inquiries today: family 1 heard back in 90 minutes and booked them;
 -- family 2 is still waiting

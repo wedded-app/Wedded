@@ -58,6 +58,8 @@ const light = {
   glassWeb: 'rgba(255, 255, 255, 0.62)',
   glassEdge: 'rgba(255, 255, 255, 0.7)',
   glassShadow: 'rgba(0, 0, 0, 0.12)',
+  // The soft pill behind the selected tab, on the glass bar
+  tabLens: 'rgba(118, 118, 128, 0.14)',
   // iOS 26's scroll edge effect behind the nav bar: the page colour fading out.
   scrollEdge:
     'linear-gradient(to bottom, rgba(242, 242, 247, 0.97) 0%, rgba(242, 242, 247, 0.9) 72%, rgba(242, 242, 247, 0) 100%)',
@@ -82,6 +84,13 @@ const light = {
   onHero: '#FFFFFF',
   onHero2: 'rgba(255, 255, 255, 0.86)', // secondary text on the card, 4.7:1 on heroTo
   heroTrack: 'rgba(255, 255, 255, 0.28)', // the empty part of its progress bar
+  // The wedding card on Home (OmbreCard): wine under drifting rose, blush and
+  // champagne light. The same in dark mode; white text sits on the wine.
+  ombreBase: '#5C0F20',
+  ombreWine: 'rgba(138, 28, 48, 0.95)',
+  ombreRose: 'rgba(230, 91, 122, 0.85)',
+  ombreBlush: 'rgba(247, 182, 194, 0.7)',
+  ombreGold: 'rgba(242, 194, 139, 0.45)',
   // The welcome screen and first questions: a plain white page (Fezy asked for
   // white), with grey cards on it instead of the usual grey page and white rows.
   canvas: '#FFFFFF',
@@ -155,6 +164,7 @@ const dark: Palette = {
   glassWeb: 'rgba(40, 40, 42, 0.55)',
   glassEdge: 'rgba(255, 255, 255, 0.12)',
   glassShadow: 'rgba(0, 0, 0, 0.5)',
+  tabLens: 'rgba(255, 255, 255, 0.16)',
   scrollEdge:
     'linear-gradient(to bottom, rgba(0, 0, 0, 0.95) 0%, rgba(0, 0, 0, 0.85) 72%, rgba(0, 0, 0, 0) 100%)',
   // canvas and bg are both black in dark mode, so the edges match.
@@ -174,6 +184,11 @@ const dark: Palette = {
   onHero: '#FFFFFF',
   onHero2: 'rgba(255, 255, 255, 0.86)',
   heroTrack: 'rgba(255, 255, 255, 0.24)',
+  ombreBase: '#5C0F20',
+  ombreWine: 'rgba(138, 28, 48, 0.95)',
+  ombreRose: 'rgba(230, 91, 122, 0.85)',
+  ombreBlush: 'rgba(247, 182, 194, 0.7)',
+  ombreGold: 'rgba(242, 194, 139, 0.45)',
   canvas: '#000000',
   canvasCard: '#1C1C1E',
   sand: '#2A2520',

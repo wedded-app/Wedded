@@ -15,12 +15,9 @@ import { AppText } from '@/components/app-text';
 import { Icon } from '@/components/icon';
 import { PressableScale } from '@/components/pressable-scale';
 import { ProgressRing } from '@/components/progress-ring';
-import { WeddingReel } from '@/components/wedding-reel';
 import { makeStyles, Radius, Sizes, Spacing, useColors } from '@/constants/theme';
 import type { FeedPost } from '@/data/feed';
-import { useSession } from '@/features/auth/session';
 import { formatDate } from '@/features/inquiry/inquiry-helpers';
-import { useStartPlanning } from '@/features/onboarding/start';
 import { gradient } from '@/features/planner/countdown-card';
 import { daysUntil } from '@/features/planner/plan';
 import type { usePlanView } from '@/features/planner/use-plan-view';
@@ -52,10 +49,10 @@ type PlanView = ReturnType<typeof usePlanView>;
  * The top of Home, edge to edge under the status bar. With a wedding in the
  * account it's that wedding: a photo (a vendor they booked, else a local
  * venue) slowly drifting closer, the countdown, the date and a ring that
- * fills as essentials are booked; the whole thing opens My Wedding. Before
- * there's a plan it's the welcome screen's weddings playing, with Plan your
- * wedding. While the account loads with nothing to stand in, it's the plain
- * maroon card, so nothing flashes.
+ * fills as essentials are booked; the whole thing opens My Wedding. While
+ * the account loads with nothing to stand in, it's the plain maroon card, so
+ * nothing flashes. Before there's a plan there's no cover: Home starts with
+ * the wedding card (DateCard) instead.
  */
 export function HomeCover({ view, posts }: { view: PlanView; posts: FeedPost[] }) {
   const Colors = useColors();
@@ -67,7 +64,7 @@ export function HomeCover({ view, posts }: { view: PlanView; posts: FeedPost[] }
     return <WeddingCover height={height} view={view} posts={posts} />;
   }
   if (loading) return <View style={[styles.cover, { height }, gradient(Colors)]} />;
-  return <StartCover height={height} />;
+  return null;
 }
 
 function WeddingCover({
@@ -186,42 +183,6 @@ function WeddingCover({
             </AppText>
           </PressableScale>
         )}
-      </Animated.View>
-    </View>
-  );
-}
-
-/** Before there's a plan: weddings playing, and the way in. */
-function StartCover({ height }: { height: number }) {
-  const Colors = useColors();
-  const local = useStyles();
-  const { t } = useLocale();
-  const { status } = useSession();
-  const startPlanning = useStartPlanning();
-
-  return (
-    <View style={[styles.cover, { height }, gradient(Colors)]}>
-      <WeddingReel />
-      <View style={[StyleSheet.absoluteFill, scrim]} />
-      <Animated.View entering={Motion.rise} style={local.bottom}>
-        <View style={local.words}>
-          <AppText variant="display" weight={800} color="onHero" serif accessibilityRole="header">
-            {t('planner.startCardTitle')}
-          </AppText>
-          <AppText variant="bodyLg" color="onHero2">
-            {t('planner.startCardBody')}
-          </AppText>
-        </View>
-        <PressableScale
-          accessibilityRole="button"
-          onPress={startPlanning}
-          pressedScale={0.96}
-          style={local.pill}
-        >
-          <AppText variant="button" weight={700} style={{ color: Colors.heroFrom }}>
-            {status === 'signedIn' ? t('planner.startPlanning') : t('planner.signInToPlan')}
-          </AppText>
-        </PressableScale>
       </Animated.View>
     </View>
   );

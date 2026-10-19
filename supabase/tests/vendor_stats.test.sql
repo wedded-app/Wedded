@@ -52,8 +52,8 @@ select is(
 
 -- Public stats -------------------------------------------------------------------------
 
-insert into public.saved_vendors (user_id, vendor_id, event_slug)
-select ('70000000-0000-4000-8000-00000000000' || n)::uuid, '60000000-0000-4000-8000-000000000001', 'reception'
+insert into public.saved_vendors (user_id, vendor_id)
+select ('70000000-0000-4000-8000-00000000000' || n)::uuid, '60000000-0000-4000-8000-000000000001'
 from generate_series(1, 4) as n;
 
 set local role anon;
@@ -64,9 +64,16 @@ select is(
 );
 reset role;
 
-insert into public.saved_vendors (user_id, vendor_id, event_slug) values
-  ('70000000-0000-4000-8000-000000000005', '60000000-0000-4000-8000-000000000001', 'reception'),
-  ('70000000-0000-4000-8000-000000000005', '60000000-0000-4000-8000-000000000001', 'jaago');
+-- The fifth family saves them for two of their wedding's events
+insert into public.weddings (id, created_by)
+values ('7a000000-0000-4000-8000-000000000005', '70000000-0000-4000-8000-000000000005');
+insert into public.wedding_events (wedding_id, event_slug) values
+  ('7a000000-0000-4000-8000-000000000005', 'reception'),
+  ('7a000000-0000-4000-8000-000000000005', 'jaago');
+insert into public.saved_vendors (user_id, vendor_id, wedding_id, wedding_event_id)
+select '70000000-0000-4000-8000-000000000005', '60000000-0000-4000-8000-000000000001', we.wedding_id, we.id
+from public.wedding_events we
+where we.wedding_id = '7a000000-0000-4000-8000-000000000005';
 
 set local role anon;
 select is(

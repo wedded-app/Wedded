@@ -65,7 +65,64 @@
     "familyEmpty": "When someone saves or loves a vendor, you'll see it here.",
     "inviteTitle": "Plan it with your family",
     "inviteBody": "Invite them to see the plan, save vendors and vote on favorites.",
-    "inviteButton": "Invite family"
+    "inviteButton": "Invite family",
+    "dateCard": {
+      "ask": "When's the wedding?",
+      "askKicker": "Tap to start your countdown",
+      "askLabel": "When's the wedding? Set your date",
+      "noDateYet": "Pick a date when you're ready",
+      "days": {
+        "one": "day to go",
+        "other": "days to go"
+      },
+      "until": "Until the wedding",
+      "untilIn": "Until the wedding · {{place}}",
+      "countingLabel": {
+        "one": "1 day until the wedding, {{date}}",
+        "other": "{{count}} days until the wedding, {{date}}"
+      },
+      "hint": "Opens three quick questions",
+      "today": "Today's the day",
+      "married": "Married!",
+      "save": "Save it and plan with your family"
+    },
+    "bookFirst": {
+      "title": "Book these first",
+      "toChoose": "{{shown}} to choose from",
+      "notBooked": "{{shown}} not booked on {{date}}",
+      "forEvents": {
+        "one": "Needed at 1 event",
+        "other": "Needed at {{count}} events"
+      },
+      "addDate": "Add your date to see who's free"
+    }
+  },
+  "when": {
+    "close": "Close",
+    "skip": "Skip",
+    "continue": "Continue",
+    "finish": "Show my wedding",
+    "stepOf": "{{step}} of {{total}}",
+    "yourWedding": "Your wedding",
+    "guests": "{{band}} guests",
+    "date": {
+      "title": "When's the wedding?",
+      "subtitle": "For your countdown, and to see who's free that day.",
+      "pick": "Pick the date",
+      "notYet": "We haven't picked a date yet",
+      "notYetDetail": "That's fine. Add it any time."
+    },
+    "place": {
+      "title": "Where's it happening?",
+      "subtitle": "So we show vendors near you first.",
+      "typeLabel": "Town or city",
+      "typePlaceholder": "Yuba City, Fremont, Fresno…",
+      "areaCode": "Area code {{code}}"
+    },
+    "guestsStep": {
+      "title": "About how many guests?",
+      "subtitle": "Halls show only if they fit everyone. A guess is fine."
+    }
   },
   "event": {
     "needsTitle": "Vendors you'll need",

@@ -6,8 +6,9 @@
 import { useSyncExternalStore } from 'react';
 
 import type { GuestBand } from '@/data/inquiries';
+import { getWeddingDraft } from '@/features/home/wedding-draft';
 
-/** Who the wedding is for, as weddings.planning_for stores it. */
+/** Who the wedding is for, as profiles.planning_for stores it. */
 export type PlanningFor = 'self' | 'child' | 'sibling' | 'relative' | 'friend';
 
 export type Answers = {
@@ -45,19 +46,31 @@ const EMPTY: Answers = {
   citySlug: null,
 };
 
-let answers: Answers = EMPTY;
+/** A fresh start, with the date and guests they gave before signing in (Home's wedding card). */
+function startingAnswers(): Answers {
+  const draft = getWeddingDraft();
+  return {
+    ...EMPTY,
+    weddingDate: draft.date,
+    noDateYet: draft.noDateYet,
+    guestBand: draft.guestBand,
+  };
+}
+
+let answers: Answers | null = null;
 const listeners = new Set<() => void>();
 
 export function setAnswers(change: Partial<Answers>) {
-  answers = { ...answers, ...change };
+  answers = { ...getAnswers(), ...change };
   listeners.forEach((listener) => listener());
 }
 
 export function resetAnswers() {
-  setAnswers(EMPTY);
+  setAnswers(startingAnswers());
 }
 
 export function getAnswers(): Answers {
+  answers ??= startingAnswers();
   return answers;
 }
 

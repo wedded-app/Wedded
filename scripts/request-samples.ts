@@ -326,7 +326,7 @@ async function main() {
   async function weddingFor(userId: string, title: string, days: number): Promise<string> {
     const { data, error } = await db
       .from('weddings')
-      .insert({ title, wedding_date: laDate(days), planning_for: 'self', created_by: userId })
+      .insert({ title, wedding_date: laDate(days), created_by: userId })
       .select('id')
       .single();
     if (error) fail(`Couldn't make ${title}: ${error.message}`);
@@ -334,6 +334,12 @@ async function main() {
       .from('wedding_members')
       .upsert({ wedding_id: data.id, user_id: userId, role: 'owner' });
     if (memberError) fail(memberError.message);
+    const { error: sidesError } = await db.from('wedding_sides').insert([
+      { wedding_id: data.id, side_key: 'a', label: "Bride's side" },
+      { wedding_id: data.id, side_key: 'b', label: "Groom's side" },
+    ]);
+    if (sidesError) fail(sidesError.message);
+    await db.from('profiles').update({ planning_for: 'self' }).eq('id', userId);
     return data.id;
   }
 
