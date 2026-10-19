@@ -98,7 +98,7 @@ export function useReact(weddingId: string) {
             p_reaction: reaction,
           })
         : await supabase
-            .from('wedding_reactions')
+            .from('shortlist_reactions')
             .delete()
             .eq('wedding_id', weddingId)
             .eq('vendor_id', vendorId)

@@ -158,6 +158,7 @@ function AppShell() {
           <Stack.Screen name="onboarding" options={{ animation: 'fade', gestureEnabled: false }} />
           <Stack.Screen name="sign-in" options={{ presentation: 'modal' }} />
           <Stack.Screen name="phone-sign-in" options={{ presentation: 'fullScreenModal' }} />
+          <Stack.Screen name="when" options={{ presentation: 'fullScreenModal' }} />
           <Stack.Screen name="save-vendor" options={{ presentation: 'modal' }} />
           <Stack.Screen name="suggest" options={{ presentation: 'modal' }} />
           <Stack.Screen name="group-new" options={{ presentation: 'modal' }} />

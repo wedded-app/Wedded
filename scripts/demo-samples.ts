@@ -1,8 +1,9 @@
 /**
  * Everything else the demo needs so no screen looks empty: the numbers on
  * every sample vendor's My business page, booked days on their calendars,
- * one family's wedding plan (event dates, bookings, saved vendors, family
- * members with reactions and suggestions), that family's chats with vendors
+ * one family's wedding plan (event dates, times and places, bookings, saved
+ * vendors, family members with reactions and suggestions, and 30 guests on
+ * two lists with invites, answers and sends), that family's chats with vendors
  * (an inquiry each, replies, quotes, a menu and a paid deposit), and leads and
  * chats for a business they run. Running it again replaces all of it.
  *
@@ -49,14 +50,58 @@ function randomFrom(seed: string): () => number {
 
 // The family's plan --------------------------------------------------------------------------
 
-// Days from the wedding date, and guests, for the events their wedding has
-const EVENT_DATES: Record<string, [number, string]> = {
-  roka: [-120, '50_100'],
-  mehndi: [-2, '100_250'],
-  jaago: [-1, '100_250'],
-  'anand-karaj': [0, '250_500'],
-  reception: [0, '250_500'],
+// Days from the wedding date, guests, start time and place, for the events their wedding has
+const EVENT_DATES: Record<string, [number, string, string, string]> = {
+  roka: [-120, '50_100', '11:00', 'At home, Yuba City'],
+  mehndi: [-2, '100_250', '17:00', 'At home, Yuba City'],
+  jaago: [-1, '100_250', '19:00', 'At home, Yuba City'],
+  'anand-karaj': [0, '250_500', '09:30', 'Gurdwara Sahib, Lathrop'],
+  reception: [0, '250_500', '18:30', 'Royal Orchard Banquet Hall, Yuba City'],
 };
+
+// Their guests: [name, party size, lists (M = Mehndi list, S = Mom's side), email if
+// they have no phone]. Who's invited where is in INVITED.
+const GUESTS: [string, number, string, string?][] = [
+  ['Nani ji and Nana ji', 2, 'MS'],
+  ['Mama Gurpreet Singh’s family', 5, 'MS'],
+  ['Masi Kulwant Kaur’s family', 4, 'MS'],
+  ['Masi Rajinder Kaur’s family', 3, 'MS'],
+  ['Chacha Baljit Singh’s family', 4, ''],
+  ['Bua Jaswinder Kaur’s family', 5, 'M'],
+  ['Tayaji Sukhdev Singh’s family', 6, ''],
+  ['Simran Kaur', 1, 'M'],
+  ['Navneet and Arjun Gill', 2, 'M'],
+  ['Harleen Sandhu', 1, 'M', 'harleen.sandhu@example.com'],
+  ['Aman and Jas Dhillon', 2, ''],
+  ['Gill family, Lathrop', 4, 'S'],
+  ['Sidhu family, Marysville', 5, 'S'],
+  ['Bains family', 4, 'S'],
+  ['Grewal family', 3, 'S'],
+  ['Dr. Paramjit Randhawa', 2, '', 'p.randhawa@example.com'],
+  ['Mandeep Sekhon', 1, ''],
+  ['Kahlon family', 4, 'S'],
+  ['Virk family', 3, ''],
+  ['Brar family', 5, 'S'],
+  ['Pannu family', 4, 'S'],
+  ['Sohal family', 3, ''],
+  ['Johal family', 2, 'S'],
+  ['Mrs. Thompson next door', 2, '', 'thompson.family@example.com'],
+  ['Raj Patel', 2, '', 'raj.patel@example.com'],
+  ['Cheema family', 4, 'MS'],
+  ['Atwal family', 3, ''],
+  ['Dosanjh family', 4, 'S'],
+  ['Bhai Sahib Gurmeet Singh', 1, ''],
+  ['Ravneet and Preeti', 2, 'M'],
+];
+
+// Which guests each event invites (by place in GUESTS and their lists); the rest invite everyone
+const INVITED: Record<string, (i: number, lists: string) => boolean> = {
+  roka: (i) => i < 6,
+  mehndi: (_i, lists) => lists.includes('M'),
+  jaago: (_i, lists) => lists !== '',
+};
+// The first this many have been sent their invitation; the rest haven't yet
+const SENT = 22;
 
 // [event, vendor type, vendor]: about half the essentials, 8 months out
 const BOOKED: [string, string, string][] = [
@@ -478,25 +523,26 @@ async function main() {
     );
   }
   await db.from('wedding_members').delete().eq('wedding_id', weddingId).in('user_id', members);
-  await db.from('wedding_bookings').delete().eq('wedding_id', weddingId);
-  await db.from('wedding_reactions').delete().eq('wedding_id', weddingId);
-  await db.from('wedding_suggestions').delete().eq('wedding_id', weddingId);
+  await db.from('shortlist_reactions').delete().eq('wedding_id', weddingId);
+  await db.from('suggestions').delete().eq('wedding_id', weddingId);
   await db.from('saved_vendors').delete().eq('user_id', familyId).in('vendor_id', sampleIds);
 
   const { data: eventRows } = await db
     .from('wedding_events')
-    .select('event_slug')
+    .select('id, event_slug')
     .eq('wedding_id', weddingId);
-  const events = new Set((eventRows ?? []).map((e) => e.event_slug as string));
+  const eventId = new Map((eventRows ?? []).map((e) => [e.event_slug as string, e.id as string]));
+  const events = new Set(eventId.keys());
+  // Slots go with their bookings
+  await db.from('wedding_slots').delete().in('wedding_event_id', [...eventId.values()]);
   const eventDate: Record<string, string> = {};
   for (const slug of events) {
-    const [offset, guests] = EVENT_DATES[slug] ?? [0, 'not_sure'];
+    const [offset, guests, time, place] = EVENT_DATES[slug] ?? [0, 'not_sure', null, null];
     eventDate[slug] = addDays(weddingDate, offset);
     const { error } = await db
       .from('wedding_events')
-      .update({ event_date: eventDate[slug], guest_band: guests })
-      .eq('wedding_id', weddingId)
-      .eq('event_slug', slug);
+      .update({ event_date: eventDate[slug], guest_band: guests, starts_at: time, venue_text: place })
+      .eq('id', eventId.get(slug));
     if (error) fail(`Couldn't date ${slug}: ${error.message}`);
   }
   const ours = <T extends [string, ...unknown[]]>(rows: T[]) =>
@@ -507,20 +553,24 @@ async function main() {
       wedding_id: weddingId,
       user_id: members[i],
       role: m.role,
-      invited_by: familyId,
       joined_at: new Date(Date.now() - (20 - i * 4) * DAY).toISOString(),
     })),
   );
   if (memberError) fail(`Couldn't add the family: ${memberError.message}`);
 
   const booked = ours(BOOKED).filter(([, , slug]) => vendorId.has(slug));
-  const { error: bookError } = await db.from('wedding_bookings').insert(
+  const { data: slots, error: slotError } = await db
+    .from('wedding_slots')
+    .insert(booked.map(([event, category]) => ({ wedding_event_id: eventId.get(event), category_slug: category })))
+    .select('id, wedding_event_id, category_slug');
+  if (slotError) fail(`Couldn't add the plan's vendor types: ${slotError.message}`);
+  const slotId = new Map(slots.map((slot) => [`${slot.wedding_event_id}/${slot.category_slug}`, slot.id as string]));
+  const { error: bookError } = await db.from('bookings').insert(
     booked.map(([event, category, slug]) => ({
-      wedding_id: weddingId,
-      event_slug: event,
-      category_slug: category,
+      slot_id: slotId.get(`${eventId.get(event)}/${category}`),
       vendor_id: vendorId.get(slug),
-      updated_by: familyId,
+      booked_by: familyId,
+      family_confirmed_at: new Date().toISOString(),
     })),
   );
   if (bookError) fail(`Couldn't book: ${bookError.message}`);
@@ -533,13 +583,14 @@ async function main() {
       .map(([event, slug], i) => ({
         user_id: familyId,
         vendor_id: vendorId.get(slug),
-        event_slug: event,
+        wedding_id: weddingId,
+        wedding_event_id: eventId.get(event),
         created_at: new Date(Date.now() - (30 - i) * DAY).toISOString(),
       })),
   );
   if (saveError) fail(`Couldn't save vendors: ${saveError.message}`);
 
-  await db.from('wedding_reactions').insert(
+  await db.from('shortlist_reactions').insert(
     REACTIONS.filter(([, slug]) => vendorId.has(slug)).map(([by, slug, reaction]) => ({
       wedding_id: weddingId,
       vendor_id: vendorId.get(slug),
@@ -547,10 +598,10 @@ async function main() {
       reaction,
     })),
   );
-  const { error: suggestError } = await db.from('wedding_suggestions').insert(
+  const { error: suggestError } = await db.from('suggestions').insert(
     SUGGESTIONS.filter((s) => events.has(s.event) && vendorId.has(s.vendor)).map((s, i) => ({
       wedding_id: weddingId,
-      event_slug: s.event,
+      wedding_event_id: eventId.get(s.event),
       category_slug: s.category,
       vendor_id: vendorId.get(s.vendor),
       note: s.note,
@@ -563,6 +614,78 @@ async function main() {
   );
   if (suggestError) fail(`Couldn't add suggestions: ${suggestError.message}`);
   console.log(`Planned the wedding: ${booked.length} booked, ${seen.size} saved, ${members.length} family members.`);
+
+  // Guests: lists, invites, answers and sends -------------------------------------------------
+  // Deleting the guests and lists takes their invites, members and sends with them
+  await db.from('wedding_guests').delete().eq('wedding_id', weddingId);
+  await db.from('guest_lists').delete().eq('wedding_id', weddingId);
+  const { data: guestRows, error: guestError } = await db
+    .from('wedding_guests')
+    .insert(
+      GUESTS.map(([name, party, , email], i) => ({
+        wedding_id: weddingId,
+        name,
+        party_size: party,
+        // 555-01xx numbers are reserved for fiction
+        phone: email ? null : `+1530555${String(120 + i).padStart(4, '0')}`,
+        email: email ?? null,
+      })),
+    )
+    .select('id, name');
+  if (guestError) fail(`Couldn't add the guests: ${guestError.message}`);
+  const guestId = new Map(guestRows.map((g) => [g.name as string, g.id as string]));
+
+  const { data: listRows, error: guestListError } = await db
+    .from('guest_lists')
+    .insert([
+      { wedding_id: weddingId, name: 'Mehndi list' },
+      { wedding_id: weddingId, name: 'Mom’s side' },
+    ])
+    .select('id, name');
+  if (guestListError) fail(`Couldn't add the guest lists: ${guestListError.message}`);
+  const listId = (name: string) => listRows.find((l) => l.name === name)?.id as string;
+  const lists: Record<string, string> = { M: listId('Mehndi list'), S: listId('Mom’s side') };
+  const { error: listMemberError } = await db.from('guest_list_members').insert(
+    GUESTS.flatMap(([name, , onLists]) =>
+      [...onLists].map((l) => ({ list_id: lists[l], guest_id: guestId.get(name) })),
+    ),
+  );
+  if (listMemberError) fail(`Couldn't fill the guest lists: ${listMemberError.message}`);
+
+  const { error: inviteError } = await db.from('guest_invites').insert(
+    [...events].flatMap((slug, e) =>
+      GUESTS.flatMap(([name, party, onLists], i) => {
+        if (!(INVITED[slug]?.(i, onLists) ?? true)) return [];
+        // About half said yes and one in ten no, among those sent an invitation
+        const roll = (i + e * 3) % 10;
+        const rsvp = i >= SENT || roll > 5 ? 'pending' : roll === 5 ? 'no' : 'yes';
+        const answered = rsvp !== 'pending';
+        return [
+          {
+            guest_id: guestId.get(name),
+            wedding_id: weddingId,
+            wedding_event_id: eventId.get(slug),
+            rsvp,
+            coming: !answered ? null : rsvp === 'no' ? 0 : party > 3 && i % 3 === 0 ? party - 1 : party,
+            answered_at: answered ? new Date(Date.now() - (1 + (i % 5)) * DAY).toISOString() : null,
+            answer_count: answered ? 1 : 0,
+          },
+        ];
+      }),
+    ),
+  );
+  if (inviteError) fail(`Couldn't invite the guests: ${inviteError.message}`);
+
+  const { error: logError } = await db.from('invite_sends').insert(
+    GUESTS.slice(0, SENT).map(([name, , , email], i) => ({
+      guest_id: guestId.get(name),
+      wedding_id: weddingId,
+      channel: email ? 'email' : 'text',
+      sent_at: new Date(Date.now() - (6 + (i % 2)) * DAY).toISOString(),
+    })),
+  );
+  if (logError) fail(`Couldn't log the invitations: ${logError.message}`);
+  console.log(`Invited ${GUESTS.length} guests on 2 lists to ${events.size} events; ${SENT} sent.`);
 
   // Chats -------------------------------------------------------------------------------------
   const leadIds: string[] = [];
@@ -734,6 +857,7 @@ async function main() {
       await db.from('saved_vendors').insert({
         user_id: leadIds[i],
         vendor_id: businessId,
+        source: 'inquiry',
         created_at: new Date(Date.now() - lead.days * DAY - HOUR).toISOString(),
       });
       chats += 1;

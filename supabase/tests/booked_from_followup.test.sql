@@ -3,7 +3,7 @@
 begin;
 create extension if not exists pgtap with schema extensions;
 
-select plan(6);
+select plan(7);
 
 insert into auth.users (id, instance_id, aud, role, email)
 select ('a4000000-0000-4000-8000-00000000000' || n)::uuid, '00000000-0000-0000-0000-000000000000',
@@ -35,10 +35,19 @@ select ('a4000000-0000-4000-8000-00000000000' || n)::uuid, 'b4000000-0000-4000-8
   '250_500', 'Yuba City', 'Price?', 'call', 'Family ' || n, '+15305550400', 'email', 'sent', now() - interval '3 days'
 from generate_series(1, 6) as n;
 
+-- Each family's bookings, by event and vendor type
+create view pg_temp.plan_bookings as
+select m.user_id, we.event_slug, s.category_slug, b.vendor_id, b.inquiry_id
+from public.wedding_members m
+join public.wedding_events we on we.wedding_id = m.wedding_id
+join public.wedding_slots s on s.wedding_event_id = we.id
+join public.bookings b on b.slot_id = s.id;
+
 -- Family 2 already booked another hall for the reception
-insert into public.wedding_bookings (wedding_id, event_slug, category_slug, vendor_id)
-select m.wedding_id, 'reception', 'banquet-hall', 'b4000000-0000-4000-8000-000000000002'
-from public.wedding_members m where m.user_id = 'a4000000-0000-4000-8000-000000000002';
+select private.book_slot(we.id, 'banquet-hall', 'b4000000-0000-4000-8000-000000000002', null, null, false)
+from public.wedding_members m
+join public.wedding_events we on we.wedding_id = m.wedding_id and we.event_slug = 'reception'
+where m.user_id = 'a4000000-0000-4000-8000-000000000002';
 
 set local role authenticated;
 select pg_temp.as_user('a4000000-0000-4000-8000-000000000001');
@@ -46,11 +55,15 @@ update public.inquiries set reply_answer = 'booked' where user_id = 'a4000000-00
 reset role;
 
 select is(
-  (select b.vendor_id from public.wedding_bookings b
-   join public.wedding_members m on m.wedding_id = b.wedding_id
-   where m.user_id = 'a4000000-0000-4000-8000-000000000001' and b.event_slug = 'reception' and b.category_slug = 'banquet-hall'),
+  (select vendor_id from pg_temp.plan_bookings
+   where user_id = 'a4000000-0000-4000-8000-000000000001' and event_slug = 'reception' and category_slug = 'banquet-hall'),
   'b4000000-0000-4000-8000-000000000001'::uuid,
   'Answering "booked" books the vendor in the family''s plan for that event and the vendor''s main category'
+);
+select ok(
+  (select inquiry_id is not null from pg_temp.plan_bookings
+   where user_id = 'a4000000-0000-4000-8000-000000000001' and event_slug = 'reception'),
+  'and the booking remembers the inquiry it came from'
 );
 
 set local role authenticated;
@@ -63,23 +76,18 @@ update public.inquiries set reply_answer = 'booked' where user_id = 'a4000000-00
 reset role;
 
 select is(
-  (select b.vendor_id from public.wedding_bookings b
-   join public.wedding_members m on m.wedding_id = b.wedding_id
-   where m.user_id = 'a4000000-0000-4000-8000-000000000002' and b.event_slug = 'reception'),
+  (select vendor_id from pg_temp.plan_bookings
+   where user_id = 'a4000000-0000-4000-8000-000000000002' and event_slug = 'reception'),
   'b4000000-0000-4000-8000-000000000002'::uuid,
   'A vendor the family already named is never replaced'
 );
 select is(
-  (select count(*)::int from public.wedding_bookings b
-   join public.wedding_members m on m.wedding_id = b.wedding_id
-   where m.user_id = 'a4000000-0000-4000-8000-000000000003'),
+  (select count(*)::int from pg_temp.plan_bookings where user_id = 'a4000000-0000-4000-8000-000000000003'),
   0,
   '"Still deciding" books nothing'
 );
 select is(
-  (select count(*)::int from public.wedding_bookings b
-   join public.wedding_members m on m.wedding_id = b.wedding_id
-   where m.user_id = 'a4000000-0000-4000-8000-000000000006'),
+  (select count(*)::int from pg_temp.plan_bookings where user_id = 'a4000000-0000-4000-8000-000000000006'),
   0,
   'An inquiry for an event not in the plan books nothing'
 );
@@ -103,9 +111,10 @@ select pg_temp.as_user('a4000000-0000-4000-8000-000000000005');
 update public.inquiries set reply_answer = 'booked' where user_id = 'a4000000-0000-4000-8000-000000000005';
 reset role;
 -- Family 6 books it by hand in their plan's jaago
-insert into public.wedding_bookings (wedding_id, event_slug, category_slug, vendor_id)
-select m.wedding_id, 'jaago', 'banquet-hall', 'b4000000-0000-4000-8000-000000000001'
-from public.wedding_members m where m.user_id = 'a4000000-0000-4000-8000-000000000006';
+select private.book_slot(we.id, 'banquet-hall', 'b4000000-0000-4000-8000-000000000001', null, null, false)
+from public.wedding_members m
+join public.wedding_events we on we.wedding_id = m.wedding_id and we.event_slug = 'jaago'
+where m.user_id = 'a4000000-0000-4000-8000-000000000006';
 
 set local role anon;
 select is(

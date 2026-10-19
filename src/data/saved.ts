@@ -3,6 +3,8 @@
  * Saved tab grouped by event. Saving needs an account, so a logged-out tap
  * opens sign-in and saves once they finish (requireSignIn). A save without an
  * event (from Search or a vendor profile) asks "Save to which event?" first.
+ * Saves go to the person's wedding: one of its events (save_vendor() adds the
+ * event to the plan when they can edit it) or Not sure yet.
  */
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { router } from 'expo-router';
@@ -66,16 +68,15 @@ async function fetchSaved(): Promise<SavedVendor[]> {
   const { data, error } = await supabase
     .from('saved_vendors')
     .select(
-      'id, vendor_id, event_slug, vendor:vendors(slug, name, city, is_sample, price_display, price_from, price_unit, vendor_categories(position, category:categories(name)), vendor_media!vendor_media_vendor_id_fkey(storage_path, is_cover, sort_order))',
+      'id, vendor_id, wedding_event:wedding_events(event_slug), vendor:vendors(slug, name, city, is_sample, price_display, price_from, price_unit, vendor_categories(position, category:categories(name)), vendor_media!vendor_media_vendor_id_fkey(storage_path, is_cover, sort_order))',
     )
     .order('created_at', { ascending: false });
   if (error) throw error;
 
   return data.map((row) => {
     const vendor = row.vendor;
-    if (!vendor) {
-      return { id: row.id, vendorId: row.vendor_id, eventSlug: row.event_slug, vendor: null };
-    }
+    const eventSlug = row.wedding_event?.event_slug ?? null;
+    if (!vendor) return { id: row.id, vendorId: row.vendor_id, eventSlug, vendor: null };
     const primary = [...vendor.vendor_categories].sort((a, b) => a.position - b.position)[0];
     const from = vendor.price_from;
     const showsPrice =
@@ -83,7 +84,7 @@ async function fetchSaved(): Promise<SavedVendor[]> {
     return {
       id: row.id,
       vendorId: row.vendor_id,
-      eventSlug: row.event_slug,
+      eventSlug,
       vendor: {
         slug: vendor.slug,
         photoUrl: coverOf(vendor.vendor_media),
@@ -132,15 +133,17 @@ export function useSaveVendor() {
   const refresh = () => queryClient.invalidateQueries({ queryKey: savedKeys.all });
 
   const add = useMutation({
+    /** Resolves to the event it was saved to, or null for Not sure yet. */
     mutationFn: async ({ vendorId, eventSlug }: { vendorId: string; eventSlug: string | null }) => {
-      const { error } = await supabase
-        .from('saved_vendors')
-        .insert({ vendor_id: vendorId, event_slug: eventSlug });
-      // 23505: already saved for that event (a double tap). Nothing to do.
-      if (error && error.code !== '23505') throw error;
+      const { data, error } = await supabase.rpc('save_vendor', {
+        p_vendor_id: vendorId,
+        p_event_slug: eventSlug ?? undefined,
+      });
+      if (error) throw error;
+      return data;
     },
     // Saved has no tab, so a toast says where it went: "Saved to Jaago · See list"
-    onSuccess: (_, { eventSlug }) => showSavedToast(eventSlug),
+    onSuccess: (savedTo) => showSavedToast(savedTo),
     onSettled: refresh,
   });
 
