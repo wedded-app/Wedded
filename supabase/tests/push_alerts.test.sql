@@ -39,7 +39,7 @@ select throws_ok(
   'Only Expo push tokens'
 );
 select throws_ok(
-  $$ insert into public.push_tokens (token, user_id, platform)
+  $$ insert into public.devices (push_token, user_id, platform)
      values ('ExponentPushToken[sneaky-insert]', 'a1100000-0000-4000-8000-00000000000e', 'ios') $$,
   '42501', null,
   'Nobody writes tokens directly'
@@ -48,7 +48,7 @@ select throws_ok(
 select pg_temp.as_user('a1100000-0000-4000-8000-00000000000e');
 select public.register_push_token('ExponentPushToken[owner-phone-1]', 'ios');
 select is(
-  (select count(*)::int from public.push_tokens),
+  (select count(*)::int from public.devices),
   1,
   'People see only their own tokens'
 );
@@ -59,7 +59,7 @@ select public.register_push_token('ExponentPushToken[staff-phone-1]', 'android')
 select public.register_push_token('ExponentPushToken[owner-phone-1]', 'ios');
 reset role;
 select is(
-  (select user_id from public.push_tokens where token = 'ExponentPushToken[owner-phone-1]'),
+  (select user_id from public.devices where push_token = 'ExponentPushToken[owner-phone-1]'),
   'a1100000-0000-4000-8000-00000000000f'::uuid,
   'A phone that changes hands moves to the new person'
 );
@@ -70,7 +70,7 @@ select public.register_push_token('ExponentPushToken[owner-phone-2]', 'ios');
 select public.unregister_push_token('ExponentPushToken[staff-phone-1]');
 reset role;
 select ok(
-  exists (select 1 from public.push_tokens where token = 'ExponentPushToken[staff-phone-1]'),
+  exists (select 1 from public.devices where push_token = 'ExponentPushToken[staff-phone-1]'),
   'Nobody can forget someone else''s phone'
 );
 
@@ -80,7 +80,7 @@ select public.register_push_token('ExponentPushToken[family-phone-' || n || ']',
 from generate_series(2, 11) as n;
 reset role;
 select is(
-  (select count(*)::int from public.push_tokens where user_id = 'a1100000-0000-4000-8000-000000000001'),
+  (select count(*)::int from public.devices where user_id = 'a1100000-0000-4000-8000-000000000001'),
   10,
   'Up to 10 phones each; the oldest goes'
 );

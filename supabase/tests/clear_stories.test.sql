@@ -17,7 +17,7 @@ insert into public.stories (id, author_id, kind, media_path, thumb_path, duratio
   ('59000000-0000-4000-8000-000000000003', 'a9000000-0000-4000-8000-00000000000a', 'photo', 'a9000000-0000-4000-8000-00000000000a/today.jpg', null, null, now() - interval '3 hours'),
   ('59000000-0000-4000-8000-000000000004', 'a9000000-0000-4000-8000-00000000000a', 'photo', 'a9000000-0000-4000-8000-00000000000a/reported.jpg', null, null, now() - interval '28 hours'),
   ('59000000-0000-4000-8000-000000000005', 'a9000000-0000-4000-8000-00000000000a', 'photo', 'a9000000-0000-4000-8000-00000000000a/looked-at.jpg', null, null, now() - interval '28 hours');
-insert into public.reel_reports (story_id, reason, status) values
+insert into public.reports (story_id, reason, status) values
   ('59000000-0000-4000-8000-000000000004', 'harassment', 'open'),
   ('59000000-0000-4000-8000-000000000005', 'spam', 'dismissed');
 

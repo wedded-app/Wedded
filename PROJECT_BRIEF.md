@@ -238,7 +238,8 @@ All tables are in Postgres (`public` schema) with row-level security. Names that
 **Reels** (data in #110, screens in #113):
 
 - `reels`: author, vendor (when posted as a business), video_path, thumb_path, duration_s, width, height, caption, event, status.
-- `reel_vendor_tags` (pending / approved / declined by the vendor), `follows` (a person or a vendor), `reel_likes`, `reel_comments` (with hidden), `user_blocks`, `reel_reports`. Public bucket `reels`.
+- `reel_vendor_tags` (pending / approved / declined by the vendor), `follows` (an id; followee_user_id or followee_vendor_id), `reel_likes`, `reel_comments` (with hidden), `user_blocks`, `reports` (a reel, comment, story or person; handled_by, handled_at). Public bucket `reels`.
+- `devices`: the phones that get push alerts (push_token, platform, last_seen_at).
 
 **Main server functions:** `search_vendors` (distance, category, text and fuzzy match, travelers, guests, max price, language, availability, sort), `create_inquiry`, `inquiry_emails_left_today`, `create_wedding`, `set_booked`, `set_wedding_cultures`, `save_vendor`, `create_wedding_invite`, `wedding_invite_preview`, `accept_wedding_invite`, `wedding_members_list`, `remove_wedding_member`, `set_wedding_member_role`, `react_to_vendor`, `wedding_shortlist`, `suggest_vendor`, `resolve_suggestion`, `withdraw_suggestion`, `start_conversation`, `send_message`, `mark_conversation_read`, `my_conversations`, `claim_chat_notifications`, `track_vendor_activity`, `vendor_public_stats`, `vendor_scorecard`, `vendor_date_status`, `touch_vendor_calendar`, and the reels functions (`reels_feed`, `create_reel`, `add_reel_comment`, `hide_reel_comment`, `decide_reel_tag`, `pending_reel_tags`, `report_reel_content`, `reel_person`, `reel_comments_list`).
 

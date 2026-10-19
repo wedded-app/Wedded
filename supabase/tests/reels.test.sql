@@ -109,16 +109,16 @@ set local role authenticated;
 
 select pg_temp.as_user('b7000000-0000-4000-8000-00000000000b');
 select is((select count(*)::int from public.reels_feed('following')), 0, 'Following is empty until you follow someone');
-insert into public.follows (vendor_id) values ('97000000-0000-4000-8000-000000000001');
+insert into public.follows (followee_vendor_id) values ('97000000-0000-4000-8000-000000000001');
 select is(
   (select count(*)::int from public.reels_feed('following')),
   1,
   'Following a vendor brings their reels into Following'
 );
-insert into public.follows (user_id) values ('a7000000-0000-4000-8000-00000000000a');
+insert into public.follows (followee_user_id) values ('a7000000-0000-4000-8000-00000000000a');
 select is((select count(*)::int from public.reels_feed('following')), 2, 'and following a person brings theirs');
 select throws_ok(
-  $$ insert into public.follows (user_id) values ('b7000000-0000-4000-8000-00000000000b') $$,
+  $$ insert into public.follows (followee_user_id) values ('b7000000-0000-4000-8000-00000000000b') $$,
   '23514', null,
   'Nobody follows themselves'
 );
@@ -211,7 +211,7 @@ select lives_ok(
   'Anyone signed in can report a reel'
 );
 select throws_ok(
-  $$ select count(*) from public.reel_reports $$,
+  $$ select count(*) from public.reports $$,
   '42501', null,
   'but nobody can read reports through the app'
 );
