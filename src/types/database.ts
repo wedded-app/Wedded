@@ -1235,33 +1235,33 @@ export type Database = {
       };
       linked_account_tokens: {
         Row: {
-          access_token: string;
-          account_id: string;
+          access_token_enc: string;
           expires_at: string | null;
-          refresh_token: string | null;
+          linked_account_id: string;
+          refresh_token_enc: string | null;
           scopes: string[];
           updated_at: string;
         };
         Insert: {
-          access_token: string;
-          account_id: string;
+          access_token_enc: string;
           expires_at?: string | null;
-          refresh_token?: string | null;
+          linked_account_id: string;
+          refresh_token_enc?: string | null;
           scopes?: string[];
           updated_at?: string;
         };
         Update: {
-          access_token?: string;
-          account_id?: string;
+          access_token_enc?: string;
           expires_at?: string | null;
-          refresh_token?: string | null;
+          linked_account_id?: string;
+          refresh_token_enc?: string | null;
           scopes?: string[];
           updated_at?: string;
         };
         Relationships: [
           {
-            foreignKeyName: 'linked_account_tokens_account_id_fkey';
-            columns: ['account_id'];
+            foreignKeyName: 'linked_account_tokens_linked_account_id_fkey';
+            columns: ['linked_account_id'];
             isOneToOne: true;
             referencedRelation: 'linked_accounts';
             referencedColumns: ['id'];
@@ -1270,33 +1270,33 @@ export type Database = {
       };
       linked_accounts: {
         Row: {
+          connected_at: string;
           external_id: string;
           handle: string | null;
           id: string;
           last_synced_at: string | null;
-          linked_at: string;
           platform: string;
           status: string;
           user_id: string;
           vendor_id: string | null;
         };
         Insert: {
+          connected_at?: string;
           external_id: string;
           handle?: string | null;
           id?: string;
           last_synced_at?: string | null;
-          linked_at?: string;
           platform: string;
           status?: string;
           user_id: string;
           vendor_id?: string | null;
         };
         Update: {
+          connected_at?: string;
           external_id?: string;
           handle?: string | null;
           id?: string;
           last_synced_at?: string | null;
-          linked_at?: string;
           platform?: string;
           status?: string;
           user_id?: string;
@@ -1537,7 +1537,8 @@ export type Database = {
         Row: {
           body: string;
           created_at: string;
-          hidden: boolean;
+          hidden_at: string | null;
+          hidden_by: string | null;
           id: string;
           reel_id: string;
           user_id: string;
@@ -1545,7 +1546,8 @@ export type Database = {
         Insert: {
           body: string;
           created_at?: string;
-          hidden?: boolean;
+          hidden_at?: string | null;
+          hidden_by?: string | null;
           id?: string;
           reel_id: string;
           user_id: string;
@@ -1553,7 +1555,8 @@ export type Database = {
         Update: {
           body?: string;
           created_at?: string;
-          hidden?: boolean;
+          hidden_at?: string | null;
+          hidden_by?: string | null;
           id?: string;
           reel_id?: string;
           user_id?: string;
@@ -1598,6 +1601,7 @@ export type Database = {
         Row: {
           created_at: string;
           decided_at: string | null;
+          decided_by: string | null;
           reel_id: string;
           status: string;
           vendor_id: string;
@@ -1605,6 +1609,7 @@ export type Database = {
         Insert: {
           created_at?: string;
           decided_at?: string | null;
+          decided_by?: string | null;
           reel_id: string;
           status?: string;
           vendor_id: string;
@@ -1612,6 +1617,7 @@ export type Database = {
         Update: {
           created_at?: string;
           decided_at?: string | null;
+          decided_by?: string | null;
           reel_id?: string;
           status?: string;
           vendor_id?: string;
@@ -1635,19 +1641,19 @@ export type Database = {
       };
       reel_views_daily: {
         Row: {
-          count: number;
           day: string;
           reel_id: string;
+          views: number;
         };
         Insert: {
-          count?: number;
           day: string;
           reel_id: string;
+          views?: number;
         };
         Update: {
-          count?: number;
           day?: string;
           reel_id?: string;
+          views?: number;
         };
         Relationships: [
           {

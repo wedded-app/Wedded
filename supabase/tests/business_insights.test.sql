@@ -186,14 +186,14 @@ reset role;
 insert into public.reels (id, author_id, vendor_id, video_path, duration_s, caption) values
   ('ee000000-0000-4000-8000-000000000001', 'ae000000-0000-4000-8000-00000000000e',
    'be000000-0000-4000-8000-000000000001', 'ae000000-0000-4000-8000-00000000000e/a.mp4', 10, 'Our tandoor');
-insert into public.reel_views_daily (reel_id, day, count) values
+insert into public.reel_views_daily (reel_id, day, views) values
   ('ee000000-0000-4000-8000-000000000001', pg_temp.today(), 40),
   ('ee000000-0000-4000-8000-000000000001', pg_temp.today() - 3, 2);
 insert into public.reel_likes (reel_id, user_id) values
   ('ee000000-0000-4000-8000-000000000001', 'ae000000-0000-4000-8000-000000000001');
-insert into public.reel_comments (reel_id, user_id, body, hidden) values
-  ('ee000000-0000-4000-8000-000000000001', 'ae000000-0000-4000-8000-000000000001', 'Looks great', false),
-  ('ee000000-0000-4000-8000-000000000001', 'ae000000-0000-4000-8000-000000000002', 'spam', true);
+insert into public.reel_comments (reel_id, user_id, body, hidden_at) values
+  ('ee000000-0000-4000-8000-000000000001', 'ae000000-0000-4000-8000-000000000001', 'Looks great', null),
+  ('ee000000-0000-4000-8000-000000000001', 'ae000000-0000-4000-8000-000000000002', 'spam', now());
 
 set local role authenticated;
 select pg_temp.as_user('ae000000-0000-4000-8000-00000000000e');

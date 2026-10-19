@@ -25,7 +25,7 @@ insert into public.vendor_members (vendor_id, user_id) values
 insert into public.linked_accounts (id, user_id, platform, external_id, handle) values
   ('e8000000-0000-4000-8000-000000000001', 'a8000000-0000-4000-8000-00000000000a', 'tiktok', 'tt-asha', 'ashakaur'),
   ('e8000000-0000-4000-8000-000000000002', 'b8000000-0000-4000-8000-00000000000b', 'instagram', 'ig-bal', 'balsingh');
-insert into public.linked_account_tokens (account_id, access_token) values
+insert into public.linked_account_tokens (linked_account_id, access_token_enc) values
   ('e8000000-0000-4000-8000-000000000001', 'secret-token');
 
 create function pg_temp.as_user(uid uuid) returns void language sql as $$
@@ -197,7 +197,7 @@ select throws_ok(
   'and can''t link one by hand: linking goes through the platform'
 );
 select throws_ok(
-  $$ select access_token from public.linked_account_tokens $$,
+  $$ select access_token_enc from public.linked_account_tokens $$,
   '42501', null,
   'Login tokens are never readable through the API'
 );

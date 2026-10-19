@@ -90,7 +90,7 @@ set local role anon;
 select public.track_reel_view('ec000000-0000-4000-8000-000000000002');
 reset role;
 select is(
-  (select count from public.reel_views_daily where reel_id = 'ec000000-0000-4000-8000-000000000002'),
+  (select views from public.reel_views_daily where reel_id = 'ec000000-0000-4000-8000-000000000002'),
   1,
   'Hidden reels stop counting'
 );
