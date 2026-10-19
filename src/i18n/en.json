@@ -371,7 +371,9 @@
     "comingSoon": "Coming soon",
     "back": "Back",
     "goHome": "Go to Home",
-    "close": "Close"
+    "close": "Close",
+    "fewer": "One fewer",
+    "more": "One more"
   },
   "states": {
     "loading": "Loading…",

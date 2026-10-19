@@ -3,6 +3,7 @@ import { Pressable, View } from 'react-native';
 import { AppText } from '@/components/app-text';
 import { Icon } from '@/components/icon';
 import { makeStyles, Sizes, Spacing, useColors } from '@/constants/theme';
+import { useLocale } from '@/i18n/locale-context';
 import { selectionHaptic } from '@/lib/haptics';
 
 export type StepperProps = {
@@ -21,6 +22,7 @@ export type StepperProps = {
 export function Stepper({ value, min, max, onChange, accessibilityLabel }: StepperProps) {
   const Colors = useColors();
   const styles = useStyles();
+  const { t } = useLocale();
   const step = (by: number) => {
     const next = Math.min(max, Math.max(min, value + by));
     if (next === value) return;
@@ -31,6 +33,9 @@ export function Stepper({ value, min, max, onChange, accessibilityLabel }: Stepp
     const disabled = by < 0 ? value <= min : value >= max;
     return (
       <Pressable
+        // Phones read the row as one control; the web can reach each button
+        accessibilityRole="button"
+        accessibilityLabel={t(by < 0 ? 'common.fewer' : 'common.more')}
         disabled={disabled}
         onPress={() => step(by)}
         hitSlop={4}
@@ -55,7 +60,9 @@ export function Stepper({ value, min, max, onChange, accessibilityLabel }: Stepp
       accessible
       accessibilityRole="adjustable"
       accessibilityLabel={accessibilityLabel}
-      accessibilityValue={{ min, max, now: value }}
+      aria-valuemin={min}
+      aria-valuemax={max}
+      aria-valuenow={value}
       accessibilityActions={[{ name: 'increment' }, { name: 'decrement' }]}
       onAccessibilityAction={(event) => step(event.nativeEvent.actionName === 'increment' ? 1 : -1)}
       style={styles.row}

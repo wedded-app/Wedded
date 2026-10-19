@@ -99,14 +99,17 @@ export function PickSheet({
             )}
           </View>
         }
+        // A View, since the list hands this its own onLayout
         ListEmptyComponent={
-          items.length > 0 ? (
-            <AppText color="text2" style={styles.intro}>
-              {t('guests.noMatch', { query: query.trim() })}
-            </AppText>
-          ) : (
-            <>{empty}</>
-          )
+          <View>
+            {items.length > 0 ? (
+              <AppText color="text2" style={styles.intro}>
+                {t('guests.noMatch', { query: query.trim() })}
+              </AppText>
+            ) : (
+              empty
+            )}
+          </View>
         }
         ItemSeparatorComponent={Separator}
         renderItem={({ item, index }) => (
