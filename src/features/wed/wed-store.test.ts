@@ -273,6 +273,14 @@ describe('sending for real', () => {
     expect(getWed().approvals[0].chats).toEqual(['chat-saffron-tandoor-catering']);
   });
 
+  it('leaves the mockup\'s "– Simran K." off what really goes', () => {
+    wed.approve('tasting');
+    jest.advanceTimersByTime(10_000);
+    const sent = mockSendToVendor.mock.calls[0][1];
+    expect(sent).toMatch(/^Sat Sri Akal! Could we come for a tasting/);
+    expect(sent).not.toContain('Simran');
+  });
+
   it('sends nothing after Undo or Not now', () => {
     wed.approve('tasting');
     wed.undo('tasting');

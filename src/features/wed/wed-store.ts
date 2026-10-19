@@ -544,7 +544,11 @@ function deliver(approval: Approval) {
     router.push({ pathname: '/wed-send', params: { id: approval.id } });
     return;
   }
-  const text = approval.message;
+  // The mockup's family signs as Simran; the chat already shows who really sent it
+  const signed = ` –\u2060\u00A0${FAMILY.signature}`;
+  const text = approval.message?.endsWith(signed)
+    ? approval.message.slice(0, -signed.length)
+    : approval.message;
   if (!text || approval.preview || !SENDS.includes(approval.kind)) return;
   for (const vendor of approval.to) {
     if (!vendor.slug) continue;
