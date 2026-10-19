@@ -11,7 +11,7 @@ import {
 jest.mock('@/lib/supabase', () => ({ supabase: {} }));
 
 describe('menu drafts', () => {
-  it('trims, turns blanks into null and drops empty rows', () => {
+  it('trims, turns blanks into null, drops empty rows and sends cents', () => {
     const row = menuRow({
       ...emptyMenuDraft(),
       name: '  Gold ',
@@ -32,11 +32,11 @@ describe('menu drafts', () => {
       name: 'Gold',
       description: null,
       cuisine: null,
-      diet: [],
-      price_from: 45,
+      diet_tags: [],
+      price_from_cents: 4500,
       price_unit: 'plate',
       min_guests: null,
-      sections: [{ title: 'Mains', items: [{ name: 'Dal makhani', diet: ['veg'] }] }],
+      sections: [{ title: 'Mains', items: [{ name: 'Dal makhani', diet_tags: ['veg'] }] }],
     });
   });
 
@@ -66,17 +66,25 @@ describe('menu drafts', () => {
       name: 'Gold',
       description: null,
       cuisine: 'Punjabi',
-      diet: ['halal'],
-      price_from: 38,
+      diet_tags: ['halal'],
+      price_from_cents: 3800,
       price_unit: 'person',
       min_guests: 200,
-      sections: [{ title: 'Mains', items: [{ name: 'Biryani', description: 'Hyderabadi' }] }],
+      menu_items: [
+        {
+          section: 'Mains',
+          name: 'Biryani',
+          description: 'Hyderabadi',
+          diet_tags: [],
+          sort_order: 1,
+        },
+      ],
     });
     const draft = menuToDraft(menu);
     expect(draft.id).toBe('m1');
     expect(draft.name).toBe('Gold');
     expect(menuRow(draft)).toMatchObject({
-      price_from: 38,
+      price_from_cents: 3800,
       price_unit: 'person',
       min_guests: 200,
       sections: [{ title: 'Mains', items: [{ name: 'Biryani', description: 'Hyderabadi' }] }],

@@ -208,7 +208,7 @@ All tables are in Postgres (`public` schema) with row-level security. Names that
 - `vendor_private`: email, checks_email, street address, exact location, owner name, founder_notes. **The API can never read it.**
 - `vendor_categories` (up to 3 per vendor, position 1 is the main one), `vendor_events`.
 - `vendor_media`: storage_path (files at `{400,1080,1600}.webp`), width, height, blurhash, is_cover, sort_order, event, venue (where it was taken), credit vendor or text. Public bucket `vendor-media`.
-- `vendor_menus`: name(_pa), description(_pa), cuisine, diet tags, price_from, price_unit, min_guests, `sections` (jsonb: titled sections of dishes).
+- `vendor_menus`: name, description, cuisine, diet_tags, price_from_cents, price_unit, min_guests, event_slug. `menu_items`: its dishes (section, name, description, diet_tags, sort_order). Saved through `save_vendor_menu()`.
 - `vendor_links`: from a venue (or the first vendor) to another, kind (approved_caterer / worked_at / often_works_with / partner), each side's confirmation time, hidden_by_venue; shown only when both confirm.
 - `vendor_days`: day, part (all day / morning / evening), status (open / held / booked), capacity and taken, source, the booking behind it. Public, no client details.
 - `vendor_members`: a user's role on a vendor account (owner / staff).

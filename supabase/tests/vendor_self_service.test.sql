@@ -4,7 +4,7 @@
 begin;
 create extension if not exists pgtap with schema extensions;
 
-select plan(10);
+select plan(11);
 
 insert into auth.users (id, instance_id, aud, role, email) values
   ('a8000000-0000-4000-8000-00000000000e', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'self-owner@example.com'),
@@ -22,18 +22,36 @@ $$;
 set local role authenticated;
 select pg_temp.as_user('a8000000-0000-4000-8000-00000000000e');
 
+create table pg_temp.menu (id uuid);
+grant all on pg_temp.menu to authenticated;
+
 select lives_ok(
-  $$ insert into public.vendor_menus (vendor_id, name, price_from, price_unit, min_guests, sections)
-     values ('b8000000-0000-4000-8000-000000000001', 'Gold', 45, 'plate', 200,
-       '[{"title": "Mains", "items": [{"name": "Dal makhani"}]}]') $$,
-  'The owner adds a menu'
+  $$ insert into pg_temp.menu select public.save_vendor_menu('b8000000-0000-4000-8000-000000000001',
+       '{"name": "Gold", "price_from_cents": 4500, "price_unit": "plate", "min_guests": 200,
+         "sections": [{"title": "Mains", "items": [{"name": "Dal makhani", "diet_tags": ["veg"]}]}]}') $$,
+  'The owner adds a menu with its dishes'
 );
-update public.vendor_menus set price_from = 48 where name = 'Gold';
-select is((select price_from from public.vendor_menus where name = 'Gold'), 48,
-  'changes it, and sees it even while the listing is unpublished');
+select public.save_vendor_menu('b8000000-0000-4000-8000-000000000001',
+  '{"name": "Gold", "price_from_cents": 4800, "price_unit": "plate", "min_guests": 200,
+    "sections": [{"title": "Mains", "items": [{"name": "Dal makhani"}, {"name": "Shahi paneer"}]},
+                 {"title": "Dessert", "items": [{"name": "Gulab jamun"}]}]}',
+  (select id from pg_temp.menu));
+select results_eq(
+  $$ select m.price_from_cents, i.section || ': ' || i.name
+     from public.vendor_menus m join public.menu_items i on i.menu_id = m.id
+     where m.name = 'Gold' order by i.sort_order $$,
+  $$ values (4800, 'Mains: Dal makhani'::text), (4800, 'Mains: Shahi paneer'), (4800, 'Dessert: Gulab jamun') $$,
+  'changes it, replacing its dishes, and sees it even while the listing is unpublished'
+);
 select throws_ok(
-  $$ insert into public.vendor_menus (vendor_id, name) values ('b8000000-0000-4000-8000-000000000002', 'Sneaky') $$,
-  '42501', null,
+  $$ select public.save_vendor_menu('b8000000-0000-4000-8000-000000000001',
+       '{"name": "Bad", "sections": [{"title": "Mains", "items": [{"price": 5}]}]}') $$,
+  '22023', 'invalid_menu',
+  'Every dish needs a name'
+);
+select throws_ok(
+  $$ select public.save_vendor_menu('b8000000-0000-4000-8000-000000000002', '{"name": "Sneaky"}') $$,
+  '42501', 'not_allowed',
   'but can''t add menus to another vendor'
 );
 

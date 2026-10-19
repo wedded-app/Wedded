@@ -128,7 +128,13 @@ export type VendorInput = {
   menus: VendorMenu[] | null;
 };
 
-/** A menu as the file gives it; the database checks the sections' shape. */
+/** A section of dishes as the file gives it; each dish becomes a menu_items row. */
+export type VendorMenuSection = {
+  title: string;
+  items: { name: string; description?: string; diet?: string[] }[];
+};
+
+/** A menu as the file gives it, in whole dollars; the database checks the dishes. */
 export type VendorMenu = {
   name: string;
   description?: string;
@@ -137,7 +143,7 @@ export type VendorMenu = {
   price_from?: number;
   price_unit?: 'person' | 'plate' | 'event';
   min_guests?: number;
-  sections: unknown[];
+  sections: VendorMenuSection[];
 };
 
 const MENU_DIETS = ['veg', 'non_veg', 'jhatka', 'halal', 'jain', 'eggless', 'vegan', 'gluten_free'];
@@ -444,7 +450,7 @@ function parseOne(raw: unknown, label: string, errors: string[], warnings: strin
         menus!.push({
           ...(menu as VendorMenu),
           name: menu.name.trim(),
-          sections: sections as unknown[],
+          sections: sections as VendorMenuSection[],
         });
       });
     }
