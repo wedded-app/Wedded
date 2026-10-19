@@ -1040,7 +1040,7 @@ async function main() {
     return Array.from({ length: days }, (_, d) => ({
       reel_id: r.id,
       day: laDate(-d),
-      count: Math.round((40 + rand() * 260) * (1 - d / 20)),
+      views: Math.round((40 + rand() * 260) * (1 - d / 20)),
     }));
   });
   if (reelViews.length) {

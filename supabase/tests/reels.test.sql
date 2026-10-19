@@ -4,7 +4,7 @@
 begin;
 create extension if not exists pgtap with schema extensions;
 
-select plan(25);
+select plan(27);
 
 -- People: Asha (a family), Bal (a family who follows), Cee (blocks Asha), and
 -- Dev, who runs Reel Hall
@@ -158,6 +158,13 @@ select is(
   0,
   'The poster can hide a comment on their reel'
 );
+reset role;
+select is(
+  (select hidden_by from public.reel_comments where id = (select value::uuid from pg_temp.ids where name = 'comment')),
+  'a7000000-0000-4000-8000-00000000000a'::uuid,
+  'and the comment remembers who hid it'
+);
+set local role authenticated;
 
 -- Blocking ----------------------------------------------------------------------------------------------
 
@@ -202,6 +209,15 @@ select is(
   1,
   'An approved tag puts the family''s reel on the vendor''s page'
 );
+reset role;
+select is(
+  (select decided_by from public.reel_vendor_tags
+   where reel_id = (select value::uuid from pg_temp.ids where name = 'family_reel')
+     and vendor_id = '97000000-0000-4000-8000-000000000002'),
+  'd7000000-0000-4000-8000-00000000000d'::uuid,
+  'and the tag remembers who approved it'
+);
+set local role authenticated;
 
 -- Reports -----------------------------------------------------------------------------------------------
 
