@@ -1972,6 +1972,32 @@ export type Database = {
           },
         ];
       };
+      rsvp_lookups: {
+        Row: {
+          day: string;
+          misses: number;
+          wedding_id: string;
+        };
+        Insert: {
+          day: string;
+          misses?: number;
+          wedding_id: string;
+        };
+        Update: {
+          day?: string;
+          misses?: number;
+          wedding_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'rsvp_lookups_wedding_id_fkey';
+            columns: ['wedding_id'];
+            isOneToOne: false;
+            referencedRelation: 'weddings';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
       saved_vendors: {
         Row: {
           created_at: string;
@@ -3682,6 +3708,7 @@ export type Database = {
           created_at: string;
           created_by: string | null;
           id: string;
+          rsvp_token: string | null;
           title: string | null;
           updated_at: string;
           wedding_date: string | null;
@@ -3690,6 +3717,7 @@ export type Database = {
           created_at?: string;
           created_by?: string | null;
           id?: string;
+          rsvp_token?: string | null;
           title?: string | null;
           updated_at?: string;
           wedding_date?: string | null;
@@ -3698,6 +3726,7 @@ export type Database = {
           created_at?: string;
           created_by?: string | null;
           id?: string;
+          rsvp_token?: string | null;
           title?: string | null;
           updated_at?: string;
           wedding_date?: string | null;
@@ -4359,6 +4388,7 @@ export type Database = {
         Args: { p_answer: string; p_coming?: number; p_event_slug: string; p_token: string };
         Returns: undefined;
       };
+      rsvp_find: { Args: { p_contact: string; p_token: string }; Returns: string };
       rsvp_preview: {
         Args: { p_token: string };
         Returns: {
@@ -4486,6 +4516,7 @@ export type Database = {
         Args: { p_role: string; p_user_id: string; p_wedding_id: string };
         Returns: undefined;
       };
+      set_wedding_rsvp_link: { Args: { p_action: string; p_wedding_id: string }; Returns: string };
       start_conversation: { Args: { p_vendor_id: string }; Returns: string };
       start_my_business: {
         Args: { p_category_slug: string; p_city_slug: string; p_name: string };
