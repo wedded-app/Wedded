@@ -7,6 +7,9 @@ create extension if not exists pgtap with schema extensions;
 
 select plan(22);
 
+-- Wed's brain is on for these tests (the switch is off until #124)
+update public.app_config set value = 'true' where key = 'wed_group_chat';
+
 -- Asha (owns the wedding), Balwinder (editor), Dev (a friend who signed in
 -- with a phone, so no email), Esha (a stranger)
 insert into auth.users (id, instance_id, aud, role, email) values

@@ -4,7 +4,10 @@
 begin;
 create extension if not exists pgtap with schema extensions;
 
-select plan(48);
+select plan(49);
+
+-- Wed's brain is on for these tests (the switch is off until #124; the last section turns it off)
+update public.app_config set value = 'true' where key = 'wed_group_chat';
 
 -- People: Asha (owns the wedding), Balwinder (editor), Charan (suggester),
 -- Dev (a friend outside the wedding, joins with a link), Esha (a stranger)
@@ -361,6 +364,22 @@ select is(
   (select count(*)::integer from public.group_threads where id = pg_temp.id('other')),
   0,
   'Deleting the wedding deletes its threads'
+);
+
+-- Wed before the brain is on -----------------------------------------------------------
+
+reset role;
+update public.app_config set value = 'false' where key = 'wed_group_chat';
+set local role authenticated;
+select pg_temp.as_user('a6000000-0000-4000-8000-00000000000a');
+insert into pg_temp.ids select 'late_wedding', public.create_wedding(p_title => 'Late', p_events => array['reception'])::text;
+insert into pg_temp.ids select 'late', public.create_group_thread(pg_temp.id('late_wedding'), 'Family')::text;
+insert into pg_temp.ids select 'early_ask', public.send_group_message(pg_temp.id('late'), '@Wed can you help?')::text;
+select results_eq(
+  $$ select (select wed_ask from public.group_messages where id = pg_temp.id('early_ask')),
+            (select sender_role from public.group_messages where reply_to = pg_temp.id('early_ask')) $$,
+  $$ values ('answered'::text, 'wed'::text) $$,
+  'Before the brain is on, @Wed gets Wed''s reply at once that it can''t help here yet'
 );
 
 select * from finish();
