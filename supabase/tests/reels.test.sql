@@ -4,7 +4,7 @@
 begin;
 create extension if not exists pgtap with schema extensions;
 
-select plan(27);
+select plan(28);
 
 -- People: Asha (a family), Bal (a family who follows), Cee (blocks Asha), and
 -- Dev, who runs Reel Hall
@@ -225,6 +225,12 @@ select lives_ok(
   $$ select public.report_reel_content(p_reel_id => (select value::uuid from pg_temp.ids where name = 'family_reel'),
        p_reason => 'privacy') $$,
   'Anyone signed in can report a reel'
+);
+select is(
+  (select count(*)::int from public.reels_feed('for_you')
+   where id = (select value::uuid from pg_temp.ids where name = 'family_reel')),
+  0,
+  'and it leaves their own feed at once'
 );
 select throws_ok(
   $$ select count(*) from public.reports $$,
