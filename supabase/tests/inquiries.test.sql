@@ -4,7 +4,7 @@
 begin;
 create extension if not exists pgtap with schema extensions;
 
-select plan(26);
+select plan(29);
 
 -- Accounts (A, C and D have profiles; B doesn't) and vendors -----------------------
 
@@ -155,6 +155,30 @@ select ok(
           where user_id = 'a0000000-0000-4000-8000-00000000000a'
             and vendor_id = '40000000-0000-4000-8000-000000000002' and wedding_event_id is null),
   'Asking without an event saves the vendor under Not sure yet'
+);
+
+-- The email to vendor 2 failed; trying again reuses that inquiry (#349)
+update public.inquiries set status = 'failed', failure = 'No email provider'
+where user_id = 'a0000000-0000-4000-8000-00000000000a' and vendor_id = '40000000-0000-4000-8000-000000000002';
+select is(
+  (pg_temp.ask('a0000000-0000-4000-8000-00000000000a', 2, array['mehndi']) ->> 'inquiry_id')::uuid,
+  (select id from public.inquiries
+   where user_id = 'a0000000-0000-4000-8000-00000000000a' and vendor_id = '40000000-0000-4000-8000-000000000002'),
+  'A retry after the email failed is the same inquiry, not a second one'
+);
+select results_eq(
+  $$ select i.status, i.failure, private.inquiry_event_slugs(i.id)
+     from public.inquiries i
+     where i.user_id = 'a0000000-0000-4000-8000-00000000000a' and i.vendor_id = '40000000-0000-4000-8000-000000000002' $$,
+  $$ values ('sending', null::text, array['mehndi']) $$,
+  'The retried inquiry goes out again with the new details'
+);
+select results_eq(
+  $$ select count(*)::int, min(m.data ->> 'eventSlugs')
+     from public.messages m join public.inquiries i on i.id = m.inquiry_id
+     where i.user_id = 'a0000000-0000-4000-8000-00000000000a' and i.vendor_id = '40000000-0000-4000-8000-000000000002' $$,
+  $$ values (1, '["mehndi"]') $$,
+  'The vendor''s chat keeps one card, updated to the retry'
 );
 
 -- A has 3 in the last hour; 2 more reach the limit of 5
