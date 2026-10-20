@@ -4,7 +4,7 @@
 begin;
 create extension if not exists pgtap with schema extensions;
 
-select plan(60);
+select plan(71);
 
 -- People: Asha (owner), Balwinder (editor), Charan (suggester), Dev (a stranger)
 insert into auth.users (id, instance_id, aud, role, email) values
@@ -295,6 +295,81 @@ select is_empty(
   $$ select 1 from public.rsvp_preview('00000000000000000000000000000000') $$,
   'An unknown token shows nothing'
 );
+
+-- One link for the whole wedding (#337) --------------------------------------------------
+
+reset role;
+insert into pg_temp.ids select 'wedding_token', rsvp_token from public.weddings where id = pg_temp.id('wedding');
+update public.wedding_guests set email = 'nani@example.com' where id = pg_temp.id('nani');
+set local role anon;
+select set_config('request.jwt.claims', '{"role": "anon"}', true);
+
+select is(
+  public.rsvp_find((select value from pg_temp.ids where name = 'wedding_token'), ' (530) 555-0201 '),
+  (select value from pg_temp.ids where name = 'sandhu_token'),
+  'A guest types their number into the wedding link and gets their family''s RSVP (any spacing)'
+);
+select is(
+  public.rsvp_find((select value from pg_temp.ids where name = 'wedding_token'), ' Nani@Example.com '),
+  (select value from pg_temp.ids where name = 'nani_token'),
+  'or their email, for a family listed without a phone'
+);
+select is(
+  public.rsvp_find((select value from pg_temp.ids where name = 'wedding_token'), '+15305550999'),
+  null,
+  'A number not on the list finds nothing'
+);
+select throws_ok(
+  $$ select public.rsvp_find('00000000000000000000000000000000', '+15305550201') $$,
+  'P0002', 'rsvp_not_found',
+  'An unknown wedding link is refused'
+);
+reset role;
+update public.rsvp_lookups set misses = 20 where wedding_id = pg_temp.id('wedding');
+set local role anon;
+select set_config('request.jwt.claims', '{"role": "anon"}', true);
+select throws_ok(
+  $$ select public.rsvp_find((select value from pg_temp.ids where name = 'wedding_token'), '+15305550201') $$,
+  'P0001', 'find_limit',
+  'After 20 misses in a day the link waits until tomorrow'
+);
+
+set local role authenticated;
+select pg_temp.as_user('c8000000-0000-4000-8000-00000000000c');
+select throws_ok(
+  $$ select public.set_wedding_rsvp_link(pg_temp.id('wedding'), 'off') $$,
+  '42501', 'not_allowed',
+  'A suggester can''t change the wedding link'
+);
+select pg_temp.as_user('b8000000-0000-4000-8000-00000000000b');
+select is(public.set_wedding_rsvp_link(pg_temp.id('wedding'), 'off'), null, 'An editor turns the wedding link off');
+set local role anon;
+select set_config('request.jwt.claims', '{"role": "anon"}', true);
+select throws_ok(
+  $$ select public.rsvp_find((select value from pg_temp.ids where name = 'wedding_token'), '+15305550201') $$,
+  'P0002', 'rsvp_not_found',
+  'and the old link stops working'
+);
+set local role authenticated;
+select pg_temp.as_user('a8000000-0000-4000-8000-00000000000a');
+insert into pg_temp.ids select 'wedding_token_2', public.set_wedding_rsvp_link(pg_temp.id('wedding'), 'on');
+select isnt(
+  (select value from pg_temp.ids where name = 'wedding_token_2'),
+  (select value from pg_temp.ids where name = 'wedding_token'),
+  'Turning it back on makes a new link'
+);
+select is(
+  public.set_wedding_rsvp_link(pg_temp.id('wedding'), 'on'),
+  (select value from pg_temp.ids where name = 'wedding_token_2'),
+  'On keeps the link that''s on'
+);
+select isnt(
+  public.set_wedding_rsvp_link(pg_temp.id('wedding'), 'new'),
+  (select value from pg_temp.ids where name = 'wedding_token_2'),
+  'New replaces it'
+);
+set local role anon;
+select set_config('request.jwt.claims', '{"role": "anon"}', true);
 select throws_ok(
   $$ select 1 from public.wedding_guests $$,
   '42501', null,

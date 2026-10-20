@@ -96,6 +96,7 @@ export type GuestError =
   | 'invalidCount'
   | 'rsvpLimit'
   | 'sendLimit'
+  | 'findLimit'
   | 'failed';
 
 const ERRORS: [string, GuestError][] = [
@@ -113,6 +114,7 @@ const ERRORS: [string, GuestError][] = [
   ['invalid_count', 'invalidCount'],
   ['rsvp_limit', 'rsvpLimit'],
   ['send_limit', 'sendLimit'],
+  ['find_limit', 'findLimit'],
 ];
 
 /** Which message to show when a guest list call fails (the database's error names). */
@@ -126,6 +128,7 @@ export const guestKeys = {
   list: (weddingId: string) => ['guests', weddingId, 'list'] as const,
   lists: (weddingId: string) => ['guests', weddingId, 'lists'] as const,
   summary: (weddingId: string) => ['guests', weddingId, 'summary'] as const,
+  weddingLink: (weddingId: string) => ['guests', weddingId, 'weddingLink'] as const,
   rsvp: (token: string) => ['rsvp', token] as const,
 };
 
@@ -376,6 +379,72 @@ export function useUninviteFromEvent() {
  */
 export function rsvpLink(token: string): string {
   return shareLink(`/rsvp/${token}`);
+}
+
+/**
+ * The wedding's own RSVP link (#337), the same for everyone: it goes in group
+ * texts and WhatsApp groups, and a guest types their number to find their
+ * family's RSVP. Null while the couple has turned it off.
+ */
+export function weddingRsvpLink(token: string | null): string | null {
+  return token ? shareLink(`/rsvp/w/${token}`) : null;
+}
+
+/** The wedding link's token; null while it's off. Members only. */
+export function useWeddingRsvpToken(weddingId: string | null) {
+  return useQuery({
+    queryKey: guestKeys.weddingLink(weddingId ?? ''),
+    queryFn: async (): Promise<string | null> => {
+      const { data, error } = await supabase
+        .from('weddings')
+        .select('rsvp_token')
+        .eq('id', weddingId ?? '')
+        .maybeSingle();
+      if (error) throw error;
+      return data?.rsvp_token ?? null;
+    },
+    enabled: !!weddingId,
+  });
+}
+
+/** Turn the wedding link on (keeps the current one), off, or replace it with a new one. */
+export function useSetWeddingRsvpLink() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({
+      weddingId,
+      action,
+    }: {
+      weddingId: string;
+      action: 'on' | 'off' | 'new';
+    }) => {
+      const { data, error } = await supabase.rpc('set_wedding_rsvp_link', {
+        p_wedding_id: weddingId,
+        p_action: action,
+      });
+      if (error) throw new Error(error.message);
+      return data;
+    },
+    onSuccess: (_token, { weddingId }) =>
+      queryClient.invalidateQueries({ queryKey: guestKeys.weddingLink(weddingId) }),
+  });
+}
+
+/**
+ * On the wedding link, logged out: the family's own RSVP token for the phone
+ * number or email they typed, or null when it isn't on the list. Throws
+ * notFound for a dead link and findLimit after 20 misses in a day.
+ */
+export async function findInvitation(
+  weddingToken: string,
+  contact: string,
+): Promise<string | null> {
+  const { data, error } = await supabase.rpc('rsvp_find', {
+    p_token: weddingToken,
+    p_contact: contact,
+  });
+  if (error) throw new Error(error.message);
+  return data;
 }
 
 export type RsvpEvent = {
