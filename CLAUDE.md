@@ -14,6 +14,7 @@ Before planning any feature, read the part of the docs it touches. They are the 
   - §6 Vendor listings by type: the shared model, halls and gurdwaras in depth
   - §8 Technical reality: how each feature is built on Expo + Supabase, and what goes wrong
   - §13 The November prototype: demo scope, what is in and out, and the week-by-week plan
+- `docs/DATABASE.md`: the database on one page: the core tables on a diagram, the rules every table follows, and every table in one line. Read it before touching `supabase/` or `src/data/`.
 - `docs/WHERE_THINGS_STAND.md`: what's built, feature by feature, and where it lives (read the part you need).
 - `docs/PROJECT_PLAN.md`: the 8-phase checklist. Tick a box in the same PR that finishes the task.
 - `docs/DECISIONS.md`: decisions already made. Don't reopen one without asking; add new ones at the top.
