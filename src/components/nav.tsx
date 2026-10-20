@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import {
+  Platform,
   View,
   type LayoutChangeEvent,
   type ScrollViewProps,
@@ -18,7 +19,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AppText } from '@/components/app-text';
 import { BackButton, type BackFallback } from '@/components/back-button';
 import { useBottomSpace } from '@/components/tab-bar';
-import { backgroundCss, makeStyles, Sizes, Spacing } from '@/constants/theme';
+import { makeStyles, Sizes, Spacing } from '@/constants/theme';
 
 /**
  * Scroll tracking for a screen with a large title: pass `onScroll` to an
@@ -70,8 +71,8 @@ type NavBarProps = {
 
 /**
  * The iOS 26 navigation bar: floating glass buttons over the content, and,
- * once the large title scrolls under it, a backdrop in the page colour and
- * the title in small type. Sits on top of the screen.
+ * once the large title scrolls under it, a soft backdrop that fades the
+ * content out and the title in small type. Sits on top of the screen.
  */
 export function NavBar({ scroll, title, back = true, backTo, trailing, leading }: NavBarProps) {
   const styles = useStyles();
@@ -80,20 +81,10 @@ export function NavBar({ scroll, title, back = true, backTo, trailing, leading }
   // object: its onScroll handler can't be copied to the UI thread (iOS crash).
   const { scrollY, collapseAt } = scroll;
 
-  // The backdrop is solid before the small title starts to show, so the
-  // content under the bar never shows through the title.
-  const backdrop = useAnimatedStyle(() => ({
-    opacity: interpolate(
-      scrollY.value,
-      [collapseAt.value - 12, collapseAt.value - 4],
-      [0, 1],
-      Extrapolation.CLAMP,
-    ),
-  }));
   const collapsed = useAnimatedStyle(() => ({
     opacity: interpolate(
       scrollY.value,
-      [collapseAt.value - 4, collapseAt.value + 4],
+      [collapseAt.value - 12, collapseAt.value + 4],
       [0, 1],
       Extrapolation.CLAMP,
     ),
@@ -101,10 +92,7 @@ export function NavBar({ scroll, title, back = true, backTo, trailing, leading }
 
   return (
     <View style={[styles.bar, { height: top + Sizes.navBar }]}>
-      <Animated.View style={[styles.backdrop, backdrop]}>
-        <View style={styles.solid} />
-        <View style={styles.fade} />
-      </Animated.View>
+      <Animated.View style={[styles.backdrop, collapsed]} />
       <View style={[styles.row, { marginTop: top }]}>
         <View style={styles.side}>
           {leading ?? (back ? <BackButton fallback={backTo} /> : null)}
@@ -243,9 +231,18 @@ export function NavScreen({
 }
 
 // The backdrop behind the bar: the page colour, solid under the status bar
-// and the bar so no text shows through the title, then fading out just below
-// it, like iOS 26's scroll edge effect.
+// and fading out below the bar, like iOS 26's scroll edge effect. The web
+// also blurs what's behind it.
 const FADE = 20;
+const backdropStyle = (scrollEdge: string) =>
+  (Platform.OS === 'web'
+    ? {
+        backgroundImage: scrollEdge,
+        backdropFilter: 'blur(12px) saturate(180%)',
+        maskImage: 'linear-gradient(to bottom, #000 75%, transparent 100%)',
+        WebkitMaskImage: 'linear-gradient(to bottom, #000 75%, transparent 100%)',
+      }
+    : { experimental_backgroundImage: scrollEdge }) as ViewStyle;
 
 const useStyles = makeStyles((Colors) => ({
   screen: {
@@ -274,14 +271,7 @@ const useStyles = makeStyles((Colors) => ({
     left: 0,
     right: 0,
     bottom: -FADE,
-  },
-  solid: {
-    flex: 1,
-    backgroundColor: Colors.bg,
-  },
-  fade: {
-    height: FADE,
-    ...backgroundCss(Colors.scrollEdge),
+    ...backdropStyle(Colors.scrollEdge),
   },
   row: {
     pointerEvents: 'box-none',
