@@ -1,7 +1,7 @@
 import { useRouter } from 'expo-router';
 import { Pressable, ScrollView, View } from 'react-native';
 
-import { AppText } from '@/components/app-text';
+import { AppText, useFontScale } from '@/components/app-text';
 import { groupIcon } from '@/components/group-icon';
 import { Icon } from '@/components/icon';
 import { makeStyles, Sizes, Spacing, useColors } from '@/constants/theme';
@@ -19,6 +19,8 @@ export function VendorTypeRow({ groups }: { groups: CategoryGroup[] }) {
   const Colors = useColors();
   const styles = useStyles();
   const router = useRouter();
+  // Names are never cut short; at Extra large they take as many lines as they need
+  const largeText = useFontScale() >= 1.25;
   return (
     <ScrollView
       horizontal
@@ -40,9 +42,8 @@ export function VendorTypeRow({ groups }: { groups: CategoryGroup[] }) {
               <Icon name={groupIcon(group.slug)} size={26} color={Colors.primary} />
             </View>
             <AppText
-              variant="label"
               weight={600}
-              numberOfLines={2}
+              numberOfLines={largeText ? undefined : 3}
               maxFontSizeMultiplier={1.3}
               style={styles.name}
             >
@@ -63,8 +64,9 @@ const useStyles = makeStyles((Colors) => ({
     gap: Spacing.sm,
     paddingHorizontal: Sizes.pageGutter,
   },
+  // Wide enough for "Music and performance" in three lines at body size
   item: {
-    width: 84,
+    width: 128,
     alignItems: 'center',
     gap: Spacing.sm,
   },
