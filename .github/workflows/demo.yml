@@ -47,6 +47,16 @@ jobs:
           fi
           npm run backend -- deploy
 
+      # A green deploy only proves the migrations ran; this proves the app can read
+      - name: Check the server answers
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        shell: bash
+        run: |
+          [ -n "$AWS_ACCESS_KEY_ID" ] || exit 0
+          npm run backend -- check
+
       - name: Publish the app to the demo channel
         env:
           EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}

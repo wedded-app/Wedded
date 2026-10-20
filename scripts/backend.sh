@@ -3,6 +3,7 @@
 #
 #   npm run backend -- deploy [--seed]      bring it up to date with this checkout:
 #                                            settings, functions, migrations (--seed: sample vendors, new server only)
+#   npm run backend -- check                ask the server the three things the app asks before sign-in
 #   npm run backend -- env                  print the address and keys for scripts:
 #                                            eval "$(npm run -s backend -- env)"
 #   npm run backend -- copy-from-supabase   copy accounts and data from the hosted Supabase demo, once
@@ -14,6 +15,8 @@ cd "$(dirname "$0")/.."
 export AWS_REGION=us-east-2
 # Git Bash on Windows turns /wedded/… and /opt/… into Windows paths unless told not to
 export MSYS_NO_PATHCONV=1
+
+key() { aws ssm get-parameter --name "/wedded/backend/keys/$1" --with-decryption --query Parameter.Value --output text; }
 
 output() {
   aws cloudformation describe-stacks --stack-name WeddedBackend --output text \
@@ -58,8 +61,18 @@ case "${1:-}" in
       DOMAIN=$(output Domain) STORAGE_BUCKET=$bucket AWS_REGION=$AWS_REGION SEED=$seed \
       bash /opt/wedded/app/infra/backend/deploy.sh"
     ;;
+  check)
+    # What the app does signed out: Auth is up, a table reads, a search runs.
+    # curl -f fails on any answer that isn't 2xx, so a broken deploy fails the run.
+    url=$(output Url)
+    publishable=$(key publishable)
+    curl -fsS -H "apikey: $publishable" "$url/auth/v1/health" >/dev/null
+    curl -fsS -H "apikey: $publishable" "$url/rest/v1/categories?select=slug&limit=1" | grep -q '"slug"'
+    curl -fsS -H "apikey: $publishable" -H 'Content-Type: application/json' -d '{}' \
+      "$url/rest/v1/rpc/search_vendors" >/dev/null
+    echo "Answering: $url"
+    ;;
   env)
-    key() { aws ssm get-parameter --name "/wedded/backend/keys/$1" --with-decryption --query Parameter.Value --output text; }
     echo "export SUPABASE_URL=$(output Url)"
     echo "export SUPABASE_PUBLISHABLE_KEY=$(key publishable)"
     echo "export SUPABASE_SECRET_KEY=$(key secret)"
@@ -68,7 +81,7 @@ case "${1:-}" in
     on_server "REPLACE=${REPLACE:-} bash /opt/wedded/app/infra/backend/copy-from-supabase.sh"
     ;;
   *)
-    sed -n '2,10p' "$0"
+    sed -n '2,11p' "$0"
     exit 1
     ;;
 esac
