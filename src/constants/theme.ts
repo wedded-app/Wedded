@@ -9,10 +9,11 @@ import {
 
 /**
  * Design tokens. The look is "Journey" (docs/DECISIONS.md, 2026-10-21; it
- * replaced the grouped-grey iOS look of 2026-09-29): white pages, white cards
- * and rows with a warm hairline edge, warm grey fills, black (ink) buttons and
- * selected chips, Plus Jakarta Sans, and maroon as the accent for links, icons
- * and the family's own things. Glass is only for floating chrome (tab bar,
+ * replaced the grouped-grey iOS look of 2026-09-29): white pages with cards
+ * and grouped rows in a soft warm grey (as iOS draws grouped lists on a white
+ * page), white outlined chips, black (ink) buttons and selected chips, Plus
+ * Jakarta Sans, and maroon as the accent for links, icons and the family's
+ * own things. Glass is only for floating chrome (tab bar,
  * bars over photos, sheet buttons), never for content.
  * Light and dark palettes share every key. Contrast ratios next to text
  * colours were computed against `surface` and, where it matters, `bg`.
@@ -22,8 +23,8 @@ import {
 
 const light = {
   bg: '#FFFFFF', // the page: white, like the Journey mockups
-  surface: '#FFFFFF', // rows, cards, sheets; their edge is the `border` hairline
-  surface2: '#F5F4F2', // a warm grey panel inside a card, and fact tiles
+  surface: '#F7F6F4', // warm grey: cards, grouped rows, fields, chat bubbles. text2 on it 4.8:1
+  surface2: '#EFEDEA', // a panel inside a card
   text: '#000000', // label, 21:1
   // secondaryLabel as iOS draws it with Increase Contrast on: Apple's default
   // (#8A8A8E) is 3.4:1, too faint for elders. 5.1:1 on white, 4.6:1 on bg.
@@ -35,7 +36,7 @@ const light = {
   borderInput: '#8E8E93', // 3.3:1 on white, text field outlines (non-text needs 3:1)
   fill: 'rgba(120, 104, 92, 0.09)', // warm grey: search field, tiles, segmented track
   fillPressed: 'rgba(120, 104, 92, 0.18)',
-  rowPressed: '#F2F0ED', // a row's highlight while held
+  rowPressed: '#ECE9E5', // a row's highlight while held
   primary: '#8A1C30', // maroon, the tint for text and icons: links, active tab. 9.2:1
   primaryFill: '#141214', // ink, behind white text: filled buttons, selected chips. White on it 18:1
   primaryFillPressed: '#3A373A',
@@ -95,7 +96,7 @@ const light = {
   // The welcome screen and first questions: a plain white page (Fezy asked for
   // white), with grey cards on it instead of the usual grey page and white rows.
   canvas: '#FFFFFF',
-  canvasCard: '#F5F4F2',
+  canvasCard: '#F7F6F4',
   // A warm tan for the first questions: their answer bubbles, the plan that
   // fills in as they answer, the progress track. text2 on it is 4.6:1.
   sand: '#F6F0E8',

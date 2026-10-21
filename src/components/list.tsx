@@ -213,9 +213,6 @@ const useStyles = makeStyles((Colors) => ({
     borderRadius: Radius.card,
     borderCurve: 'continuous',
     backgroundColor: Colors.surface,
-    // White rows on the white page: the warm hairline is the edge
-    borderWidth: 1,
-    borderColor: Colors.border,
     overflow: 'hidden',
   },
   separator: {

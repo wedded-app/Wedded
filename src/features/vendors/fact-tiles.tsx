@@ -12,7 +12,7 @@ type Tile = { big: string; small: string };
 /**
  * The numbers a family asks first, as grey tiles under the vendor's name:
  * how many the hall seats, the starting price, and how far they travel (or
- * how many cars a hall parks). A tile the vendor hasn't filled in is left out;
+ * how many cars a hall or other venue parks). A tile the vendor hasn't filled in is left out;
  * none at all and the row is hidden.
  */
 export function FactTiles({ vendor: v }: { vendor: VendorProfile }) {
@@ -35,7 +35,9 @@ export function FactTiles({ vendor: v }: { vendor: VendorProfile }) {
       small: t('vendor.tiles.upTo', { to: usd.format(v.price.to) }),
     });
   }
-  if (v.addressLine) {
+  // Halls and other venues are a place to come to, so they never "travel to you"
+  const isVenue = v.categories[0]?.groupSlug === 'venues';
+  if (v.addressLine || isVenue) {
     if (v.facts.parkingSpaces) {
       tiles.push({ big: String(v.facts.parkingSpaces), small: t('vendor.tiles.parking') });
     }

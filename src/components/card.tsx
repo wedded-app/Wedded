@@ -14,8 +14,8 @@ export type CardProps = Omit<ViewProps, 'style'> & {
 };
 
 /**
- * White rounded surface with iOS's continuous corners and a warm hairline
- * edge (the page is white too, in the Journey look). Tappable cards shrink a
+ * Warm grey rounded surface on the white page, with iOS's continuous
+ * corners. No border or shadow: the grey on white is the edge. Tappable cards shrink a
  * little under the finger. Grows with its content (never a fixed height) so
  * Punjabi and large text don't clip. Pass `style={{ padding: 0 }}` for
  * edge-to-edge photos; the corners clip the photo.
@@ -47,7 +47,6 @@ export function Card({ onPress, overlay, style, children, ...rest }: CardProps) 
 const useStyles = makeStyles((Colors) => ({
   card: {
     backgroundColor: Colors.surface,
-    boxShadow: `inset 0 0 0 1px ${Colors.border}`,
     borderRadius: Radius.card,
     borderCurve: 'continuous',
     padding: Spacing.lg,
