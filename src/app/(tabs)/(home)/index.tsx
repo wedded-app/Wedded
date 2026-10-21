@@ -82,8 +82,9 @@ export default function HomeScreen() {
   // Worklets may capture only shared values, never the whole scroll object.
   const { scrollY } = scroll;
   const [overCover, setOverCover] = useState(true);
+  // Only the photo cover gets a white clock; the greeting page keeps the dark one
   useAnimatedReaction(
-    () => scrollY.value < collapseAt,
+    () => showCover && scrollY.value < collapseAt,
     (now, before) => {
       if (now !== before) runOnJS(setOverCover)(now);
     },
