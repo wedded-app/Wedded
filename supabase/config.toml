@@ -264,11 +264,11 @@ otp_expiry = 900
 # Hosted projects don't read these files: paste the template into the dashboard
 # (Authentication > Email Templates) or run `supabase config push`.
 [auth.email.template.magic_link]
-subject = "Your sign-in code"
+subject = "Your Wedded sign-in code"
 content_path = "./supabase/templates/sign-in-code.html"
 
 [auth.email.template.confirmation]
-subject = "Your sign-in code"
+subject = "Your Wedded sign-in code"
 content_path = "./supabase/templates/sign-in-code.html"
 
 # Uncomment to customize notification email template
