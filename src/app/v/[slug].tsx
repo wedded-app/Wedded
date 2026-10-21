@@ -49,6 +49,7 @@ import { SavedToastHost } from '@/features/saved/saved-toast';
 import { trackVendorActivity, useVendorPublicStats } from '@/data/vendor-stats';
 import { useStartConversation } from '@/data/chat';
 import { useVendorMenus } from '@/data/vendor-menus';
+import { FactTiles } from '@/features/vendors/fact-tiles';
 import { ALL_NORCAL_MILES, factLabels, priceLine } from '@/features/vendors/profile-format';
 import { shareVendor } from '@/features/vendors/share';
 import { openWed } from '@/features/wed/open-wed';
@@ -533,6 +534,8 @@ export default function VendorProfileScreen() {
             </IconLine>
           )}
         </View>
+
+        <FactTiles vendor={v} />
 
         {tagline && <AppText variant="bodyLg">{tagline}</AppText>}
 

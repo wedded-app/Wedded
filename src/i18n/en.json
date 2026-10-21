@@ -209,7 +209,18 @@
     "pageTitle": "{{name}}, {{category}} in {{city}}",
     "openInApp": "Have the app? Open this page in it",
     "allPhotos": "All photos",
-    "highlightSpoken": "{{name}}, photos from the {{event}}"
+    "highlightSpoken": "{{name}}, photos from the {{event}}",
+    "tiles": {
+      "seats": "seats",
+      "toStart": "to start",
+      "per": "per {{unit}}",
+      "upTo": "to {{to}}",
+      "parking": "parking spots",
+      "miles": "{{miles}} mi",
+      "travels": "travels to you",
+      "norcal": "NorCal",
+      "travelsAnywhere": "travels anywhere"
+    }
   },
   "gallery": {
     "close": "Close",
