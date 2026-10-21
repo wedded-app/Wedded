@@ -42,8 +42,10 @@ export function stampDate(date: string | null): string {
  * quick questions (/when), which need no account; once there's something
  * to save, a line under it signs them in and makes the plan from it.
  * Signed in without a plan, the card starts the first questions instead.
+ * With a plan (`planDate` given, null when there's no date yet) it's the
+ * plan's wedding: the same card counting down to that date, opening My Wedding.
  */
-export function DateCard() {
+export function DateCard({ planDate }: { planDate?: string | null }) {
   const Colors = useColors();
   const styles = useStyles();
   const { t } = useLocale();
@@ -52,19 +54,22 @@ export function DateCard() {
   const { place } = useSearchLocation();
   const startPlanning = useStartPlanning();
   const signedIn = status === 'signedIn';
-  const days = draft.date ? daysUntil(draft.date) : null;
+  const planning = planDate !== undefined;
+  const date = planning ? planDate : draft.date;
+  const days = date ? daysUntil(date) : null;
   const counting = days !== null && days > 0;
   const shownDays = useCountUp(counting ? days : 0);
   const where = place?.label.split(' · ').pop();
 
   const open = () => {
     selectionHaptic();
-    if (signedIn) startPlanning();
+    if (planning) router.push('/plan');
+    else if (signedIn) startPlanning();
     else router.push('/when');
   };
 
   const label = counting
-    ? t('home.dateCard.countingLabel', { count: days, date: formatDate(draft.date!) })
+    ? t('home.dateCard.countingLabel', { count: days, date: formatDate(date!) })
     : t('home.dateCard.askLabel');
 
   return (
@@ -119,8 +124,8 @@ export function DateCard() {
               </AppText>
               <AppText color="onHero2" style={styles.kicker} maxFontSizeMultiplier={1.4}>
                 {(days !== null
-                  ? formatDate(draft.date!)
-                  : draft.noDateYet
+                  ? formatDate(date!)
+                  : planning || draft.noDateYet
                     ? t('home.dateCard.noDateYet')
                     : t('home.dateCard.askKicker')
                 ).toUpperCase()}
@@ -131,7 +136,7 @@ export function DateCard() {
 
         <View style={styles.bottom}>
           <AppText color="onHero2" style={styles.stamp} maxFontSizeMultiplier={1.3}>
-            {stampDate(draft.date)}
+            {stampDate(date ?? null)}
           </AppText>
           {counting ? (
             <WedMark size={30} color="onHero" />
@@ -143,7 +148,7 @@ export function DateCard() {
         </View>
       </PressableScale>
 
-      {!signedIn && hasDraft(draft) && (
+      {!planning && !signedIn && hasDraft(draft) && (
         <Pressable
           accessibilityRole="button"
           onPress={startPlanning}

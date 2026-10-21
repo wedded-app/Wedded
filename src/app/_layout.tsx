@@ -3,12 +3,12 @@ import { reportCrash } from '@/lib/crash-reports';
 
 import { Fraunces_500Medium, Fraunces_600SemiBold } from '@expo-google-fonts/fraunces';
 import {
-  Inter_400Regular,
-  Inter_500Medium,
-  Inter_600SemiBold,
-  Inter_700Bold,
-  Inter_800ExtraBold,
-} from '@expo-google-fonts/inter';
+  PlusJakartaSans_400Regular,
+  PlusJakartaSans_500Medium,
+  PlusJakartaSans_600SemiBold,
+  PlusJakartaSans_700Bold,
+  PlusJakartaSans_800ExtraBold,
+} from '@expo-google-fonts/plus-jakarta-sans';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { useFonts } from 'expo-font';
 import {
@@ -23,7 +23,7 @@ import {
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useCallback, useEffect } from 'react';
-import { Platform, View } from 'react-native';
+import { View } from 'react-native';
 
 import { AppIntro } from '@/components/app-intro';
 import { AppText } from '@/components/app-text';
@@ -44,12 +44,14 @@ SplashScreen.preventAutoHideAsync();
 // Message alerts show while the app is open, except for the chat on screen
 configurePushHandling();
 
-// iPhones draw Latin text in San Francisco, the system font, so Inter is only
-// needed on Android and the web (see fontStyle in constants/theme.ts).
-const LATIN_FONTS: Record<string, number> =
-  Platform.OS === 'ios'
-    ? {}
-    : { Inter_400Regular, Inter_500Medium, Inter_600SemiBold, Inter_700Bold, Inter_800ExtraBold };
+// Plus Jakarta Sans draws all Latin text, on every platform (fontStyle in constants/theme.ts)
+const LATIN_FONTS = {
+  PlusJakartaSans_400Regular,
+  PlusJakartaSans_500Medium,
+  PlusJakartaSans_600SemiBold,
+  PlusJakartaSans_700Bold,
+  PlusJakartaSans_800ExtraBold,
+};
 
 export default function RootLayout() {
   // Fonts load at runtime so the app runs in Expo Go, behind the splash

@@ -40,6 +40,7 @@ export function useTypeStyle({ variant = 'body', weight, serif = false }: TypeSt
     ...(serif ? { fontFamily: serifFamily(fontWeight) } : fontStyle(fontWeight)),
     fontSize,
     lineHeight: Math.round(fontSize * spec.lineHeight),
+    ...('tracking' in spec ? { letterSpacing: fontSize * spec.tracking } : {}),
     maxFontSizeMultiplier: spec.maxScale,
   };
 }

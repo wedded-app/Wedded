@@ -8,11 +8,12 @@ import {
 } from 'react-native';
 
 /**
- * Design tokens. The look follows Apple's iOS 26 system design (see
- * docs/DECISIONS.md, 2026-09-29): grouped-grey pages, white inset-grouped
- * rows and cards, system type, and one tint colour (maroon), the way an Apple
- * app has one accent. Glass is only for floating chrome (tab bar, bars over
- * photos, sheet buttons), never for content.
+ * Design tokens. The look is "Journey" (docs/DECISIONS.md, 2026-10-21; it
+ * replaced the grouped-grey iOS look of 2026-09-29): white pages, white cards
+ * and rows with a warm hairline edge, warm grey fills, black (ink) buttons and
+ * selected chips, Plus Jakarta Sans, and maroon as the accent for links, icons
+ * and the family's own things. Glass is only for floating chrome (tab bar,
+ * bars over photos, sheet buttons), never for content.
  * Light and dark palettes share every key. Contrast ratios next to text
  * colours were computed against `surface` and, where it matters, `bg`.
  * Components read colours with useColors() and build styles with makeStyles(),
@@ -20,24 +21,24 @@ import {
  */
 
 const light = {
-  bg: '#F2F2F7', // iOS systemGroupedBackground: the page behind grouped rows and cards
-  surface: '#FFFFFF', // secondarySystemGroupedBackground: rows, cards, sheets
-  surface2: '#F2F2F7', // a panel inside a card
+  bg: '#FFFFFF', // the page: white, like the Journey mockups
+  surface: '#FFFFFF', // rows, cards, sheets; their edge is the `border` hairline
+  surface2: '#F5F4F2', // a warm grey panel inside a card, and fact tiles
   text: '#000000', // label, 21:1
   // secondaryLabel as iOS draws it with Increase Contrast on: Apple's default
   // (#8A8A8E) is 3.4:1, too faint for elders. 5.1:1 on white, 4.6:1 on bg.
   text2: '#6C6C70',
   textDisabled: '#AEAEB2',
   chevron: '#8E8E93', // systemGray: disclosure chevrons and row glyphs (3.3:1, non-text)
-  separator: '#C6C6C8', // opaqueSeparator: hairlines between grouped rows
-  border: '#E5E5EA', // systemGray5: decorative edges
+  separator: '#E3E0DC', // hairlines between rows
+  border: '#E8E5E1', // the warm hairline around cards, rows and chips
   borderInput: '#8E8E93', // 3.3:1 on white, text field outlines (non-text needs 3:1)
-  fill: 'rgba(118, 118, 128, 0.12)', // tertiarySystemFill: search field, chips, segmented track
-  fillPressed: 'rgba(118, 118, 128, 0.24)',
-  rowPressed: '#E5E5EA', // a grouped row's highlight while held
+  fill: 'rgba(120, 104, 92, 0.09)', // warm grey: search field, tiles, segmented track
+  fillPressed: 'rgba(120, 104, 92, 0.18)',
+  rowPressed: '#F2F0ED', // a row's highlight while held
   primary: '#8A1C30', // maroon, the tint for text and icons: links, active tab. 9.2:1
-  primaryFill: '#8A1C30', // behind white text: filled buttons, selected chips. White on it 9.2:1
-  primaryFillPressed: '#6E1526',
+  primaryFill: '#141214', // ink, behind white text: filled buttons, selected chips. White on it 18:1
+  primaryFillPressed: '#3A373A',
   primaryTint: '#F5E8EB', // maroon at about 10 percent: tinted buttons, selected rows
   accent: '#F0A030', // marigold: fills only, never text
   kesari: '#A8500A', // text-safe saffron, "Founding vendor" text
@@ -49,7 +50,7 @@ const light = {
   error: '#D70015', // systemRed with Increase Contrast, 5.1:1 (the default #FF3B30 is 3.6:1)
   errorFill: '#D70015', // behind white text: 5.4:1
   errorFillPressed: '#A50010',
-  skeleton: '#E5E5EA',
+  skeleton: '#EFEDEA',
   scrim: 'rgba(0, 0, 0, 0.4)',
   onPrimary: '#FFFFFF',
   // Glass where the real material isn't available (Android, older iOS, the
@@ -62,7 +63,7 @@ const light = {
   tabLens: 'rgba(118, 118, 128, 0.14)',
   // iOS 26's scroll edge effect behind the nav bar: the page colour fading out.
   scrollEdge:
-    'linear-gradient(to bottom, rgba(242, 242, 247, 0.97) 0%, rgba(242, 242, 247, 0.9) 72%, rgba(242, 242, 247, 0) 100%)',
+    'linear-gradient(to bottom, rgba(255, 255, 255, 0.97) 0%, rgba(255, 255, 255, 0.9) 72%, rgba(255, 255, 255, 0) 100%)',
   // The same edge over a `canvas` page (the Wed thread): white fading out.
   canvasEdge:
     'linear-gradient(to bottom, rgba(255, 255, 255, 0.97) 0%, rgba(255, 255, 255, 0.9) 72%, rgba(255, 255, 255, 0) 100%)',
@@ -94,7 +95,7 @@ const light = {
   // The welcome screen and first questions: a plain white page (Fezy asked for
   // white), with grey cards on it instead of the usual grey page and white rows.
   canvas: '#FFFFFF',
-  canvasCard: '#F2F2F7',
+  canvasCard: '#F5F4F2',
   // A warm tan for the first questions: their answer bubbles, the plan that
   // fills in as they answer, the progress track. text2 on it is 4.6:1.
   sand: '#F6F0E8',
@@ -319,10 +320,11 @@ export const BorderWidth = {
  * point body for the names elders scan for.
  */
 export const Typography = {
-  display: { size: 34, weight: 700, lineHeight: 1.2, maxScale: 1.6 },
-  title: { size: 28, weight: 700, lineHeight: 1.2, maxScale: 1.8 },
-  section: { size: 22, weight: 700, lineHeight: 1.25, maxScale: 1.8 },
-  heading: { size: 20, weight: 600, lineHeight: 1.25, maxScale: 2 },
+  // Big lines are a touch tighter, as in the Journey mockups (tracking: em)
+  display: { size: 34, weight: 800, lineHeight: 1.2, maxScale: 1.6, tracking: -0.02 },
+  title: { size: 28, weight: 800, lineHeight: 1.2, maxScale: 1.8, tracking: -0.02 },
+  section: { size: 22, weight: 700, lineHeight: 1.25, maxScale: 1.8, tracking: -0.01 },
+  heading: { size: 20, weight: 700, lineHeight: 1.25, maxScale: 2, tracking: -0.01 },
   bodyLg: { size: 19, weight: 400, lineHeight: 1.3, maxScale: 2 },
   body: { size: 17, weight: 400, lineHeight: 1.33, maxScale: 2 },
   label: { size: 15, weight: 500, lineHeight: 1.33, maxScale: 1.6 },
@@ -334,21 +336,18 @@ export type TypographyVariant = keyof typeof Typography;
 export type FontWeight = 400 | 500 | 600 | 700 | 800;
 
 /**
- * Latin text is San Francisco on iPhone (the system font), and Inter on
- * Android and the web, the closest free match, loaded at runtime so it works
- * in Expo Go. Loaded fonts carry their
- * weight in the family name; adding a fontWeight to them makes Android and
- * browsers draw a fake bold, so only the system font gets one.
+ * Latin text is Plus Jakarta Sans everywhere (the Journey look, 2026-10-21),
+ * loaded at runtime so it works in Expo Go. Loaded fonts carry their weight in
+ * the family name; adding a fontWeight to them makes Android and browsers draw
+ * a fake bold, so none gets one.
  */
-const INTER = {
-  400: 'Inter_400Regular',
-  500: 'Inter_500Medium',
-  600: 'Inter_600SemiBold',
-  700: 'Inter_700Bold',
-  800: 'Inter_800ExtraBold',
+const JAKARTA = {
+  400: 'PlusJakartaSans_400Regular',
+  500: 'PlusJakartaSans_500Medium',
+  600: 'PlusJakartaSans_600SemiBold',
+  700: 'PlusJakartaSans_700Bold',
+  800: 'PlusJakartaSans_800ExtraBold',
 } as const;
-
-const latin = (weight: FontWeight) => (Platform.OS === 'ios' ? 'System' : INTER[weight]);
 
 /**
  * Fraunces, a soft and lively serif, for the few big display lines (the
@@ -360,12 +359,9 @@ export function serifFamily(weight: FontWeight): string {
   return weight >= 600 ? 'Fraunces_600SemiBold' : 'Fraunces_500Medium';
 }
 
-/** The style that draws `weight`: family, plus fontWeight for the system font. */
+/** The style that draws `weight`: the font family that carries it. */
 export function fontStyle(weight: FontWeight) {
-  const fontFamily = latin(weight);
-  return fontFamily === 'System'
-    ? { fontFamily, fontWeight: String(weight) as `${FontWeight}` }
-    : { fontFamily };
+  return { fontFamily: JAKARTA[weight] };
 }
 
 /**

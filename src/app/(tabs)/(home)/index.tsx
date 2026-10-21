@@ -1,16 +1,15 @@
 import { useQueryClient } from '@tanstack/react-query';
-import { useFocusEffect, useRouter } from 'expo-router';
-import { setStatusBarStyle } from 'expo-status-bar';
-import { useCallback, useEffect, useState } from 'react';
+import { useRouter } from 'expo-router';
+import { useEffect, useState } from 'react';
 import { Pressable, RefreshControl, StyleSheet, View } from 'react-native';
-import Animated, { runOnJS, useAnimatedReaction } from 'react-native-reanimated';
+import Animated from 'react-native-reanimated';
 
 import { AppText } from '@/components/app-text';
 import { NavBar, useNavScroll, useNavTop } from '@/components/nav';
 import { SearchButton } from '@/components/search-button';
 import { StateView } from '@/components/state-view';
 import { useBottomSpace } from '@/components/tab-bar';
-import { Sizes, Spacing, useColors, useScheme } from '@/constants/theme';
+import { Sizes, Spacing, useColors } from '@/constants/theme';
 import { useIsVendor } from '@/data/chat';
 import { useFeed, type FeedPost } from '@/data/feed';
 import { useCategoryGroups, useHomeEvents } from '@/data/reference';
@@ -19,7 +18,6 @@ import { ChatButton } from '@/features/chat/chat-button';
 import { BookFirst } from '@/features/home/book-first-row';
 import { DateCard } from '@/features/home/date-card';
 import { EventCarousel } from '@/features/home/event-carousel';
-import { HomeCover, useCoverHeight } from '@/features/home/home-cover';
 import { NextUp } from '@/features/home/next-up';
 import { SectionHeader } from '@/features/home/section-header';
 import { VendorPhotoCards } from '@/features/home/vendor-photo-cards';
@@ -37,24 +35,21 @@ import { localized } from '@/i18n/localized';
 import { useLocale } from '@/i18n/locale-context';
 
 /**
- * S4 Home is the family's wedding, not a catalog. Edge to edge at the top,
- * the wedding itself (countdown and a ring that fills as they book), then
- * search, then what to do next, where things stand with each vendor, vendors
- * free on their date, and what the family has been up to. Before there's a
- * plan it's the wedding card asking when the wedding is (no account needed),
- * then what to book first (sharper once they've answered), the kinds of
- * vendor and the events, so there's still plenty to look at.
- * Vendor accounts get their My business card first, under the cover.
+ * S4 Home is the family's wedding, not a catalog, in the Journey look: a
+ * greeting, then the wedding card (OmbreBackground; with a plan it counts down
+ * to the plan's date and opens My Wedding, before one it asks when the wedding
+ * is, no account needed), then search, then what to do next, where things
+ * stand with each vendor, vendors free on their date, and what the family has
+ * been up to. Before there's a plan: what to book first (sharper once they've
+ * answered), the kinds of vendor and the events.
  */
 export default function HomeScreen() {
   const Colors = useColors();
-  const scheme = useScheme();
   const { t } = useLocale();
   const router = useRouter();
   const queryClient = useQueryClient();
   const scroll = useNavScroll();
   const navTop = useNavTop();
-  const coverHeight = useCoverHeight();
   const bottom = useBottomSpace();
   const view = usePlanView();
   const feed = useFeed();
@@ -68,33 +63,12 @@ export default function HomeScreen() {
   const { isVendor } = useIsVendor();
   const { profile } = useSession();
   const browsing = !isVendor && profile?.joined_as !== 'looking';
-  // With a plan the cover is their wedding; before one, the wedding card asks for the date
-  const showCover = planning || (loading && browsing);
+  // The wedding card: the plan's countdown, or before a plan, asking for the date
   const showDateCard = !planning && !loading && browsing;
 
-  // The small title and the bar's backdrop come in as the cover, or the
-  // greeting, scrolls away
+  // The small title and the bar's backdrop come in as the greeting scrolls away
   const [greetingHeight, setGreetingHeight] = useState(0);
-  const collapseAt = showCover ? coverHeight - navTop : greetingHeight;
-  useEffect(() => scroll.setCollapseAt(collapseAt), [scroll, collapseAt]);
-
-  // White clock and battery over the cover, the app's own once it's gone.
-  // Worklets may capture only shared values, never the whole scroll object.
-  const { scrollY } = scroll;
-  const [overCover, setOverCover] = useState(true);
-  // Only the photo cover gets a white clock; the greeting page keeps the dark one
-  useAnimatedReaction(
-    () => showCover && scrollY.value < collapseAt,
-    (now, before) => {
-      if (now !== before) runOnJS(setOverCover)(now);
-    },
-  );
-  useFocusEffect(
-    useCallback(() => {
-      setStatusBarStyle(overCover || scheme === 'dark' ? 'light' : 'dark');
-      return () => setStatusBarStyle(scheme === 'dark' ? 'light' : 'dark');
-    }, [overCover, scheme]),
-  );
+  useEffect(() => scroll.setCollapseAt(greetingHeight), [scroll, greetingHeight]);
 
   async function onRefresh() {
     setRefreshing(true);
@@ -126,31 +100,25 @@ export default function HomeScreen() {
           <RefreshControl
             refreshing={refreshing}
             onRefresh={onRefresh}
-            tintColor={Colors.onHero}
+            tintColor={Colors.text2}
             colors={[Colors.primary]}
             progressViewOffset={navTop}
           />
         }
       >
-        {showCover && <HomeCover view={view} posts={posts} />}
-
-        <View style={[styles.body, !showCover && { paddingTop: navTop + Spacing.md }]}>
-          {!showCover && (
-            <View
-              style={styles.greeting}
-              onLayout={(event) => setGreetingHeight(event.nativeEvent.layout.height)}
-            >
-              <AppText variant="label" weight={600} color="text2">
-                {profile?.full_name
-                  ? t('home.hello', { name: profile.full_name.split(' ')[0] })
-                  : t('home.helloPlain')}
-              </AppText>
-              <AppText variant="title" weight={700}>
-                {t('home.yourWedding')}
-              </AppText>
-            </View>
-          )}
-          {showDateCard && <DateCard />}
+        <View style={[styles.body, { paddingTop: navTop + Spacing.md }]}>
+          <View
+            style={styles.greeting}
+            onLayout={(event) => setGreetingHeight(event.nativeEvent.layout.height)}
+          >
+            <AppText variant="label" weight={600} color="text2">
+              {profile?.full_name
+                ? t('home.hello', { name: profile.full_name.split(' ')[0] })
+                : t('home.helloPlain')}
+            </AppText>
+            <AppText variant="title">{t('home.yourWedding')}</AppText>
+          </View>
+          {planning ? <DateCard planDate={plan.weddingDate} /> : showDateCard && <DateCard />}
           <StoryRings />
           <View style={styles.find}>
             <SearchButton
