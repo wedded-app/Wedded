@@ -15,25 +15,24 @@ import { useWed, waitingCount } from '@/features/wed/wed-store';
 import { useLocale } from '@/i18n/locale-context';
 
 const TABS: (Omit<TabSpec, 'label'> & { labelKey: string })[] = [
-  // Search opens from Home's search box, so Home stays lit while it's open
   {
     name: '(home)',
     labelKey: 'tabs.home',
     icon: 'home-outline',
     iconFilled: 'home',
-    alsoFor: ['(search)'],
+  },
+  // The (search) stack: Vendors first, with Search, results and Requests on top
+  {
+    name: '(search)',
+    labelKey: 'tabs.vendors',
+    icon: 'storefront-outline',
+    iconFilled: 'storefront',
   },
   {
     name: 'discover',
     labelKey: 'tabs.discover',
     icon: 'play-circle-outline',
     iconFilled: 'play-circle',
-  },
-  {
-    name: 'requests',
-    labelKey: 'tabs.requests',
-    icon: 'megaphone-outline',
-    iconFilled: 'megaphone',
   },
   {
     name: 'profile',
@@ -44,12 +43,12 @@ const TABS: (Omit<TabSpec, 'label'> & { labelKey: string })[] = [
 ];
 
 /**
- * Bottom tabs: Home, Reels (the discover route), Wed's round button in the
- * middle (WedButton, with how many of its cards wait for a yes), Requests and
- * Profile, in a floating glass bar that content scrolls under (TabBar: each
- * tab's icon over its name, a lens behind the selected one). Search and Wed's pages are in this
- * group without a tab (href: null): Search opens from Home's search box, Wed
- * from its button and the Wed buttons around the app. Expo Router's JS tabs
+ * Bottom tabs: Home, Vendors (the (search) stack, with Search and Requests on
+ * it), Wed's round button in the middle (WedButton, with how many of its cards
+ * wait for a yes), Reels (the discover route) and Profile, in a floating glass
+ * bar that content scrolls under (TabBar: each tab's icon over its name, a
+ * lens behind the selected one). Wed's pages are in this group without a tab
+ * (href: null) and open from its button and the Wed buttons around the app. Expo Router's JS tabs
  * draw it the same on iPhone, Android and the web.
  */
 export default function TabsLayout() {
@@ -107,7 +106,6 @@ export default function TabsLayout() {
         {tabs.map((tab) => (
           <Tabs.Screen key={tab.name} name={tab.name} options={{ title: tab.label }} />
         ))}
-        <Tabs.Screen name="(search)" options={{ href: null }} />
         <Tabs.Screen name="wed" options={{ href: null }} />
       </Tabs>
       <SavedToastHost />
