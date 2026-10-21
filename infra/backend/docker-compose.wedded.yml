@@ -10,8 +10,8 @@ services:
       # Sign-in emails carry a 6-digit code, not a link
       GOTRUE_MAILER_OTP_LENGTH: '6'
       GOTRUE_MAILER_OTP_EXP: '900'
-      GOTRUE_MAILER_SUBJECTS_MAGIC_LINK: Your sign-in code
-      GOTRUE_MAILER_SUBJECTS_CONFIRMATION: Your sign-in code
+      GOTRUE_MAILER_SUBJECTS_MAGIC_LINK: Your Wedded sign-in code
+      GOTRUE_MAILER_SUBJECTS_CONFIRMATION: Your Wedded sign-in code
       GOTRUE_MAILER_TEMPLATES_MAGIC_LINK: http://email-templates/sign-in-code.html
       GOTRUE_MAILER_TEMPLATES_CONFIRMATION: http://email-templates/sign-in-code.html
       # Sign in with Apple; host.exp.Exponent is Expo Go (HOSTED_SETUP.md, step 10)

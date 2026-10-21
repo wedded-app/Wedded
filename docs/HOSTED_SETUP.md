@@ -28,7 +28,7 @@ supabase db push --include-seed               # runs them, plus the 25 sample ve
 
 In the dashboard, **Authentication**:
 
-1. **Emails → Templates**: paste the contents of `supabase/templates/sign-in-code.html` into both **Magic link** and **Confirm signup**. Subject: `Your sign-in code`. This is what makes the email a 6-digit code instead of a link.
+1. **Emails → Templates**: paste the contents of `supabase/templates/sign-in-code.html` into both **Magic link** and **Confirm signup**. Subject: `Your Wedded sign-in code`. This is what makes the email a 6-digit code instead of a link.
 2. **Sign In / Providers → Email**: email provider on, **Confirm email** on, **Email OTP length** 6, **Email OTP Expiration** 900 (15 minutes, what the email says). Confirm email must be on before step 4: with it off, Supabase signs a new person up with a hidden password before sending their code, the hook refuses that, and new families can't sign up. (The code they type is the confirmation, so nothing changes for them.) The same goes for **Phone → Confirm phone** once phone is on.
 3. **URL Configuration**: nothing needed yet (we don't use links).
 4. **Auth Hooks → Add hook → Customize Access Token**: Postgres, schema `public`, function `refuse_password_sign_in` (from the migrations). It refuses every password sign-in. The app never uses passwords, but anyone calling Supabase's sign-up directly could otherwise set a password on a family's email or phone and keep a back door into their account.
