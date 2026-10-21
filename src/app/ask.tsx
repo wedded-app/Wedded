@@ -20,6 +20,7 @@ import { useHomeEvents } from '@/data/reference';
 import { usePlan } from '@/features/planner/plan';
 import { normalizePhone } from '@/features/auth/about-you-validation';
 import { useSession } from '@/features/auth/session';
+import { EventTimeline } from '@/features/inquiry/event-timeline';
 import { CatererQuestions, VenueQuestions } from '@/features/inquiry/category-questions';
 import {
   catererDetails,
@@ -314,27 +315,19 @@ export default function AskScreen() {
         </Card>
 
         <Section title={t('inquiry.whichEvent')}>
-          <View style={styles.chips}>
-            {eventChoices.shown.map((event) => (
-              <Chip
-                key={event.slug}
-                label={localized(event.name)}
-                selected={eventSlugs.includes(event.slug)}
-                onPress={() =>
-                  change(setEventSlugs)(
-                    eventSlugs.includes(event.slug)
-                      ? eventSlugs.filter((slug) => slug !== event.slug)
-                      : [...eventSlugs, event.slug],
-                  )
-                }
-              />
-            ))}
-            <Chip
-              label={t('saved.notSure')}
-              selected={eventSlugs.length === 0}
-              onPress={() => change(setEventSlugs)([])}
-            />
-          </View>
+          <EventTimeline
+            events={eventChoices.shown}
+            selected={eventSlugs}
+            dates={plan.eventDates}
+            guests={plan.guests}
+            onToggle={(slug) =>
+              change(setEventSlugs)(
+                eventSlugs.includes(slug)
+                  ? eventSlugs.filter((other) => other !== slug)
+                  : [...eventSlugs, slug],
+              )
+            }
+          />
           {eventChoices.hasMore && (
             <Button
               variant="text"
