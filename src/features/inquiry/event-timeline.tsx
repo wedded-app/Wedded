@@ -4,12 +4,11 @@ import { AppText } from '@/components/app-text';
 import { Icon } from '@/components/icon';
 import { makeStyles, Sizes, Spacing, useColors } from '@/constants/theme';
 import type { GuestBand } from '@/data/inquiries';
-import { GUEST_BANDS } from '@/features/inquiry/inquiry-helpers';
 import { localized, type LocalizedText } from '@/i18n/localized';
 import { useLocale } from '@/i18n/locale-context';
 import { selectionHaptic } from '@/lib/haptics';
 
-import { formatDate } from './inquiry-helpers';
+import { formatDate, GUEST_BANDS } from './inquiry-helpers';
 
 const DOT = 26;
 
