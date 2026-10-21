@@ -22,9 +22,11 @@ import { useSearchLocation } from '@/features/location/search-location';
 import { filtersForGuests } from '@/features/planner/find-for-plan';
 import { NO_FILTERS } from '@/features/search/search-filters';
 import { localized } from '@/i18n/localized';
+import { StateView } from '@/components/state-view';
 import { useLocale } from '@/i18n/locale-context';
 import { saveHaptic } from '@/lib/haptics';
 
+import { shortDate } from './book-first';
 import { SectionHeader } from './section-header';
 
 const SHOWN = 10;
@@ -35,7 +37,8 @@ const shade = (
 ) as ViewStyle;
 
 type Props = {
-  title: string;
+  /** Leave out for cards with no title row of their own. */
+  title?: string;
   link?: string;
   onLink?: () => void;
   /** Only this kind of vendor; leave out for any kind ("Popular near you"). */
@@ -46,6 +49,8 @@ type Props = {
   /** Leave out vendors booked all day on this yyyy-mm-dd date. */
   date?: string | null;
   guestBand?: string | null;
+  /** Shown instead of nothing when no vendor fits. */
+  emptyText?: string;
 };
 
 /**
@@ -64,6 +69,7 @@ export function VendorPhotoCards({
   eventSlug,
   date,
   guestBand,
+  emptyText,
 }: Props) {
   const styles = useStyles();
   const { width } = useWindowDimensions();
@@ -81,13 +87,15 @@ export function VendorPhotoCards({
     limit: 30,
   });
   const vendors = (search.data ?? []).filter((vendor) => vendor.coverPath).slice(0, SHOWN);
-  const cardWidth = Math.round(Math.min(260, width * 0.64));
+  const cardWidth = Math.round(Math.min(300, width * 0.76));
 
-  if (search.isError || (search.isSuccess && vendors.length === 0)) return null;
+  if (search.isError || (search.isSuccess && vendors.length === 0)) {
+    return emptyText ? <StateView state="empty" message={emptyText} /> : null;
+  }
 
   return (
     <View style={styles.block}>
-      <SectionHeader title={title} link={link} onLink={onLink} />
+      {title && <SectionHeader title={title} link={link} onLink={onLink} />}
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
@@ -101,7 +109,13 @@ export function VendorPhotoCards({
               <View key={key} style={[styles.card, styles.skeleton, { width: cardWidth }]} />
             ))
           : vendors.map((vendor) => (
-              <PhotoCard key={vendor.id} vendor={vendor} width={cardWidth} eventSlug={eventSlug} />
+              <PhotoCard
+                key={vendor.id}
+                vendor={vendor}
+                width={cardWidth}
+                eventSlug={eventSlug}
+                date={date}
+              />
             ))}
       </ScrollView>
     </View>
@@ -112,10 +126,12 @@ function PhotoCard({
   vendor,
   width,
   eventSlug,
+  date,
 }: {
   vendor: VendorResult;
   width: number;
   eventSlug?: string;
+  date?: string | null;
 }) {
   const Colors = useColors();
   const styles = useStyles();
@@ -126,7 +142,9 @@ function PhotoCard({
   const name = localized(vendor.name);
   const distance = distanceWords(vendor.distanceMiles, t);
   const price = priceWords(vendor.startingPrice, t);
-  const facts = [vendor.city, distance?.shown].filter(Boolean).join(' · ');
+  const facts = [vendor.category ? localized(vendor.category) : null, vendor.city, distance?.shown]
+    .filter(Boolean)
+    .join(' · ');
   const spoken = [
     name,
     vendor.category ? localized(vendor.category) : null,
@@ -186,8 +204,21 @@ function PhotoCard({
               {price.shown}
             </AppText>
           ) : null}
+          <View style={styles.seeMore}>
+            <AppText variant="label" weight={700} numberOfLines={1}>
+              {t('home.seeMore')}
+            </AppText>
+          </View>
         </View>
       </PressableScale>
+      {date && (
+        <View style={styles.free}>
+          <View style={styles.dot} />
+          <AppText variant="caption" weight={700} numberOfLines={1}>
+            {t('home.freeOn', { date: shortDate(date) })}
+          </AppText>
+        </View>
+      )}
       <View style={styles.heart}>
         <GlassButton
           icon={saved ? 'heart' : 'heart-outline'}
@@ -215,7 +246,7 @@ const useStyles = makeStyles((Colors) => ({
     aspectRatio: 4 / 5,
     overflow: 'hidden',
     justifyContent: 'flex-end',
-    borderRadius: Radius.card,
+    borderRadius: Radius.card + 2,
     borderCurve: 'continuous',
     backgroundColor: Colors.surface2,
   },
@@ -229,6 +260,32 @@ const useStyles = makeStyles((Colors) => ({
   words: {
     gap: 2,
     padding: Spacing.lg,
+  },
+  seeMore: {
+    minHeight: Sizes.tapTarget - 2,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: Spacing.sm,
+    borderRadius: Radius.button,
+    backgroundColor: Colors.surface,
+  },
+  free: {
+    position: 'absolute',
+    top: Spacing.md,
+    left: Spacing.md,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.xs + 2,
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.sm - 1,
+    borderRadius: Radius.chip,
+    backgroundColor: Colors.glassFallback,
+  },
+  dot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: Colors.success,
   },
   heart: {
     position: 'absolute',

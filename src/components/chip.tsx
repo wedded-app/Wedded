@@ -19,6 +19,8 @@ export type ChipProps = Omit<PressableProps, 'children' | 'style'> & {
    * when picking one turns the others off; 'button' when the chip goes
    * somewhere instead of toggling. Screen readers announce the difference. */
   role?: 'checkbox' | 'radio' | 'button';
+  /** 'ink' fills a selected chip with the text colour instead of the app colour. */
+  tone?: 'primary' | 'ink';
   style?: StyleProp<ViewStyle>;
 };
 
@@ -36,6 +38,7 @@ export function Chip({
   label,
   selected: selectedProp = false,
   role = 'checkbox',
+  tone = 'primary',
   disabled,
   style,
   accessibilityLabel,
@@ -67,8 +70,9 @@ export function Chip({
       }}
       style={({ pressed }) => [
         styles.chip,
-        selected && styles.selected,
-        pressed && (selected ? styles.selectedPressed : styles.pressed),
+        selected && (tone === 'ink' ? styles.selectedInk : styles.selected),
+        pressed &&
+          (selected ? (tone === 'ink' ? styles.pressed : styles.selectedPressed) : styles.pressed),
         disabled && styles.disabled,
         style,
       ]}
@@ -77,14 +81,16 @@ export function Chip({
         <Icon
           name="checkmark"
           size={Sizes.iconSmall * scale * 0.85}
-          color={Colors.onPrimary}
+          color={tone === 'ink' ? Colors.surface : Colors.onPrimary}
           weight="bold"
         />
       )}
       <AppText
         variant="label"
         weight={selected ? 600 : 500}
-        color={disabled ? 'textDisabled' : selected ? 'onPrimary' : 'text'}
+        color={
+          disabled ? 'textDisabled' : selected ? (tone === 'ink' ? 'surface' : 'onPrimary') : 'text'
+        }
         style={styles.label}
       >
         {label}
@@ -109,6 +115,10 @@ const useStyles = makeStyles((Colors) => ({
   },
   selected: {
     backgroundColor: Colors.primaryFill,
+    boxShadow: 'none',
+  },
+  selectedInk: {
+    backgroundColor: Colors.text,
     boxShadow: 'none',
   },
   pressed: {
