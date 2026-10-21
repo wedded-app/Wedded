@@ -9,7 +9,8 @@
     "requests": "Requests",
     "profile": "Profile",
     "discover": "Reels",
-    "wed": "Wed"
+    "wed": "Wed",
+    "vendors": "Vendors"
   },
   "wedButton": {
     "label": "Wed, your planning helper",
@@ -2983,5 +2984,24 @@
   "sample": {
     "tag": "Sample",
     "label": "Sample listing for the demo, not a real business"
+  },
+  "vendorsTab": {
+    "types": "Browse by type",
+    "forEvent": "For which event?",
+    "allEvents": "All events",
+    "hallFirst": "Start with the hall",
+    "hallFirstBody": "The hall sets your date, so book it first.",
+    "saved": "Saved",
+    "savedCount": {
+      "one": "1 vendor",
+      "other": "{{count}} vendors"
+    },
+    "savedNone": "Tap the heart to keep one",
+    "requests": "Requests",
+    "requestsCount": {
+      "one": "1 open",
+      "other": "{{count}} open"
+    },
+    "requestsNone": "Post what you need"
   }
 }

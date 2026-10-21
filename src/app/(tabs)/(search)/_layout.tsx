@@ -2,15 +2,16 @@ import { Stack } from 'expo-router';
 
 import { useColors } from '@/constants/theme';
 
-// Search is the first screen of this tab's stack, so a deep link to results
-// opened from Search still has Search underneath it.
+// Vendors is the first screen of this tab's stack, so a deep link to Search,
+// results or Requests still has Vendors underneath it.
 export const unstable_settings = {
-  anchor: 'search',
+  anchor: 'vendors',
 };
 
 /**
- * The Search tab's stack: Search, then results pushed on top with the tab bar
- * still showing. Results are shared with Home through the (home,search) group.
+ * The Vendors tab's stack: Vendors, then Search, results and Requests pushed
+ * on top with the tab bar still showing. Results are shared with Home through
+ * the (home,search) group.
  */
 export default function SearchStackLayout() {
   const Colors = useColors();
