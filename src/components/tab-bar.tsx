@@ -118,9 +118,9 @@ export function useTabBarTop() {
 /**
  * The bottom bar, in iOS 26's style: a Liquid Glass capsule floating over the
  * content (TabBarSpaceProvider leaves room for it), every tab its icon with
- * its name under it, and a soft lens behind the selected one that springs
- * from tab to tab. The selected tab's icon fills in and its name turns bold
- * and dark; the others stay outlined and grey. `center` (Wed's button) takes
+ * its name under it, and a solid ink lens behind the selected one that springs
+ * from tab to tab. The selected tab's icon fills in and turns white on the
+ * lens; the others stay outlined and grey. `center` (Wed's button) takes
  * the middle slot between two halves of tabs, level with them, and the lens
  * sits behind it while `centerFor` is open. Over Reels the glass is always
  * dark. Slides away while a screen asks with useHideTabBar().
@@ -221,7 +221,7 @@ export function TabBar({
       <Animated.View style={[styles.through, dropStyle]}>
         <Glass scheme={overDark ? 'dark' : scheme} style={styles.bar} />
         <Animated.View
-          style={[styles.lens, { width: slotWidth, backgroundColor: Colors.tabLens }, lensStyle]}
+          style={[styles.lens, { width: slotWidth, backgroundColor: tint }, lensStyle]}
         />
         <View
           style={styles.items}
@@ -242,7 +242,7 @@ export function TabBar({
     const focused = route.name === current;
     const spec = tabs.find((tab) => tab.name === route.name)!;
     const selected = isSelected(route);
-    const color = selected ? tint : Colors.text2;
+    const color = selected ? Colors.surface : Colors.text2;
 
     const onPress = () => {
       const event = navigation.emit({

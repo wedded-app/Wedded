@@ -23,6 +23,8 @@ import { HomeCover, useCoverHeight } from '@/features/home/home-cover';
 import { NextUp } from '@/features/home/next-up';
 import { SectionHeader } from '@/features/home/section-header';
 import { VendorPhotoCards } from '@/features/home/vendor-photo-cards';
+import { VendorRows } from '@/features/home/vendor-rows';
+import { useWeddingDraft } from '@/features/home/wedding-draft';
 import { VendorTypeRow } from '@/features/home/vendor-type-row';
 import { YourFamily } from '@/features/home/your-family';
 import { YourVendors } from '@/features/home/your-vendors';
@@ -70,16 +72,19 @@ export default function HomeScreen() {
   const showCover = planning || (loading && browsing);
   const showDateCard = !planning && !loading && browsing;
 
-  // The small title and the bar's backdrop come in as the cover scrolls away
-  const collapseAt = showCover ? coverHeight - navTop : 0;
+  // The small title and the bar's backdrop come in as the cover, or the
+  // greeting, scrolls away
+  const [greetingHeight, setGreetingHeight] = useState(0);
+  const collapseAt = showCover ? coverHeight - navTop : greetingHeight;
   useEffect(() => scroll.setCollapseAt(collapseAt), [scroll, collapseAt]);
 
   // White clock and battery over the cover, the app's own once it's gone.
   // Worklets may capture only shared values, never the whole scroll object.
   const { scrollY } = scroll;
   const [overCover, setOverCover] = useState(true);
+  // Only the photo cover gets a white clock; the greeting page keeps the dark one
   useAnimatedReaction(
-    () => scrollY.value < collapseAt,
+    () => showCover && scrollY.value < collapseAt,
     (now, before) => {
       if (now !== before) runOnJS(setOverCover)(now);
     },
@@ -111,7 +116,7 @@ export default function HomeScreen() {
       : router.navigate('/search');
 
   return (
-    <View style={[styles.screen, { backgroundColor: Colors.bg }]}>
+    <View style={[styles.screen, { backgroundColor: Colors.canvas }]}>
       <Animated.ScrollView
         onScroll={scroll.onScroll}
         scrollEventThrottle={16}
@@ -129,7 +134,22 @@ export default function HomeScreen() {
       >
         {showCover && <HomeCover view={view} posts={posts} />}
 
-        <View style={[styles.body, !showCover && { paddingTop: navTop + Spacing.lg }]}>
+        <View style={[styles.body, !showCover && { paddingTop: navTop + Spacing.md }]}>
+          {!showCover && (
+            <View
+              style={styles.greeting}
+              onLayout={(event) => setGreetingHeight(event.nativeEvent.layout.height)}
+            >
+              <AppText variant="label" weight={600} color="text2">
+                {profile?.full_name
+                  ? t('home.hello', { name: profile.full_name.split(' ')[0] })
+                  : t('home.helloPlain')}
+              </AppText>
+              <AppText variant="title" weight={700}>
+                {t('home.yourWedding')}
+              </AppText>
+            </View>
+          )}
           {showDateCard && <DateCard />}
           <StoryRings />
           <View style={styles.find}>
@@ -190,12 +210,14 @@ export default function HomeScreen() {
 function BrowseSections({ posts }: { posts: FeedPost[] }) {
   const { t } = useLocale();
   const router = useRouter();
+  const { date } = useWeddingDraft();
   const groups = useCategoryGroups();
   const { data: sections, status, refetch } = useHomeEvents();
 
   return (
     <>
       <BookFirst />
+      <VendorRows date={date} />
 
       <View style={styles.block}>
         <SectionHeader
@@ -254,6 +276,10 @@ const styles = StyleSheet.create({
   },
   find: {
     gap: Spacing.xs,
+  },
+  greeting: {
+    gap: 2,
+    marginBottom: -Spacing.md,
   },
   block: {
     gap: Spacing.md,

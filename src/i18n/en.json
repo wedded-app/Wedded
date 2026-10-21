@@ -95,7 +95,14 @@
         "other": "Needed at {{count}} events"
       },
       "addDate": "Add your date to see who's free"
-    }
+    },
+    "hello": "Hello, {{name}}",
+    "helloPlain": "Hello",
+    "yourWedding": "Your wedding",
+    "seeMore": "See more",
+    "freeOn": "Free {{date}}",
+    "freeOnYourDate": "Free on your date",
+    "nearYou": "Near you"
   },
   "when": {
     "close": "Close",
