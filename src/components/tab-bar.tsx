@@ -145,9 +145,12 @@ export function TabBar({
   const styles = useStyles();
   const bottom = useTabBarOffset();
   const reduceMotion = useReducedMotion();
-  const current = state.routes[state.index]?.name ?? '';
+  const focused = state.routes[state.index];
+  const current = focused?.name ?? '';
+  // The page on top of a tab's own stack, e.g. Requests on the Vendors tab
+  const inner = focused?.state?.routes[focused.state.index ?? 0]?.name ?? '';
   // Over the Reels videos and Requests' night page the bar is always dark glass
-  const overDark = ALWAYS_DARK.includes(current);
+  const overDark = ALWAYS_DARK.includes(current) || ALWAYS_DARK.includes(inner);
   const Colors = overDark ? Palettes.dark : appColors;
   const tint = accent === 'kesari' ? Colors.kesari : Colors.text;
   // Only the routes with a tab: a hidden route (href: null, like Wed) gets no slot

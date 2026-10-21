@@ -19,7 +19,7 @@ import { useLocale } from '@/i18n/locale-context';
 import { Motion } from '@/lib/motion';
 
 /**
- * The Requests tab (#219, #253): "Ask vendors", then everything the family has
+ * Requests (#219, #253), opened from the Vendors tab's Your requests card: "Ask vendors", then everything the family has
  * asked vendors for, newest first, each as an invitation card with how many
  * proposals came in. Signed out, or before there's a plan, it says what
  * requests are and offers the next step: sign in, or start the plan. /requests
@@ -143,8 +143,6 @@ function Requests() {
 
   return (
     <NightScreen
-      // A tab: nothing to go back to
-      top={false}
       eyebrow={t('requests.mine.eyebrow')}
       title={t('requests.mine.title')}
       subtitle={t('requests.mine.subtitle')}
