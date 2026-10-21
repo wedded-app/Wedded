@@ -267,7 +267,7 @@ const useStyles = makeStyles((Colors) => ({
     justifyContent: 'center',
     marginTop: Spacing.sm,
     borderRadius: Radius.button,
-    backgroundColor: Colors.surface,
+    backgroundColor: Colors.canvas,
   },
   free: {
     position: 'absolute',

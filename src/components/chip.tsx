@@ -110,7 +110,8 @@ const useStyles = makeStyles((Colors) => ({
     paddingHorizontal: Spacing.lg,
     paddingVertical: Spacing.xs,
     borderRadius: Radius.chip,
-    backgroundColor: Colors.surface,
+    // White and outlined, on the page or on a grey card
+    backgroundColor: Colors.bg,
     boxShadow: `inset 0 0 0 1px ${Colors.border}`,
   },
   selected: {

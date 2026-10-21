@@ -14,8 +14,8 @@ export type CardProps = Omit<ViewProps, 'style'> & {
 };
 
 /**
- * White rounded surface on the grey page, with iOS's continuous corners. No
- * border or shadow: the white on grey is the edge. Tappable cards shrink a
+ * Warm grey rounded surface on the white page, with iOS's continuous
+ * corners. No border or shadow: the grey on white is the edge. Tappable cards shrink a
  * little under the finger. Grows with its content (never a fixed height) so
  * Punjabi and large text don't clip. Pass `style={{ padding: 0 }}` for
  * edge-to-edge photos; the corners clip the photo.

@@ -350,7 +350,6 @@ function NumberStep({
                   styles.input,
                   {
                     fontFamily: type.fontFamily,
-                    fontWeight: 'fontWeight' in type ? type.fontWeight : undefined,
                     fontSize: type.fontSize,
                     color: Colors.text,
                   },

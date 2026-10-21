@@ -786,7 +786,7 @@ export default function VendorProfileScreen() {
         contentContainerStyle={{ paddingBottom: barHeight + barBottom + Spacing.xl }}
       >
         {hero}
-        <View style={[styles.content, !hero && { paddingTop: navTop }]}>{body}</View>
+        <View style={[styles.content, hero ? styles.sheet : { paddingTop: navTop }]}>{body}</View>
       </Animated.ScrollView>
 
       <NavBar
@@ -861,6 +861,9 @@ export default function VendorProfileScreen() {
   );
 }
 
+// How far the page's rounded top rises over the photo
+const SHEET_OVERLAP = 28;
+
 const useStyles = makeStyles((Colors) => ({
   screen: {
     flex: 1,
@@ -880,7 +883,8 @@ const useStyles = makeStyles((Colors) => ({
   photoCount: {
     position: 'absolute',
     right: Spacing.lg,
-    bottom: Spacing.lg,
+    // Clear of the sheet's rounded top
+    bottom: SHEET_OVERLAP + Spacing.md,
     flexDirection: 'row',
     alignItems: 'center',
     gap: Spacing.xs,
@@ -892,6 +896,14 @@ const useStyles = makeStyles((Colors) => ({
     gap: Spacing.xl,
     paddingHorizontal: Sizes.pageGutter,
     paddingTop: Spacing.xl,
+  },
+  // Over a photo, the page rises over its bottom edge with rounded corners
+  sheet: {
+    marginTop: -SHEET_OVERLAP,
+    borderTopLeftRadius: Radius.sheet,
+    borderTopRightRadius: Radius.sheet,
+    borderCurve: 'continuous',
+    backgroundColor: Colors.bg,
   },
   titleBlock: {
     gap: Spacing.xs,
