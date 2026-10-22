@@ -1,6 +1,6 @@
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(8);
+select plan(9);
 select is_empty($$ select n.nspname || '.' || c.relname from pg_class c
   join pg_namespace n on n.oid=c.relnamespace
   where n.nspname in ('public', 'private') and c.relkind in ('r','p')
@@ -17,8 +17,8 @@ select is_empty($$ select p.proname from pg_proc p join pg_namespace n on n.oid=
   where n.nspname='public' and c.relkind in ('r','p') $$,
   'Public RPCs do not expose whole table row types that silently grow');
 select results_eq($$ select id, file_size_limit from storage.buckets order by id $$,
- $$ values ('chat-media'::text, 5242880::bigint), ('reels', 52428800::bigint), ('vault-media', 52428800::bigint),
-   ('vendor-media', 5242880::bigint) $$,
+ $$ values ('chat-media'::text, 5242880::bigint), ('reels', 52428800::bigint), ('site-media', 5242880::bigint),
+   ('vault-media', 52428800::bigint), ('vendor-media', 5242880::bigint) $$,
  'Storage bucket byte limits match the client upload guards');
 select is((select allowed_mime_types from storage.buckets where id='vendor-media'),
  array['image/webp','image/jpeg']::text[], 'Vendor media MIME types match client guards');
@@ -30,5 +30,7 @@ select is((select allowed_mime_types from storage.buckets where id='chat-media')
  'audio/x-m4a','audio/aac','audio/mpeg','audio/webm']::text[], 'Chat MIME types match client guards');
 select is((select allowed_mime_types from storage.buckets where id='vault-media'),
  array['image/jpeg','video/mp4','video/quicktime']::text[], 'Memory Vault MIME types match client guards');
+select is((select allowed_mime_types from storage.buckets where id='site-media'),
+ array['image/webp','image/jpeg']::text[], 'Wedding site MIME types match client guards');
 select * from finish();
 rollback;

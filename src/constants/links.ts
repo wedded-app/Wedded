@@ -36,8 +36,12 @@ export function siteLink(path: string): string {
  * createURL leaves off ("channel-name: Required"); EAS names the branch after
  * the channel, so the update's branch is the channel.
  */
-export function shareLink(path: string): string {
-  if (!SITE_URL_IS_PLACEHOLDER) return siteLink(path);
+export function shareLink(path: string, query?: Record<string, string>): string {
+  if (!SITE_URL_IS_PLACEHOLDER) {
+    const search = query ? `?${new URLSearchParams(query).toString()}` : '';
+    return siteLink(path) + search;
+  }
   const branch = (Constants.manifest2?.metadata as { branchName?: string } | undefined)?.branchName;
-  return Linking.createURL(path, branch ? { queryParams: { 'channel-name': branch } } : undefined);
+  const queryParams = { ...query, ...(branch ? { 'channel-name': branch } : {}) };
+  return Linking.createURL(path, Object.keys(queryParams).length > 0 ? { queryParams } : undefined);
 }

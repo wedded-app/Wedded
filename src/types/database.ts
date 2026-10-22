@@ -609,6 +609,38 @@ export type Database = {
           },
         ];
       };
+      event_guest_tips: {
+        Row: {
+          created_at: string;
+          event_slug: string;
+          sort_order: number;
+          tip: NonNullable<Json>;
+          updated_at: string;
+        };
+        Insert: {
+          created_at?: string;
+          event_slug: string;
+          sort_order: number;
+          tip: NonNullable<Json>;
+          updated_at?: string;
+        };
+        Update: {
+          created_at?: string;
+          event_slug?: string;
+          sort_order?: number;
+          tip?: NonNullable<Json>;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'event_guest_tips_event_slug_fkey';
+            columns: ['event_slug'];
+            isOneToOne: false;
+            referencedRelation: 'events';
+            referencedColumns: ['slug'];
+          },
+        ];
+      };
       events: {
         Row: {
           aliases: string[];
@@ -3281,12 +3313,16 @@ export type Database = {
           budget_cents: number | null;
           city_slug: string | null;
           created_at: string;
+          dress_code: string | null;
+          dress_colors: string[];
           ends_at: string | null;
           event_date: string | null;
           event_slug: string;
           guest_band: string | null;
           guest_count: number | null;
+          guest_note: string | null;
           id: string;
+          shown_publicly: boolean;
           side_id: string | null;
           starts_at: string | null;
           updated_at: string;
@@ -3299,12 +3335,16 @@ export type Database = {
           budget_cents?: number | null;
           city_slug?: string | null;
           created_at?: string;
+          dress_code?: string | null;
+          dress_colors?: string[];
           ends_at?: string | null;
           event_date?: string | null;
           event_slug: string;
           guest_band?: string | null;
           guest_count?: number | null;
+          guest_note?: string | null;
           id?: string;
+          shown_publicly?: boolean;
           side_id?: string | null;
           starts_at?: string | null;
           updated_at?: string;
@@ -3317,12 +3357,16 @@ export type Database = {
           budget_cents?: number | null;
           city_slug?: string | null;
           created_at?: string;
+          dress_code?: string | null;
+          dress_colors?: string[];
           ends_at?: string | null;
           event_date?: string | null;
           event_slug?: string;
           guest_band?: string | null;
           guest_count?: number | null;
+          guest_note?: string | null;
           id?: string;
+          shown_publicly?: boolean;
           side_id?: string | null;
           starts_at?: string | null;
           updated_at?: string;
@@ -3650,6 +3694,159 @@ export type Database = {
             foreignKeyName: 'wedding_sides_wedding_id_fkey';
             columns: ['wedding_id'];
             isOneToOne: false;
+            referencedRelation: 'weddings';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      wedding_site_items: {
+        Row: {
+          body: string | null;
+          created_at: string;
+          id: string;
+          kind: string;
+          link: string | null;
+          position: number;
+          site_id: string;
+          title: string;
+          updated_at: string;
+        };
+        Insert: {
+          body?: string | null;
+          created_at?: string;
+          id?: string;
+          kind: string;
+          link?: string | null;
+          position: number;
+          site_id: string;
+          title: string;
+          updated_at?: string;
+        };
+        Update: {
+          body?: string | null;
+          created_at?: string;
+          id?: string;
+          kind?: string;
+          link?: string | null;
+          position?: number;
+          site_id?: string;
+          title?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'wedding_site_items_site_id_fkey';
+            columns: ['site_id'];
+            isOneToOne: false;
+            referencedRelation: 'wedding_sites';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      wedding_site_locks: {
+        Row: {
+          created_at: string;
+          miss_day: string | null;
+          misses: number;
+          password_hash: string | null;
+          site_id: string;
+          updated_at: string;
+        };
+        Insert: {
+          created_at?: string;
+          miss_day?: string | null;
+          misses?: number;
+          password_hash?: string | null;
+          site_id: string;
+          updated_at?: string;
+        };
+        Update: {
+          created_at?: string;
+          miss_day?: string | null;
+          misses?: number;
+          password_hash?: string | null;
+          site_id?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'wedding_site_locks_site_id_fkey';
+            columns: ['site_id'];
+            isOneToOne: true;
+            referencedRelation: 'wedding_sites';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      wedding_sites: {
+        Row: {
+          cover_path: string | null;
+          created_at: string;
+          design: string;
+          family_lines: string[];
+          family_title: string | null;
+          guide_title: string | null;
+          id: string;
+          livestream_note: string | null;
+          livestream_url: string | null;
+          palette: string | null;
+          published_at: string | null;
+          rsvp_by: string | null;
+          searchable: boolean;
+          sections: string[];
+          slug: string;
+          story: string | null;
+          updated_at: string;
+          wedding_id: string;
+          welcome: string | null;
+        };
+        Insert: {
+          cover_path?: string | null;
+          created_at?: string;
+          design?: string;
+          family_lines?: string[];
+          family_title?: string | null;
+          guide_title?: string | null;
+          id?: string;
+          livestream_note?: string | null;
+          livestream_url?: string | null;
+          palette?: string | null;
+          published_at?: string | null;
+          rsvp_by?: string | null;
+          searchable?: boolean;
+          sections?: string[];
+          slug: string;
+          story?: string | null;
+          updated_at?: string;
+          wedding_id: string;
+          welcome?: string | null;
+        };
+        Update: {
+          cover_path?: string | null;
+          created_at?: string;
+          design?: string;
+          family_lines?: string[];
+          family_title?: string | null;
+          guide_title?: string | null;
+          id?: string;
+          livestream_note?: string | null;
+          livestream_url?: string | null;
+          palette?: string | null;
+          published_at?: string | null;
+          rsvp_by?: string | null;
+          searchable?: boolean;
+          sections?: string[];
+          slug?: string;
+          story?: string | null;
+          updated_at?: string;
+          wedding_id?: string;
+          welcome?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'wedding_sites_wedding_id_fkey';
+            columns: ['wedding_id'];
+            isOneToOne: true;
             referencedRelation: 'weddings';
             referencedColumns: ['id'];
           },
@@ -3996,6 +4193,7 @@ export type Database = {
         };
         Returns: string;
       };
+      create_site: { Args: { p_wedding_id: string }; Returns: string };
       create_story: {
         Args: {
           p_caption: string;
@@ -4253,6 +4451,7 @@ export type Database = {
         Args: { p_body: string; p_data?: Json; p_message_id: string };
         Returns: string;
       };
+      publish_site: { Args: { p_publish: boolean; p_wedding_id: string }; Returns: string };
       react_to_message: { Args: { p_message_id: string; p_reaction?: string }; Returns: undefined };
       react_to_vendor: {
         Args: { p_reaction: string; p_vendor_id: string; p_wedding_id: string };
@@ -4493,11 +4692,22 @@ export type Database = {
         };
         Returns: undefined;
       };
+      set_event_site_details: {
+        Args: { p_details: Json; p_event_slug: string; p_wedding_id: string };
+        Returns: undefined;
+      };
       set_guest_list_members: {
         Args: { p_guest_ids: string[]; p_list_id: string };
         Returns: undefined;
       };
       set_hall_facts: { Args: { p_facts: Json; p_vendor_id: string }; Returns: undefined };
+      set_site_cover: { Args: { p_photo_id: string; p_wedding_id: string }; Returns: string };
+      set_site_items: {
+        Args: { p_items: Json; p_kind: string; p_wedding_id: string };
+        Returns: number;
+      };
+      set_site_password: { Args: { p_password: string; p_wedding_id: string }; Returns: boolean };
+      set_site_slug: { Args: { p_slug: string; p_wedding_id: string }; Returns: string };
       set_vault_settings: {
         Args: {
           p_guests_see_all?: boolean;
@@ -4517,6 +4727,10 @@ export type Database = {
         Returns: undefined;
       };
       set_wedding_rsvp_link: { Args: { p_action: string; p_wedding_id: string }; Returns: string };
+      site_page: {
+        Args: { p_guest_token?: string; p_password?: string; p_slug: string };
+        Returns: Json;
+      };
       start_conversation: { Args: { p_vendor_id: string }; Returns: string };
       start_my_business: {
         Args: { p_category_slug: string; p_city_slug: string; p_name: string };
@@ -4583,6 +4797,7 @@ export type Database = {
         };
         Returns: undefined;
       };
+      update_site: { Args: { p_changes: Json; p_wedding_id: string }; Returns: undefined };
       vault_invite_preview: {
         Args: { p_token: string };
         Returns: {
