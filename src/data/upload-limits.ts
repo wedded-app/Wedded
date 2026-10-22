@@ -4,6 +4,7 @@ export const STORAGE_LIMITS = {
   'chat-media': 5 * 1024 * 1024,
   reels: 50 * 1024 * 1024,
   'vault-media': 50 * 1024 * 1024,
+  'site-media': 5 * 1024 * 1024,
 } as const;
 export const REEL_VIDEO_TYPES = ['video/mp4', 'video/quicktime'] as const;
 const MIME_TYPES: Record<keyof typeof STORAGE_LIMITS, readonly string[]> = {
@@ -22,6 +23,7 @@ const MIME_TYPES: Record<keyof typeof STORAGE_LIMITS, readonly string[]> = {
   ],
   reels: [...REEL_VIDEO_TYPES, 'image/jpeg', 'image/webp', 'image/png'],
   'vault-media': ['image/jpeg', ...REEL_VIDEO_TYPES],
+  'site-media': ['image/webp', 'image/jpeg'],
 };
 export function assertUploadFits(
   bucket: keyof typeof STORAGE_LIMITS,

@@ -15,7 +15,10 @@ import { Platform } from 'react-native';
 import { supabase } from '@/lib/supabase';
 
 import { insightKeys } from './business-insights';
+import { photoFiles, photoSizes, type PickedPhoto } from './photo-sizes';
 import { PHOTO_COLUMNS, toPhoto, type PhotoRow, type VendorPhoto } from './vendor-media';
+
+export { PHOTO_WIDTHS, photoFiles, photoSizes, type PickedPhoto } from './photo-sizes';
 
 export const myPhotoKeys = {
   mine: (vendorId: string) => ['my-vendor-photos', vendorId] as const,
@@ -23,22 +26,6 @@ export const myPhotoKeys = {
 
 /** The most photos a vendor can have; the database says the same. */
 export const MAX_VENDOR_PHOTOS = 60;
-
-/** The sizes the app shows, as files named by width. */
-export const PHOTO_WIDTHS = [400, 1080, 1600] as const;
-
-/**
- * How wide to make each size from a photo this wide: never wider than the
- * original, so a small photo isn't blown up.
- */
-export function photoSizes(originalWidth: number): { name: number; width: number }[] {
-  return PHOTO_WIDTHS.map((name) => ({ name, width: Math.min(name, Math.max(1, originalWidth)) }));
-}
-
-/** The files of a photo in its folder. */
-export function photoFiles(folder: string): string[] {
-  return PHOTO_WIDTHS.map((width) => `${folder}/${width}.webp`);
-}
 
 export type PhotoProblem =
   'tooMany' | 'rate' | 'notAllowed' | 'tooBig' | 'invalidEvent' | 'offline' | 'failed';
@@ -89,8 +76,6 @@ async function readBytes(uri: string): Promise<ArrayBuffer> {
   // Browsers hand back a blob: link, which File can't open
   return Platform.OS === 'web' ? (await fetch(uri)).arrayBuffer() : new File(uri).arrayBuffer();
 }
-
-export type PickedPhoto = { uri: string; width: number; height: number };
 
 /**
  * Make the three sizes of one picked photo, upload them and save it. If saving

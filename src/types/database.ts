@@ -29,6 +29,7 @@ export type Database = {
           updated_at: string;
           value: NonNullable<Json>;
         };
+        ComputedFields: never;
         Insert: {
           key: string;
           updated_at?: string;
@@ -51,6 +52,7 @@ export type Database = {
           sort_order: number;
           updated_at: string;
         };
+        ComputedFields: never;
         Insert: {
           center_city_slug: string;
           code: string;
@@ -87,6 +89,7 @@ export type Database = {
           sort_order: number;
           updated_at: string;
         };
+        ComputedFields: never;
         Insert: {
           created_at?: string;
           name: NonNullable<Json>;
@@ -119,6 +122,7 @@ export type Database = {
           vendor_id: string | null;
           vendor_name: string | null;
         };
+        ComputedFields: never;
         Insert: {
           agreed_cents?: number | null;
           booked_by?: string | null;
@@ -186,6 +190,7 @@ export type Database = {
           sort_order: number;
           updated_at: string;
         };
+        ComputedFields: never;
         Insert: {
           aliases?: string[];
           created_at?: string;
@@ -228,6 +233,7 @@ export type Database = {
           sort_order: number;
           updated_at: string;
         };
+        ComputedFields: never;
         Insert: {
           created_at?: string;
           name: NonNullable<Json>;
@@ -258,6 +264,7 @@ export type Database = {
           state: string;
           updated_at: string;
         };
+        ComputedFields: never;
         Insert: {
           area_code: string;
           created_at?: string;
@@ -307,6 +314,7 @@ export type Database = {
           vendor_notified_at: string | null;
           vendor_read_at: string | null;
         };
+        ComputedFields: never;
         Insert: {
           created_at?: string;
           family_label?: string | null;
@@ -352,6 +360,7 @@ export type Database = {
           sort_order: number;
           updated_at: string;
         };
+        ComputedFields: never;
         Insert: {
           created_at?: string;
           culture_slug: string;
@@ -401,6 +410,7 @@ export type Database = {
           sort_order: number;
           updated_at: string;
         };
+        ComputedFields: never;
         Insert: {
           background_slug?: string | null;
           created_at?: string;
@@ -461,6 +471,7 @@ export type Database = {
           updated_at: string;
           vendor_id: string;
         };
+        ComputedFields: never;
         Insert: {
           amount_cents: number;
           canceled_at?: string | null;
@@ -534,6 +545,7 @@ export type Database = {
           push_token: string;
           user_id: string;
         };
+        ComputedFields: never;
         Insert: {
           created_at?: string;
           id?: string;
@@ -557,6 +569,7 @@ export type Database = {
           created_at: string;
           email: string;
         };
+        ComputedFields: never;
         Insert: {
           created_at?: string;
           email: string;
@@ -576,6 +589,7 @@ export type Database = {
           sort_order: number;
           updated_at: string;
         };
+        ComputedFields: never;
         Insert: {
           category_slug: string;
           created_at?: string;
@@ -609,6 +623,39 @@ export type Database = {
           },
         ];
       };
+      event_guest_tips: {
+        Row: {
+          created_at: string;
+          event_slug: string;
+          sort_order: number;
+          tip: NonNullable<Json>;
+          updated_at: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          created_at?: string;
+          event_slug: string;
+          sort_order: number;
+          tip: NonNullable<Json>;
+          updated_at?: string;
+        };
+        Update: {
+          created_at?: string;
+          event_slug?: string;
+          sort_order?: number;
+          tip?: NonNullable<Json>;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'event_guest_tips_event_slug_fkey';
+            columns: ['event_slug'];
+            isOneToOne: false;
+            referencedRelation: 'events';
+            referencedColumns: ['slug'];
+          },
+        ];
+      };
       events: {
         Row: {
           aliases: string[];
@@ -622,6 +669,7 @@ export type Database = {
           typical_guests_min: number | null;
           updated_at: string;
         };
+        ComputedFields: never;
         Insert: {
           aliases?: string[];
           created_at?: string;
@@ -656,6 +704,7 @@ export type Database = {
           sort_order: number;
           updated_at: string;
         };
+        ComputedFields: never;
         Insert: {
           created_at?: string;
           name: NonNullable<Json>;
@@ -680,6 +729,7 @@ export type Database = {
           follower_id: string;
           id: string;
         };
+        ComputedFields: never;
         Insert: {
           created_at?: string;
           followee_user_id?: string | null;
@@ -714,6 +764,7 @@ export type Database = {
           inquiry_id: string;
           question: string;
         };
+        ComputedFields: never;
         Insert: {
           answer?: string | null;
           answered_at?: string | null;
@@ -754,6 +805,7 @@ export type Database = {
           token_hash: string;
           uses: number;
         };
+        ComputedFields: never;
         Insert: {
           created_at?: string;
           created_by: string;
@@ -795,6 +847,7 @@ export type Database = {
           thread_id: string;
           user_id: string;
         };
+        ComputedFields: never;
         Insert: {
           added_by?: string | null;
           joined_at?: string;
@@ -835,6 +888,7 @@ export type Database = {
           thread_id: string;
           wed_ask: string | null;
         };
+        ComputedFields: never;
         Insert: {
           body?: string | null;
           created_at?: string;
@@ -887,6 +941,7 @@ export type Database = {
           name: string;
           wedding_id: string;
         };
+        ComputedFields: never;
         Insert: {
           created_at?: string;
           created_by?: string | null;
@@ -924,6 +979,7 @@ export type Database = {
           wedding_event_id: string;
           wedding_id: string;
         };
+        ComputedFields: never;
         Insert: {
           answer_count?: number;
           answered_at?: string | null;
@@ -966,6 +1022,7 @@ export type Database = {
           guest_id: string;
           list_id: string;
         };
+        ComputedFields: never;
         Insert: {
           guest_id: string;
           list_id: string;
@@ -999,6 +1056,7 @@ export type Database = {
           updated_at: string;
           wedding_id: string;
         };
+        ComputedFields: never;
         Insert: {
           created_at?: string;
           id?: string;
@@ -1050,6 +1108,7 @@ export type Database = {
           venue_text: string | null;
           wedding_id: string | null;
         };
+        ComputedFields: never;
         Insert: {
           answers?: NonNullable<Json>;
           channel: string;
@@ -1140,6 +1199,7 @@ export type Database = {
           position: number;
           wedding_event_id: string | null;
         };
+        ComputedFields: never;
         Insert: {
           event_slug: string;
           inquiry_id: string;
@@ -1184,6 +1244,7 @@ export type Database = {
           sent_at: string;
           wedding_id: string;
         };
+        ComputedFields: never;
         Insert: {
           channel: string;
           guest_id: string;
@@ -1222,6 +1283,7 @@ export type Database = {
           name: NonNullable<Json>;
           sort_order: number;
         };
+        ComputedFields: never;
         Insert: {
           code: string;
           created_at?: string;
@@ -1245,6 +1307,7 @@ export type Database = {
           scopes: string[];
           updated_at: string;
         };
+        ComputedFields: never;
         Insert: {
           access_token_enc: string;
           expires_at?: string | null;
@@ -1283,6 +1346,7 @@ export type Database = {
           user_id: string;
           vendor_id: string | null;
         };
+        ComputedFields: never;
         Insert: {
           connected_at?: string;
           external_id: string;
@@ -1325,6 +1389,7 @@ export type Database = {
           uploads_open: boolean;
           wedding_id: string;
         };
+        ComputedFields: never;
         Insert: {
           created_at?: string;
           created_by?: string | null;
@@ -1364,6 +1429,7 @@ export type Database = {
           section: string;
           sort_order: number;
         };
+        ComputedFields: never;
         Insert: {
           created_at?: string;
           description?: string | null;
@@ -1402,6 +1468,7 @@ export type Database = {
           reaction: string;
           user_id: string;
         };
+        ComputedFields: never;
         Insert: {
           conversation_id: string;
           created_at?: string;
@@ -1447,6 +1514,7 @@ export type Database = {
           sender_role: string;
           sender_user_id: string | null;
         };
+        ComputedFields: never;
         Insert: {
           body?: string | null;
           conversation_id: string;
@@ -1507,6 +1575,7 @@ export type Database = {
           updated_at: string;
           vendor_id: string;
         };
+        ComputedFields: never;
         Insert: {
           charges_enabled?: boolean;
           created_at?: string;
@@ -1548,6 +1617,7 @@ export type Database = {
           planning_for: string | null;
           updated_at: string;
         };
+        ComputedFields: never;
         Insert: {
           adult_confirmed_at?: string;
           city: string;
@@ -1584,6 +1654,7 @@ export type Database = {
           reel_id: string;
           user_id: string;
         };
+        ComputedFields: never;
         Insert: {
           body: string;
           created_at?: string;
@@ -1618,6 +1689,7 @@ export type Database = {
           reel_id: string;
           user_id: string;
         };
+        ComputedFields: never;
         Insert: {
           created_at?: string;
           reel_id: string;
@@ -1647,6 +1719,7 @@ export type Database = {
           status: string;
           vendor_id: string;
         };
+        ComputedFields: never;
         Insert: {
           created_at?: string;
           decided_at?: string | null;
@@ -1686,6 +1759,7 @@ export type Database = {
           reel_id: string;
           views: number;
         };
+        ComputedFields: never;
         Insert: {
           day: string;
           reel_id: string;
@@ -1727,6 +1801,7 @@ export type Database = {
           video_path: string | null;
           width: number | null;
         };
+        ComputedFields: never;
         Insert: {
           author_id: string;
           caption?: string | null;
@@ -1801,6 +1876,7 @@ export type Database = {
           sort_order: number;
           updated_at: string;
         };
+        ComputedFields: never;
         Insert: {
           created_at?: string;
           is_live?: boolean;
@@ -1836,6 +1912,7 @@ export type Database = {
           story_id: string | null;
           user_id: string | null;
         };
+        ComputedFields: never;
         Insert: {
           comment_id?: string | null;
           created_at?: string;
@@ -1904,6 +1981,7 @@ export type Database = {
           status: string;
           vendor_id: string;
         };
+        ComputedFields: never;
         Insert: {
           answered_at?: string | null;
           conversation_id?: string | null;
@@ -1978,6 +2056,7 @@ export type Database = {
           misses: number;
           wedding_id: string;
         };
+        ComputedFields: never;
         Insert: {
           day: string;
           misses?: number;
@@ -2009,6 +2088,7 @@ export type Database = {
           wedding_event_id: string | null;
           wedding_id: string | null;
         };
+        ComputedFields: never;
         Insert: {
           created_at?: string;
           id?: string;
@@ -2061,6 +2141,7 @@ export type Database = {
           vendor_id: string;
           wedding_id: string;
         };
+        ComputedFields: never;
         Insert: {
           reaction: string;
           updated_at?: string;
@@ -2107,6 +2188,7 @@ export type Database = {
           vendor_id: string | null;
           width: number | null;
         };
+        ComputedFields: never;
         Insert: {
           author_id: string;
           caption?: string | null;
@@ -2159,6 +2241,7 @@ export type Database = {
           wedding_event_id: string;
           wedding_id: string;
         };
+        ComputedFields: never;
         Insert: {
           category_slug: string;
           created_at?: string;
@@ -2216,6 +2299,7 @@ export type Database = {
           part: string;
           rank: number;
         };
+        ComputedFields: never;
         Insert: {
           day: string;
           inquiry_id: string;
@@ -2244,6 +2328,7 @@ export type Database = {
           blocker_id: string;
           created_at: string;
         };
+        ComputedFields: never;
         Insert: {
           blocked_id: string;
           blocker_id?: string;
@@ -2262,6 +2347,7 @@ export type Database = {
           user_id: string;
           vault_id: string;
         };
+        ComputedFields: never;
         Insert: {
           joined_at?: string;
           user_id: string;
@@ -2294,6 +2380,7 @@ export type Database = {
           uses: number;
           vault_id: string;
         };
+        ComputedFields: never;
         Insert: {
           created_at?: string;
           created_by?: string | null;
@@ -2342,6 +2429,7 @@ export type Database = {
           vault_id: string;
           width: number;
         };
+        ComputedFields: never;
         Insert: {
           created_at?: string;
           duration_ms?: number | null;
@@ -2396,6 +2484,7 @@ export type Database = {
           kind: string;
           vendor_id: string;
         };
+        ComputedFields: never;
         Insert: {
           count?: number;
           day: string;
@@ -2426,6 +2515,7 @@ export type Database = {
           updated_at: string;
           vendor_id: string;
         };
+        ComputedFields: never;
         Insert: {
           category_slug: string;
           created_at?: string;
@@ -2468,6 +2558,7 @@ export type Database = {
           value: string;
           vendor_id: string;
         };
+        ComputedFields: never;
         Insert: {
           created_at?: string;
           id?: string;
@@ -2510,6 +2601,7 @@ export type Database = {
           taken: number | null;
           vendor_id: string;
         };
+        ComputedFields: never;
         Insert: {
           booking_id?: string | null;
           capacity?: number | null;
@@ -2556,6 +2648,7 @@ export type Database = {
           updated_at: string;
           vendor_id: string;
         };
+        ComputedFields: never;
         Insert: {
           created_at?: string;
           event_slug: string;
@@ -2591,6 +2684,7 @@ export type Database = {
           language_code: string;
           vendor_id: string;
         };
+        ComputedFields: never;
         Insert: {
           created_at?: string;
           language_code: string;
@@ -2636,6 +2730,7 @@ export type Database = {
           updated_at: string;
           vendor_id: string | null;
         };
+        ComputedFields: never;
         Insert: {
           business_name: string;
           category?: string | null;
@@ -2692,6 +2787,7 @@ export type Database = {
           to_vendor_id: string;
           updated_at: string;
         };
+        ComputedFields: never;
         Insert: {
           created_at?: string;
           from_confirmed_at?: string | null;
@@ -2749,6 +2845,7 @@ export type Database = {
           venue_vendor_id: string | null;
           width: number;
         };
+        ComputedFields: never;
         Insert: {
           blurhash?: string | null;
           created_at?: string;
@@ -2821,6 +2918,7 @@ export type Database = {
           user_id: string;
           vendor_id: string;
         };
+        ComputedFields: never;
         Insert: {
           created_at?: string;
           role?: string;
@@ -2859,6 +2957,7 @@ export type Database = {
           updated_at: string;
           vendor_id: string;
         };
+        ComputedFields: never;
         Insert: {
           created_at?: string;
           cuisine?: string | null;
@@ -2918,6 +3017,7 @@ export type Database = {
           updated_at: string;
           vendor_id: string;
         };
+        ComputedFields: never;
         Insert: {
           checks_email?: boolean;
           created_at?: string;
@@ -2963,6 +3063,7 @@ export type Database = {
           updated_at: string;
           vendor_id: string;
         };
+        ComputedFields: never;
         Insert: {
           cancel_at_period_end?: boolean;
           created_at?: string;
@@ -3031,6 +3132,7 @@ export type Database = {
           will_travel: boolean;
           years_in_business: number | null;
         };
+        ComputedFields: never;
         Insert: {
           address_visibility?: string;
           base_city_slug: string;
@@ -3137,6 +3239,7 @@ export type Database = {
           updated_at: string;
           vendor_id: string;
         };
+        ComputedFields: never;
         Insert: {
           alcohol_policy?: string | null;
           bartender_required?: boolean | null;
@@ -3203,6 +3306,7 @@ export type Database = {
           updated_at: string;
           vendor_id: string;
         };
+        ComputedFields: never;
         Insert: {
           ceiling_ft?: number | null;
           combines_with_id?: string | null;
@@ -3248,6 +3352,7 @@ export type Database = {
           culture_slug: string;
           wedding_id: string;
         };
+        ComputedFields: never;
         Insert: {
           created_at?: string;
           culture_slug: string;
@@ -3281,12 +3386,16 @@ export type Database = {
           budget_cents: number | null;
           city_slug: string | null;
           created_at: string;
+          dress_code: string | null;
+          dress_colors: string[];
           ends_at: string | null;
           event_date: string | null;
           event_slug: string;
           guest_band: string | null;
           guest_count: number | null;
+          guest_note: string | null;
           id: string;
+          shown_publicly: boolean;
           side_id: string | null;
           starts_at: string | null;
           updated_at: string;
@@ -3294,17 +3403,22 @@ export type Database = {
           venue_text: string | null;
           wedding_id: string;
         };
+        ComputedFields: never;
         Insert: {
           at_home?: boolean;
           budget_cents?: number | null;
           city_slug?: string | null;
           created_at?: string;
+          dress_code?: string | null;
+          dress_colors?: string[];
           ends_at?: string | null;
           event_date?: string | null;
           event_slug: string;
           guest_band?: string | null;
           guest_count?: number | null;
+          guest_note?: string | null;
           id?: string;
+          shown_publicly?: boolean;
           side_id?: string | null;
           starts_at?: string | null;
           updated_at?: string;
@@ -3317,12 +3431,16 @@ export type Database = {
           budget_cents?: number | null;
           city_slug?: string | null;
           created_at?: string;
+          dress_code?: string | null;
+          dress_colors?: string[];
           ends_at?: string | null;
           event_date?: string | null;
           event_slug?: string;
           guest_band?: string | null;
           guest_count?: number | null;
+          guest_note?: string | null;
           id?: string;
+          shown_publicly?: boolean;
           side_id?: string | null;
           starts_at?: string | null;
           updated_at?: string;
@@ -3380,6 +3498,7 @@ export type Database = {
           updated_at: string;
           wedding_id: string;
         };
+        ComputedFields: never;
         Insert: {
           created_at?: string;
           email?: string | null;
@@ -3426,6 +3545,7 @@ export type Database = {
           uses: number;
           wedding_id: string;
         };
+        ComputedFields: never;
         Insert: {
           created_at?: string;
           created_by: string;
@@ -3479,6 +3599,7 @@ export type Database = {
           user_id: string;
           wedding_id: string;
         };
+        ComputedFields: never;
         Insert: {
           invite_id?: string | null;
           joined_at?: string;
@@ -3541,6 +3662,7 @@ export type Database = {
           updated_at: string;
           wedding_id: string;
         };
+        ComputedFields: never;
         Insert: {
           budget_max_cents?: number | null;
           budget_min_cents?: number | null;
@@ -3620,6 +3742,7 @@ export type Database = {
           updated_at: string;
           wedding_id: string;
         };
+        ComputedFields: never;
         Insert: {
           created_at?: string;
           home_city_slug?: string | null;
@@ -3655,6 +3778,162 @@ export type Database = {
           },
         ];
       };
+      wedding_site_items: {
+        Row: {
+          body: string | null;
+          created_at: string;
+          id: string;
+          kind: string;
+          link: string | null;
+          position: number;
+          site_id: string;
+          title: string;
+          updated_at: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          body?: string | null;
+          created_at?: string;
+          id?: string;
+          kind: string;
+          link?: string | null;
+          position: number;
+          site_id: string;
+          title: string;
+          updated_at?: string;
+        };
+        Update: {
+          body?: string | null;
+          created_at?: string;
+          id?: string;
+          kind?: string;
+          link?: string | null;
+          position?: number;
+          site_id?: string;
+          title?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'wedding_site_items_site_id_fkey';
+            columns: ['site_id'];
+            isOneToOne: false;
+            referencedRelation: 'wedding_sites';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      wedding_site_locks: {
+        Row: {
+          created_at: string;
+          miss_day: string | null;
+          misses: number;
+          password_hash: string | null;
+          site_id: string;
+          updated_at: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          created_at?: string;
+          miss_day?: string | null;
+          misses?: number;
+          password_hash?: string | null;
+          site_id: string;
+          updated_at?: string;
+        };
+        Update: {
+          created_at?: string;
+          miss_day?: string | null;
+          misses?: number;
+          password_hash?: string | null;
+          site_id?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'wedding_site_locks_site_id_fkey';
+            columns: ['site_id'];
+            isOneToOne: true;
+            referencedRelation: 'wedding_sites';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      wedding_sites: {
+        Row: {
+          cover_path: string | null;
+          created_at: string;
+          design: string;
+          family_lines: string[];
+          family_title: string | null;
+          guide_title: string | null;
+          id: string;
+          livestream_note: string | null;
+          livestream_url: string | null;
+          palette: string | null;
+          published_at: string | null;
+          rsvp_by: string | null;
+          searchable: boolean;
+          sections: string[];
+          slug: string;
+          story: string | null;
+          updated_at: string;
+          wedding_id: string;
+          welcome: string | null;
+        };
+        ComputedFields: never;
+        Insert: {
+          cover_path?: string | null;
+          created_at?: string;
+          design?: string;
+          family_lines?: string[];
+          family_title?: string | null;
+          guide_title?: string | null;
+          id?: string;
+          livestream_note?: string | null;
+          livestream_url?: string | null;
+          palette?: string | null;
+          published_at?: string | null;
+          rsvp_by?: string | null;
+          searchable?: boolean;
+          sections?: string[];
+          slug: string;
+          story?: string | null;
+          updated_at?: string;
+          wedding_id: string;
+          welcome?: string | null;
+        };
+        Update: {
+          cover_path?: string | null;
+          created_at?: string;
+          design?: string;
+          family_lines?: string[];
+          family_title?: string | null;
+          guide_title?: string | null;
+          id?: string;
+          livestream_note?: string | null;
+          livestream_url?: string | null;
+          palette?: string | null;
+          published_at?: string | null;
+          rsvp_by?: string | null;
+          searchable?: boolean;
+          sections?: string[];
+          slug?: string;
+          story?: string | null;
+          updated_at?: string;
+          wedding_id?: string;
+          welcome?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'wedding_sites_wedding_id_fkey';
+            columns: ['wedding_id'];
+            isOneToOne: true;
+            referencedRelation: 'weddings';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
       wedding_slots: {
         Row: {
           book_by: string | null;
@@ -3666,6 +3945,7 @@ export type Database = {
           updated_at: string;
           wedding_event_id: string;
         };
+        ComputedFields: never;
         Insert: {
           book_by?: string | null;
           category_slug: string;
@@ -3713,6 +3993,7 @@ export type Database = {
           updated_at: string;
           wedding_date: string | null;
         };
+        ComputedFields: never;
         Insert: {
           created_at?: string;
           created_by?: string | null;
@@ -3741,6 +4022,7 @@ export type Database = {
           longitude: number;
           zip: string;
         };
+        ComputedFields: never;
         Insert: {
           city_slug?: string | null;
           latitude: number;
@@ -3996,6 +4278,7 @@ export type Database = {
         };
         Returns: string;
       };
+      create_site: { Args: { p_wedding_id: string }; Returns: string };
       create_story: {
         Args: {
           p_caption: string;
@@ -4253,6 +4536,7 @@ export type Database = {
         Args: { p_body: string; p_data?: Json; p_message_id: string };
         Returns: string;
       };
+      publish_site: { Args: { p_publish: boolean; p_wedding_id: string }; Returns: string };
       react_to_message: { Args: { p_message_id: string; p_reaction?: string }; Returns: undefined };
       react_to_vendor: {
         Args: { p_reaction: string; p_vendor_id: string; p_wedding_id: string };
@@ -4493,11 +4777,22 @@ export type Database = {
         };
         Returns: undefined;
       };
+      set_event_site_details: {
+        Args: { p_details: Json; p_event_slug: string; p_wedding_id: string };
+        Returns: undefined;
+      };
       set_guest_list_members: {
         Args: { p_guest_ids: string[]; p_list_id: string };
         Returns: undefined;
       };
       set_hall_facts: { Args: { p_facts: Json; p_vendor_id: string }; Returns: undefined };
+      set_site_cover: { Args: { p_photo_id: string; p_wedding_id: string }; Returns: string };
+      set_site_items: {
+        Args: { p_items: Json; p_kind: string; p_wedding_id: string };
+        Returns: number;
+      };
+      set_site_password: { Args: { p_password: string; p_wedding_id: string }; Returns: boolean };
+      set_site_slug: { Args: { p_slug: string; p_wedding_id: string }; Returns: string };
       set_vault_settings: {
         Args: {
           p_guests_see_all?: boolean;
@@ -4517,6 +4812,10 @@ export type Database = {
         Returns: undefined;
       };
       set_wedding_rsvp_link: { Args: { p_action: string; p_wedding_id: string }; Returns: string };
+      site_page: {
+        Args: { p_guest_token?: string; p_password?: string; p_slug: string };
+        Returns: Json;
+      };
       start_conversation: { Args: { p_vendor_id: string }; Returns: string };
       start_my_business: {
         Args: { p_category_slug: string; p_city_slug: string; p_name: string };
@@ -4583,6 +4882,7 @@ export type Database = {
         };
         Returns: undefined;
       };
+      update_site: { Args: { p_changes: Json; p_wedding_id: string }; Returns: undefined };
       vault_invite_preview: {
         Args: { p_token: string };
         Returns: {

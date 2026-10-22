@@ -24,4 +24,11 @@ describe('shareLink', () => {
     mockManifest.metadata = {};
     expect(shareLink('/rsvp/abc')).toBe('exp://u.expo.dev/project/--/rsvp/abc');
   });
+
+  it('puts a guest token alongside the channel', () => {
+    mockManifest.metadata = { branchName: 'demo' };
+    expect(shareLink('/w/asha-ravi', { g: 'tok' })).toBe(
+      'exp://u.expo.dev/project/--/w/asha-ravi?g=tok&channel-name=demo',
+    );
+  });
 });

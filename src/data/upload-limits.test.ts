@@ -1,7 +1,13 @@
 import { assertUploadFits, STORAGE_LIMITS } from './upload-limits';
 describe('storage upload bounds', () => {
   it('allows the bucket boundary and refuses oversized, empty and unsupported uploads', () => {
-    for (const bucket of ['vendor-media', 'chat-media', 'reels', 'vault-media'] as const) {
+    for (const bucket of [
+      'vendor-media',
+      'chat-media',
+      'reels',
+      'vault-media',
+      'site-media',
+    ] as const) {
       expect(() =>
         assertUploadFits(bucket, new ArrayBuffer(STORAGE_LIMITS[bucket]), 'image/jpeg'),
       ).not.toThrow();

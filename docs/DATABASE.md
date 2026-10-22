@@ -1,6 +1,6 @@
 # The database
 
-Postgres on Supabase, 80 tables in `public`, built by the migrations in `supabase/migrations/`. This page is the map: the core on one diagram, then every table in one line. The one-liners are the tables' own `comment on table` text, so the database is the source of truth; refresh this page with the query at the bottom.
+Postgres on Supabase, 84 tables in `public`, built by the migrations in `supabase/migrations/`. This page is the map: the core on one diagram, then every table in one line. The one-liners are the tables' own `comment on table` text, so the database is the source of truth; refresh this page with the query at the bottom.
 
 ## The core
 
@@ -116,6 +116,13 @@ Keys: the reference tables (`events`, `categories`, `cultures`, `cities`, …) a
 - `guest_list_members`: Which guests are on a list.
 - `guest_invites`: The events a guest is invited to and their RSVP. Written with invite_to_event and rsvp; removing the event removes its invites.
 - `invite_sends`: Each invitation sent to a guest (by text or email), written with log_invite_sends.
+
+### Wedding website
+
+- `wedding_sites`: A wedding's website (/w/{slug}): its design, cover photo and the parts the family wrote. Members read it; owners and editors change it through the site functions; guests read it with site_page() once it's published.
+- `wedding_site_items`: The lists on a wedding site, in order: tips (the guide), hotels (name, note with the group code, booking link) and faq (question, answer). Written only by set_site_items().
+- `wedding_site_locks`: A wedding site's password (bcrypt of the lower-cased password) and wrong tries today. Server side only: set_site_password() writes it and site_page() checks it, stopping at 30 wrong tries a day.
+- `event_guest_tips`: Suggestions of what guests should know before an event (cover your head, shoes off...). A family adds them to their wedding site's guide and changes them there.
 
 ### Inquiries and requests
 
