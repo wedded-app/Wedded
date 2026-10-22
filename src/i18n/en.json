@@ -3003,5 +3003,474 @@
       "other": "{{count}} open"
     },
     "requestsNone": "Post what you need"
+  },
+  "website": {
+    "title": "Website",
+    "back": "Back",
+    "loading": "Getting your website ready…",
+    "noWedding": "Start your wedding plan, and your website fills itself in from it.",
+    "startPlan": "Start my plan",
+    "cantMake": "Only the couple, or someone who can edit the plan, can change the website.",
+    "statusDraft": "A draft only your family can see",
+    "statusLive": "Live. Guests can open it",
+    "previewAndEdit": "Preview and edit",
+    "startHere": "Start here",
+    "steps": {
+      "design": "Choose a design",
+      "cover": "Add a cover photo",
+      "coverHint": "The first thing guests see",
+      "coverDone": "Added. Tap to change it",
+      "dress": "Say what to wear",
+      "dressHint": "For each event, with colours",
+      "publish": "Publish and share",
+      "publishHint": "Until then only your family can see it",
+      "publishDone": "It's live. Tap to share the link"
+    },
+    "onYourSite": "On your site",
+    "onYourSiteFooter": "Switch a part off to hide it. Parts with nothing in them stay hidden from guests.",
+    "hidden": "Hidden from guests",
+    "showPart": "Show {{part}}",
+    "changeOrder": "Change the order",
+    "settingsHeader": "Settings",
+    "on": "On",
+    "off": "Off",
+    "barDraft": "Guests can't see your website yet.",
+    "barLive": "Your website is live.",
+    "publish": "Publish website",
+    "share": "Share the link",
+    "shareMessage": "You're invited to {{names}}'s wedding! Everything is on our website: {{link}}",
+    "published": {
+      "title": "Your website is live",
+      "body": "Guests can open it now. Share the link in your family's WhatsApp group?"
+    },
+    "pageTitle": "{{names}} · Our wedding",
+    "pageTitlePlain": "A wedding · Wedded",
+    "pageDescription": "Everything guests need: the events, what to wear, and how to reply.",
+    "missing": {
+      "title": "This website isn't here",
+      "body": "The link may have changed. Ask the family who sent it for the new one."
+    },
+    "password": {
+      "ask": "This website has a password. It's on your invitation, or ask the family.",
+      "wrong": "That's not the password. Please try again.",
+      "label": "Password",
+      "open": "Open the website",
+      "limit": "Too many tries today. Please try again tomorrow."
+    },
+    "save": "Save",
+    "saveFailed": "That didn't save. Check your connection and try again.",
+    "done": "Done",
+    "remove": "Remove",
+    "moveUp": "Move up",
+    "moveDown": "Move down",
+    "card": {
+      "title": "Your wedding website",
+      "make": "Make your wedding website",
+      "new": "Already filled in from your plan",
+      "draft": "Draft · only your family can see it",
+      "live": "Live · guests can open it"
+    },
+    "parts": {
+      "cover": "Names and welcome",
+      "family": "Family",
+      "story": "Our story",
+      "events": "Events",
+      "rsvp": "RSVPs",
+      "guide": "Good to know",
+      "travel": "Travel and stay",
+      "livestream": "Livestream",
+      "faq": "Questions"
+    },
+    "summary": {
+      "coverEmpty": "Your names, and a line to welcome guests",
+      "familyEmpty": "Your parents' names, under \"With the blessings of\"",
+      "storyEmpty": "How you met, in your own words",
+      "events": {
+        "one": "1 event, with what to wear",
+        "other": "{{count}} events, with what to wear"
+      },
+      "eventsNoDress": {
+        "one": "Add what to wear for 1 event",
+        "other": "Add what to wear for {{count}} events"
+      },
+      "rsvpBy": "Reply by {{date}}",
+      "rsvpEmpty": "Guests answer for their family",
+      "tips": {
+        "one": "1 tip",
+        "other": "{{count}} tips"
+      },
+      "guideEmpty": "Cover your head, shoes off, where to sit",
+      "hotels": {
+        "one": "1 hotel",
+        "other": "{{count}} hotels"
+      },
+      "travelEmpty": "Hotels and their group codes",
+      "liveAdded": "Link added",
+      "liveEmpty": "For family who can't be there",
+      "faq": {
+        "one": "1 question",
+        "other": "{{count}} questions"
+      },
+      "faqEmpty": "Parking, children, gifts"
+    },
+    "designs": {
+      "classic": "Classic",
+      "heirloom": "Heirloom",
+      "palace": "Palace",
+      "marigold": "Marigold",
+      "noor": "Noor",
+      "mehndi": "Mehndi"
+    },
+    "designNotes": {
+      "classic": "White, black and one serif. Your photo leads.",
+      "heirloom": "Gold-and-red bands, like an embroidered dupatta.",
+      "palace": "Your photo inside a fine arch.",
+      "marigold": "Strings of marigolds. Bright, for a Haldi or Mehndi.",
+      "noor": "Midnight and gold, with stars, for an evening celebration.",
+      "mehndi": "Henna line-work in the corners."
+    },
+    "palettes": {
+      "ink": "Black and white",
+      "blush": "Blush",
+      "sage": "Sage",
+      "maroon": "Maroon and gold",
+      "red": "Red and marigold",
+      "emerald": "Emerald and gold",
+      "ivory": "Ivory and gold",
+      "rose": "Dusty rose",
+      "marigold": "Marigold",
+      "pink": "Marigold and pink",
+      "haldi": "Haldi yellow",
+      "midnight": "Midnight and gold",
+      "plum": "Plum and gold",
+      "forest": "Forest and gold",
+      "henna": "Henna",
+      "green": "Mehndi green"
+    },
+    "colors": {
+      "yellow": "Yellow",
+      "orange": "Orange",
+      "red": "Red",
+      "maroon": "Maroon",
+      "pink": "Pink",
+      "purple": "Purple",
+      "navy": "Navy",
+      "blue": "Blue",
+      "emerald": "Emerald",
+      "green": "Green",
+      "gold": "Gold",
+      "ivory": "Ivory",
+      "silver": "Silver",
+      "black": "Black"
+    },
+    "design": {
+      "title": "Design",
+      "colours": "Colours",
+      "all": "All designs"
+    },
+    "cover": {
+      "title": "Cover photo",
+      "hint": "A photo of the two of you works best. Classic shows it across the whole top; the other designs frame it.",
+      "smallInNoor": "Noor shows your photo small, in a circle under the stars.",
+      "choose": "Choose a photo",
+      "change": "Choose a different photo",
+      "adding": "Adding your photo…",
+      "remove": "Remove the photo",
+      "failed": "That photo didn't upload. Check your connection and try again.",
+      "openSettings": "Allow photos in Settings"
+    },
+    "welcome": {
+      "title": "Names and welcome",
+      "names": "Your names",
+      "namesHint": "As guests see them, on the website, cards and RSVPs.",
+      "line": "A line to welcome guests",
+      "lineHint": "Shown under your names.",
+      "lineSample": "We can't wait to celebrate with you!"
+    },
+    "family": {
+      "title": "Family",
+      "heading": "Heading",
+      "headingHint": "Leave it empty for \"With the blessings of\".",
+      "line": "Line {{number}}",
+      "sampleA": "Gurmeet & Harjit Gill",
+      "sampleB": "Rajinder & Paramjit Sandhu",
+      "addLine": "Add a line"
+    },
+    "story": {
+      "title": "Our story",
+      "hint": "How you met, the proposal, what you love about each other. A few lines is plenty.",
+      "label": "Your story",
+      "sample": "We met at a cousin's sangeet in 2019…"
+    },
+    "events": {
+      "title": "Events",
+      "hint": "The day, time and place come from your plan. Add what to wear and anything guests should know.",
+      "none": "There are no events in your plan yet.",
+      "noDay": "Day to come",
+      "changeWhen": "Change the day, time or place",
+      "wear": "What to wear",
+      "wearSample": "Wear yellow",
+      "colors": "Colours",
+      "colorsHint": "Pick up to three. Guests see them as small circles.",
+      "note": "A note for guests",
+      "noteSample": "Langar is served after the ceremony.",
+      "everyone": "Show to everyone",
+      "everyoneOn": "Everyone who opens the website sees this event.",
+      "everyoneOff": "Only guests invited to it see it, on their own link."
+    },
+    "list": {
+      "tip": {
+        "title": "Good to know",
+        "hint": "What guests should know before they come. Start from the suggestions for your events.",
+        "heading": "Heading",
+        "headingHint": "For example \"At the gurdwara\".",
+        "suggested": "Suggestions for your events",
+        "item": "Tip {{number}}",
+        "titleLabel": "Tip",
+        "titleSample": "Please cover your head inside.",
+        "bodyLabel": "More",
+        "bodySample": "",
+        "add": "Add a tip",
+        "invalid": "Check the tips and try again."
+      },
+      "hotel": {
+        "title": "Travel and stay",
+        "hint": "Hotels where you've booked rooms, with the group code and a link to book.",
+        "item": "Hotel {{number}}",
+        "titleLabel": "Hotel name",
+        "titleSample": "Riverside Inn",
+        "bodyLabel": "Details",
+        "bodySample": "10 minutes from the gurdwara. Use code GILL when you book.",
+        "linkLabel": "Booking link",
+        "add": "Add a hotel",
+        "invalid": "Check the booking link and try again."
+      },
+      "faq": {
+        "title": "Questions",
+        "hint": "The questions guests usually call about.",
+        "item": "Question {{number}}",
+        "titleLabel": "Question",
+        "titleSample": "Is there parking?",
+        "bodyLabel": "Answer",
+        "bodySample": "Yes, behind the main hall.",
+        "add": "Add a question",
+        "invalid": "Check the questions and try again."
+      }
+    },
+    "live": {
+      "title": "Livestream",
+      "hint": "A link family abroad can open to watch, from YouTube, Facebook or Zoom.",
+      "link": "Link",
+      "note": "A note",
+      "noteSample": "Live from 9:00 AM Pacific (9:30 PM in Punjab).",
+      "badLink": "Check the link and try again."
+    },
+    "rsvp": {
+      "title": "RSVPs",
+      "hint": "Guests answer for their whole family. Answers go straight to your guest list.",
+      "replyBy": "Reply by",
+      "pickDate": "Pick a date",
+      "noDate": "No reply-by date",
+      "guestList": "Guest list",
+      "guestListHint": "Who's invited to what, and their answers",
+      "linkOn": "Guests who open the website without their own link type their phone number to find their invitation.",
+      "linkOff": "Your wedding's shared RSVP link is off, so guests need their own link to answer."
+    },
+    "settings": {
+      "title": "Settings",
+      "link": "Link",
+      "linkHint": "The address guests open. Keep it short and easy to type.",
+      "linkLabel": "Your link",
+      "saveLink": "Save this link",
+      "slugTaken": "Another wedding has that link. Try adding the year.",
+      "slugInvalid": "Use at least 3 letters or numbers.",
+      "slugWarnTitle": "Change the link?",
+      "slugWarn": "The old link will stop working, including on anything you've already sent.",
+      "slugChange": "Change it",
+      "password": "Password",
+      "passwordOn": "Guests need the password, unless they open their own RSVP link.",
+      "passwordOff": "No password. Anyone with the link can open it.",
+      "passwordLabel": "A password",
+      "newPassword": "A new password",
+      "setPassword": "Use this password",
+      "removePassword": "Remove the password",
+      "passwordShort": "Use at least 4 characters.",
+      "search": "Show in Google",
+      "searchHint": "Off: only people with the link can find it.",
+      "takeDown": "Take the website down",
+      "takeDownHint": "Guests won't be able to open it until you publish it again. Nothing is deleted.",
+      "takeDownButton": "Take it down"
+    },
+    "order": {
+      "title": "Order",
+      "hint": "The order guests see the parts in, under your cover.",
+      "coverFirst": "Cover (always first)"
+    },
+    "tools": {
+      "design": "Design",
+      "photo": "Photo",
+      "parts": "Parts",
+      "share": "Share"
+    },
+    "site": {
+      "kicker": "Together with their families",
+      "ourWedding": "Our wedding",
+      "daysToGo": {
+        "one": "1 day to go",
+        "other": "{{count}} days to go"
+      },
+      "today": "Today's the day",
+      "familyTitle": "With the blessings of",
+      "storyEyebrow": "How it started",
+      "ourStory": "Our story",
+      "eventsEyebrow": "Join us",
+      "yourEvents": "Your invitation",
+      "eventsTitle": "The celebrations",
+      "invitedTo": {
+        "one": "{{name}}, you're invited to this event.",
+        "other": "{{name}}, you're invited to these {{count}} events."
+      },
+      "dateToCome": "Day and time to come",
+      "fromTo": "{{from}} to {{to}}",
+      "directions": "Directions",
+      "directionsTo": "Directions to {{place}}",
+      "whatToWear": "What to wear",
+      "onlyInvited": "Only guests invited to it see this",
+      "saidYes": {
+        "one": "You said yes · 1 coming",
+        "other": "You said yes · {{count}} coming"
+      },
+      "saidNo": "You said you can't come",
+      "notAnswered": "You haven't answered yet",
+      "rsvpEyebrow": "RSVP",
+      "rsvpTitle": "Will you be there?",
+      "replyBy": "Please reply by {{date}}.",
+      "answer": "Answer for your family",
+      "findHint": "Type the phone number or email the family has for you, to find your invitation.",
+      "findLabel": "Phone number or email",
+      "find": "Find my invitation",
+      "notFound": "We couldn't find that. Try the number the family has for you, or ask them for your link.",
+      "findLimit": "Too many tries today. Please try again tomorrow, or ask the family for your link.",
+      "findFailed": "That didn't work. Check your connection and try again.",
+      "guideEyebrow": "Before you come",
+      "goodToKnow": "Good to know",
+      "travelEyebrow": "Coming from out of town",
+      "travel": "Travel and stay",
+      "book": "Book a room",
+      "liveEyebrow": "Can't be there?",
+      "livestream": "Watch live",
+      "watch": "Watch the livestream",
+      "faqEyebrow": "Asked often",
+      "faq": "Questions",
+      "madeWith": "Made with Wedded"
+    },
+    "wed": {
+      "title": "Wed",
+      "box": "Ask Wed to change anything",
+      "note": "Wed shows you every change first. Nothing changes until you tap Apply.",
+      "noteLive": "Your website is live, so guests see a change once you apply it.",
+      "suggest": {
+        "setUp": "Set it up for me",
+        "look": "Make it maroon and gold",
+        "dress": "Add what to wear",
+        "missing": "Is anything missing?"
+      },
+      "hello": "What should we change?",
+      "intro": "Ask in your own words, like \"make it simpler\" or \"add the gurdwara guide\". You'll see the change before anything happens.",
+      "placeholder": "Ask Wed…",
+      "send": "Send",
+      "looking": "Looking at your website…",
+      "help": "I can change the look, add what to wear for each event, add a guide for the ceremony, write a welcome, or check what's missing.",
+      "now": "Now",
+      "after": "After",
+      "apply": "Apply",
+      "notNow": "Not now",
+      "applying": "Making the change…",
+      "undoing": "Putting it back…",
+      "applied": "Done. Your website is updated.",
+      "undo": "Undo",
+      "undone": "Put back the way it was.",
+      "declined": "Okay, I left it as it is.",
+      "failed": "That didn't save. Check your connection and try again.",
+      "fix": "Fix",
+      "say": {
+        "look": "Here's how it would look. Nothing changes until you tap Apply.",
+        "sameLook": "Your website already looks like that.",
+        "dress": "Here's what guests usually wear. You can change the words after.",
+        "dressDone": "Every event already says what to wear.",
+        "guide": "Here's a guide for guests, from the usual etiquette for your ceremonies.",
+        "guideDone": "Your guide already has those tips.",
+        "welcome": "Here's a welcome for under your names.",
+        "welcomeDone": "You already have a welcome line. You can change it in Names and welcome.",
+        "setUp": "Here's what I can fill in for you.",
+        "allDone": "Your website already has a welcome, what to wear and a guide.",
+        "publish": "Ready to publish? Guests can open it once it's live.",
+        "alreadyLive": "Your website is already live.",
+        "story": "Your story is best in your own words. Write a few lines and it goes on your website.",
+        "hotel": "Add the hotels where you've booked rooms, with the group code.",
+        "live": "Add the livestream link for family who can't be there.",
+        "photo": "Pick a photo of the two of you for the cover.",
+        "missing": {
+          "one": "One thing guests would miss:",
+          "other": "{{count}} things guests would miss:"
+        },
+        "nothingMissing": "Nothing's missing. It's ready to share."
+      },
+      "lines": {
+        "look": "New look: {{look}}",
+        "dress": "{{event}}: {{idea}}",
+        "guide": {
+          "one": "{{title}}: 1 tip",
+          "other": "{{title}}: {{count}} tips"
+        },
+        "welcome": "A welcome line under your names",
+        "publish": "Publish the website"
+      },
+      "looks": {
+        "classic": "Classic, black and white",
+        "blush": "Classic in blush",
+        "maroon": "Heirloom in maroon and gold",
+        "emerald": "Palace in emerald",
+        "palace": "Palace in ivory and gold",
+        "marigold": "Marigold",
+        "noor": "Noor, midnight and gold",
+        "plum": "Noor in plum and gold",
+        "mehndi": "Mehndi in henna",
+        "rose": "Mehndi in dusty rose"
+      },
+      "dress": {
+        "haldi": "Wear yellow. It may get messy!",
+        "mehndi": "Greens and pinks",
+        "sangeet": "Bright colours, ready to dance",
+        "jaago": "Bright suits and kurtas",
+        "anandKaraj": "Please cover your head. Avoid white and red.",
+        "nikah": "Modest clothing, with shoulders and knees covered",
+        "pheras": "Bright colours. Please avoid all white.",
+        "shadi": "Festive and formal",
+        "walima": "Formal",
+        "reception": "Formal. Jewel tones welcome.",
+        "church": "Formal"
+      },
+      "guide": {
+        "gurdwara": "At the gurdwara",
+        "nikah": "At the nikah",
+        "pheras": "At the ceremony",
+        "church": "At the church"
+      },
+      "welcomeDraft": "We can't wait to celebrate with you! Here's everything you need: when, where and what to wear.",
+      "missing": {
+        "cover": "Add a cover photo",
+        "welcome": "Add a welcome line",
+        "rsvpBy": "Set a reply-by date",
+        "published": "Publish the website",
+        "eventDate": "{{event}} has no day yet",
+        "eventPlace": "{{event}} has no place yet",
+        "eventDress": "Say what to wear to the {{event}}"
+      },
+      "openStory": "Write our story",
+      "openHotels": "Add hotels",
+      "openLive": "Add the livestream",
+      "openPhoto": "Choose a photo"
+    }
   }
 }

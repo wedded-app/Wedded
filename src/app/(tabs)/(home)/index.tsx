@@ -29,6 +29,7 @@ import { YourVendors } from '@/features/home/your-vendors';
 import { LocationChip } from '@/features/location/location-chip';
 import { findForPlan } from '@/features/planner/find-for-plan';
 import { usePlanView } from '@/features/planner/use-plan-view';
+import { WebsiteCard } from '@/features/website/website-card';
 import { StoryRings } from '@/features/stories/story-rings';
 import { WedHomeSection } from '@/features/wed/home-wed';
 import { localized } from '@/i18n/localized';
@@ -119,6 +120,8 @@ export default function HomeScreen() {
             <AppText variant="title">{t('home.yourWedding')}</AppText>
           </View>
           {planning ? <DateCard planDate={plan.weddingDate} /> : showDateCard && <DateCard />}
+          {/* The wedding website, easy to find (DECISIONS.md, 2026-10-22) */}
+          {wedding && <WebsiteCard weddingId={wedding.id} canEdit={view.canEdit} />}
           <StoryRings />
           <View style={styles.find}>
             <SearchButton

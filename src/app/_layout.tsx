@@ -224,6 +224,25 @@ function AppShell() {
             options={{ presentation: 'fullScreenModal', animation: 'fade' }}
           />
           <Stack.Screen name="vault-settings" options={{ presentation: 'modal' }} />
+          {/* The wedding website: the builder, its sheets, and the page guests open */}
+          <Stack.Screen name="website" />
+          <Stack.Screen
+            name="website/preview"
+            options={{ presentation: 'fullScreenModal', animation: 'fade' }}
+          />
+          <Stack.Screen name="website/wed" options={{ presentation: 'modal' }} />
+          <Stack.Screen name="website/design" options={{ presentation: 'modal' }} />
+          <Stack.Screen name="website/cover" options={{ presentation: 'modal' }} />
+          <Stack.Screen name="website/welcome" options={{ presentation: 'modal' }} />
+          <Stack.Screen name="website/family" options={{ presentation: 'modal' }} />
+          <Stack.Screen name="website/story" options={{ presentation: 'modal' }} />
+          <Stack.Screen name="website/events" options={{ presentation: 'modal' }} />
+          <Stack.Screen name="website/list" options={{ presentation: 'modal' }} />
+          <Stack.Screen name="website/livestream" options={{ presentation: 'modal' }} />
+          <Stack.Screen name="website/rsvp" options={{ presentation: 'modal' }} />
+          <Stack.Screen name="website/settings" options={{ presentation: 'modal' }} />
+          <Stack.Screen name="website/order" options={{ presentation: 'modal' }} />
+          <Stack.Screen name="w/[slug]" />
         </Stack>
       </WebFrame>
       <OfflineBanner />
