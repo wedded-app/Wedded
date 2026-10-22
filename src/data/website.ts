@@ -366,12 +366,8 @@ export function useSitePage(slug: string, options?: { password?: string; guestTo
   });
 }
 
-/**
- * The slug of the wedding's site, made the first time an owner or editor
- * opens Website (a draft only the family sees). Null for someone who can't
- * make one when the wedding has none yet.
- */
-export function useMySiteSlug(weddingId: string | null, canEdit: boolean) {
+/** The slug of the wedding's site; null while it has none. Members only. */
+export function useMySiteSlug(weddingId: string | null) {
   return useQuery({
     queryKey: siteKeys.mine(weddingId ?? ''),
     queryFn: async (): Promise<string | null> => {
@@ -381,13 +377,25 @@ export function useMySiteSlug(weddingId: string | null, canEdit: boolean) {
         .eq('wedding_id', weddingId ?? '')
         .maybeSingle();
       if (error) throw error;
-      if (data?.slug) return data.slug;
-      if (!canEdit) return null;
-      const made = await supabase.rpc('create_site', { p_wedding_id: weddingId ?? '' });
-      if (made.error) throw new Error(made.error.message);
-      return made.data;
+      return data?.slug ?? null;
     },
     enabled: !!weddingId,
+  });
+}
+
+/**
+ * Make the wedding's site (a draft only the family sees), named from the
+ * couple; the first time an owner or editor opens Website. Returns its slug.
+ */
+export function useCreateSite() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (weddingId: string) => {
+      const { data, error } = await supabase.rpc('create_site', { p_wedding_id: weddingId });
+      if (error) throw new Error(error.message);
+      return data;
+    },
+    onSuccess: (slug, weddingId) => queryClient.setQueryData(siteKeys.mine(weddingId), slug),
   });
 }
 

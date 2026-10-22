@@ -38,6 +38,7 @@ import { PlanTogether } from '@/features/planner/plan-together';
 import { Suggestions } from '@/features/planner/suggestions';
 import { StartPlanCard } from '@/features/planner/start-plan-card';
 import { usePlanView } from '@/features/planner/use-plan-view';
+import { WebsiteRow } from '@/features/website/website-card';
 import { AskWedButton } from '@/features/wed/ask-wed-button';
 import { localized } from '@/i18n/localized';
 import { useLocale } from '@/i18n/locale-context';
@@ -251,6 +252,7 @@ export default function PlanScreen() {
       {!view.loading && (
         <View style={styles.block}>
           <ListSection>
+            {wedding && <WebsiteRow weddingId={wedding.id} />}
             {canEdit && (
               <ListRow
                 icon="people-outline"
