@@ -1,3 +1,4 @@
+import { router } from 'expo-router';
 import { useState } from 'react';
 import { Modal, Pressable, View } from 'react-native';
 
@@ -5,6 +6,7 @@ import { AppText } from '@/components/app-text';
 import { Button } from '@/components/button';
 import { FieldError } from '@/components/field-error';
 import { Icon } from '@/components/icon';
+import { ListRow, ListSection } from '@/components/list';
 import { NavScreen } from '@/components/nav';
 import { Segmented } from '@/components/segmented';
 import { StateView } from '@/components/state-view';
@@ -15,6 +17,7 @@ import {
   useTouchCalendar,
   useVendorCalendar,
 } from '@/data/vendor-self';
+import { BusinessTabScreen } from '@/features/business/business-tab-screen';
 import { dayLook, type DayLook } from '@/features/business/calendar-day';
 import { isoDay, isoMonth, monthWeeks, shiftMonth } from '@/features/business/month-grid';
 import { useCurrentBusiness } from '@/features/business/use-current-business';
@@ -35,9 +38,12 @@ const CHOICES: {
  * My business → Calendar: a month at a time, each day open, booked or held
  * (all day, or part of the day when set that way elsewhere). Tap a day to
  * change it. "My calendar is up to date" tells families unmarked days are
- * open for the next 60 days. Past days can't be changed.
+ * open for the next 60 days. Past days can't be changed. Since 2026-10-23
+ * it's also business mode's Calendar tab (`tab`), with the calendars they
+ * could connect at the top.
  */
-export default function BusinessCalendarScreen() {
+export default function BusinessCalendarScreen({ tab = false }: { tab?: boolean }) {
+  const Frame = tab ? BusinessTabScreen : NavScreen;
   const Colors = useColors();
   const styles = useStyles();
   const { t } = useLocale();
@@ -78,22 +84,31 @@ export default function BusinessCalendarScreen() {
 
   if (business.isPending) {
     return (
-      <NavScreen title={t('business.calendar.title')}>
+      <Frame title={t('business.calendar.title')}>
         <StateView state="loading" />
-      </NavScreen>
+      </Frame>
     );
   }
   if (!business.isVendor) {
     return (
-      <NavScreen title={t('business.calendar.title')}>
+      <Frame title={t('business.calendar.title')}>
         <StateView state="empty" icon="storefront-outline" message={t('business.notVendor')} />
-      </NavScreen>
+      </Frame>
     );
   }
 
   return (
-    <NavScreen title={t('business.calendar.title')}>
+    <Frame title={t('business.calendar.title')}>
       <AppText color="text2">{t('business.calendar.intro')}</AppText>
+
+      <ListSection>
+        <ListRow
+          icon="link-outline"
+          title={t('business.calendar.connected')}
+          subtitle={t('business.calendar.connectedNone')}
+          onPress={() => router.push('/business/connect')}
+        />
+      </ListSection>
 
       <View style={styles.monthBar}>
         <Pressable
@@ -249,7 +264,7 @@ export default function BusinessCalendarScreen() {
           </View>
         )}
       </Modal>
-    </NavScreen>
+    </Frame>
   );
 }
 
