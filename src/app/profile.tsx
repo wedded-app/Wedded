@@ -96,6 +96,19 @@ export default function ProfileScreen() {
           onPress={() => router.push('/settings')}
         />
       </ListSection>
+      {/* These lived at the bottom of Home before the final look (2026-10-23) */}
+      <ListSection inset>
+        <ListRow
+          icon="ribbon-outline"
+          title={t('home.foundingWall')}
+          onPress={() => router.push('/founding')}
+        />
+        <ListRow
+          icon="storefront-outline"
+          title={t('home.forVendors')}
+          onPress={() => router.push('/for-vendors')}
+        />
+      </ListSection>
     </NavScreen>
   );
 }

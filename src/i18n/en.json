@@ -123,7 +123,39 @@
     "seeMore": "See more",
     "freeOn": "Free {{date}}",
     "freeOnYourDate": "Free on your date",
-    "nearYou": "Near you"
+    "nearYou": "Near you",
+    "greeting": {
+      "morning": "Good morning, {{name}}",
+      "morningPlain": "Good morning",
+      "afternoon": "Good afternoon, {{name}}",
+      "afternoonPlain": "Good afternoon",
+      "evening": "Good evening, {{name}}",
+      "eveningPlain": "Good evening"
+    },
+    "upNext": {
+      "seeFree": "See {{shown}} free",
+      "seeNear": "See {{shown}} nearby",
+      "done": "Done",
+      "marked": "{{name}} marked booked",
+      "undo": "Undo",
+      "caughtUp": "All caught up"
+    },
+    "wedLine": {
+      "found": {
+        "one": "Wed found 1 thing",
+        "other": "Wed found {{count}} things"
+      },
+      "hint": "Opens Wed, where you can say yes or not now"
+    },
+    "events": {
+      "title": "Your events",
+      "allSet": "All set",
+      "toBook": "To book: {{what}}",
+      "toBookMore": {
+        "one": "To book: {{what}} and 1 more",
+        "other": "To book: {{what}} and {{count}} more"
+      }
+    }
   },
   "when": {
     "close": "Close",
@@ -430,7 +462,7 @@
     "title": "List your business, free",
     "intro": "Listing your business on Wedded is free. Families browsing find you for exactly what you do. Leave your details and we'll call or text you to set up your page.",
     "claimTitle": "Claim your profile",
-    "claimIntro": "Is this your business? Leave your details and we'll call or text you to check it's you and hand the page over.",
+    "claimIntro": "Is this your business? Tell us who you are. To keep families and your page safe, we check every claim twice.",
     "businessName": "Business name",
     "contactName": "Your name",
     "category": "What do you do?",
@@ -448,6 +480,23 @@
       "city": "Please type your city.",
       "phone": "Type a 10-digit phone number, like 530 555 0101.",
       "instagram": "Check the Instagram name: letters, numbers, dots and underscores only."
+    },
+    "checks": {
+      "caps": "How we check it's you",
+      "codeTitle": "A code to the business phone",
+      "codeBody": "We'll call or text a code to the phone on this listing, {{phone}}.",
+      "codeBodyNoPhone": "We'll call or text a code to the business phone we have for this listing.",
+      "proofTitle": "One more proof",
+      "proofBody": "Pick the one that suits you. We ask for it after the code.",
+      "proofs": {
+        "email": "Business email",
+        "instagram": "Code in your Instagram bio",
+        "license": "Photo of your license"
+      },
+      "pickOne": "Pick one more proof.",
+      "reviewTitle": "A person reviews it",
+      "reviewBody": "Someone at Wedded checks every claim, usually within a day. Your business name, address and kind of business never change without that check.",
+      "thanks": "Thank you! We'll call or text a code to the business phone on this listing, then ask for your second proof. A person reviews every claim, usually within a day."
     }
   },
   "search": {
@@ -1013,7 +1062,24 @@
     "whenBody": "Set the wedding date to start the countdown.",
     "pickDate": "Pick the date",
     "changeDate": "Change the date",
-    "checklistTitle": "What to book",
+    "toGo": {
+      "one": "{{count}} day to go",
+      "other": "{{count}} days to go"
+    },
+    "today": "Today's the day",
+    "addNames": "Add your names",
+    "familyHint": "Shows who's planning and what each person can do",
+    "eventsTitle": "Your events",
+    "addEvent": "Add an event",
+    "forGuests": "For your guests",
+    "ticket": {
+      "booked": "Booked: {{names}}",
+      "bookedMore": {
+        "one": "Booked: {{names}} and 1 more",
+        "other": "Booked: {{names}} and {{count}} more"
+      },
+      "timePlace": "Set the time and place"
+    },
     "progress": "{{done}} of {{total}} booked",
     "markBooked": "{{name}} booked",
     "find": "Find a {{name}}",
@@ -1068,7 +1134,15 @@
     "eventDatePick": "Pick a date",
     "eventDateClear": "Clear the date",
     "eventDateNone": "No date yet",
-    "eventDateHint": "When you ask a vendor about this event, the date goes with your request."
+    "eventDateHint": "When you ask a vendor about this event, the date goes with your request.",
+    "eventsFirst": {
+      "one": "1 event · {{first}}",
+      "other": "{{count}} events · {{first}} comes first"
+    },
+    "eventsAllBooked": {
+      "one": "1 event · everything’s booked",
+      "other": "{{count}} events · everything’s booked"
+    }
   },
   "filters": {
     "title": "Filters",
@@ -1101,6 +1175,7 @@
     "start": "Save and invite family",
     "signInToStart": "Sign in to plan together",
     "sharedTitle": "Planning together",
+    "familyTitle": "Family",
     "you": "You",
     "someone": "Family member",
     "roles": {
@@ -2104,7 +2179,11 @@
     "creditBy": "{{name}} on {{platform}}",
     "creditFrom": "From {{platform}}",
     "everyEvent": "All events",
-    "chooseEvent": "Shows the events to choose from"
+    "chooseEvent": "Shows the events to choose from",
+    "save": "Save",
+    "saved": "Saved",
+    "saveVendor": "Save {{name}}",
+    "unsaveVendor": "Saved {{name}}. Tap to remove"
   },
   "postReel": {
     "title": "New reel",
@@ -2320,7 +2399,9 @@
         "all_day": "Whole day",
         "morning": "Morning",
         "evening": "Evening"
-      }
+      },
+      "connected": "Connected calendars",
+      "connectedNone": "None yet. See what can connect"
     },
     "notLive": "Your page isn't live yet, so families can't find it. We'll tell you when it is.",
     "viewPage": "View my page",
@@ -2380,7 +2461,11 @@
       "whatsapp": "WhatsApp",
       "email": "Email",
       "noWay": "This family deleted their account, so there's no way to reply.",
-      "eventDates": "Dates"
+      "eventDates": "Dates",
+      "tabTitle": "Leads",
+      "halves": "Which families",
+      "askedYou": "Asked you",
+      "wantedPro": "Wanted · Pro"
     },
     "export": {
       "title": "Export everything",
@@ -2674,6 +2759,27 @@
           "other": "{{count}} photos didn't go through. Try again."
         }
       }
+    },
+    "myPage": {
+      "title": "My page",
+      "live": "Live",
+      "notLive": "Not live yet",
+      "seeIt": "See your page as families do",
+      "finishIt": "Finish your page",
+      "makeIt": "Your page",
+      "photosHint": "The first one is your cover",
+      "packages": "Packages and menus",
+      "packagesHint": "What's included, and the price",
+      "about": "About and area",
+      "aboutHint": "Your words, prices, contact and where you go",
+      "reels": "Reels",
+      "reelsHint": "Post, and see the reels you're tagged in",
+      "reach": "Reach families",
+      "connectHint": "Calendar, Instagram, TikTok and your website",
+      "pro": "Wedded Pro",
+      "proHint": "Send offers to families who post what they need",
+      "numbers": "Your numbers",
+      "numbersHint": "Who saw, saved and asked, and how you compare"
     }
   },
   "businessMode": {
@@ -2684,7 +2790,8 @@
       "wanted": "Wanted",
       "reels": "Reels",
       "leads": "Leads",
-      "business": "Business"
+      "business": "My page",
+      "calendar": "Calendar"
     },
     "today": {
       "title": "Today",
@@ -3022,7 +3129,19 @@
       "one": "1 open",
       "other": "{{count}} open"
     },
-    "requestsNone": "Post what you need"
+    "requestsNone": "Post what you need",
+    "stillNeeds": "What the {{event}} still needs",
+    "allSetTitle": "The {{event}} is all set",
+    "allSetBody": "Everything the {{event}} needs is booked. Nothing to find here.",
+    "bookedFor": "Booked for the {{event}}",
+    "freeOn": "{{shown}} free on {{day}}",
+    "nearYou": "{{shown}} near you",
+    "everyKind": "Every kind of vendor",
+    "kindsCount": {
+      "one": "1 kind",
+      "other": "{{count}} kinds"
+    },
+    "requestsCardTitle": "Say what you need. Vendors send you offers."
   },
   "website": {
     "title": "Website",
@@ -3491,6 +3610,126 @@
       "openHotels": "Add hotels",
       "openLive": "Add the livestream",
       "openPhoto": "Choose a photo"
+    }
+  },
+  "vendorTicket": {
+    "free": "Free on your {{event}}",
+    "booked": "Booked on your {{event}}",
+    "held": "Held on your {{event}}",
+    "partly": "Partly free on your {{event}}",
+    "ask": "Ask about your {{event}}",
+    "askLine": "Tap to ask for a quote",
+    "hint": "Opens Ask for a quote for that event"
+  },
+  "businessToday": {
+    "leadsCaps": "Leads",
+    "waiting": {
+      "one": "1 family is waiting",
+      "other": "{{count}} families are waiting"
+    },
+    "oldest": "The first asked {{ago}}",
+    "nobodyWaiting": "Nobody's waiting",
+    "nobodyWaitingBody": "You've answered every family. We'll tell you when someone new asks.",
+    "waitingTitle": "Waiting for you",
+    "freeThatDay": "You're free that day",
+    "bookedThatDay": "You're booked that day",
+    "partlyThatDay": "Part of that day is taken",
+    "weekTitle": "This week",
+    "nextBooking": "Your next booking is {{date}}.",
+    "noBooking": "No bookings coming up yet. Mark booked days on your calendar.",
+    "monthTitle": "Your page this month",
+    "month": {
+      "sentence": "In the last 30 days, {{saw}}, {{saved}} and {{asked}}.",
+      "saw": {
+        "one": "1 family saw your page",
+        "other": "{{count}} families saw your page"
+      },
+      "saved": {
+        "one": "1 saved it",
+        "other": "{{count}} saved it"
+      },
+      "asked": {
+        "one": "1 asked you",
+        "other": "{{count}} asked you"
+      }
+    }
+  },
+  "connect": {
+    "title": "Connect your tools",
+    "intro": "Most vendors already use other apps. Here's honestly what works with Wedded today, and what's coming.",
+    "groups": {
+      "calendars": "Calendars",
+      "photos": "Photos and videos",
+      "everywhere": "Everywhere else"
+    },
+    "status": {
+      "ready": "Ready",
+      "soon": "Coming soon",
+      "google": "Through Google",
+      "approval": "Waiting on approval",
+      "notPossible": "Not possible yet"
+    },
+    "tools": {
+      "google": {
+        "name": "Google Calendar",
+        "body": "Your busy times will show as taken on your page. Wedded only sees busy or free, never what's in your events."
+      },
+      "calendarLink": {
+        "name": "Apple, Outlook or Acuity",
+        "body": "Paste your calendar's private link and we'll check it every hour, so it's close to live but never instant."
+      },
+      "throughGoogle": {
+        "name": "Square, Calendly or Vagaro",
+        "body": "Turn on their Google Calendar sync and their bookings come through Google. Square needs its Plus or Premium plan for that."
+      },
+      "booksy": {
+        "name": "Booksy",
+        "body": "Booksy only opens to its own partners, so it can't connect. Mark booked days on your calendar instead."
+      },
+      "instagram": {
+        "name": "Instagram",
+        "body": "Your photos and reels will come in without uploading them again. For business or creator accounts, once Meta approves Wedded."
+      },
+      "tiktok": {
+        "name": "TikTok",
+        "body": "Your public videos will play on your page, straight from TikTok, once TikTok approves Wedded."
+      },
+      "link": {
+        "name": "Your page link",
+        "body": "Put it in your Instagram bio or on your website, and families can ask you from anywhere."
+      },
+      "website": {
+        "name": "Your website",
+        "body": "Wed will read your site and suggest photos, prices and words for your page. Nothing goes live until you say yes."
+      }
+    },
+    "shareLink": "Share your link",
+    "openCalendar": "Open your calendar",
+    "footer": "Square, Acuity, Calendly and Vagaro can all copy bookings into Google Calendar, so connecting Google will cover them too."
+  },
+  "businessWed": {
+    "button": "Wed",
+    "buttonWaiting": {
+      "one": "Wed: 1 family is waiting",
+      "other": "Wed: {{count}} families are waiting"
+    },
+    "mode": "Asks you first",
+    "close": "Close Wed",
+    "title": "Wed",
+    "forBusiness": "For {{name}}",
+    "needsYou": "Needs you",
+    "nobody": "Nobody's waiting for a reply. Wed will tell you when a family asks.",
+    "replyCaps": "Reply",
+    "waitingFor": "{{name}} is waiting for your reply",
+    "reply": "Reply",
+    "soonTitle": "Soon, Wed will",
+    "soonBody": "Wed drafts and you decide: nothing goes out without your tap.",
+    "soon": {
+      "replies": "Write replies in your voice, for you to send",
+      "quotes": "Draft quotes with your packages and prices",
+      "reel": "Turn your photos into a reel, after asking the family",
+      "website": "Fill your page from your website, for you to check",
+      "monday": "Remind you every Monday to check your calendar"
     }
   }
 }

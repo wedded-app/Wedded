@@ -4,11 +4,10 @@ import { Pressable, ScrollView, View } from 'react-native';
 
 import { AppText } from '@/components/app-text';
 import { Chip } from '@/components/chip';
-import { Icon, type IconName } from '@/components/icon';
 import { NavScreen } from '@/components/nav';
 import { SearchButton } from '@/components/search-button';
 import { StateView } from '@/components/state-view';
-import { makeStyles, Radius, Sizes, Spacing, useColors } from '@/constants/theme';
+import { makeStyles, Radius, Sizes, Spacing } from '@/constants/theme';
 import type { EventNeed } from '@/data/reference';
 import { useAllEventNeeds, useCategoryGroups, useHomeEvents } from '@/data/reference';
 import { useMyRequests } from '@/data/requests';
@@ -16,29 +15,37 @@ import { useSavedVendors } from '@/data/saved';
 import { useSession } from '@/features/auth/session';
 import { ChatButton } from '@/features/chat/chat-button';
 import { bookFirstNeeds } from '@/features/home/book-first';
+import { stubParts } from '@/features/home/greeting';
 import { SectionHeader } from '@/features/home/section-header';
 import { VendorPhotoCards } from '@/features/home/vendor-photo-cards';
-import { VendorTypeRow } from '@/features/home/vendor-type-row';
 import { useWeddingDraft } from '@/features/home/wedding-draft';
 import { LocationChip } from '@/features/location/location-chip';
 import { filtersForGuests } from '@/features/planner/find-for-plan';
 import { essentialNeeds } from '@/features/planner/plan-helpers';
 import { usePlanView } from '@/features/planner/use-plan-view';
 import { clearSearchFilters, setSearchFilters } from '@/features/search/search-filters';
+import {
+  BookedRows,
+  KindsAccordion,
+  NeedTiles,
+  RequestsCard,
+} from '@/features/search/vendors-tab-parts';
 import { localized } from '@/i18n/localized';
 import { useLocale } from '@/i18n/locale-context';
 
-// One shelf per kind of vendor; past this, "All types" and search find the rest
+// One shelf per kind of vendor; past this, Every kind of vendor and search find the rest
 const SHELVES = 6;
 const VENUE_GROUP = 'venues';
 
 /**
- * The Vendors tab (2026-10-21, after The Knot's): where they are and a search
- * box, then Saved and Your requests, the kinds of vendor, the family's main
- * events as chips, and a shelf of photo cards for each kind to book, the hall
- * first. Picking an event (Mehndi, Sangeet, Anand Karaj…) swaps the shelves
- * for what that event needs, on its own day, and hearts save for it. Search,
- * a kind's results and Requests open on this tab's stack. /vendors
+ * The Vendors tab, where families find and book (the final look, 2026-10-23;
+ * canvas board "3 · Vendors"). Search and where you are, then what you saved
+ * and the offers waiting, then the family's events as chips: picking one
+ * restacks the tab for that day. With a plan it starts on the first event and
+ * shows what that event still needs as photo tiles (how many are free that
+ * day), who's already booked, and a shelf of vendors for each kind still to
+ * book. Then every kind of vendor, group by group, and Requests. Search, a
+ * kind's results and Requests open on this tab's stack. /vendors
  */
 export default function VendorsScreen() {
   const styles = useStyles();
@@ -48,20 +55,43 @@ export default function VendorsScreen() {
   const groups = useCategoryGroups();
   const view = usePlanView();
   const draft = useWeddingDraft();
-  const [event, setEvent] = useState<string | null>(null);
+  const { plan, chosen, wedding } = view;
+  // With a plan it opens on the first of the family's events; a chip changes it
+  const [picked, setPicked] = useState<string | null | undefined>(undefined);
+  const event = picked === undefined ? (chosen[0]?.slug ?? null) : picked;
 
   const coreEvents = (sections.data ?? [])
     .flatMap((section) => section.events)
     .filter((e) => e.isCore);
+  const chipEvents: { slug: string; name: string }[] = (
+    chosen.length > 0 ? chosen : coreEvents
+  ).map((e) => ({ slug: e.slug, name: localized(e.name) }));
+  const date = (event && plan.eventDates?.[event]) || plan.weddingDate || draft.date || null;
+  const guestBand = (event && plan.guests?.[event]) || draft.guestBand || null;
+  const stub = stubParts(date);
+  const dayLabel = stub
+    ? `${stub.month.charAt(0)}${stub.month.slice(1).toLowerCase()} ${stub.day}`
+    : null;
+  const eventName = chipEvents.find((e) => e.slug === event)?.name ?? '';
+
+  const planned = !!event && chosen.some((e) => e.slug === event);
+  const essentials = event && needs.data ? essentialNeeds(needs.data[event]) : [];
+  const booked = event ? (plan.booked[event] ?? []) : [];
+  const stillNeeds = essentials.filter((need) => !booked.includes(need.categorySlug));
+  const bookedRows = essentials
+    .filter((need) => booked.includes(need.categorySlug))
+    .map((need) => ({
+      key: need.categorySlug,
+      kind: localized(need.name),
+      vendor: wedding?.bookedVendors?.[`${event}/${need.categorySlug}`] ?? null,
+    }));
+
   const shelves: EventNeed[] =
     sections.data && needs.data
       ? event
-        ? essentialNeeds(needs.data[event]).slice(0, SHELVES)
+        ? (planned ? stillNeeds : essentials).slice(0, SHELVES)
         : bookFirstNeeds(sections.data, needs.data, SHELVES)
       : [];
-  const { plan } = view;
-  const date = (event && plan.eventDates?.[event]) || plan.weddingDate || draft.date || null;
-  const guestBand = (event && plan.guests?.[event]) || draft.guestBand || null;
 
   const seeAll = (need: EventNeed) => {
     clearSearchFilters();
@@ -89,56 +119,84 @@ export default function VendorsScreen() {
   return (
     <NavScreen title={t('tabs.vendors')} back={false} trailing={<ChatButton />}>
       <View style={styles.find}>
-        <LocationChip />
         <SearchButton
           onPress={() => router.navigate({ pathname: '/search', params: { focus: '1' } })}
         />
+        <LocationChip />
       </View>
 
-      <YourVendors weddingId={view.wedding?.id ?? ''} />
+      <YourVendors weddingId={wedding?.id ?? ''} />
 
-      <View style={styles.block}>
-        <SectionHeader
-          title={t('vendorsTab.types')}
-          link={t('home.seeAllTypes')}
-          onLink={() => router.navigate('/search')}
-        />
-        {groups.isPending && <StateView state="loading" />}
-        {groups.isError && <StateView state="error" onRetry={() => void groups.refetch()} />}
-        {groups.data && <VendorTypeRow groups={groups.data} />}
-      </View>
-
-      {coreEvents.length > 0 && (
-        <View style={styles.block}>
-          <SectionHeader title={t('vendorsTab.forEvent')} />
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            style={styles.bleed}
-            contentContainerStyle={styles.track}
-          >
-            <Chip
-              label={t('vendorsTab.allEvents')}
-              role="radio"
-              tone="ink"
-              selected={event === null}
-              onPress={() => setEvent(null)}
-            />
-            {coreEvents.map((e) => (
+      {chipEvents.length > 0 && (
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          style={styles.bleed}
+          contentContainerStyle={styles.track}
+        >
+          <Chip
+            label={t('vendorsTab.allEvents')}
+            role="radio"
+            tone="ink"
+            selected={event === null}
+            onPress={() => setPicked(null)}
+          />
+          {chipEvents.map((e) => {
+            const day = stubParts(plan.eventDates?.[e.slug] ?? null);
+            return (
               <Chip
                 key={e.slug}
-                label={localized(e.name)}
+                label={
+                  day
+                    ? `${e.name} · ${day.month.charAt(0)}${day.month.slice(1).toLowerCase()} ${day.day}`
+                    : e.name
+                }
                 role="radio"
                 tone="ink"
                 selected={event === e.slug}
-                onPress={() => setEvent(e.slug)}
+                onPress={() => setPicked(e.slug)}
               />
-            ))}
-          </ScrollView>
-        </View>
+            );
+          })}
+        </ScrollView>
       )}
 
       {(sections.isPending || needs.isPending) && <StateView state="loading" />}
+
+      {planned && (
+        <View style={styles.block}>
+          <SectionHeader
+            title={
+              stillNeeds.length > 0
+                ? t('vendorsTab.stillNeeds', { event: eventName })
+                : t('vendorsTab.allSetTitle', { event: eventName })
+            }
+          />
+          {stillNeeds.length > 0 ? (
+            <NeedTiles
+              needs={stillNeeds.slice(0, 4)}
+              date={date}
+              dayLabel={dayLabel}
+              guestBand={guestBand}
+              onOpen={seeAll}
+            />
+          ) : (
+            <View style={styles.allSet}>
+              <AppText>{t('vendorsTab.allSetBody', { event: eventName })}</AppText>
+            </View>
+          )}
+        </View>
+      )}
+
+      {planned && bookedRows.length > 0 && (
+        <View style={styles.block}>
+          <AppText variant="caption" weight={600} color="text2" style={styles.caps}>
+            {t('vendorsTab.bookedFor', { event: eventName }).toUpperCase()}
+          </AppText>
+          <BookedRows rows={bookedRows} />
+        </View>
+      )}
+
       {hallFirst ? (
         <View style={styles.panel}>
           <View style={styles.panelWords}>
@@ -153,14 +211,22 @@ export default function VendorsScreen() {
         first && shelf(first)
       )}
       {rest.map(shelf)}
+
+      <View style={styles.block}>
+        <SectionHeader title={t('vendorsTab.everyKind')} />
+        {groups.isPending && <StateView state="loading" />}
+        {groups.isError && <StateView state="error" onRetry={() => void groups.refetch()} />}
+        {groups.data && <KindsAccordion groups={groups.data} />}
+      </View>
+
+      <RequestsCard />
     </NavScreen>
   );
 }
 
 /**
- * Two cards side by side, like The Knot's "Your vendors" and "Booked": the
- * vendors they've saved (opens Saved) and what they've asked vendors for
- * (opens Requests). Signed out each says what it's for.
+ * Two numbers side by side: the vendors saved (opens Saved) and the offers
+ * and requests waiting (opens Requests). Signed out each says what it's for.
  */
 function YourVendors({ weddingId }: { weddingId: string }) {
   const styles = useStyles();
@@ -174,20 +240,20 @@ function YourVendors({ weddingId }: { weddingId: string }) {
 
   return (
     <View style={styles.cards}>
-      <SummaryCard
-        icon="heart"
-        title={t('vendorsTab.saved')}
-        line={
+      <CountCard
+        number={signedIn ? String(savedCount) : '0'}
+        label={t('vendorsTab.saved')}
+        spoken={
           signedIn && savedCount > 0
             ? t('vendorsTab.savedCount', { count: savedCount })
             : t('vendorsTab.savedNone')
         }
         onPress={() => router.push('/saved')}
       />
-      <SummaryCard
-        icon="megaphone-outline"
-        title={t('vendorsTab.requests')}
-        line={
+      <CountCard
+        number={signedIn ? String(openCount) : '0'}
+        label={t('vendorsTab.requests')}
+        spoken={
           signedIn && openCount > 0
             ? t('vendorsTab.requestsCount', { count: openCount })
             : t('vendorsTab.requestsNone')
@@ -198,38 +264,31 @@ function YourVendors({ weddingId }: { weddingId: string }) {
   );
 }
 
-function SummaryCard({
-  icon,
-  title,
-  line,
+function CountCard({
+  number,
+  label,
+  spoken,
   onPress,
 }: {
-  icon: IconName;
-  title: string;
-  line: string;
+  number: string;
+  label: string;
+  spoken: string;
   onPress: () => void;
 }) {
-  const Colors = useColors();
   const styles = useStyles();
   return (
     <Pressable
       accessibilityRole="button"
-      accessibilityLabel={`${title}. ${line}`}
+      accessibilityLabel={`${label}. ${spoken}`}
       onPress={onPress}
       style={({ pressed }) => [styles.card, pressed && styles.pressed]}
     >
-      <View style={styles.cardWords}>
-        <AppText variant="heading" weight={700} numberOfLines={1}>
-          {title}
-        </AppText>
-        <View style={styles.cardLine}>
-          <Icon name={icon} size={Sizes.iconSmall} color={Colors.primary} />
-          <AppText variant="label" color="text2" style={styles.grow}>
-            {line}
-          </AppText>
-        </View>
-      </View>
-      <Icon name="chevron-forward" size={18} color={Colors.chevron} weight="semibold" />
+      <AppText weight={700} style={styles.number} maxFontSizeMultiplier={1.3}>
+        {number}
+      </AppText>
+      <AppText variant="caption" weight={600} color="text2" style={styles.caps}>
+        {label.toUpperCase()}
+      </AppText>
     </Pressable>
   );
 }
@@ -251,36 +310,32 @@ const useStyles = makeStyles((Colors) => ({
   },
   cards: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
     gap: Spacing.md,
   },
   card: {
-    flexGrow: 1,
-    flexBasis: 150,
-    minHeight: 84,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.sm,
-    padding: Spacing.lg,
+    flex: 1,
+    gap: 2,
+    paddingVertical: Spacing.md,
+    paddingHorizontal: Spacing.lg,
     borderRadius: Radius.photo,
     borderCurve: 'continuous',
-    backgroundColor: Colors.surface,
     boxShadow: `inset 0 0 0 1px ${Colors.border}`,
   },
   pressed: {
     backgroundColor: Colors.rowPressed,
   },
-  cardWords: {
-    flex: 1,
-    gap: Spacing.xs,
+  number: {
+    fontSize: 30,
+    lineHeight: 34,
   },
-  cardLine: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.xs + 2,
+  caps: {
+    letterSpacing: 0.6,
   },
-  grow: {
-    flex: 1,
+  allSet: {
+    padding: Spacing.lg,
+    borderRadius: Radius.photo,
+    borderCurve: 'continuous',
+    backgroundColor: Colors.successTint,
   },
   // The warm panel around the hall shelf; its cards stop at the panel's edges
   panel: {

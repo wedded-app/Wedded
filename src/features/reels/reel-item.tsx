@@ -20,6 +20,7 @@ import Animated, {
   useAnimatedStyle,
   useReducedMotion,
   useSharedValue,
+  withRepeat,
   withSequence,
   withSpring,
   withTiming,
@@ -31,6 +32,7 @@ import { storyRingStyle } from '@/components/story-ring';
 import { Radius, Spacing, Springs } from '@/constants/theme';
 import { trackReelView } from '@/data/business';
 import { compactCount, type Reel, reelVendors } from '@/data/reels';
+import { useSavedEventsFor, useSaveVendor } from '@/data/saved';
 import { initials } from '@/features/planner/plan-together';
 import { AskWedButton } from '@/features/wed/ask-wed-button';
 import { useLocale } from '@/i18n/locale-context';
@@ -44,6 +46,8 @@ export const REEL_INK = '#FFFFFF';
 export const REEL_DIM = 'rgba(255,255,255,0.78)';
 const PILL = 'rgba(255,255,255,0.18)';
 const LIKED = '#FF3B5C';
+// TikTok's saved bookmark is yellow
+const SAVED = '#FACE15';
 // The app's maroon, so Book reads as the one thing to do on a reel
 const BOOK = 'rgba(138,28,51,0.95)';
 
@@ -153,6 +157,25 @@ export function ReelItem({
   const timers = useRef(new Set<ReturnType<typeof setTimeout>>());
   const progress = useSharedValue(0);
   const likePop = useSharedValue(1);
+  // Save, as on TikTok: the reel's vendor (who posted it, or the first tagged)
+  const saveTarget = reelVendors(reel)[0] ?? null;
+  const savedFor = useSavedEventsFor(saveTarget?.id ?? '');
+  const saved = !!saveTarget && savedFor.length > 0;
+  const { toggleSave } = useSaveVendor();
+  // TikTok's sound disc at the bottom of the rail turns while the sound plays
+  const spin = useSharedValue(0);
+  useEffect(() => {
+    if (active && !muted && !reduceMotion) {
+      spin.value = withRepeat(
+        withTiming(spin.value + 360, { duration: 6000, easing: Easing.linear }),
+        -1,
+        false,
+      );
+    } else {
+      spin.value = spin.value % 360;
+    }
+  }, [active, muted, reduceMotion, spin]);
+  const discStyle = useAnimatedStyle(() => ({ transform: [{ rotate: `${spin.value}deg` }] }));
   const chrome = useSharedValue(1);
 
   const player = useVideoPlayer(reel.videoUrl, (p) => {
@@ -365,7 +388,7 @@ export function ReelItem({
           )}
         </View>
         <RailButton
-          icon={reel.liked ? 'heart' : 'heart-outline'}
+          icon="heart"
           color={reel.liked ? LIKED : REEL_INK}
           label={compactCount(reel.likeCount)}
           spoken={reel.liked ? t('reels.unlike') : t('reels.like')}
@@ -376,25 +399,33 @@ export function ReelItem({
           }}
         />
         <RailButton
-          icon="chatbubble-outline"
+          icon="chatbubble"
           label={compactCount(reel.commentCount)}
           spoken={t('reels.comments', { count: reel.commentCount })}
           onPress={() => actions.onComments(reel)}
         />
+        {saveTarget && !business && (
+          <RailButton
+            icon="bookmark"
+            color={saved ? SAVED : REEL_INK}
+            label={saved ? t('reels.saved') : t('reels.save')}
+            spoken={
+              saved
+                ? t('reels.unsaveVendor', { name: saveTarget.name })
+                : t('reels.saveVendor', { name: saveTarget.name })
+            }
+            onPress={() => {
+              saveHaptic();
+              toggleSave(saveTarget.id);
+            }}
+          />
+        )}
         <RailButton
-          icon="paper-plane-outline"
+          icon="arrow-redo"
           label={t('reels.share')}
           spoken={t('reels.share')}
           onPress={() => actions.onShare(reel)}
         />
-        {!isLink && (
-          <RailButton
-            icon={muted ? 'volume-mute' : 'volume-high'}
-            label={muted ? t('reels.soundOff') : t('reels.soundOn')}
-            spoken={muted ? t('reels.turnSoundOn') : t('reels.turnSoundOff')}
-            onPress={onToggleMute}
-          />
-        )}
         {/* Wed (mockup): find vendors like this, with the reel's still in the chip */}
         {!business && (
           <AskWedButton
@@ -414,6 +445,29 @@ export function ReelItem({
           spoken={t('reels.more')}
           onPress={() => actions.onMore(reel)}
         />
+        {/* TikTok's sound disc: turns while the sound plays; a tap mutes */}
+        {!isLink && (
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={muted ? t('reels.turnSoundOn') : t('reels.turnSoundOff')}
+            onPress={onToggleMute}
+            hitSlop={6}
+            style={({ pressed }) => [styles.discButton, pressed && styles.pressed]}
+          >
+            <Animated.View style={[styles.disc, discStyle]}>
+              {reel.thumbUrl ? (
+                <Image source={{ uri: reel.thumbUrl }} contentFit="cover" style={styles.discArt} />
+              ) : (
+                <Icon name="musical-notes-outline" size={16} color={REEL_INK} />
+              )}
+            </Animated.View>
+            {muted && (
+              <View style={styles.discMute}>
+                <Icon name="volume-mute" size={12} color={REEL_INK} />
+              </View>
+            )}
+          </Pressable>
+        )}
       </Animated.View>
 
       <Animated.View
@@ -734,6 +788,40 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 2,
+  },
+  discButton: {
+    width: 48,
+    height: 48,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  // A record: dark grooves round the reel's own still
+  disc: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    borderWidth: 9,
+    borderColor: '#1C1C1E',
+    backgroundColor: '#2C2C2E',
+    alignItems: 'center',
+    justifyContent: 'center',
+    overflow: 'hidden',
+  },
+  discArt: {
+    width: 26,
+    height: 26,
+    borderRadius: 13,
+  },
+  discMute: {
+    position: 'absolute',
+    right: 0,
+    bottom: 2,
+    width: 18,
+    height: 18,
+    borderRadius: 9,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(0,0,0,0.6)',
   },
   pressed: {
     opacity: 0.6,

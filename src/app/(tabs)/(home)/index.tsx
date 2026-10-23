@@ -1,12 +1,11 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { Pressable, RefreshControl, StyleSheet, View } from 'react-native';
+import { RefreshControl, StyleSheet, View } from 'react-native';
 import Animated from 'react-native-reanimated';
 
 import { AppText } from '@/components/app-text';
 import { NavBar, useNavScroll, useNavTop } from '@/components/nav';
-import { SearchButton } from '@/components/search-button';
 import { StateView } from '@/components/state-view';
 import { useBottomSpace } from '@/components/tab-bar';
 import { Sizes, Spacing, useColors } from '@/constants/theme';
@@ -18,6 +17,8 @@ import { ChatButton } from '@/features/chat/chat-button';
 import { BookFirst } from '@/features/home/book-first-row';
 import { DateCard } from '@/features/home/date-card';
 import { EventCarousel } from '@/features/home/event-carousel';
+import { EventsRow } from '@/features/home/events-row';
+import { greetingKey, todayLine } from '@/features/home/greeting';
 import { NextUp } from '@/features/home/next-up';
 import { SectionHeader } from '@/features/home/section-header';
 import { VendorPhotoCards } from '@/features/home/vendor-photo-cards';
@@ -25,25 +26,24 @@ import { VendorRows } from '@/features/home/vendor-rows';
 import { useWeddingDraft } from '@/features/home/wedding-draft';
 import { VendorTypeRow } from '@/features/home/vendor-type-row';
 import { YourFamily } from '@/features/home/your-family';
-import { YourVendors } from '@/features/home/your-vendors';
-import { LocationChip } from '@/features/location/location-chip';
 import { ProfileButton } from '@/features/settings/profile-button';
 import { findForPlan } from '@/features/planner/find-for-plan';
 import { usePlanView } from '@/features/planner/use-plan-view';
 import { WebsiteCard } from '@/features/website/website-card';
-import { StoryRings } from '@/features/stories/story-rings';
-import { WedHomeSection } from '@/features/wed/home-wed';
+import { WedLine } from '@/features/wed/wed-line';
 import { localized } from '@/i18n/localized';
 import { useLocale } from '@/i18n/locale-context';
 
 /**
- * S4 Home is the family's wedding, not a catalog, in the Journey look: a
- * greeting, then the wedding card (OmbreBackground; with a plan it counts down
- * to the plan's date and opens My Wedding, before one it asks when the wedding
- * is, no account needed), then search, then what to do next, where things
- * stand with each vendor, vendors free on their date, and what the family has
- * been up to. Before there's a plan: what to book first (sharper once they've
- * answered), the kinds of vendor and the events.
+ * S4 Home answers one question: what should we do next? (the final look,
+ * 2026-10-23; canvas board "2 · Home"). Its parts, always in this order:
+ * today's date and a greeting, with chat and your initial (Profile) at the
+ * top right; the wedding card (OmbreBackground; with a plan it counts down
+ * and opens My Wedding, before one it asks when the wedding is); Wed's line,
+ * only when Wed needs an OK; Up next, one ticket at a time; your events,
+ * each saying in words what it still needs; vendors free on your dates; the
+ * website; and what the family has been up to. No booked counts. Before
+ * there's a plan: what to book first, the kinds of vendor and the events.
  */
 export default function HomeScreen() {
   const Colors = useColors();
@@ -113,31 +113,23 @@ export default function HomeScreen() {
             style={styles.greeting}
             onLayout={(event) => setGreetingHeight(event.nativeEvent.layout.height)}
           >
-            <AppText variant="label" weight={600} color="text2">
-              {profile?.full_name
-                ? t('home.hello', { name: profile.full_name.split(' ')[0] })
-                : t('home.helloPlain')}
+            <AppText variant="caption" weight={600} color="text2" style={styles.caps}>
+              {todayLine(new Date())}
             </AppText>
-            <AppText variant="title">{t('home.yourWedding')}</AppText>
+            <AppText variant="title">
+              {profile?.full_name
+                ? t(greetingKey(new Date()), { name: profile.full_name.split(' ')[0] })
+                : t(`${greetingKey(new Date())}Plain`)}
+            </AppText>
           </View>
           {planning ? <DateCard planDate={plan.weddingDate} /> : showDateCard && <DateCard />}
-          {/* The wedding website, easy to find (DECISIONS.md, 2026-10-22) */}
-          {wedding && <WebsiteCard weddingId={wedding.id} canEdit={view.canEdit} />}
-          <StoryRings />
-          <View style={styles.find}>
-            <SearchButton
-              onPress={() => router.navigate({ pathname: '/search', params: { focus: '1' } })}
-            />
-            <LocationChip />
-          </View>
-          {/* MOCKUP: Wed's cards waiting for a yes, what it's working on, or a way in.
-              Only with a plan: its cards book things for a sample family's wedding */}
-          {planning && <WedHomeSection />}
+          {/* MOCKUP: Wed's cards waiting for a yes, as one line. Only with a plan */}
+          {planning && <WedLine />}
 
           {planning ? (
             <>
               <NextUp view={view} />
-              <YourVendors wedding={wedding} eventName={eventName} />
+              <EventsRow view={view} />
               {first ? (
                 <VendorPhotoCards
                   title={
@@ -156,20 +148,13 @@ export default function HomeScreen() {
               ) : (
                 <VendorPhotoCards title={t('home.popularNearYou')} />
               )}
+              {/* The wedding website (DECISIONS.md, 2026-10-22), after the vendors */}
+              {wedding && <WebsiteCard weddingId={wedding.id} canEdit={view.canEdit} />}
               {wedding && <YourFamily weddingId={wedding.id} eventName={eventName} />}
             </>
           ) : loading ? null : (
             <BrowseSections posts={posts} />
           )}
-
-          <View style={styles.footer}>
-            <FooterLink
-              label={t('home.foundingWall')}
-              onPress={() => router.push('/founding')}
-              strong
-            />
-            <FooterLink label={t('home.forVendors')} onPress={() => router.push('/for-vendors')} />
-          </View>
         </View>
       </Animated.ScrollView>
 
@@ -225,28 +210,6 @@ function BrowseSections({ posts }: { posts: FeedPost[] }) {
   );
 }
 
-function FooterLink({
-  label,
-  onPress,
-  strong = false,
-}: {
-  label: string;
-  onPress: () => void;
-  strong?: boolean;
-}) {
-  return (
-    <Pressable
-      accessibilityRole="link"
-      onPress={onPress}
-      style={({ pressed }) => [styles.footerLink, pressed && styles.pressed]}
-    >
-      <AppText weight={strong ? 600 : 400} color={strong ? 'primary' : 'text2'}>
-        {label}
-      </AppText>
-    </Pressable>
-  );
-}
-
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
@@ -260,25 +223,14 @@ const styles = StyleSheet.create({
     paddingTop: Spacing.lg,
     paddingHorizontal: Sizes.pageGutter,
   },
-  find: {
-    gap: Spacing.xs,
-  },
   greeting: {
     gap: 2,
     marginBottom: -Spacing.md,
   },
+  caps: {
+    letterSpacing: 0.6,
+  },
   block: {
     gap: Spacing.md,
-  },
-  footer: {
-    alignItems: 'center',
-  },
-  footerLink: {
-    minHeight: Sizes.tapTarget,
-    justifyContent: 'center',
-    paddingHorizontal: Spacing.md,
-  },
-  pressed: {
-    opacity: 0.5,
   },
 });
