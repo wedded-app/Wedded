@@ -1,5 +1,4 @@
 import { Image } from 'expo-image';
-import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Pressable, TextInput, View } from 'react-native';
 import Animated from 'react-native-reanimated';
@@ -14,7 +13,7 @@ import { Motion } from '@/lib/motion';
 import { GuestDetails } from './guest-details';
 import { useGuestList } from './guest-list';
 import { FAMILY } from './mock';
-import { openWed } from './open-wed';
+import { openFromWed, openWed } from './open-wed';
 import { receiptText, SENDS, useWed, wed, type Approval, type Role } from './wed-store';
 import { WedMark } from './wed-mark';
 
@@ -315,7 +314,7 @@ function useApprove(approval: Approval) {
       : wed.approve(approval.id);
 }
 
-/** Once sent, the way into the real chat in Messages, to carry on there. */
+/** Once sent, the way into the real chat in Messages, to carry on there (out of Wed's sheet, if it's in it). */
 function OpenChats({ chats }: { chats: string[] }) {
   return (
     <Button
@@ -323,7 +322,7 @@ function OpenChats({ chats }: { chats: string[] }) {
       icon="chatbubbles-outline"
       label={chats.length === 1 ? 'Open the chat' : `Open Messages (${chats.length} chats)`}
       onPress={() =>
-        router.push(
+        openFromWed(
           chats.length === 1 ? { pathname: '/chat/[id]', params: { id: chats[0] } } : '/messages',
         )
       }

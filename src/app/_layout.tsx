@@ -23,7 +23,7 @@ import {
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useCallback, useEffect } from 'react';
-import { View } from 'react-native';
+import { Platform, View } from 'react-native';
 
 import { AppIntro } from '@/components/app-intro';
 import { AppText } from '@/components/app-text';
@@ -37,6 +37,7 @@ import { WeddingSync } from '@/data/wedding';
 import { SessionProvider } from '@/features/auth/session';
 import { SearchLocationProvider } from '@/features/location/search-location';
 import { SettingsProvider } from '@/features/settings/settings';
+import { useWedNavigation } from '@/features/wed/open-wed';
 import { i18n } from '@/i18n';
 import { LocaleProvider } from '@/i18n/locale-context';
 
@@ -132,6 +133,8 @@ function PushOpens() {
 function AppShell() {
   const Colors = useColors();
   const scheme = useScheme();
+  // openWed() looks at where the app is, from anywhere, Wed's own pages included
+  useWedNavigation();
   const base = scheme === 'dark' ? DarkTheme : DefaultTheme;
   // Navigation's own colours (behind screens during transitions) match ours.
   const theme = {
@@ -196,6 +199,19 @@ function AppShell() {
           <Stack.Screen name="my-inquiries" />
           <Stack.Screen name="saved" />
           <Stack.Screen name="settings" />
+          {/* Wed slides up as a sheet over whatever is open, its pages on a
+              stack inside: iOS's own sheet on iPhone, up from the bottom on
+              Android, and drawn over the page by WedSheet on the web */}
+          <Stack.Screen
+            name="wed"
+            options={{
+              presentation: Platform.OS === 'web' ? 'transparentModal' : 'modal',
+              animation: Platform.select({ android: 'slide_from_bottom', web: 'none' }),
+              contentStyle: {
+                backgroundColor: Platform.OS === 'web' ? 'transparent' : Colors.canvas,
+              },
+            }}
+          />
           {/* Wed: connecting an app, sending to guests, and talking to Wed full screen */}
           <Stack.Screen name="wed-connect" options={{ presentation: 'modal' }} />
           <Stack.Screen name="wed-send" options={{ presentation: 'modal' }} />

@@ -9,6 +9,7 @@ import { NavScreen } from '@/components/nav';
 import { StateView } from '@/components/state-view';
 import { makeStyles, Radius, Sizes, Spacing, useColors } from '@/constants/theme';
 import type { Fact } from '@/features/wed/mock';
+import { WedCloseButton } from '@/features/wed/close-wed';
 import { openWed, WED_BACK } from '@/features/wed/open-wed';
 import { useWed, wed } from '@/features/wed/wed-store';
 import { selectionHaptic } from '@/lib/haptics';
@@ -61,7 +62,7 @@ export default function WedMemoryScreen() {
 
   if (facts.length === 0 && forgotten.length === 0) {
     return (
-      <NavScreen title="What Wed knows" backTo={WED_BACK}>
+      <NavScreen title="What Wed knows" backTo={WED_BACK} trailing={<WedCloseButton />}>
         <Animated.View entering={Motion.enter}>
           <StateView
             state="empty"
@@ -75,7 +76,12 @@ export default function WedMemoryScreen() {
   }
 
   return (
-    <NavScreen title="What Wed knows" subtitle="Each line says who can see it." backTo={WED_BACK}>
+    <NavScreen
+      title="What Wed knows"
+      subtitle="Each line says who can see it."
+      backTo={WED_BACK}
+      trailing={<WedCloseButton />}
+    >
       {GROUPS.map(({ group, header }) => {
         // What Wed knows, with lines just forgotten back in their places
         const rows: (Fact | Forgotten)[] = facts.filter((fact) => fact.group === group);

@@ -20,11 +20,7 @@ import { useHomeEvents } from '@/data/reference';
 import { localized } from '@/i18n/localized';
 import { useLocale } from '@/i18n/locale-context';
 
-import {
-  clearSavedToast as clearToast,
-  useSavedToast,
-  useSavedToastLift,
-} from './saved-toast-store';
+import { clearSavedToast as clearToast, useSavedToast } from './saved-toast-store';
 
 /**
  * After a save, a toast above the tab bar says where it went ("Saved to
@@ -32,8 +28,8 @@ import {
  * tap opens Saved (or Wed's lists, for a save made in Wed): since Wed took
  * Saved's tab, this is how a family finds their list again. It rises from
  * behind the tab bar and sinks back (it simply appears with Reduce Motion),
- * and screen readers hear it. The tabs layout mounts one host, and a vendor's
- * page another over its sticky Save bar. A save made where no host is drawn
+ * and screen readers hear it. The tabs layout mounts one host, a vendor's
+ * page another over its sticky Save bar, and Wed's chat one over its composer. A save made where no host is drawn
  * ("Save to which event?", a story) shows its toast once a host's screen is
  * back on top, if that's within a few seconds; each toast shows only once.
  */
@@ -63,9 +59,9 @@ function useWhere(where: string | null): string | null {
 
 /**
  * Draws the toast when there is one and this host's screen is on top. In the
- * tabs layout it rises from behind the tab bar (or Wed's composer, which
- * sets setSavedToastLift); elsewhere pass `bottom`, the top edge of what it
- * rises from behind (a vendor page's sticky bar).
+ * tabs layout it rises from behind the tab bar; elsewhere pass `bottom`, the
+ * top edge of what it rises from behind (a vendor page's sticky bar, Wed's
+ * composer).
  */
 export function SavedToastHost({ bottom }: { bottom?: number } = {}) {
   const current = useSavedToast();
@@ -73,7 +69,6 @@ export function SavedToastHost({ bottom }: { bottom?: number } = {}) {
   const focused = useIsFocused();
   const segments = useSegments();
   const offset = useTabBarOffset();
-  const lift = useSavedToastLift();
   const reduceMotion = useReducedMotion();
   // 0 hidden behind the tab bar, 1 in place
   const shown = useSharedValue(0);
@@ -122,7 +117,7 @@ export function SavedToastHost({ bottom }: { bottom?: number } = {}) {
       text={text}
       seeList={seeList}
       hint={t('saved.seeListHint')}
-      bottom={bottom ?? offset + Sizes.tabBar + lift}
+      bottom={bottom ?? offset + Sizes.tabBar}
       // Over the Reels videos the tab bar is dark glass; the toast matches it
       dark={segments[segments.length - 1] === 'discover'}
       shown={shown}

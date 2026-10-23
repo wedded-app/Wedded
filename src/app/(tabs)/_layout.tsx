@@ -9,7 +9,6 @@ import { useSession } from '@/features/auth/session';
 import { useOpensInBusiness } from '@/features/business/app-mode';
 import { useOnboardingGate } from '@/features/onboarding/gate';
 import { SavedToastHost } from '@/features/saved/saved-toast';
-import { useWedNavigation } from '@/features/wed/open-wed';
 import { WedButton } from '@/features/wed/wed-button';
 import { useWed, waitingCount } from '@/features/wed/wed-store';
 import { useLocale } from '@/i18n/locale-context';
@@ -51,9 +50,10 @@ const TABS: (Omit<TabSpec, 'label'> & { labelKey: string })[] = [
  * for a yes), Reels (the discover route) and Wedding (My Wedding, the plan
  * route), in a floating glass bar that content scrolls under (TabBar: each
  * tab's icon over its name, a lens behind the selected one). Profile opens
- * from your photo on Home (DECISIONS.md, 2026-10-23). Wed's pages are in this group without a tab
- * (href: null) and open from its button and the Wed buttons around the app. Expo Router's JS tabs
- * draw it the same on iPhone, Android and the web.
+ * from your photo on Home (DECISIONS.md, 2026-10-23). Wed isn't a tab: its
+ * button slides Wed up as a sheet over whichever tab is open (src/app/wed,
+ * presented by the root stack), and closing it leaves that tab as it was.
+ * Expo Router's JS tabs draw it the same on iPhone, Android and the web.
  */
 export default function TabsLayout() {
   const Colors = useColors();
@@ -69,7 +69,6 @@ export default function TabsLayout() {
     setSeenUser(userId);
     if (seenUser !== null) setGeneration((g) => g + 1);
   }
-  useWedNavigation();
   // Only someone who can say yes gets a count to clear
   const waiting = useWed(waitingCount);
   const canApprove = useWed((s) => s.role === 'owner');
@@ -90,12 +89,7 @@ export default function TabsLayout() {
       <Tabs
         key={generation}
         tabBar={(props) => (
-          <TabBar
-            {...props}
-            tabs={tabs}
-            center={<WedButton count={canApprove ? waiting : 0} />}
-            centerFor="wed"
-          />
+          <TabBar {...props} tabs={tabs} center={<WedButton count={canApprove ? waiting : 0} />} />
         )}
         screenOptions={{
           headerShown: false,
@@ -105,7 +99,6 @@ export default function TabsLayout() {
         {tabs.map((tab) => (
           <Tabs.Screen key={tab.name} name={tab.name} options={{ title: tab.label }} />
         ))}
-        <Tabs.Screen name="wed" options={{ href: null }} />
       </Tabs>
       <SavedToastHost />
     </TabBarSpaceProvider>

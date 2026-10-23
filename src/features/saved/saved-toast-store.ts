@@ -38,23 +38,6 @@ export function useSavedToast(): SavedToast | null {
   return useSyncExternalStore(subscribe, getToast, getToast);
 }
 
-// Points to rise above the tab bar by, for a tab with its own bar over it
-// (Wed's composer)
-let lift = 0;
-const getLift = () => lift;
-
-/** How far above the tab bar the tabs' toast sits. */
-export function useSavedToastLift(): number {
-  return useSyncExternalStore(subscribe, getLift, getLift);
-}
-
-/** A tab with a bar above the tab bar (Wed's composer) sets this while it's on screen, and 0 after. */
-export function setSavedToastLift(points: number) {
-  if (points === lift) return;
-  lift = points;
-  listeners.forEach((listener) => listener());
-}
-
 /** Takes the toast down; only the one it was started for, so a newer save keeps its own time. */
 export function clearSavedToast(id: number) {
   if (toast?.id === id) setToast(null);

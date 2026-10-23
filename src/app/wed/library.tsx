@@ -1,5 +1,4 @@
 import { Image } from 'expo-image';
-import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 import Animated, {
@@ -27,7 +26,8 @@ import {
   type MockVendor,
 } from '@/features/wed/mock';
 import { useWed, type WedState } from '@/features/wed/wed-store';
-import { WED_BACK } from '@/features/wed/open-wed';
+import { WedCloseButton } from '@/features/wed/close-wed';
+import { openFromWed, WED_BACK } from '@/features/wed/open-wed';
 import { Motion } from '@/lib/motion';
 
 type Side = 'lists' | 'photos';
@@ -65,7 +65,7 @@ export default function WedLibraryScreen() {
   const photos = useWed(sentPhotos);
 
   return (
-    <NavScreen title="Lists and photos" backTo={WED_BACK}>
+    <NavScreen title="Lists and photos" backTo={WED_BACK} trailing={<WedCloseButton />}>
       <Segmented
         options={[
           { value: 'lists', label: 'Lists' },
@@ -137,7 +137,7 @@ function sentPhotos(s: WedState): Photo[] {
     .reverse();
 }
 
-/** A list that opens its own screen: Saved, or the dhol players side by side. */
+/** A list that opens its own screen (Saved, or the dhol players side by side), on the tab under Wed's sheet. */
 function LinkRow({ list }: { list: LibraryList }) {
   const href = list.href;
   return (
@@ -148,7 +148,7 @@ function LinkRow({ list }: { list: LibraryList }) {
       subtitle={list.meta}
       value={list.value}
       accessibilityRole="link"
-      onPress={href ? () => router.push(href) : undefined}
+      onPress={href ? () => openFromWed(href) : undefined}
     />
   );
 }

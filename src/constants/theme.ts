@@ -85,6 +85,9 @@ const light = {
   onHero: '#FFFFFF',
   onHero2: 'rgba(255, 255, 255, 0.86)', // secondary text on the card, 4.7:1 on heroTo
   heroTrack: 'rgba(255, 255, 255, 0.28)', // the empty part of its progress bar
+  // Round buttons and chips on the ombre (the top of Wed's sheet): white, see-through
+  onHeroFill: 'rgba(255, 255, 255, 0.18)',
+  onHeroFillPressed: 'rgba(255, 255, 255, 0.3)',
   // The wedding card on Home (OmbreCard): wine under drifting rose, blush and
   // champagne light. The same in dark mode; white text sits on the wine.
   ombreBase: '#5C0F20',
@@ -191,6 +194,8 @@ const dark: Palette = {
   onHero: '#FFFFFF',
   onHero2: 'rgba(255, 255, 255, 0.86)',
   heroTrack: 'rgba(255, 255, 255, 0.24)',
+  onHeroFill: 'rgba(255, 255, 255, 0.18)',
+  onHeroFillPressed: 'rgba(255, 255, 255, 0.3)',
   ombreBase: '#5C0F20',
   ombreWine: 'rgba(138, 28, 48, 0.95)',
   ombreRose: 'rgba(230, 91, 122, 0.85)',

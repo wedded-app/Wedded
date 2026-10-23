@@ -6,6 +6,7 @@ import { Icon } from '@/components/icon';
 import { NavScreen } from '@/components/nav';
 import { makeStyles, Radius, Sizes, Spacing, useColors } from '@/constants/theme';
 import { IDEAS, type MockIdea } from '@/features/wed/mock';
+import { WedCloseButton } from '@/features/wed/close-wed';
 import { openWed, WED_BACK } from '@/features/wed/open-wed';
 
 /**
@@ -17,7 +18,12 @@ import { openWed, WED_BACK } from '@/features/wed/open-wed';
 export default function WedIdeasScreen() {
   const styles = useStyles();
   return (
-    <NavScreen title="Ideas" subtitle="From your plan. Wed can do all of these." backTo={WED_BACK}>
+    <NavScreen
+      title="Ideas"
+      subtitle="From your plan. Wed can do all of these."
+      backTo={WED_BACK}
+      trailing={<WedCloseButton />}
+    >
       <View style={styles.list}>
         {IDEAS.map((idea) => (
           <IdeaCard key={idea.id} idea={idea} />

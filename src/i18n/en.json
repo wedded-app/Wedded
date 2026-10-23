@@ -21,6 +21,25 @@
     },
     "hint": "Opens Wed. Press and hold to talk to Wed."
   },
+  "wedSheet": {
+    "title": "Wed",
+    "menu": "Wed menu",
+    "close": "Close Wed",
+    "modes": {
+      "ask": "Ask me first",
+      "small": "Do the small things"
+    },
+    "modeLabel": "How much Wed does: {{mode}}",
+    "modeHint": "Opens Wed's settings",
+    "needOk": {
+      "one": "1 needs your OK",
+      "other": "{{count}} need your OK"
+    },
+    "waiting": "{{count}} waiting",
+    "waitingLabel": "{{count}} waiting for {{owner}}'s OK",
+    "updatesHint": "Opens Updates",
+    "working": "Working · {{step}} of {{steps}}"
+  },
   "home": {
     "phases": {
       "before": "Before the wedding",
