@@ -2102,8 +2102,6 @@
     "seeWhich": "Vendors in this reel",
     "seeWhichBody": "Tap one to see their page.",
     "bookVendor": "Book {{name}}",
-    "bookThis": "Book this vendor",
-    "bookAny": "Book a vendor",
     "bookWhich": "Book which vendor?",
     "bookWhichBody": "Ask about price and your date. They reply by call or text.",
     "bookNone": "These vendors aren't listed any more.",
@@ -2164,7 +2162,28 @@
     "save": "Save",
     "saved": "Saved",
     "saveVendor": "Save {{name}}",
-    "unsaveVendor": "Saved {{name}}. Tap to remove"
+    "unsaveVendor": "Saved {{name}}. Tap to remove",
+    "strip": {
+      "book": "Book {{name}}",
+      "askAbout": "Ask about price and your date",
+      "ask": "Ask",
+      "askHint": "Opens Ask for a quote",
+      "booked": "You booked {{name}}",
+      "bookedFor": "For your {{event}}",
+      "asked": "Asked {{name}}",
+      "waiting": "Waiting for their reply",
+      "wroteBack": "They wrote back",
+      "askedButton": "Asked",
+      "chat": "Chat",
+      "chatHint": "Opens your chat with them",
+      "see": "Book from this wedding",
+      "tagged": {
+        "one": "{{count}} vendor tagged",
+        "other": "{{count}} vendors tagged"
+      },
+      "seeThem": "See them",
+      "seeHint": "Shows the vendors in this reel"
+    }
   },
   "postReel": {
     "title": "New reel",

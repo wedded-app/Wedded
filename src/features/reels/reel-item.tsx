@@ -38,6 +38,7 @@ import { AskWedButton } from '@/features/wed/ask-wed-button';
 import { useLocale } from '@/i18n/locale-context';
 import { saveHaptic } from '@/lib/haptics';
 
+import { BookingStrip, useStripState } from './booking-strip';
 import { ReelEmbed } from './reel-embed';
 
 // Reels play over video in both light and dark mode, so the text and icons on
@@ -48,8 +49,8 @@ const PILL = 'rgba(255,255,255,0.18)';
 const LIKED = '#FF3B5C';
 // TikTok's saved bookmark is yellow
 const SAVED = '#FACE15';
-// The app's maroon, so Book reads as the one thing to do on a reel
-const BOOK = 'rgba(138,28,51,0.95)';
+// The booking strip's height before it has measured itself
+const STRIP_GUESS = 64;
 
 const DOUBLE_TAP_MS = 300;
 // After a double tap, every quick tap adds another heart (TikTok's combo)
@@ -94,8 +95,6 @@ export type ReelActions = {
   onComments: (reel: Reel) => void;
   onShare: (reel: Reel) => void;
   onMore: (reel: Reel) => void;
-  /** Book this vendor: the Ask screen, or a picker when the reel shows several. */
-  onBook: (reel: Reel) => void;
   /** Watch the poster's story (their avatar has a ring). */
   onStory: (reel: Reel) => void;
 };
@@ -110,7 +109,9 @@ export type ReelActions = {
  * like, comments, share, sound and more; at the bottom are who posted it,
  * the caption (two lines, then "more"), then one row with the event and a
  * single vendors chip (one vendor opens their page; several open a list of
- * the poster and the ones tagged), and Book this vendor. Wide clips show whole, not cropped. A pasted TikTok or
+ * the poster and the ones tagged). Under them, over the tab bar, the booking
+ * strip (booking-strip.tsx) makes the reel one tap from booking; holding
+ * hides it with the rest. Wide clips show whole, not cropped. A pasted TikTok or
  * Instagram reel plays in the platform's own player instead (its own taps and
  * sound), credited to whoever made it, with a link to the original post.
  */
@@ -137,7 +138,7 @@ export function ReelItem({
   bottomSpace: number;
   /** The poster has a story today: new, or already watched. */
   story: 'new' | 'seen' | null;
-  /** Business mode: no Book or Ask Wed, which are for families planning. */
+  /** Business mode: no booking strip, Save or Ask Wed, which are for families planning. */
   business?: boolean;
   onToggleMute: () => void;
 }) {
@@ -177,6 +178,12 @@ export function ReelItem({
   }, [active, muted, reduceMotion, spin]);
   const discStyle = useAnimatedStyle(() => ({ transform: [{ rotate: `${spin.value}deg` }] }));
   const chrome = useSharedValue(1);
+  // The booking strip, and the room the rail and caption leave for it
+  const strip = useStripState(reel);
+  const [stripHeight, setStripHeight] = useState(STRIP_GUESS);
+  const lift = !business && strip.kind !== 'none' ? stripHeight + Spacing.sm : 0;
+  // Shorter phones keep the whole rail clear of the top bar
+  const railGap = height < 800 ? Spacing.xs : Spacing.md;
 
   const player = useVideoPlayer(reel.videoUrl, (p) => {
     p.loop = true;
@@ -345,14 +352,18 @@ export function ReelItem({
       <Animated.View pointerEvents="none" style={[styles.topShade, topShade, chromeStyle]} />
       <Animated.View
         pointerEvents="none"
-        style={[styles.shade, bottomShade, { height: 300 + bottomSpace }, chromeStyle]}
+        style={[styles.shade, bottomShade, { height: 300 + bottomSpace + lift }, chromeStyle]}
       />
       {/* Long captions open over a darker screen */}
       {expanded && <View pointerEvents="none" style={styles.dim} />}
 
       <Animated.View
         pointerEvents={holding ? 'none' : 'box-none'}
-        style={[styles.rail, { bottom: bottomSpace + Spacing.sm }, chromeStyle]}
+        style={[
+          styles.rail,
+          { bottom: bottomSpace + Spacing.sm + lift, gap: railGap },
+          chromeStyle,
+        ]}
       >
         <View style={styles.posterButton}>
           <View
@@ -472,10 +483,10 @@ export function ReelItem({
 
       <Animated.View
         pointerEvents={holding ? 'none' : 'box-none'}
-        style={[styles.info, { bottom: bottomSpace + Spacing.sm }, chromeStyle]}
+        style={[styles.info, { bottom: bottomSpace + Spacing.sm + lift }, chromeStyle]}
       >
         <Pressable accessibilityRole="link" onPress={openPoster} style={styles.posterRow}>
-          <AppText variant="bodyLg" weight={700} numberOfLines={1} style={styles.ink}>
+          <AppText weight={600} numberOfLines={1} style={[styles.ink, styles.shrink]}>
             {poster}
           </AppText>
           {reel.vendor && (
@@ -588,24 +599,13 @@ export function ReelItem({
             )}
           </View>
         )}
-        {vendors.length > 0 && !business && (
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel={
-              vendors.length === 1
-                ? t('reels.bookVendor', { name: vendors[0].name })
-                : t('reels.bookAny')
-            }
-            onPress={() => actions.onBook(reel)}
-            style={({ pressed }) => [styles.book, pressed && styles.pressed]}
-          >
-            <Icon name="calendar-outline" size={20} color={REEL_INK} />
-            <AppText weight={700} numberOfLines={1} style={styles.bookText}>
-              {vendors.length === 1 ? t('reels.bookThis') : t('reels.bookAny')}
-            </AppText>
-          </Pressable>
-        )}
       </Animated.View>
+
+      {/* Unmounted while holding rather than faded: iOS drops Liquid Glass
+          from a view that goes see-through, and it wouldn't come back */}
+      {!business && !holding && strip.kind !== 'none' && (
+        <BookingStrip state={strip} bottom={bottomSpace + Spacing.sm} onHeight={setStripHeight} />
+      )}
 
       {/* How far into the clip, along the bottom like TikTok's */}
       {!isLink && (
@@ -745,7 +745,6 @@ const styles = StyleSheet.create({
     position: 'absolute',
     right: Spacing.sm,
     alignItems: 'center',
-    gap: Spacing.md,
   },
   posterButton: {
     alignItems: 'center',
@@ -866,21 +865,5 @@ const styles = StyleSheet.create({
   },
   shrink: {
     flexShrink: 1,
-  },
-  book: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    alignSelf: 'flex-start',
-    gap: Spacing.sm,
-    minHeight: 48,
-    maxWidth: '100%',
-    paddingHorizontal: Spacing.lg,
-    marginTop: Spacing.xs,
-    borderRadius: Radius.chip,
-    backgroundColor: BOOK,
-  },
-  bookText: {
-    color: REEL_INK,
   },
 });

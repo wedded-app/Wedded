@@ -28,7 +28,6 @@ import { Radius, Spacing } from '@/constants/theme';
 import { useTraditions } from '@/data/reference';
 import {
   type Reel,
-  reelVendors,
   useDeleteReel,
   useReelsFeed,
   useToggleBlock,
@@ -41,6 +40,7 @@ import { localized } from '@/i18n/localized';
 import { useLocale } from '@/i18n/locale-context';
 import { readSetting, StorageKeys, writeSetting } from '@/lib/storage';
 
+import { BookingFactsProvider } from './booking-strip';
 import { REEL_INK, ReelItem } from './reel-item';
 
 type Feed = Parameters<typeof useReelsFeed>[0];
@@ -153,21 +153,6 @@ export function ReelsPager({
     }
   };
 
-  // One vendor: straight to Ask. Several: pick one first. Ask itself
-  // handles signing in, so watching and choosing never need an account.
-  const book = (reel: Reel) => {
-    const vendors = reelVendors(reel);
-    const event = reel.eventSlug ? { event: reel.eventSlug } : {};
-    if (vendors.length === 1) {
-      router.push({ pathname: '/ask', params: { vendorId: vendors[0].id, ...event } });
-    } else if (vendors.length > 1) {
-      router.push({
-        pathname: '/reel-book',
-        params: { vendors: vendors.map((v) => v.slug).join(','), ...event },
-      });
-    }
-  };
-
   const more = (reel: Reel) => {
     const report = () => router.push({ pathname: '/reel-report', params: { reel: reel.id } });
     const choices: { text: string; style?: 'destructive' | 'cancel'; onPress?: () => void }[] =
@@ -239,7 +224,7 @@ export function ReelsPager({
     );
   }
 
-  return (
+  const pager = (
     <View style={styles.fill}>
       <FlatList
         data={list}
@@ -284,7 +269,6 @@ export function ReelsPager({
             }}
             onShare={(reel) => void share(reel)}
             onMore={more}
-            onBook={book}
           />
         )}
         pagingEnabled
@@ -317,6 +301,9 @@ export function ReelsPager({
       {hint && active === 0 && list.length > 1 && <SwipeHint label={t('reels.swipeHint')} />}
     </View>
   );
+  // Each reel's booking strip reads the family's plan, inquiries and chats
+  // from here, once for the pager; business mode has no strip
+  return business ? pager : <BookingFactsProvider>{pager}</BookingFactsProvider>;
 }
 
 /** A bouncing "Swipe up for more" the first time someone opens Reels. */
