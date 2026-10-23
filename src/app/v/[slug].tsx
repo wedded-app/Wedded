@@ -49,6 +49,7 @@ import { SavedToastHost } from '@/features/saved/saved-toast';
 import { trackVendorActivity, useVendorPublicStats } from '@/data/vendor-stats';
 import { useStartConversation } from '@/data/chat';
 import { useVendorMenus } from '@/data/vendor-menus';
+import { DateTicket } from '@/features/vendors/date-ticket';
 import { FactTiles } from '@/features/vendors/fact-tiles';
 import { ALL_NORCAL_MILES, factLabels, priceLine } from '@/features/vendors/profile-format';
 import { shareVendor } from '@/features/vendors/share';
@@ -534,6 +535,12 @@ export default function VendorProfileScreen() {
             </IconLine>
           )}
         </View>
+
+        <DateTicket
+          vendorId={v.id}
+          categorySlugs={v.categories.map((c) => c.slug)}
+          fromEvent={event}
+        />
 
         <FactTiles vendor={v} />
 

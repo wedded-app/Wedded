@@ -3047,7 +3047,19 @@
       "one": "1 open",
       "other": "{{count}} open"
     },
-    "requestsNone": "Post what you need"
+    "requestsNone": "Post what you need",
+    "stillNeeds": "What the {{event}} still needs",
+    "allSetTitle": "The {{event}} is all set",
+    "allSetBody": "Everything the {{event}} needs is booked. Nothing to find here.",
+    "bookedFor": "Booked for the {{event}}",
+    "freeOn": "{{shown}} free on {{day}}",
+    "nearYou": "{{shown}} near you",
+    "everyKind": "Every kind of vendor",
+    "kindsCount": {
+      "one": "1 kind",
+      "other": "{{count}} kinds"
+    },
+    "requestsCardTitle": "Say what you need. Vendors send you offers."
   },
   "website": {
     "title": "Website",
@@ -3517,5 +3529,14 @@
       "openLive": "Add the livestream",
       "openPhoto": "Choose a photo"
     }
+  },
+  "vendorTicket": {
+    "free": "Free on your {{event}}",
+    "booked": "Booked on your {{event}}",
+    "held": "Held on your {{event}}",
+    "partly": "Partly free on your {{event}}",
+    "ask": "Ask about your {{event}}",
+    "askLine": "Tap to ask for a quote",
+    "hint": "Opens Ask for a quote for that event"
   }
 }
