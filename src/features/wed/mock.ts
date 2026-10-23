@@ -6,7 +6,7 @@ import { photoUrl } from '@/data/vendor-media';
 import type { WedContext } from './wed-store';
 
 /**
- * MOCKUP ONLY. One made-up family's wedding for the Wed preview (the Wed tab
+ * MOCKUP ONLY. One made-up family's wedding for the Wed preview (Wed's chat
  * and its pages): Simran's family, with Simran as the owner and Harjit as an
  * editor. The vendors are sample vendors from seed.sql with their
  * placeholder photos; nothing here is read from or written to an account.

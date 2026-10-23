@@ -7,6 +7,7 @@ import { NavScreen } from '@/components/nav';
 import { makeStyles, Spacing, Typography, useColors } from '@/constants/theme';
 import { ConnectorRow } from '@/features/wed/connector-row';
 import { APPS, type AppMeta } from '@/features/wed/mock';
+import { WedCloseButton } from '@/features/wed/close-wed';
 import { WED_BACK } from '@/features/wed/open-wed';
 
 const GROUPS: { group: AppMeta['group']; header: string }[] = [
@@ -33,7 +34,7 @@ export default function WedAppsScreen() {
   const firstLine = lineHeight * Math.min(fontScale, Typography.label.maxScale);
 
   return (
-    <NavScreen title="Apps Wed can use" backTo={WED_BACK}>
+    <NavScreen title="Apps Wed can use" backTo={WED_BACK} trailing={<WedCloseButton />}>
       {GROUPS.map(({ group, header }) => (
         <ListSection key={group} inset header={header}>
           {APPS.filter((app) => app.group === group).map((app) => (

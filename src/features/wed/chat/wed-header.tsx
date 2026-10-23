@@ -3,126 +3,172 @@ import { Platform, Pressable, View, type LayoutChangeEvent, type ViewStyle } fro
 import Animated from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { AppText } from '@/components/app-text';
-import { GlassButton } from '@/components/glass-button';
-import { makeStyles, Radius, Sizes, Spacing, Typography, useColors } from '@/constants/theme';
+import { AppText, useFontScale } from '@/components/app-text';
+import { Icon, type IconName } from '@/components/icon';
+import { OmbreBackground } from '@/components/ombre-background';
+import {
+  makeStyles,
+  Palettes,
+  Radius,
+  Sizes,
+  Spacing,
+  Typography,
+  useColors,
+} from '@/constants/theme';
+import { useLocale } from '@/i18n/locale-context';
 import { Motion } from '@/lib/motion';
 
 import { FAMILY } from '../mock';
 import { useWed, waitingCount, type WedState } from '../wed-store';
+import { WedMark } from '../wed-mark';
 
-/** How far the header's page colour fades out below its words, over the thread. */
-export const HEADER_FADE = Spacing.xl;
-// Pulls the status line up under the title, between the round buttons
-const TUCK = 6;
-
-// The status line, only while Wed is busy: "Working · 2 of 4" while a task
-// runs (the thread's working line already says what), or what it waits for
-// ("Waiting for 3 dhol players to reply"). Nothing when idle: the capsule
-// says when cards wait, and "All caught up" lives on Updates.
-const statusLine = (s: WedState): string | null => {
+// The status line, only while Wed is busy: which step of the running task
+// (the thread's working line already says what), or what it waits for
+// ("Waiting for 3 dhol players to reply"). Nothing when idle: the chips say
+// when cards wait, and "All caught up" lives on Updates. (useWed compares
+// shallowly, so an unchanged status doesn't draw the band again.)
+type Status = { step: number; steps: number } | { words: string } | null;
+const statusLine = (s: WedState): Status => {
   for (let i = s.tasks.length - 1; i >= 0; i--) {
     const task = s.tasks[i];
-    if (task.state === 'running') return `Working · ${task.now + 1} of ${task.steps.length}`;
+    if (task.state === 'running') return { step: task.now + 1, steps: task.steps.length };
   }
   for (let i = s.tasks.length - 1; i >= 0; i--) {
-    if (s.tasks[i].state === 'waiting') return s.tasks[i].short;
+    if (s.tasks[i].state === 'waiting') return { words: s.tasks[i].short };
   }
   return null;
 };
 
 /**
- * The top of the chat, like ChatGPT's: the menu button and "Wed", with a
- * short status line under it only while Wed works or waits on a vendor
- * ("Working · 2 of 4"), which opens Updates. `quiet` hides the line while
- * the progress chip under the header already says it. On the right, only
- * while cards wait for a yes, a maroon "2 need your OK" that opens Updates
- * too (a grey "1 waiting" for family who can't say yes); otherwise an
- * empty slot keeps the title in the middle. Sits over the thread on the
- * page colour, which fades out below it (canvasEdge). `onHeight` gets its
- * full height, the fade included.
+ * The top of Wed's sheet: a band of the slowly moving maroon ombre
+ * (OmbreBackground) with, in white, Wed's menu on the left, the bow and
+ * "Wed" in the middle, and the chevron that closes the sheet on the right.
+ * Under them, how much Wed does on its own (Ask me first, or Do the small
+ * things), which opens Wed's settings, and while cards wait for a yes a
+ * white "2 need your OK" (a quieter "1 waiting" for family who can't say
+ * yes) that opens Updates. While Wed works or waits on a vendor, a short
+ * line under the chips says how far along it is ("Working · 2 of 4") and
+ * opens Updates too; `quiet` hides it while the progress chip under the
+ * band already says it. Sits over the top of the thread; `onHeight` gets
+ * its full height.
  */
 export function WedHeader({
   onMenu,
+  onClose,
   onHeight,
   quiet = false,
 }: {
   onMenu: () => void;
+  onClose: () => void;
   onHeight: (height: number) => void;
   quiet?: boolean;
 }) {
   const Colors = useColors();
   const styles = useStyles();
   const insets = useSafeAreaInsets();
+  const { t } = useLocale();
   const line = useWed(statusLine);
   const waiting = useWed(waitingCount);
+  const mode = useWed((s) => s.mode);
   const canApprove = useWed((s) => s.role === 'owner');
   const openUpdates = () => router.push('/wed/updates');
+  const modeWords = t(mode === 'ask' ? 'wedSheet.modes.ask' : 'wedSheet.modes.small');
   // Only someone who can say yes is asked for their OK
   const okWords = canApprove
-    ? `${waiting} ${waiting === 1 ? 'needs' : 'need'} your OK`
-    : `${waiting} waiting`;
-  const okLabel = canApprove ? okWords : `${waiting} waiting for ${FAMILY.owner}'s OK`;
+    ? t('wedSheet.needOk', { count: waiting })
+    : t('wedSheet.waiting', { count: waiting });
+  const okLabel = canApprove
+    ? okWords
+    : t('wedSheet.waitingLabel', { count: waiting, owner: FAMILY.owner });
+  const lineWords = !line
+    ? null
+    : 'words' in line
+      ? line.words
+      : t('wedSheet.working', { step: line.step, steps: line.steps });
 
   return (
     <View
-      style={styles.header}
+      style={styles.band}
       onLayout={(event: LayoutChangeEvent) => onHeight(event.nativeEvent.layout.height)}
     >
-      <View style={[styles.solid, { paddingTop: Math.max(insets.top, Spacing.sm) }]}>
+      <OmbreBackground />
+      <View style={[styles.inner, { paddingTop: Math.max(insets.top, Spacing.md) }]}>
         <View style={styles.row}>
           <View style={styles.title}>
-            <AppText variant="heading" accessibilityRole="header" maxFontSizeMultiplier={1.3}>
-              Wed
+            <WedMark size={30} color="onHero" />
+            <AppText
+              variant="heading"
+              color="onHero"
+              accessibilityRole="header"
+              maxFontSizeMultiplier={1.3}
+            >
+              {t('wedSheet.title')}
             </AppText>
           </View>
-          <GlassButton
-            icon="menu-outline"
-            accessibilityLabel="Wed menu"
-            color={Colors.text}
-            onPress={onMenu}
-          />
+          <RoundButton icon="menu-outline" label={t('wedSheet.menu')} onPress={onMenu} />
+          <RoundButton icon="chevron-down" label={t('wedSheet.close')} onPress={onClose} />
+        </View>
+        <View style={styles.chips}>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={t('wedSheet.modeLabel', { mode: modeWords })}
+            accessibilityHint={t('wedSheet.modeHint')}
+            onPress={() => router.push('/wed/settings')}
+            hitSlop={4}
+            style={({ pressed }) => [styles.chip, pressed && styles.chipPressed]}
+          >
+            <AppText
+              variant="label"
+              weight={600}
+              color="onHero"
+              numberOfLines={1}
+              maxFontSizeMultiplier={1.3}
+              style={styles.chipWords}
+            >
+              {modeWords}
+            </AppText>
+            <Icon name="chevron-forward" size={14} color={Colors.onHero} weight="semibold" />
+          </Pressable>
           {waiting > 0 ? (
             <Animated.View entering={Motion.popIn} exiting={Motion.popOut}>
               <Pressable
                 accessibilityRole="button"
                 accessibilityLabel={okLabel}
-                accessibilityHint="Opens Updates"
+                accessibilityHint={t('wedSheet.updatesHint')}
                 onPress={openUpdates}
                 hitSlop={4}
                 style={({ pressed }) => [
-                  styles.ok,
-                  !canApprove && styles.okNeutral,
-                  pressed && (canApprove ? styles.okPressed : styles.okNeutralPressed),
+                  styles.chip,
+                  canApprove ? styles.ok : null,
+                  pressed && (canApprove ? styles.okPressed : styles.chipPressed),
                 ]}
               >
                 <AppText
                   variant="label"
                   weight={600}
-                  color={canApprove ? 'onPrimary' : 'text'}
+                  color="onHero"
                   numberOfLines={1}
-                  maxFontSizeMultiplier={1}
-                  style={styles.okWords}
+                  maxFontSizeMultiplier={1.3}
+                  style={[styles.chipWords, canApprove && styles.okWords]}
                 >
                   {okWords}
                 </AppText>
               </Pressable>
             </Animated.View>
-          ) : (
-            <View style={styles.spacer} />
-          )}
+          ) : null}
         </View>
-        {line ? (
+        {lineWords ? (
           // Keeps its room while the chip shows, so the thread doesn't jump
           <Pressable
             accessibilityRole="button"
-            accessibilityLabel={line}
-            accessibilityHint="Opens Updates"
+            accessibilityLabel={lineWords}
+            accessibilityHint={t('wedSheet.updatesHint')}
             accessibilityElementsHidden={quiet}
             importantForAccessibility={quiet ? 'no-hide-descendants' : 'auto'}
             disabled={quiet}
             onPress={openUpdates}
-            hitSlop={{ top: 4, bottom: 12, left: 8, right: 8 }}
+            // With its hitSlop a 48-point target, reaching into the band's bottom edge
+            hitSlop={{ top: 6, bottom: 14, left: 8, right: 8 }}
             style={({ pressed }) => [
               styles.status,
               quiet && styles.hidden,
@@ -130,44 +176,66 @@ export function WedHeader({
             ]}
           >
             <AppText
-              color="text2"
+              variant="label"
+              color="onHero2"
               numberOfLines={1}
               maxFontSizeMultiplier={1.3}
               style={styles.center}
             >
-              {line}
+              {lineWords}
             </AppText>
           </Pressable>
         ) : null}
       </View>
-      <View style={[styles.fade, edgeStyle(Colors.canvasEdge)]} />
     </View>
   );
 }
 
-/** A CSS gradient as a view's background, on the web and on phones (the header's and composer's edges). */
+/** A round see-through white button on the band, 48 across. */
+function RoundButton({
+  icon,
+  label,
+  onPress,
+}: {
+  icon: IconName;
+  label: string;
+  onPress: () => void;
+}) {
+  const Colors = useColors();
+  const styles = useStyles();
+  const scale = Math.min(useFontScale('body'), 1.3);
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={label}
+      onPress={onPress}
+      hitSlop={4}
+      style={({ pressed }) => [styles.round, pressed && styles.roundPressed]}
+    >
+      <Icon name={icon} size={Math.round(22 * scale)} color={Colors.onHero} weight="semibold" />
+    </Pressable>
+  );
+}
+
+/** A CSS gradient as a view's background, on the web and on phones (the composer's edge). */
 export const edgeStyle = (gradient: string) =>
   (Platform.OS === 'web'
     ? { backgroundImage: gradient }
     : { experimental_backgroundImage: gradient }) as ViewStyle;
 
 const useStyles = makeStyles((Colors) => ({
-  header: {
+  band: {
     position: 'absolute',
     top: 0,
     left: 0,
     right: 0,
-    pointerEvents: 'box-none',
+    overflow: 'hidden',
+    backgroundColor: Colors.ombreBase,
   },
-  // Solid behind the words, so the thread never shows through them
-  solid: {
+  inner: {
+    gap: Spacing.sm,
     paddingHorizontal: Sizes.pageGutter,
-    paddingBottom: Spacing.xs,
-    backgroundColor: Colors.canvas,
-  },
-  fade: {
-    height: HEADER_FADE,
-    pointerEvents: 'none',
+    paddingBottom: Spacing.lg,
   },
   row: {
     height: Sizes.tapTarget,
@@ -182,44 +250,67 @@ const useStyles = makeStyles((Colors) => ({
     right: 0,
     top: 0,
     bottom: 0,
+    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
+    gap: Spacing.sm,
     pointerEvents: 'none',
   },
-  spacer: {
+  round: {
     width: Sizes.tapTarget,
     height: Sizes.tapTarget,
-  },
-  ok: {
-    height: 40,
+    borderRadius: Sizes.tapTarget / 2,
+    alignItems: 'center',
     justifyContent: 'center',
+    backgroundColor: Colors.onHeroFill,
+  },
+  roundPressed: {
+    backgroundColor: Colors.onHeroFillPressed,
+    transform: [{ scale: 0.94 }],
+  },
+  chips: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+    gap: Spacing.sm,
+  },
+  // 40 high; with its hitSlop a 48-point target
+  chip: {
+    height: 40,
+    maxWidth: '100%',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.xs,
     paddingHorizontal: Spacing.md,
     borderRadius: Radius.chip,
-    backgroundColor: Colors.primaryFill,
+    backgroundColor: Colors.onHeroFill,
   },
-  // Kept at 15 points, like the tab bar's labels, so it never runs into the
-  // title at the biggest text sizes
-  okWords: {
+  chipPressed: {
+    backgroundColor: Colors.onHeroFillPressed,
+  },
+  // Kept at 15 points, like the tab bar's labels, so two chips fit side by
+  // side at the biggest text sizes
+  chipWords: {
+    flexShrink: 1,
     fontSize: Typography.label.size,
     lineHeight: 20,
   },
+  // The one thing to act on: white, with the maroon words
+  ok: {
+    backgroundColor: Colors.onHero,
+  },
   okPressed: {
-    backgroundColor: Colors.primaryFillPressed,
+    backgroundColor: Colors.onHero2,
   },
-  // For family who can only suggest or view: no maroon, nothing for them to OK
-  okNeutral: {
-    backgroundColor: Colors.fill,
+  // Maroon in both schemes (dark mode's rose is too light on white): 9.2:1
+  okWords: {
+    color: Palettes.light.primary,
   },
-  okNeutralPressed: {
-    backgroundColor: Colors.fillPressed,
-  },
-  // With its hitSlop, a 48-point target
   status: {
     alignSelf: 'center',
     maxWidth: '100%',
-    minHeight: 32,
+    minHeight: 28,
     justifyContent: 'center',
-    marginTop: -TUCK,
     paddingHorizontal: Spacing.sm,
   },
   hidden: {

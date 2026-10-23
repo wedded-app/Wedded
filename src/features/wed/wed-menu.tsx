@@ -13,7 +13,6 @@ import { scheduleOnRN } from 'react-native-worklets';
 
 import { AppText, useFontScale } from '@/components/app-text';
 import { Icon, type IconName } from '@/components/icon';
-import { useHideTabBar } from '@/components/tab-bar';
 import { makeStyles, Radius, Sizes, Spacing, Springs, useColors } from '@/constants/theme';
 
 import { useWed, waitingCount } from './wed-store';
@@ -31,7 +30,7 @@ type Row = { icon: IconName; title: string; subtitle?: string; href: Href; count
  * (a tap only; no edge swipe): Wed's pages in two groups, Updates (with how
  * many cards wait), Goals, Ideas, Lists and photos, then Apps Wed can use,
  * How much Wed does and What Wed knows. A white panel slides in from the
- * left over a dimmed thread, and the tab bar slides away while it's open.
+ * left over a dimmed thread, inside Wed's sheet.
  * Closes on the dimmed side, Android's back button or Escape on the web; a
  * plain crossfade with Reduce Motion. Render it last in the chat screen's
  * root view, and shift the thread with useWedMenuShift(open).
@@ -47,8 +46,6 @@ export function WedMenu({ open, onClose }: { open: boolean; onClose(): void }) {
   const [width, setWidth] = useState(0);
   const progress = useSharedValue(0);
   const panelWidth = Math.min(MAX_WIDTH, Math.round((width || MAX_WIDTH / 0.84) * 0.84));
-
-  useHideTabBar(open);
 
   // Mounted as soon as it opens; unmounted once it has slid out
   if (open && !mounted) setMounted(true);

@@ -55,8 +55,9 @@ const LENS_FADE_MS = 160;
 // Tabs whose pages are always dark (the Reels videos, Requests' night page)
 const ALWAYS_DARK = ['discover', 'reels', 'requests'];
 
-// Screens that cover the whole page for a moment (Wed's side menu) slide the
-// bar away while they're open. A count, so two of them can't fight.
+// Screens that cover the whole page for a moment (a full-height side menu
+// over a tab) slide the bar away while they're open. A count, so two of them
+// can't fight.
 let hiders = 0;
 const hideListeners = new Set<() => void>();
 function subscribeHidden(listener: () => void) {
@@ -123,9 +124,10 @@ export function useTabBarTop() {
  * its name under it, and a soft grey lens behind the selected one that glides
  * from tab to tab. The selected tab's icon fills in and turns ink (saffron in
  * business mode); the others stay outlined and grey. `center` (Wed's button) takes
- * the middle slot between two halves of tabs, level with them, and the lens
- * sits behind it while `centerFor` is open. Over Reels the glass is always
- * dark. Slides away while a screen asks with useHideTabBar().
+ * the middle slot between two halves of tabs, level with them; what it opens
+ * (Wed's sheet) slides up over the tab, so the lens stays on the tab. Over
+ * Reels the glass is always dark. Slides away while a screen asks with
+ * useHideTabBar().
  */
 export function TabBar({
   state,
@@ -133,14 +135,11 @@ export function TabBar({
   tabs,
   accent = 'text',
   center,
-  centerFor,
 }: TabBarProps & {
   tabs: TabSpec[];
   /** The selected tab's colour: black (white in dark mode), or saffron in business mode, so it's clear which side this is. */
   accent?: 'text' | 'kesari';
   center?: ReactNode;
-  /** The route the middle button opens: while it's open the lens sits behind the button. */
-  centerFor?: string;
 }) {
   const appColors = useColors();
   const scheme = useScheme();
@@ -155,7 +154,7 @@ export function TabBar({
   const overDark = ALWAYS_DARK.includes(current) || ALWAYS_DARK.includes(inner);
   const Colors = overDark ? Palettes.dark : appColors;
   const tint = accent === 'kesari' ? Colors.kesari : Colors.text;
-  // Only the routes with a tab: a hidden route (href: null, like Wed) gets no slot
+  // Only the routes with a tab: a hidden route (href: null) gets no slot
   const shown = state.routes.filter((route) => tabs.some((tab) => tab.name === route.name));
   const half = center ? Math.ceil(shown.length / 2) : shown.length;
   const keyboardShown = useKeyboardShown();
@@ -171,12 +170,7 @@ export function TabBar({
   const slots = shown.length + (center ? 1 : 0);
   const slotWidth = rowWidth > 0 ? rowWidth / slots : 0;
   const selectedAt = shown.findIndex(isSelected);
-  const lensSlot =
-    selectedAt >= 0
-      ? selectedAt + (center && selectedAt >= half ? 1 : 0)
-      : center && centerFor === current
-        ? half
-        : -1;
+  const lensSlot = selectedAt >= 0 ? selectedAt + (center && selectedAt >= half ? 1 : 0) : -1;
 
   const lensX = useSharedValue(0);
   const lensOpacity = useSharedValue(0);

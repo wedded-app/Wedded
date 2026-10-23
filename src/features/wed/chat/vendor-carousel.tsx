@@ -1,5 +1,5 @@
 import { Image } from 'expo-image';
-import { router, type Href } from 'expo-router';
+import type { Href } from 'expo-router';
 import { Linking, Platform, ScrollView, Share, View } from 'react-native';
 
 import { AppText } from '@/components/app-text';
@@ -13,6 +13,7 @@ import { showSavedToast } from '@/features/saved/saved-toast-store';
 import { saveHaptic } from '@/lib/haptics';
 
 import type { FoundPage, MockVendor } from '../mock';
+import { openFromWed } from '../open-wed';
 import { useWed, wed } from '../wed-store';
 
 // The toast's See list: Wed's lists, where the Jaago list is
@@ -86,7 +87,8 @@ function VendorCard({ vendor }: { vendor: MockVendor }) {
         onAccessibilityAction={(event) => {
           if (event.nativeEvent.actionName === 'toggleSave') save();
         }}
-        onPress={() => router.push({ pathname: '/v/[slug]', params: { slug: vendor.slug } })}
+        // Wed slides down and the vendor's page opens on the tab underneath
+        onPress={() => openFromWed({ pathname: '/v/[slug]', params: { slug: vendor.slug } })}
         style={styles.press}
       >
         <Image

@@ -9,6 +9,7 @@ import { Segmented } from '@/components/segmented';
 import { makeStyles, Spacing } from '@/constants/theme';
 import { FAMILY } from '@/features/wed/mock';
 import { ModeSwitch } from '@/features/wed/mode-switch';
+import { WedCloseButton } from '@/features/wed/close-wed';
 import { WED_BACK } from '@/features/wed/open-wed';
 import { useWed, wed, type CheckIns, type Role } from '@/features/wed/wed-store';
 import { selectionHaptic } from '@/lib/haptics';
@@ -69,7 +70,12 @@ export default function WedSettingsScreen() {
   const [replayed, setReplayed] = useState(false);
 
   return (
-    <NavScreen title="How much Wed does" navTitle="Settings" backTo={WED_BACK}>
+    <NavScreen
+      title="How much Wed does"
+      navTitle="Settings"
+      backTo={WED_BACK}
+      trailing={<WedCloseButton />}
+    >
       <ModeSwitch value={mode} onChange={wed.setMode} />
 
       <View style={styles.block}>

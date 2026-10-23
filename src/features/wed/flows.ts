@@ -13,7 +13,7 @@ import type { GuestSend } from './send-to-guests';
 import type { ApprovalSpec, Source, TaskSpec, WedContext } from './wed-store';
 
 /**
- * MOCKUP: the scripted conversations behind the Wed tab. In the real app
+ * MOCKUP: the scripted conversations behind Wed's chat. In the real app
  * Wed's brain decides what to say and do; here what the family sends is
  * matched to a flow by its words (matchFlow), and the flow plays its ops on
  * a clock, `at` milliseconds after it starts. The store (wed-store.ts) runs

@@ -10,6 +10,7 @@ import { ProgressBar } from '@/components/progress-bar';
 import { makeStyles, Radius, Sizes, Spacing, useColors } from '@/constants/theme';
 import { AskWedButton } from '@/features/wed/ask-wed-button';
 import { GOALS, WATCHES, type MockGoal, type MockWatch } from '@/features/wed/mock';
+import { WedCloseButton } from '@/features/wed/close-wed';
 import { openWed, WED_BACK } from '@/features/wed/open-wed';
 import { onWedReset, receiptText, useWed } from '@/features/wed/wed-store';
 import { selectionHaptic } from '@/lib/haptics';
@@ -62,6 +63,7 @@ export default function WedGoalsScreen() {
       title="Goals"
       subtitle="Wed keeps working on these and tells you only when something changes."
       backTo={WED_BACK}
+      trailing={<WedCloseButton />}
     >
       <View style={styles.block}>
         <SectionTitle>Your events</SectionTitle>

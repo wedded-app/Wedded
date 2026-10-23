@@ -262,8 +262,8 @@ function VaultsSection() {
 const modeOf = (s: WedState) => s.mode;
 
 /**
- * MOCKUP: Wed's settings, one tap from Profile. Each row opens that page in
- * the Wed tab, with the chat underneath to go back to.
+ * MOCKUP: Wed's settings, one tap from Profile. Each row slides Wed's sheet
+ * up over Profile on that page, with the chat underneath to go back to.
  */
 function WedSection() {
   const mode = useWed(modeOf);

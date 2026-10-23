@@ -221,7 +221,7 @@ export type WedState = {
   /** What's in the composer. */
   draft: string;
   context: WedContext | null;
-  /** The chat is on screen (set by the Wed tab's focus). */
+  /** The chat is on screen (set by the chat's focus, in Wed's sheet). */
   onWedTab: boolean;
   /** The header line: the running step, what Wed waits for, or "All caught up". */
   status: string;
@@ -787,7 +787,7 @@ export const wed = {
       ),
     });
   },
-  /** The Wed tab's focus effect: true on focus, false on blur. */
+  /** The Wed chat's focus effect: true on focus, false on blur or when the sheet closes. */
   setOnWedTab(on: boolean) {
     if (on === state.onWedTab) return;
     if (!on) awayLineShown = false;

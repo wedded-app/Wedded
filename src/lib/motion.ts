@@ -24,6 +24,8 @@ export const Motion = {
   layout: LinearTransition.duration(Timing.quick).easing(iosEasing),
   /** Content fading in, e.g. the rows of a checklist that opened. */
   enter: FadeIn.duration(200),
+  /** A sheet's content fading in over the last 200 ms of its slide, done as it lands. */
+  land: FadeIn.duration(200).delay(Timing.page - 200),
   /** Content fading out. */
   exit: FadeOut.duration(160),
   /** A card arriving on screen: up a little while it fades in. */

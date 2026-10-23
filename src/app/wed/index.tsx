@@ -1,7 +1,9 @@
-import { useFocusEffect } from 'expo-router';
+import { useFocusEffect, useIsFocused } from 'expo-router';
+import { StatusBar } from 'expo-status-bar';
 import { useCallback, useEffect, useEffectEvent, useRef, useState } from 'react';
 import {
   Keyboard,
+  Platform,
   ScrollView,
   View,
   type LayoutChangeEvent,
@@ -13,11 +15,12 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useTabBarOffset } from '@/components/tab-bar';
 import { makeStyles, Sizes, Spacing, useColors } from '@/constants/theme';
-import { setSavedToastLift } from '@/features/saved/saved-toast-store';
+import { SavedToastHost } from '@/features/saved/saved-toast';
 import { Greeting } from '@/features/wed/chat/greeting';
 import { ProgressChip } from '@/features/wed/chat/progress-chip';
 import { ThreadRow } from '@/features/wed/chat/thread-row';
-import { edgeStyle, HEADER_FADE, WedHeader } from '@/features/wed/chat/wed-header';
+import { edgeStyle, WedHeader } from '@/features/wed/chat/wed-header';
+import { useCloseWed } from '@/features/wed/close-wed';
 import { useKeyboardHeight } from '@/features/wed/keyboard-height';
 import { WedComposer } from '@/features/wed/wed-composer';
 import { useWedMenuShift, WedMenu } from '@/features/wed/wed-menu';
@@ -37,6 +40,14 @@ const COMPOSER = 56;
 const CONTEXT_CHIP = 44 + Spacing.sm;
 // Within this much of the end, new rows keep the thread scrolled to the end
 const STICK_WITHIN = 96;
+// The band at the top below the safe area: its buttons, one row of chips
+// (40) and the gaps, until it reports its real height
+const BAND = Sizes.tapTarget + Spacing.sm + 40 + Spacing.lg;
+
+// Rows already brought up under the band ("While you were away", Look
+// first's card, a tall card as it arrived), so each is placed once, not
+// again every time the sheet opens
+const placed = new Set<string>();
 
 // The task running now (the newest), for the progress chip
 const runningTask = (s: WedState) => {
@@ -48,13 +59,16 @@ const runningTask = (s: WedState) => {
 const hasContext = (s: WedState) => s.context !== null;
 
 /**
- * Wed, the planning helper: one chat, like ChatGPT's. "Wed" at the top with
- * what it's doing now, yesterday's messages above today's greeting, and
- * the family's words, Wed's answers, its work, what it found and the cards
- * waiting for a yes, in one thread on the white page. The composer floats
- * above the tab bar; the menu at the top left opens Wed's pages. Everything
- * comes from the Wed store, so a flow keeps playing while the family is on
- * another tab, and a yes on Home shows here too. MOCKUP: scripted flows.
+ * Wed, the planning helper: one chat, like ChatGPT's, the first page of
+ * Wed's sheet. The maroon band at the top (WedHeader) has the menu, the bow,
+ * the chevron that closes the sheet, and how much Wed does; under it
+ * yesterday's messages above today's greeting, and the family's words,
+ * Wed's answers, its work, what it found and the cards waiting for a yes,
+ * in one thread on the white page, which fades in as the sheet lands (it
+ * just appears with Reduce Motion). The composer floats at the bottom of
+ * the sheet; the menu at the top left opens Wed's pages. Everything comes
+ * from the Wed store, so a flow keeps playing while the sheet is closed,
+ * and a yes on Home shows here too. MOCKUP: scripted flows.
  *
  * The thread is a plain ScrollView that keeps to the end as rows arrive
  * (unless the family has scrolled up to read), not an inverted list, which
@@ -73,16 +87,18 @@ export default function WedScreen() {
   const [menuOpen, setMenuOpen] = useState(false);
   const shift = useWedMenuShift(menuOpen);
   const keyboard = useKeyboardHeight();
+  const close = useCloseWed();
+  const focused = useIsFocused();
 
-  // Where things sit: the composer just above the floating tab bar, the
-  // thread between the header's words and the composer
-  const composerBottom = useTabBarOffset() + Sizes.tabBar + Spacing.sm;
+  // Where things sit: the composer at the bottom of the sheet, where iOS
+  // floats its bars (there's no tab bar under it), and the thread between
+  // the band and the composer
+  const composerBottom = useTabBarOffset();
   const [composerHeight, setComposerHeight] = useState(0);
   const composerCover = composerHeight || COMPOSER + (context ? CONTEXT_CHIP : 0);
   const composerSpace = composerBottom + composerCover + Spacing.lg;
   const [headerHeight, setHeaderHeight] = useState(0);
-  const headerGuess = Math.max(insets.top, Spacing.sm) + Sizes.tapTarget + 18 + HEADER_FADE;
-  const headerTop = (headerHeight || headerGuess) - HEADER_FADE;
+  const headerTop = headerHeight || Math.max(insets.top, Spacing.md) + BAND;
   const [viewport, setViewport] = useState(0);
 
   // Rows that were there when the chat opened don't animate in
@@ -94,27 +110,17 @@ export default function WedScreen() {
   const stick = useRef(getWed().focus === null);
   // The running work row's key while it's out of sight (the progress chip)
   const [offKey, setOffKey] = useState<string | null>(null);
-  // A row to bring up under the header once it's really laid out: Look
+  // A row to bring up under the band once it's really laid out: Look
   // first's card, "While you were away", or a card taller than the screen
   // as it arrives. Rows that arrive while a Wed page covers the chat report
   // a height of 0 until it shows again, so those wait.
   const anchor = useRef<string | null>(null);
-  // Rows already placed that way, so each is placed once
-  const placed = useRef(new Set<string>());
 
   useFocusEffect(
     useCallback(() => {
       wed.setOnWedTab(true);
       return () => wed.setOnWedTab(false);
     }, []),
-  );
-
-  // "Saved to Jaago · See list" rises from behind the composer, not over it
-  useFocusEffect(
-    useCallback(() => {
-      setSavedToastLift(composerCover + Spacing.sm);
-      return () => setSavedToastLift(0);
-    }, [composerCover]),
   );
 
   const last = items[items.length - 1];
@@ -147,8 +153,8 @@ export default function WedScreen() {
     const away = [...getWed().items]
       .reverse()
       .find((item) => item.kind === 'divider' && item.text === AWAY_LINE);
-    if (!away || placed.current.has(away.key)) return;
-    placed.current.add(away.key);
+    if (!away || placed.has(away.key)) return;
+    placed.add(away.key);
     anchor.current = away.key;
     stick.current = false;
     anchorSoon();
@@ -210,10 +216,10 @@ export default function WedScreen() {
       item?.kind === 'approval' &&
       height > 0 &&
       !initialKeys.has(key) &&
-      !placed.current.has(key) &&
+      !placed.has(key) &&
       stick.current
     ) {
-      placed.current.add(key);
+      placed.add(key);
       if (height > room) {
         anchor.current = key;
         stick.current = false;
@@ -254,48 +260,55 @@ export default function WedScreen() {
 
   // An empty day: the greeting fills the screen down to the composer, with
   // yesterday just out of sight above it, and sits in the middle of what
-  // the header leaves
+  // the band leaves
   const emptyDay = items.length <= history;
   const greetingHeight = emptyDay && viewport > 0 ? viewport - composerSpace : undefined;
 
   return (
     <View style={styles.screen}>
+      {/* Light over the band, which runs under the status bar on Android
+          (on iPhone the sheet sets it); Wed's white pages get the app's own */}
+      {Platform.OS === 'android' && focused ? <StatusBar style="light" /> : null}
       <Animated.View style={[styles.fill, shift]}>
-        <ScrollView
-          ref={scroll}
-          style={styles.fill}
-          contentContainerStyle={[
-            styles.thread,
-            { paddingTop: headerTop + Spacing.md, paddingBottom: composerSpace },
-          ]}
-          onLayout={(event) => {
-            const { height } = event.nativeEvent.layout;
-            metrics.current.viewport = height;
-            setViewport(height);
-          }}
-          onScroll={onScroll}
-          scrollEventThrottle={32}
-          onContentSizeChange={onContentSizeChange}
-          keyboardShouldPersistTaps="handled"
-          keyboardDismissMode="interactive"
-        >
-          {items.slice(0, history).map(renderRow)}
-          <Animated.View layout={Motion.layout}>
-            <Greeting minHeight={greetingHeight} inset={headerTop} />
-          </Animated.View>
-          {items.slice(history).map(renderRow)}
-          <Animated.View style={[styles.keyboardSpace, keyboardSpace]} />
-        </ScrollView>
-        <WedHeader onMenu={openMenu} onHeight={setHeaderHeight} quiet={chipShown} />
+        {/* The cards fade in as the sheet lands, once: not on the way back
+            from a Wed page */}
+        <Animated.View entering={Motion.land} style={styles.fill}>
+          <ScrollView
+            ref={scroll}
+            style={styles.fill}
+            contentContainerStyle={[
+              styles.thread,
+              { paddingTop: headerTop + Spacing.md, paddingBottom: composerSpace },
+            ]}
+            onLayout={(event) => {
+              const { height } = event.nativeEvent.layout;
+              metrics.current.viewport = height;
+              setViewport(height);
+            }}
+            onScroll={onScroll}
+            scrollEventThrottle={32}
+            onContentSizeChange={onContentSizeChange}
+            keyboardShouldPersistTaps="handled"
+            keyboardDismissMode="interactive"
+          >
+            {items.slice(0, history).map(renderRow)}
+            <Animated.View layout={Motion.layout}>
+              <Greeting minHeight={greetingHeight} inset={headerTop} />
+            </Animated.View>
+            {items.slice(history).map(renderRow)}
+            <Animated.View style={[styles.keyboardSpace, keyboardSpace]} />
+          </ScrollView>
+        </Animated.View>
+        <WedHeader onMenu={openMenu} onClose={close} onHeight={setHeaderHeight} quiet={chipShown} />
         {chipShown && runningId && runningKey ? (
           <ProgressChip
             taskId={runningId}
-            top={headerTop + Spacing.xs}
+            top={headerTop + Spacing.sm}
             onPress={() => scrollToKey(runningKey)}
           />
         ) : null}
-        {/* The page behind the composer and the tab bar, fading out above
-            them, so no half-cut line of the thread shows between the two */}
+        {/* The page behind the composer, fading out above it, so no
+            half-cut line of the thread shows below it */}
         <Animated.View
           style={[
             styles.bottomEdge,
@@ -305,6 +318,8 @@ export default function WedScreen() {
           ]}
         />
         <WedComposer bottom={composerBottom} onHeight={setComposerHeight} />
+        {/* "Saved to Jaago · See list" rises from behind the composer */}
+        <SavedToastHost bottom={composerBottom + composerCover} />
       </Animated.View>
       <WedMenu open={menuOpen} onClose={closeMenu} />
     </View>

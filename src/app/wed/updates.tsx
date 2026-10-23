@@ -17,6 +17,7 @@ import { makeStyles, Sizes, Spacing, Springs, useColors } from '@/constants/them
 import { ApprovalCard } from '@/features/wed/approval-card';
 import { FAMILY } from '@/features/wed/mock';
 import { StepList } from '@/features/wed/step-list';
+import { WedCloseButton } from '@/features/wed/close-wed';
 import { WED_BACK } from '@/features/wed/open-wed';
 import { WedMark } from '@/features/wed/wed-mark';
 import {
@@ -68,7 +69,7 @@ export default function WedUpdatesScreen() {
   const caughtUp = cards.length === 0 && tasks.length === 0;
 
   return (
-    <NavScreen title="Updates" backTo={WED_BACK}>
+    <NavScreen title="Updates" backTo={WED_BACK} trailing={<WedCloseButton />}>
       {/* Cards already here when the page opens just show; new ones rise in */}
       <LayoutAnimationConfig skipEntering>
         {caughtUp ? (

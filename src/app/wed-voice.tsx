@@ -22,11 +22,11 @@ const BARS = 44;
 const ROUND = 64;
 
 /**
- * MOCKUP: talking to Wed, full screen (a long press on the Wed tab). Wed
- * listens, the words appear big as they're heard (the
- * newest one lighter until the next arrives), and Done sends them to the chat
- * and opens it, where Wed gets to work. Mute stops it listening without
- * leaving. Close leaves without sending anything.
+ * MOCKUP: talking to Wed, full screen (a long press on Wed's bow). Wed
+ * listens, the words appear big as they're heard (the newest one lighter
+ * until the next arrives), and Done sends them to the chat, which takes this
+ * screen's place (openWed), where Wed gets to work. Mute stops it listening
+ * without leaving. Close leaves without sending anything.
  */
 export default function WedVoiceScreen() {
   const Colors = useColors();
