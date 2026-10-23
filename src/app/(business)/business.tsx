@@ -1,56 +1,38 @@
 import { router } from 'expo-router';
-import { useState } from 'react';
 import { ActivityIndicator, View } from 'react-native';
 
 import { Chip } from '@/components/chip';
 import { FieldError } from '@/components/field-error';
-import { ListRow, ListSection, SectionTitle } from '@/components/list';
-import { Segmented } from '@/components/segmented';
+import { ListRow, ListSection } from '@/components/list';
 import { StateView } from '@/components/state-view';
 import { makeStyles, Spacing, useColors } from '@/constants/theme';
-import {
-  type BusinessStats,
-  EMPTY_STATS,
-  type StatsPeriod,
-  useBusinessStats,
-} from '@/data/business';
 import { useExportBusiness } from '@/data/business-export';
+import { useMyListing } from '@/data/listing';
 import { useVendorMenus } from '@/data/vendor-menus';
 import { useMyVendorPhotos } from '@/data/vendor-photos-self';
-import { changeFrom } from '@/features/business/business-format';
 import { switchToPlanning } from '@/features/business/app-mode';
-import { NotLiveNotice, StatRows } from '@/features/business/business-parts';
+import { NotLiveNotice } from '@/features/business/business-parts';
 import { BusinessTabScreen } from '@/features/business/business-tab-screen';
 import { GetPaid } from '@/features/business/get-paid';
+import { PagePreview } from '@/features/business/page-preview';
 import { chooseBusiness, useCurrentBusiness } from '@/features/business/use-current-business';
 import { useLocale } from '@/i18n/locale-context';
 
-const PERIODS: StatsPeriod[] = [7, 30, 90];
-
-/** The numbers on the home, biggest first, in plain words. */
-const MAIN_STATS: (keyof BusinessStats)[] = [
-  'views',
-  'contacts',
-  'inquiries',
-  'saves',
-  'reelViews',
-];
 /**
- * Business mode's Business tab (C6, #252): which business (when they run
- * several), whether the page is live, how it did over 7, 30 or 90 days next
- * to the period before, then menus, calendar and the page itself, getting
- * paid, and "Export everything" as a spreadsheet. C6b adds a headline, the
- * views chart, seen to booked, reply speed, what families want, how they
- * compare, their reels and a checklist for the page. Settings and "Switch to
- * planning" are at the bottom. The families who asked have their own tab.
+ * Business mode's My page tab (it was Business; the final look, 2026-10-23):
+ * which business (when they run several), whether the page is live, then
+ * the page exactly as families see it (a tap opens it), and everything that
+ * makes it: photos, packages and menus, about and area, reels; then reaching
+ * families: connecting their tools, Wedded Pro, their numbers; getting paid,
+ * "Export everything" as a spreadsheet, Settings and "Switch to planning".
+ * The families who asked are on Leads; the calendar has its own tab.
  */
 export default function BusinessScreen() {
   const Colors = useColors();
   const styles = useStyles();
   const { t } = useLocale();
   const current = useCurrentBusiness();
-  const [days, setDays] = useState<StatsPeriod>(30);
-  const stats = useBusinessStats(current.vendorId, days);
+  const listing = useMyListing(current.vendorId);
   const menus = useVendorMenus(current.vendorId);
   const photos = useMyVendorPhotos(current.vendorId);
   const exporting = useExportBusiness(current.vendorId);
@@ -71,17 +53,11 @@ export default function BusinessScreen() {
     );
   }
 
-  const name = business.name;
-  const now = stats.data?.current ?? EMPTY_STATS;
-  const before = stats.data?.previous ?? EMPTY_STATS;
-  const changeWords = (key: keyof BusinessStats) => {
-    const change = changeFrom(now[key], before[key]);
-    if (!change) return null;
-    return t(`business.stats.change.${change.kind}`, { percent: change.percent, days });
-  };
+  const photoList = photos.data ?? [];
+  const cover = photoList.find((photo) => photo.isCover) ?? photoList[0] ?? null;
 
   return (
-    <BusinessTabScreen title={t('business.title')} subtitle={name}>
+    <BusinessTabScreen title={t('business.myPage.title')}>
       {current.businesses.length > 1 && (
         <View style={styles.chips} accessibilityRole="radiogroup">
           {current.businesses.map((b) => (
@@ -98,73 +74,66 @@ export default function BusinessScreen() {
 
       {business.status !== 'published' && <NotLiveNotice />}
 
-      <View style={styles.block}>
-        <SectionTitle>{t('business.stats.title')}</SectionTitle>
-        <Segmented
-          accessibilityLabel={t('business.stats.period')}
-          value={String(days)}
-          onChange={(value) => setDays(Number(value) as StatsPeriod)}
-          options={PERIODS.map((d) => ({
-            value: String(d),
-            label: t('business.stats.days', { days: d }),
-          }))}
-        />
-        {stats.isError ? (
-          <StateView state="error" onRetry={() => void stats.refetch()} />
-        ) : (
-          <View style={stats.isPending && styles.loading}>
-            <StatRows
-              rows={MAIN_STATS.map((key) => ({
-                key,
-                label: t(`business.stats.${key}`),
-                value: now[key],
-                changeWords: changeWords(key),
-              }))}
-            />
-          </View>
-        )}
-        {/* The charts and the rest live one tap away, so this tab stays short */}
-        <ListSection>
-          <ListRow
-            icon="stats-chart-outline"
-            title={t('business.more.title')}
-            onPress={() =>
-              router.push({ pathname: '/business/insights', params: { days: String(days) } })
-            }
-          />
-        </ListSection>
-      </View>
+      <PagePreview
+        name={business.name}
+        line={listing.data?.tagline ?? listing.data?.city ?? null}
+        coverUrl={cover?.url.medium ?? null}
+        live={business.status === 'published'}
+        onPress={() =>
+          business.status === 'published'
+            ? router.push({ pathname: '/v/[slug]', params: { slug: business.slug } })
+            : router.push('/business/listing')
+        }
+      />
 
-      <ListSection header={t('business.yourListing')} footer={t('business.listingHint')}>
-        <ListRow
-          icon="create-outline"
-          title={t('business.listing.title')}
-          onPress={() => router.push('/business/listing')}
-        />
+      <ListSection header={t('business.myPage.makeIt')}>
         <ListRow
           icon="images-outline"
           title={t('business.photos.title')}
+          subtitle={t('business.myPage.photosHint')}
           value={photos.data ? String(photos.data.length) : undefined}
           onPress={() => router.push('/business/photos')}
         />
         <ListRow
           icon="restaurant-outline"
-          title={t('business.menus.title')}
+          title={t('business.myPage.packages')}
+          subtitle={t('business.myPage.packagesHint')}
           value={menus.data ? String(menus.data.length) : undefined}
           onPress={() => router.push('/business/menus')}
         />
         <ListRow
-          icon="calendar-outline"
-          title={t('business.calendar.title')}
-          onPress={() => router.push('/business/calendar')}
+          icon="create-outline"
+          title={t('business.myPage.about')}
+          subtitle={t('business.myPage.aboutHint')}
+          onPress={() => router.push('/business/listing')}
         />
-        {business.status === 'published' && (
-          <ListRow
-            icon="storefront-outline"
-            title={t('business.viewPage')}
-            onPress={() => router.push({ pathname: '/v/[slug]', params: { slug: business.slug } })}
-          />
-        )}
+        <ListRow
+          icon="play-circle-outline"
+          title={t('business.myPage.reels')}
+          subtitle={t('business.myPage.reelsHint')}
+          onPress={() => router.navigate('/reels')}
+        />
+      </ListSection>
+
+      <ListSection header={t('business.myPage.reach')}>
+        <ListRow
+          icon="link-outline"
+          title={t('connect.title')}
+          subtitle={t('business.myPage.connectHint')}
+          onPress={() => router.push('/business/connect')}
+        />
+        <ListRow
+          icon="megaphone-outline"
+          title={t('business.myPage.pro')}
+          subtitle={t('business.myPage.proHint')}
+          onPress={() => router.push('/business/pro')}
+        />
+        <ListRow
+          icon="stats-chart-outline"
+          title={t('business.myPage.numbers')}
+          subtitle={t('business.myPage.numbersHint')}
+          onPress={() => router.push({ pathname: '/business/insights', params: { days: '30' } })}
+        />
       </ListSection>
 
       <GetPaid vendorId={business.id} />
@@ -222,13 +191,5 @@ const useStyles = makeStyles(() => ({
   },
   block: {
     gap: Spacing.md,
-  },
-  grid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: Spacing.sm,
-  },
-  loading: {
-    opacity: 0.5,
   },
 }));

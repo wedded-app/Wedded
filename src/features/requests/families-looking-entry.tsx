@@ -23,7 +23,7 @@ export function FamiliesLookingEntry({ vendorId }: { vendorId: string }) {
         title={t('looking.title')}
         subtitle={t('looking.rowHint')}
         value={summary.data ? String(summary.data.total) : undefined}
-        onPress={() => router.navigate('/wanted')}
+        onPress={() => router.navigate({ pathname: '/leads', params: { half: 'wanted' } })}
       />
     </ListSection>
   );
