@@ -39,6 +39,8 @@ export type TabSpec = {
   label: string;
   icon: IconName;
   iconFilled?: IconName;
+  /** Draws the icon itself instead, for one SF Symbols doesn't have (the Wedding tab's rings). */
+  renderIcon?: (color: string, selected: boolean) => ReactNode;
   /** A count on the icon, e.g. unread messages on Profile. */
   badge?: number;
   /** Routes without a tab that count as this one, e.g. Search opened from Home. */
@@ -118,9 +120,9 @@ export function useTabBarTop() {
 /**
  * The bottom bar, in iOS 26's style: a Liquid Glass capsule floating over the
  * content (TabBarSpaceProvider leaves room for it), every tab its icon with
- * its name under it, and a solid ink lens behind the selected one that springs
- * from tab to tab. The selected tab's icon fills in and turns white on the
- * lens; the others stay outlined and grey. `center` (Wed's button) takes
+ * its name under it, and a soft grey lens behind the selected one that glides
+ * from tab to tab. The selected tab's icon fills in and turns ink (saffron in
+ * business mode); the others stay outlined and grey. `center` (Wed's button) takes
  * the middle slot between two halves of tabs, level with them, and the lens
  * sits behind it while `centerFor` is open. Over Reels the glass is always
  * dark. Slides away while a screen asks with useHideTabBar().
@@ -224,7 +226,7 @@ export function TabBar({
       <Animated.View style={[styles.through, dropStyle]}>
         <Glass scheme={overDark ? 'dark' : scheme} style={styles.bar} />
         <Animated.View
-          style={[styles.lens, { width: slotWidth, backgroundColor: tint }, lensStyle]}
+          style={[styles.lens, { width: slotWidth, backgroundColor: Colors.tabLens }, lensStyle]}
         />
         <View
           style={styles.items}
@@ -245,7 +247,7 @@ export function TabBar({
     const focused = route.name === current;
     const spec = tabs.find((tab) => tab.name === route.name)!;
     const selected = isSelected(route);
-    const color = selected ? Colors.surface : Colors.text2;
+    const color = selected ? tint : Colors.text2;
 
     const onPress = () => {
       const event = navigation.emit({
@@ -269,12 +271,16 @@ export function TabBar({
         style={({ pressed }) => [styles.slot, pressed && !selected && styles.pressed]}
       >
         <View>
-          <Icon
-            name={(selected ? spec.iconFilled : spec.icon) ?? spec.icon}
-            size={Sizes.tabIcon}
-            color={color}
-            weight={selected ? 'semibold' : 'regular'}
-          />
+          {spec.renderIcon ? (
+            spec.renderIcon(color, selected)
+          ) : (
+            <Icon
+              name={(selected ? spec.iconFilled : spec.icon) ?? spec.icon}
+              size={Sizes.tabIcon}
+              color={color}
+              weight={selected ? 'semibold' : 'regular'}
+            />
+          )}
           {!!spec.badge && (
             <View style={[styles.badge, { borderColor: Colors.surface }]}>
               <AppText

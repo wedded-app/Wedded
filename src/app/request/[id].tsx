@@ -328,7 +328,7 @@ function ProposalCard({
           />
         ) : (
           <View style={[StyleSheet.absoluteFill, styles.photoEmpty]}>
-            <AppText serif weight={600} style={styles.initial} maxFontSizeMultiplier={1}>
+            <AppText weight={600} style={styles.initial} maxFontSizeMultiplier={1}>
               {name.trim()[0]?.toUpperCase() ?? ''}
             </AppText>
           </View>
@@ -348,7 +348,7 @@ function ProposalCard({
       <View style={styles.body}>
         {p.priceCents != null ? (
           <View style={styles.priceRow}>
-            <AppText serif weight={600} style={styles.price} maxFontSizeMultiplier={1.4}>
+            <AppText weight={600} style={styles.price} maxFontSizeMultiplier={1.4}>
               {dollars(p.priceCents)}
             </AppText>
             {p.priceUnit && <AppText color="text2">{t(`requests.units.${p.priceUnit}`)}</AppText>}

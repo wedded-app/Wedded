@@ -27,6 +27,7 @@ import { VendorTypeRow } from '@/features/home/vendor-type-row';
 import { YourFamily } from '@/features/home/your-family';
 import { YourVendors } from '@/features/home/your-vendors';
 import { LocationChip } from '@/features/location/location-chip';
+import { ProfileButton } from '@/features/settings/profile-button';
 import { findForPlan } from '@/features/planner/find-for-plan';
 import { usePlanView } from '@/features/planner/use-plan-view';
 import { WebsiteCard } from '@/features/website/website-card';
@@ -172,7 +173,17 @@ export default function HomeScreen() {
         </View>
       </Animated.ScrollView>
 
-      <NavBar scroll={scroll} title={t('app.name')} back={false} trailing={<ChatButton />} />
+      <NavBar
+        scroll={scroll}
+        title={t('app.name')}
+        back={false}
+        trailing={
+          <View style={styles.trailing}>
+            <ChatButton />
+            <ProfileButton />
+          </View>
+        }
+      />
     </View>
   );
 }
@@ -239,6 +250,10 @@ function FooterLink({
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
+  },
+  trailing: {
+    flexDirection: 'row',
+    gap: Spacing.sm,
   },
   body: {
     gap: Spacing.xxl,

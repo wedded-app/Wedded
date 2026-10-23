@@ -73,10 +73,10 @@ function TeaserCard({ vendorId }: { vendorId: string }) {
         </AppText>
       </View>
       <View style={styles.row}>
-        <AppText serif weight={600} style={styles.number} maxFontSizeMultiplier={1.2}>
+        <AppText weight={600} style={styles.number} maxFontSizeMultiplier={1.2}>
           {String(shown)}
         </AppText>
-        <AppText variant="heading" serif weight={500} style={styles.grow}>
+        <AppText variant="heading" weight={500} style={styles.grow}>
           {what}
         </AppText>
       </View>

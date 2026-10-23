@@ -150,7 +150,7 @@ export function OnboardingStep({
           <AppText
             variant="display"
             weight={600}
-            serif
+
             accessibilityRole="header"
             style={styles.title}
           >

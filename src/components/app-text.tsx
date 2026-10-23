@@ -4,7 +4,6 @@ import {
   type ColorToken,
   fontStyle,
   type FontWeight,
-  serifFamily,
   Typography,
   type TypographyVariant,
   useColors,
@@ -15,14 +14,11 @@ export type AppTextProps = TextProps & {
   variant?: TypographyVariant;
   color?: ColorToken;
   weight?: FontWeight;
-  /** Fraunces (serifFamily) for a big display line. */
-  serif?: boolean;
 };
 
 type TypeStyleOptions = {
   variant?: TypographyVariant;
   weight?: FontWeight;
-  serif?: boolean;
 };
 
 /**
@@ -30,14 +26,14 @@ type TypeStyleOptions = {
  * scaling cap for a type variant. AppText uses it; so does anything that
  * can't render AppText itself, like TextInput.
  */
-export function useTypeStyle({ variant = 'body', weight, serif = false }: TypeStyleOptions) {
+export function useTypeStyle({ variant = 'body', weight }: TypeStyleOptions) {
   const textScale = useTextScale();
   const spec = Typography[variant];
   const fontSize = spec.size * textScale;
   const fontWeight = weight ?? spec.weight;
 
   return {
-    ...(serif ? { fontFamily: serifFamily(fontWeight) } : fontStyle(fontWeight)),
+    ...fontStyle(fontWeight),
     fontSize,
     lineHeight: Math.round(fontSize * spec.lineHeight),
     ...('tracking' in spec ? { letterSpacing: fontSize * spec.tracking } : {}),
@@ -64,13 +60,12 @@ export function AppText({
   variant = 'body',
   color = 'text',
   weight,
-  serif,
   style,
   children,
   ...rest
 }: AppTextProps) {
   const Colors = useColors();
-  const { maxFontSizeMultiplier, ...type } = useTypeStyle({ variant, weight, serif });
+  const { maxFontSizeMultiplier, ...type } = useTypeStyle({ variant, weight });
 
   return (
     <Text

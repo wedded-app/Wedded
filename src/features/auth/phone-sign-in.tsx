@@ -285,7 +285,7 @@ function NumberStep({
           <AppText
             variant="display"
             weight={500}
-            serif
+
             accessibilityRole="header"
             style={styles.title}
           >
@@ -506,7 +506,7 @@ function CodeStep({
           <AppText
             variant="display"
             weight={500}
-            serif
+
             accessibilityRole="header"
             style={styles.title}
           >

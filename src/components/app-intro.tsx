@@ -219,7 +219,6 @@ function Intro({ onDone }: { onDone: () => void }) {
           <View style={styles.wordClip}>
             <Animated.View style={word}>
               <AppText
-                serif
                 weight={500}
                 allowFontScaling={false}
                 style={[styles.word, { color: INK[mode] }]}
