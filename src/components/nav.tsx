@@ -1,7 +1,8 @@
-import type { ReactNode } from 'react';
+import type { ReactNode, Ref } from 'react';
 import {
   Platform,
   View,
+  type ScrollView,
   type LayoutChangeEvent,
   type ScrollViewProps,
   type StyleProp,
@@ -174,6 +175,8 @@ type NavScreenProps = Omit<ScrollViewProps, 'onScroll' | 'children'> & {
   /** A custom control on the left instead of Back, e.g. business mode's label. */
   leading?: ReactNode;
   trailing?: ReactNode;
+  /** The scroll view, for a screen that scrolls itself to one of its parts. */
+  scrollRef?: Ref<ScrollView>;
   children: ReactNode;
 };
 
@@ -191,6 +194,7 @@ export function NavScreen({
   backTo,
   leading,
   trailing,
+  scrollRef,
   children,
   contentContainerStyle,
   ...rest
@@ -203,6 +207,7 @@ export function NavScreen({
   return (
     <View style={styles.screen}>
       <Animated.ScrollView
+        ref={scrollRef}
         onScroll={scroll.onScroll}
         scrollEventThrottle={16}
         keyboardShouldPersistTaps="handled"

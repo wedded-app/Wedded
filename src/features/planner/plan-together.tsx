@@ -24,12 +24,10 @@ import { useLocale } from '@/i18n/locale-context';
 import { selectionHaptic, successHaptic } from '@/lib/haptics';
 import { Motion } from '@/lib/motion';
 
-/** Initials for a member's circle: "Asha Kaur" → "AK". */
-export function initials(name: string | null): string {
-  const words = (name ?? '').trim().split(/\s+/).filter(Boolean);
-  if (words.length === 0) return '?';
-  return (words[0][0] + (words.length > 1 ? words[words.length - 1][0] : '')).toUpperCase();
-}
+import { initials } from './wedding-tab';
+
+// Kept here too for the screens that already take it from this file
+export { initials };
 
 function confirm(title: string, body: string, action: string, onYes: () => void) {
   if (Platform.OS === 'web') {
@@ -175,7 +173,7 @@ function Together({ wedding }: { wedding: AccountWedding }) {
       <View style={styles.heading}>
         <Icon name="people" size={28} color={Colors.primary} />
         <AppText variant="heading" weight={700} style={styles.grow}>
-          {t('planTogether.sharedTitle')}
+          {t('planTogether.familyTitle')}
         </AppText>
       </View>
       {wedding.role === 'suggester' && (

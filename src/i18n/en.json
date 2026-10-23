@@ -1026,7 +1026,24 @@
     "whenBody": "Set the wedding date to start the countdown.",
     "pickDate": "Pick the date",
     "changeDate": "Change the date",
-    "checklistTitle": "What to book",
+    "toGo": {
+      "one": "{{count}} day to go",
+      "other": "{{count}} days to go"
+    },
+    "today": "Today's the day",
+    "addNames": "Add your names",
+    "familyHint": "Shows who's planning and what each person can do",
+    "eventsTitle": "Your events",
+    "addEvent": "Add an event",
+    "forGuests": "For your guests",
+    "ticket": {
+      "booked": "Booked: {{names}}",
+      "bookedMore": {
+        "one": "Booked: {{names}} and 1 more",
+        "other": "Booked: {{names}} and {{count}} more"
+      },
+      "timePlace": "Set the time and place"
+    },
     "progress": "{{done}} of {{total}} booked",
     "markBooked": "{{name}} booked",
     "find": "Find a {{name}}",
@@ -1122,6 +1139,7 @@
     "start": "Save and invite family",
     "signInToStart": "Sign in to plan together",
     "sharedTitle": "Planning together",
+    "familyTitle": "Family",
     "you": "You",
     "someone": "Family member",
     "roles": {
