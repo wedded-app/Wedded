@@ -2125,7 +2125,11 @@
     "creditBy": "{{name}} on {{platform}}",
     "creditFrom": "From {{platform}}",
     "everyEvent": "All events",
-    "chooseEvent": "Shows the events to choose from"
+    "chooseEvent": "Shows the events to choose from",
+    "save": "Save",
+    "saved": "Saved",
+    "saveVendor": "Save {{name}}",
+    "unsaveVendor": "Saved {{name}}. Tap to remove"
   },
   "postReel": {
     "title": "New reel",
