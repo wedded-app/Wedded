@@ -2141,7 +2141,7 @@
       "askedButton": "Asked",
       "chat": "Chat",
       "chatHint": "Opens your chat with them",
-      "see": "Book a vendor from this wedding",
+      "see": "Book from this wedding",
       "tagged": {
         "one": "{{count}} vendor tagged",
         "other": "{{count}} vendors tagged"
