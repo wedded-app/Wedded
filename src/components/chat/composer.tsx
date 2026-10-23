@@ -1,5 +1,12 @@
 import type { Ref } from 'react';
-import { ActivityIndicator, Pressable, ScrollView, TextInput, View } from 'react-native';
+import {
+  ActivityIndicator,
+  Pressable,
+  ScrollView,
+  TextInput,
+  View,
+  type TextInputInstance,
+} from 'react-native';
 
 import { AppText, useFontScale } from '@/components/app-text';
 import { Chip } from '@/components/chip';
@@ -54,7 +61,7 @@ export function Composer({
   /** The message box lost focus (e.g. to stop "typing…"). */
   onBlur?: () => void;
   /** To focus the box, e.g. after choosing a message to reply to. */
-  inputRef?: Ref<TextInput>;
+  inputRef?: Ref<TextInputInstance>;
   onSend: () => void;
   /** Leave out to hide the photo button. */
   onAddPhoto?: () => void;

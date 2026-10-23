@@ -10,7 +10,7 @@ import {
   Share,
   StyleSheet,
   View,
-  type ViewToken,
+  type ListViewToken,
 } from 'react-native';
 import Animated, {
   useAnimatedStyle,
@@ -132,7 +132,7 @@ export function ReelsPager({
   }, [traditions.data]);
 
   // Stable, as FlatList requires
-  const onViewable = useCallback(({ viewableItems }: { viewableItems: ViewToken[] }) => {
+  const onViewable = useCallback(({ viewableItems }: { viewableItems: ListViewToken[] }) => {
     const first = viewableItems.find((v) => v.isViewable);
     if (first?.index != null) setActive(first.index);
   }, []);

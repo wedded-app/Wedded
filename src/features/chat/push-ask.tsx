@@ -62,7 +62,11 @@ export function PushAskCard({ audience }: { audience: 'family' | 'vendor' }) {
   const { t } = useLocale();
   const status = usePushStatus();
   const { enable, result, busy } = useEnablePush();
-  const dismissed = useSyncExternalStore(subscribe, () => notNow);
+  const dismissed = useSyncExternalStore(
+    subscribe,
+    () => notNow,
+    () => notNow,
+  );
 
   // Just turned on: a thank-you in its place
   if (result === 'enabled') {

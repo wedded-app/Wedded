@@ -37,7 +37,7 @@ The full feature-by-feature record (tables, functions, hooks, screens, scripts) 
 
 ## Stack
 
-- **Frontend**: React Native + Expo (SDK 57) with Expo Router
+- **Frontend**: React Native + Expo (SDK 58) with Expo Router
 - **Backend/DB**: Supabase (Postgres + Auth + Storage)
 - **Platforms**: iOS and Android (cross-platform first; web is secondary)
 - Until the November demo, everything must run in Expo Go: no libraries that need a development build (§13)

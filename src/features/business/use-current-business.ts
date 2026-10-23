@@ -20,7 +20,11 @@ function subscribe(listener: () => void) {
 /** The business the screens show, and every one the person runs. */
 export function useCurrentBusiness() {
   const { businesses, isPending } = useMyBusinesses();
-  const chosen = useSyncExternalStore(subscribe, () => chosenId);
+  const chosen = useSyncExternalStore(
+    subscribe,
+    () => chosenId,
+    () => chosenId,
+  );
   const business: Business | null =
     businesses.find((b) => b.id === chosen) ?? businesses[0] ?? null;
   return {

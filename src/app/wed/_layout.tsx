@@ -7,7 +7,6 @@ import { WedSheet } from '@/features/wed/wed-sheet';
 // (/wed/updates) still has the chat underneath it to go back to.
 export const unstable_settings = {
   anchor: 'index',
-  initialRouteName: 'index',
 };
 
 /**

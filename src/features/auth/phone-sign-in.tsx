@@ -11,6 +11,7 @@ import {
   ScrollView,
   TextInput,
   View,
+  type TextInputInstance,
 } from 'react-native';
 import Animated, {
   FadeInLeft,
@@ -236,7 +237,7 @@ function NumberStep({
   const [focused, setFocused] = useState(false);
   const [picking, setPicking] = useState(false);
   const [shakeStyle, shake] = useShake();
-  const input = useRef<TextInput>(null);
+  const input = useRef<TextInputInstance>(null);
   const type = useTypeStyle({ variant: 'heading', weight: 500 });
   const countryName = t(`phoneSignIn.countries.${country.code}`);
   const rise = (index: number) => (intro ? Motion.stagger(index) : undefined);
@@ -433,7 +434,7 @@ function CodeStep({
   const [notice, setNotice] = useState<string>();
   const [cooldown, setCooldown] = useState(RESEND_SECONDS);
   const [shakeStyle, shake] = useShake();
-  const input = useRef<TextInput>(null);
+  const input = useRef<TextInputInstance>(null);
 
   useEffect(() => {
     const timer = setTimeout(() => input.current?.focus(), FOCUS_DELAY_MS);

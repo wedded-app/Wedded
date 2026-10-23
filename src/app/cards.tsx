@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { StyleSheet, View, type ViewInstance } from 'react-native';
 
 import { AppText } from '@/components/app-text';
 import { Button } from '@/components/button';
@@ -30,7 +30,7 @@ type Action = 'save' | 'share' | 'print';
 export default function CardsScreen() {
   const { t } = useLocale();
   const { plan, chosen, wedding } = usePlanView();
-  const card = useRef<View>(null);
+  const card = useRef<ViewInstance>(null);
   const [width, setWidth] = useState(0);
   const [designId, setDesignId] = useState(CARD_DESIGNS[0].id);
   const [eventSlug, setEventSlug] = useState<string | null>(null);

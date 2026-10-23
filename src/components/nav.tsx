@@ -2,11 +2,11 @@ import type { ReactNode, Ref } from 'react';
 import {
   Platform,
   View,
-  type ScrollView,
   type LayoutChangeEvent,
   type ScrollViewProps,
   type StyleProp,
   type ViewStyle,
+  type ScrollViewInstance,
 } from 'react-native';
 import Animated, {
   Extrapolation,
@@ -176,7 +176,7 @@ type NavScreenProps = Omit<ScrollViewProps, 'onScroll' | 'children'> & {
   leading?: ReactNode;
   trailing?: ReactNode;
   /** The scroll view, for a screen that scrolls itself to one of its parts. */
-  scrollRef?: Ref<ScrollView>;
+  scrollRef?: Ref<ScrollViewInstance>;
   children: ReactNode;
 };
 

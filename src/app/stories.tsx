@@ -112,7 +112,7 @@ export default function StoriesScreen() {
               <AppText color="text2" style={[styles.center, styles.empty]}>
                 {t('stories.empty')}
               </AppText>
-            ) : null
+            ) : undefined
           }
         />
       )}

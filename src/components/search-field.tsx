@@ -1,5 +1,5 @@
 import { type Ref, useState } from 'react';
-import { Platform, Pressable, TextInput, View } from 'react-native';
+import { Platform, Pressable, TextInput, View, type TextInputInstance } from 'react-native';
 
 import { useFontScale, useTypeStyle } from '@/components/app-text';
 import { Icon } from '@/components/icon';
@@ -11,7 +11,7 @@ export type SearchFieldProps = {
   onChangeText: (text: string) => void;
   /** What to search for; the Search tab's wording when left out. Also read aloud. */
   placeholder?: string;
-  ref?: Ref<TextInput>;
+  ref?: Ref<TextInputInstance>;
 };
 
 /** The Search tab's text box: the iOS search field, with a clear button once there's text. */

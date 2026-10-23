@@ -1,8 +1,8 @@
-import MaskedView from '@react-native-masked-view/masked-view';
+import MaskedViewClass from '@react-native-masked-view/masked-view';
 import { useEventListener } from 'expo';
 import { useVideoPlayer, VideoView } from 'expo-video';
-import { useCallback, useEffect, useState } from 'react';
-import { Image, Platform, StyleSheet, View, type ViewStyle } from 'react-native';
+import { type ComponentType, type ReactElement, useCallback, useEffect, useState } from 'react';
+import { Image, Platform, StyleSheet, View, type ViewProps, type ViewStyle } from 'react-native';
 import Animated, {
   Easing,
   ReduceMotion,
@@ -16,6 +16,12 @@ import Animated, {
 import { AppText } from '@/components/app-text';
 import { useScheme } from '@/constants/theme';
 import { useLocale } from '@/i18n/locale-context';
+
+// Its class typings lean on React Native's NativeMethods, gone from 0.88's strict
+// types; the component itself renders the same
+const MaskedView = MaskedViewClass as unknown as ComponentType<
+  ViewProps & { maskElement: ReactElement }
+>;
 
 /**
  * The opening animation, built like a brand film's title card. Four satin

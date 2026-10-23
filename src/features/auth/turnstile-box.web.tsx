@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { View } from 'react-native';
+import { View, type ViewInstance } from 'react-native';
 
 import { useScheme } from '@/constants/theme';
 import { useLocale } from '@/i18n/locale-context';
@@ -45,7 +45,7 @@ export function TurnstileBox({
 }) {
   const scheme = useScheme();
   const { t } = useLocale();
-  const box = useRef<View>(null);
+  const box = useRef<ViewInstance>(null);
   const { onToken, onExpire, round } = captcha;
 
   useEffect(() => {
