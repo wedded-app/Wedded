@@ -5,6 +5,7 @@ import { AppText } from '@/components/app-text';
 import { PressableScale } from '@/components/pressable-scale';
 import { makeStyles, Radius, Sizes, Spacing, useColors } from '@/constants/theme';
 import { essentialNeeds } from '@/features/planner/plan';
+import { stillNeedsText, unbookedNames } from '@/features/planner/still-needs';
 import type { usePlanView } from '@/features/planner/use-plan-view';
 import { localized } from '@/i18n/localized';
 import { useLocale } from '@/i18n/locale-context';
@@ -38,17 +39,11 @@ export function EventsRow({ view }: { view: PlanView }) {
         contentContainerStyle={styles.track}
       >
         {chosen.map((event) => {
-          const booked = plan.booked[event.slug] ?? [];
-          const left = essentialNeeds(needsByEvent[event.slug]).filter(
-            (need) => !booked.includes(need.categorySlug),
+          const names = unbookedNames(
+            essentialNeeds(needsByEvent[event.slug]),
+            plan.booked[event.slug] ?? [],
           );
-          const names = left.map((need) => localized(need.name).toLowerCase());
-          const status =
-            names.length === 0
-              ? t('home.events.allSet')
-              : names.length <= 2
-                ? t('home.events.toBook', { what: names.join(', ') })
-                : t('home.events.toBookMore', { what: names[0], count: names.length - 1 });
+          const status = stillNeedsText(names, t);
           const stub = stubParts(plan.eventDates?.[event.slug] ?? plan.weddingDate);
           const name = localized(event.name);
           return (

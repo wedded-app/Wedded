@@ -1081,7 +1081,15 @@
     "eventDatePick": "Pick a date",
     "eventDateClear": "Clear the date",
     "eventDateNone": "No date yet",
-    "eventDateHint": "When you ask a vendor about this event, the date goes with your request."
+    "eventDateHint": "When you ask a vendor about this event, the date goes with your request.",
+    "eventsFirst": {
+      "one": "1 event · {{first}}",
+      "other": "{{count}} events · {{first}} comes first"
+    },
+    "eventsAllBooked": {
+      "one": "1 event · everything’s booked",
+      "other": "{{count}} events · everything’s booked"
+    }
   },
   "filters": {
     "title": "Filters",

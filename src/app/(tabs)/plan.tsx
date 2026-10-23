@@ -19,7 +19,6 @@ import { groupIcon } from '@/components/group-icon';
 import { Icon } from '@/components/icon';
 import { ListRow, ListSection, SectionTitle } from '@/components/list';
 import { NavScreen } from '@/components/nav';
-import { ProgressBar } from '@/components/progress-bar';
 import { StateView } from '@/components/state-view';
 import { VaultIcon } from '@/components/vault-icon';
 import { makeStyles, Radius, Sizes, Spacing, Springs, useColors } from '@/constants/theme';
@@ -35,6 +34,7 @@ import { FamilyShortlist } from '@/features/planner/family-shortlist';
 import { findForPlan } from '@/features/planner/find-for-plan';
 import { essentialNeeds } from '@/features/planner/plan';
 import { PlanTogether } from '@/features/planner/plan-together';
+import { stillNeedsText, unbookedNames } from '@/features/planner/still-needs';
 import { Suggestions } from '@/features/planner/suggestions';
 import { StartPlanCard } from '@/features/planner/start-plan-card';
 import { usePlanView } from '@/features/planner/use-plan-view';
@@ -142,7 +142,12 @@ export default function PlanScreen() {
 
       {wedding && (
         <View style={styles.hero}>
-          <CountdownCard plan={plan} progress={progress} eventsCount={chosen.length} />
+          <CountdownCard
+            plan={plan}
+            progress={progress}
+            eventsCount={chosen.length}
+            firstEvent={chosen[0] ? localized(chosen[0].name) : null}
+          />
           {canEdit && (
             <DateField
               value={plan.weddingDate}
@@ -355,6 +360,8 @@ function EventPlan({
   const done = essential.filter((need) => booked.includes(need.categorySlug)).length;
   const complete = essential.length > 0 && done === essential.length;
   const name = localized(event.name);
+  // In words, not "0/6" (the final look, 2026-10-23)
+  const stillNeeds = stillNeedsText(unbookedNames(essential, booked), t);
 
   const wasComplete = useRef(complete);
   useEffect(() => {
@@ -388,11 +395,7 @@ function EventPlan({
       <Pressable
         accessibilityRole="button"
         accessibilityState={{ expanded: open }}
-        accessibilityLabel={[
-          name,
-          date ? formatDate(date) : null,
-          t('planner.progress', { done, total: essential.length }),
-        ]
+        accessibilityLabel={[name, date ? formatDate(date) : null, stillNeeds]
           .filter(Boolean)
           .join(', ')}
         onPress={() => {
@@ -424,17 +427,14 @@ function EventPlan({
               </AppText>
             )
           )}
-          <View style={styles.progressRow}>
-            <ProgressBar
-              value={essential.length > 0 ? done / essential.length : 0}
-              color={Colors.success}
-              trackColor={Colors.fill}
-              style={styles.grow}
-            />
-            <AppText variant="caption" weight={600} color={complete ? 'success' : 'text2'}>
-              {complete ? t('planner.allBooked') : `${done}/${essential.length}`}
-            </AppText>
-          </View>
+          <AppText
+            variant="caption"
+            weight={600}
+            color={complete ? 'success' : 'primary'}
+            style={styles.stillNeeds}
+          >
+            {stillNeeds}
+          </AppText>
         </View>
         <Animated.View style={chevron}>
           <Icon name="chevron-down" size={18} color={Colors.chevron} weight="semibold" />
@@ -739,11 +739,8 @@ const useStyles = makeStyles((Colors) => ({
     flex: 1,
     gap: 2,
   },
-  progressRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.sm,
-    marginTop: Spacing.sm,
+  stillNeeds: {
+    marginTop: Spacing.xs,
   },
   guests: {
     gap: Spacing.sm,
