@@ -1,5 +1,5 @@
 import { createRef, useMemo, useState, type RefObject } from 'react';
-import { ScrollView, View, useWindowDimensions } from 'react-native';
+import { ScrollView, View, useWindowDimensions, type ViewInstance } from 'react-native';
 
 import { AppText } from '@/components/app-text';
 import { Button } from '@/components/button';
@@ -18,8 +18,8 @@ import { EVENTS, WEDDING } from './mock';
 export type WedCard = { slug: string; text: CardText };
 
 /** A ref for each card, by position. */
-export function useCardRefs(count: number): RefObject<View | null>[] {
-  return useMemo(() => Array.from({ length: count }, () => createRef<View>()), [count]);
+export function useCardRefs(count: number): RefObject<ViewInstance | null>[] {
+  return useMemo(() => Array.from({ length: count }, () => createRef<ViewInstance>()), [count]);
 }
 
 /**
@@ -86,7 +86,7 @@ export function WedCards({
 }: {
   cards: WedCard[];
   width: number;
-  refs?: RefObject<View | null>[];
+  refs?: RefObject<ViewInstance | null>[];
 }) {
   return (
     <ScrollView

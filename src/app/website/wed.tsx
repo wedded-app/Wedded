@@ -9,6 +9,7 @@ import {
   TextInput,
   View,
   type LayoutChangeEvent,
+  type ScrollViewInstance,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -107,7 +108,7 @@ function Thread({ site, weddingId }: { site: SitePage; weddingId: string }) {
   const [turns, setTurns] = useState<Turn[]>([]);
   const [typed, setTyped] = useState('');
   const asked = useRef(false);
-  const scroll = useRef<ScrollView>(null);
+  const scroll = useRef<ScrollViewInstance>(null);
   // The site as it is now, for the next answer and for Undo
   const current = useRef(site);
   useEffect(() => {

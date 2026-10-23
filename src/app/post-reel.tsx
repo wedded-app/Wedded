@@ -15,6 +15,8 @@ import {
   StyleSheet,
   TextInput,
   View,
+  type TextInputInstance,
+  type ScrollViewInstance,
 } from 'react-native';
 
 import { AppText } from '@/components/app-text';
@@ -96,8 +98,8 @@ export default function PostReelScreen() {
   const [stage, setStage] = useState<'idle' | 'reading' | 'posting'>('idle');
   const [error, setError] = useState<string>();
   const [allEvents, setAllEvents] = useState(false);
-  const scroller = useRef<ScrollView>(null);
-  const search = useRef<TextInput>(null);
+  const scroller = useRef<ScrollViewInstance>(null);
+  const search = useRef<TextInputInstance>(null);
   const tagsY = useRef(0);
   const busy = stage !== 'idle';
   const chosen = clip !== null || link !== null;

@@ -1,7 +1,7 @@
 import * as Print from 'expo-print';
 import * as Sharing from 'expo-sharing';
 import type { RefObject } from 'react';
-import { PixelRatio, type View } from 'react-native';
+import { PixelRatio, type ViewInstance } from 'react-native';
 import { captureRef } from 'react-native-view-shot';
 
 import { saveToPhotos } from '@/lib/save-to-photos';
@@ -13,18 +13,21 @@ import { CARD_RATIO } from './invitation-card';
 const PIXELS = 1500;
 
 /** The card as a PNG (a file, or base64 for printing). */
-function capture(card: RefObject<View | null>, result: 'tmpfile' | 'base64') {
+function capture(card: RefObject<ViewInstance | null>, result: 'tmpfile' | 'base64') {
   const width = PIXELS / PixelRatio.get();
   return captureRef(card, { format: 'png', quality: 1, result, width, height: width * CARD_RATIO });
 }
 
 /** Adds the card to Photos. False when that isn't allowed or doesn't work. */
-export async function saveCard(card: RefObject<View | null>): Promise<boolean> {
+export async function saveCard(card: RefObject<ViewInstance | null>): Promise<boolean> {
   return saveToPhotos(await capture(card, 'tmpfile'));
 }
 
 /** The share sheet, to send the card on WhatsApp, Messages, email and so on. */
-export async function shareCard(card: RefObject<View | null>, title: string): Promise<void> {
+export async function shareCard(
+  card: RefObject<ViewInstance | null>,
+  title: string,
+): Promise<void> {
   if (!(await Sharing.isAvailableAsync())) throw new Error('sharing_unavailable');
   await Sharing.shareAsync(await capture(card, 'tmpfile'), {
     mimeType: 'image/png',
@@ -34,13 +37,13 @@ export async function shareCard(card: RefObject<View | null>, title: string): Pr
 }
 
 /** The print sheet, which also saves a PDF: one card a page. */
-export async function printCards(cards: RefObject<View | null>[]): Promise<void> {
+export async function printCards(cards: RefObject<ViewInstance | null>[]): Promise<void> {
   const pictures: string[] = [];
   for (const card of cards) pictures.push(await capture(card, 'base64'));
   await Print.printAsync({ html: cardPageHtml(pictures) });
 }
 
 /** The card as a PNG file, to attach to a text or an email. */
-export function cardFile(card: RefObject<View | null>): Promise<string> {
+export function cardFile(card: RefObject<ViewInstance | null>): Promise<string> {
   return capture(card, 'tmpfile');
 }

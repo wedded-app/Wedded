@@ -5,8 +5,8 @@ import {
   KeyboardAvoidingView,
   Platform,
   Pressable,
-  type TextInput,
   View,
+  type TextInputInstance,
 } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -71,7 +71,7 @@ export default function GroupThreadScreen() {
   });
   const [draft, setDraft] = useState('');
   const [replyingTo, setReplyingTo] = useState<GroupMessage | null>(null);
-  const input = useRef<TextInput>(null);
+  const input = useRef<TextInputInstance>(null);
 
   // Alerts for this thread don't pop up while it's on screen
   useFocusEffect(
@@ -166,7 +166,7 @@ export default function GroupThreadScreen() {
             <AppText variant="caption" color="text2" style={styles.wedFailed}>
               {t('groupChat.wedFailed')}
             </AppText>
-          ) : null
+          ) : undefined
         }
       />
     );

@@ -17,6 +17,7 @@
 import Constants, { ExecutionEnvironment } from 'expo-constants';
 import * as Device from 'expo-device';
 import * as Notifications from 'expo-notifications';
+import { AndroidImportance, IosAuthorizationStatus } from 'expo-notifications';
 import { useEffect, useRef } from 'react';
 import { Platform } from 'react-native';
 
@@ -61,7 +62,7 @@ export function configurePushHandling(): void {
   if (Platform.OS === 'android') {
     void Notifications.setNotificationChannelAsync(ANDROID_CHANNEL, {
       name: 'Messages',
-      importance: Notifications.AndroidImportance.HIGH,
+      importance: AndroidImportance.HIGH,
     }).catch(() => undefined);
   }
 }
@@ -79,7 +80,7 @@ export async function pushStatus(): Promise<PushStatus> {
 }
 
 function isProvisional(permission: Notifications.NotificationPermissionsStatus): boolean {
-  return permission.ios?.status === Notifications.IosAuthorizationStatus.PROVISIONAL;
+  return permission.ios?.status === IosAuthorizationStatus.PROVISIONAL;
 }
 
 function projectId(): string | undefined {

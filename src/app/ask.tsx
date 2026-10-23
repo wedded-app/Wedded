@@ -1,7 +1,15 @@
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useRef, useState } from 'react';
-import { AccessibilityInfo, Alert, Platform, ScrollView, type TextInput, View } from 'react-native';
+import {
+  AccessibilityInfo,
+  Alert,
+  Platform,
+  ScrollView,
+  View,
+  type TextInputInstance,
+  type ScrollViewInstance,
+} from 'react-native';
 
 import { AppText } from '@/components/app-text';
 import { Button } from '@/components/button';
@@ -93,12 +101,12 @@ export default function AskScreen() {
   const [error, setError] = useState<string>();
   // A required answer that's missing or wrong, shown at its own field
   const [fieldError, setFieldError] = useState<{ field: Field; message: string } | null>(null);
-  const scroll = useRef<ScrollView>(null);
+  const scroll = useRef<ScrollViewInstance>(null);
   // Where each field sits in the scroll, to bring a missing one into view
   const fieldY = useRef<Partial<Record<Field, number>>>({});
-  const placeInput = useRef<TextInput>(null);
-  const messageInput = useRef<TextInput>(null);
-  const phoneInput = useRef<TextInput>(null);
+  const placeInput = useRef<TextInputInstance>(null);
+  const messageInput = useRef<TextInputInstance>(null);
+  const phoneInput = useRef<TextInputInstance>(null);
   const [duplicateAt, setDuplicateAt] = useState<string | null>(null);
   const [touched, setTouched] = useState(false);
   const [venueAnswers, setVenueAnswers] = useState<VenueAnswers>(emptyVenueAnswers);

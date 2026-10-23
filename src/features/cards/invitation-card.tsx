@@ -1,5 +1,5 @@
 import type { Ref } from 'react';
-import { Text, View, type TextProps, type TextStyle } from 'react-native';
+import { Text, View, type TextProps, type TextStyle, type ViewInstance } from 'react-native';
 
 import { fontStyle, serifFamily } from '@/constants/theme';
 
@@ -15,7 +15,7 @@ export type InvitationCardProps = {
   namesSample: string;
   width: number;
   /** The view that's saved as a picture (react-native-view-shot). */
-  ref?: Ref<View>;
+  ref?: Ref<ViewInstance>;
 };
 
 /**

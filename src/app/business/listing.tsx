@@ -1,4 +1,4 @@
-import { router, useLocalSearchParams, useNavigation } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { usePreventRemove } from 'expo-router/react-navigation';
 import { type ReactNode, useState } from 'react';
 import { Alert, Linking, Platform, View } from 'react-native';
@@ -63,7 +63,8 @@ export default function EditListingScreen() {
   const [draft, setDraft] = useState<ListingDraft | null>(null);
   const [problem, setProblem] = useState<{ field: string | null; message: string } | null>(null);
   const [saved, setSaved] = useState(false);
-  const navigation = useNavigation();
+  // Set once they choose to leave without saving, so the guard lets the blocked Back through
+  const [leaving, setLeaving] = useState(false);
 
   // Start from the listing once it has loaded
   if (!draft && listing.data) setDraft(listingToDraft(listing.data));
@@ -71,8 +72,11 @@ export default function EditListingScreen() {
   // Leaving with changes not saved asks first
   const dirty =
     !!draft && !!listing.data && Object.keys(draftChanges(listing.data, draft).changes).length > 0;
-  usePreventRemove(dirty && !update.isPending, ({ data }) => {
-    const leave = () => navigation.dispatch(data.action);
+  usePreventRemove(dirty && !update.isPending && !leaving, ({ repeat }) => {
+    const leave = () => {
+      setLeaving(true);
+      repeat();
+    };
     if (Platform.OS === 'web') {
       if (globalThis.confirm(t('business.listing.unsavedBody'))) leave();
       return;

@@ -1,4 +1,4 @@
-import type { Tabs } from 'expo-router';
+import { type Tabs, useSegments } from 'expo-router';
 import {
   createContext,
   useContext,
@@ -131,7 +131,8 @@ export function useTabBarTop() {
  */
 export function TabBar({
   state,
-  navigation,
+  emitter,
+  navigateToTab,
   tabs,
   accent = 'text',
   center,
@@ -146,10 +147,11 @@ export function TabBar({
   const styles = useStyles();
   const bottom = useTabBarOffset();
   const reduceMotion = useReducedMotion();
+  const segments = useSegments();
   const focused = state.routes[state.index];
   const current = focused?.name ?? '';
   // The page on top of a tab's own stack, e.g. Requests on the Vendors tab
-  const inner = focused?.state?.routes[focused.state.index ?? 0]?.name ?? '';
+  const inner = segments[segments.length - 1] ?? '';
   // Over the Reels videos and Requests' night page the bar is always dark glass
   const overDark = ALWAYS_DARK.includes(current) || ALWAYS_DARK.includes(inner);
   const Colors = overDark ? Palettes.dark : appColors;
@@ -244,13 +246,13 @@ export function TabBar({
     const color = selected ? tint : Colors.text2;
 
     const onPress = () => {
-      const event = navigation.emit({
+      const event = emitter.emit({
         type: 'tabPress',
         target: route.key,
         canPreventDefault: true,
       });
       if (!focused && !event.defaultPrevented) {
-        navigation.navigate(route.name, route.params);
+        navigateToTab(route.key);
       }
     };
 
@@ -261,7 +263,7 @@ export function TabBar({
         accessibilityState={{ selected }}
         accessibilityLabel={spec.badge ? `${spec.label}, ${spec.badge}` : spec.label}
         onPress={onPress}
-        onLongPress={() => navigation.emit({ type: 'tabLongPress', target: route.key })}
+        onLongPress={() => emitter.emit({ type: 'tabLongPress', target: route.key })}
         style={({ pressed }) => [styles.slot, pressed && !selected && styles.pressed]}
       >
         <View>

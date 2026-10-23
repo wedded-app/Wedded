@@ -4,8 +4,9 @@ import {
   ScrollView,
   StyleSheet,
   type StyleProp,
-  type TextInput,
   type ViewStyle,
+  type TextInputInstance,
+  type ScrollViewInstance,
 } from 'react-native';
 
 import { AppText } from '@/components/app-text';
@@ -85,11 +86,11 @@ export function AboutYouForm({
   });
   const [attempted, setAttempted] = useState(false);
 
-  const nameRef = useRef<TextInput>(null);
-  const cityRef = useRef<TextInput>(null);
-  const phoneRef = useRef<TextInput>(null);
-  const emailRef = useRef<TextInput>(null);
-  const inputRefs: Record<TextFieldName, RefObject<TextInput | null>> = {
+  const nameRef = useRef<TextInputInstance>(null);
+  const cityRef = useRef<TextInputInstance>(null);
+  const phoneRef = useRef<TextInputInstance>(null);
+  const emailRef = useRef<TextInputInstance>(null);
+  const inputRefs: Record<TextFieldName, RefObject<TextInputInstance | null>> = {
     name: nameRef,
     city: cityRef,
     phone: phoneRef,
@@ -106,7 +107,7 @@ export function AboutYouForm({
           ? 'phone'
           : null,
   );
-  const scroll = useRef<ScrollView>(null);
+  const scroll = useRef<ScrollViewInstance>(null);
   // Done on the last box: the keyboard goes and the button comes into view
   const showSubmit = () => setTimeout(() => scroll.current?.scrollToEnd({ animated: true }), 250);
 

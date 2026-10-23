@@ -1,4 +1,4 @@
-import { router, useLocalSearchParams } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import Head from 'expo-router/head';
 import { StatusBar } from 'expo-status-bar';
 import { useState } from 'react';
@@ -33,6 +33,8 @@ import { useLocale } from '@/i18n/locale-context';
 export default function WeddingSiteScreen() {
   const { t } = useLocale();
   const Colors = useColors();
+  // The hook, not the module-level router: this reads it while rendering
+  const router = useRouter();
   const insets = useSafeAreaInsets();
   const { slug = '', g } = useLocalSearchParams<{ slug: string; g?: string }>();
   const [password, setPassword] = useState('');

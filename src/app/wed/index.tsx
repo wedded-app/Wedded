@@ -9,6 +9,7 @@ import {
   type LayoutChangeEvent,
   type NativeScrollEvent,
   type NativeSyntheticEvent,
+  type ScrollViewInstance,
 } from 'react-native';
 import Animated, { useAnimatedStyle } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -103,7 +104,7 @@ export default function WedScreen() {
 
   // Rows that were there when the chat opened don't animate in
   const [initialKeys] = useState(() => new Set(getWed().items.map((item) => item.key)));
-  const scroll = useRef<ScrollView>(null);
+  const scroll = useRef<ScrollViewInstance>(null);
   const rows = useRef(new Map<string, { y: number; height: number }>());
   const metrics = useRef({ y: 0, viewport: 0, shown: false, sent: '' });
   // Keep to the end as rows arrive; off while the family reads further up

@@ -7,8 +7,8 @@ import {
   KeyboardAvoidingView,
   Platform,
   Pressable,
-  type TextInput,
   View,
+  type TextInputInstance,
 } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { useReducedMotion } from 'react-native-reanimated';
@@ -96,7 +96,7 @@ export default function ChatScreen() {
   const voice = useVoiceRecorder(id, send);
   const [draft, setDraft] = useState('');
   const [replyingTo, setReplyingTo] = useState<Message | null>(null);
-  const input = useRef<TextInput>(null);
+  const input = useRef<TextInputInstance>(null);
   const list = useRef<FlatList<Row>>(null);
   const reduceMotion = useReducedMotion();
   // The original a quote was tapped for, lit up for a moment
@@ -308,7 +308,7 @@ export default function ChatScreen() {
                 ListHeaderComponent={
                   typing.otherTyping && title ? (
                     <TypingIndicator label={t('chat.typing', { name: title })} />
-                  ) : null
+                  ) : undefined
                 }
               />
             )}

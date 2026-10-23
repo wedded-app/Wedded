@@ -1,6 +1,6 @@
 import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { StyleSheet, View, type TextInput } from 'react-native';
+import { StyleSheet, View, type TextInputInstance } from 'react-native';
 
 import { CategoryRow } from '@/components/category-row';
 import { Chip } from '@/components/chip';
@@ -45,7 +45,7 @@ export default function SearchScreen() {
   const { t } = useLocale();
   const router = useRouter();
   const { focus } = useLocalSearchParams<{ focus?: string }>();
-  const inputRef = useRef<TextInput>(null);
+  const inputRef = useRef<TextInputInstance>(null);
   const [query, setQuery] = useState('');
   const categories = useCategories();
   const groups = useCategoryGroups();

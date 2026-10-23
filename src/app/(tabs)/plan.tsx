@@ -1,6 +1,6 @@
 import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
-import { Pressable, View, type ScrollView } from 'react-native';
+import { Pressable, View, type ScrollViewInstance } from 'react-native';
 import Animated, { useReducedMotion } from 'react-native-reanimated';
 
 import { AppText } from '@/components/app-text';
@@ -90,7 +90,7 @@ export default function PlanScreen() {
   };
 
   // The faces at the top open Family, further down this page
-  const scroll = useRef<ScrollView>(null);
+  const scroll = useRef<ScrollViewInstance>(null);
   const familyY = useRef<number | null>(null);
   const navTop = useNavTop();
   const openFamily = () => {

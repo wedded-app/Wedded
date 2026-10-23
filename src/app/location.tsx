@@ -1,6 +1,12 @@
 import { router } from 'expo-router';
 import { useRef, useState } from 'react';
-import { ActivityIndicator, ScrollView, StyleSheet, View, type TextInput } from 'react-native';
+import {
+  ActivityIndicator,
+  ScrollView,
+  StyleSheet,
+  View,
+  type TextInputInstance,
+} from 'react-native';
 
 import { AppText } from '@/components/app-text';
 import { Button } from '@/components/button';
@@ -36,7 +42,7 @@ export default function LocationScreen() {
   const [checkingZip, setCheckingZip] = useState(false);
   const [explainGps, setExplainGps] = useState(false);
   const [locating, setLocating] = useState(false);
-  const cityInput = useRef<TextInput>(null);
+  const cityInput = useRef<TextInputInstance>(null);
 
   const typed = text.trim();
   const zip = /^\d{5}$/.test(typed) ? typed : null;

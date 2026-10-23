@@ -6,6 +6,7 @@ import {
   type StyleProp,
   type TextInputProps,
   type ViewStyle,
+  type TextInputInstance,
 } from 'react-native';
 
 import { AppText, useTypeStyle } from '@/components/app-text';
@@ -23,7 +24,7 @@ export type TextFieldProps = Omit<TextInputProps, 'style' | 'placeholderTextColo
   error?: string;
   /** Picks the keyboard and autofill: email and phone get their own keyboards. */
   type?: TextFieldType;
-  ref?: Ref<TextInput>;
+  ref?: Ref<TextInputInstance>;
   style?: StyleProp<ViewStyle>;
 };
 

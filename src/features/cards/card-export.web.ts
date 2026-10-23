@@ -1,11 +1,11 @@
 import type { RefObject } from 'react';
-import type { View } from 'react-native';
+import type { ViewInstance } from 'react-native';
 import { captureRef } from 'react-native-view-shot';
 
 import { cardPageHtml } from './card-designs';
 
 /** On the web there's no Photos or share sheet: Save and Share download the picture. */
-async function download(card: RefObject<View | null>): Promise<void> {
+async function download(card: RefObject<ViewInstance | null>): Promise<void> {
   const link = document.createElement('a');
   link.href = await captureRef(card, { format: 'png', result: 'data-uri' });
   link.download = 'invitation.png';
@@ -14,17 +14,17 @@ async function download(card: RefObject<View | null>): Promise<void> {
   link.remove();
 }
 
-export async function saveCard(card: RefObject<View | null>): Promise<boolean> {
+export async function saveCard(card: RefObject<ViewInstance | null>): Promise<boolean> {
   await download(card);
   return true;
 }
 
-export async function shareCard(card: RefObject<View | null>): Promise<void> {
+export async function shareCard(card: RefObject<ViewInstance | null>): Promise<void> {
   await download(card);
 }
 
 /** expo-print on the web prints the current page, so the cards go in their own window. */
-export async function printCards(cards: RefObject<View | null>[]): Promise<void> {
+export async function printCards(cards: RefObject<ViewInstance | null>[]): Promise<void> {
   const pictures: string[] = [];
   for (const card of cards)
     pictures.push(await captureRef(card, { format: 'png', result: 'base64' }));
@@ -47,6 +47,6 @@ export async function printCards(cards: RefObject<View | null>[]): Promise<void>
 }
 
 /** No texting or Mail on the web; the picture, for parity with the phone. */
-export function cardFile(card: RefObject<View | null>): Promise<string> {
+export function cardFile(card: RefObject<ViewInstance | null>): Promise<string> {
   return captureRef(card, { format: 'png', result: 'data-uri' });
 }

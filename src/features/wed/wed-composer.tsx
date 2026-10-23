@@ -7,8 +7,7 @@ import {
   StyleSheet,
   TextInput,
   View,
-  type NativeSyntheticEvent,
-  type TextInputKeyPressEventData,
+  type TextInputKeyPressEvent,
   type TextStyle,
 } from 'react-native';
 import Animated, {
@@ -217,8 +216,8 @@ function Typing({
   // The web: Enter sends, Shift+Enter is a new line
   const onKeyPress =
     Platform.OS === 'web'
-      ? (event: NativeSyntheticEvent<TextInputKeyPressEventData>) => {
-          const key = event.nativeEvent as TextInputKeyPressEventData & {
+      ? (event: TextInputKeyPressEvent) => {
+          const key = event.nativeEvent as TextInputKeyPressEvent['nativeEvent'] & {
             shiftKey?: boolean;
             isComposing?: boolean;
           };

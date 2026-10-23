@@ -81,14 +81,15 @@
         }
       ],
       ["@stripe/stripe-react-native", {}],
-      "expo-mail-composer"
+      "expo-mail-composer",
+      "expo-asset"
     ],
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
     },
     "owner": "kikibagri3787s-team",
-    "runtimeVersion": "exposdk:57.0.0",
+    "runtimeVersion": "exposdk:58.0.0",
     "updates": {
       "url": "https://u.expo.dev/b5558b15-659d-4436-9469-dcd2b7a8e213"
     },
