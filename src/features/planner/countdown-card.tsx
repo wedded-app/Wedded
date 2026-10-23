@@ -3,7 +3,6 @@ import { Platform, View, type ViewStyle } from 'react-native';
 import { AppText } from '@/components/app-text';
 import { Icon } from '@/components/icon';
 import { PressableScale } from '@/components/pressable-scale';
-import { ProgressBar } from '@/components/progress-bar';
 import { makeStyles, Radius, Spacing, useColors, type Palette } from '@/constants/theme';
 import { formatDate } from '@/features/inquiry/inquiry-helpers';
 import { useLocale } from '@/i18n/locale-context';
@@ -15,6 +14,8 @@ export type CountdownCardProps = {
   plan: WeddingPlan;
   progress: { done: number; total: number };
   eventsCount: number;
+  /** The first of the chosen events, for "Mehndi comes first". */
+  firstEvent?: string | null;
   /** Makes the card a button (Home opens My Wedding with it). */
   onPress?: () => void;
   accessibilityLabel?: string;
@@ -37,6 +38,7 @@ export function CountdownCard({
   plan,
   progress,
   eventsCount,
+  firstEvent = null,
   onPress,
   accessibilityLabel,
 }: CountdownCardProps) {
@@ -46,7 +48,6 @@ export function CountdownCard({
   const days = plan.weddingDate ? daysUntil(plan.weddingDate) : null;
   const counting = days !== null && days >= 0;
   const shownDays = useCountUp(counting ? days : 0);
-  const share = progress.total > 0 ? progress.done / progress.total : 0;
 
   const content = (
     <>
@@ -89,12 +90,13 @@ export function CountdownCard({
 
       {eventsCount > 0 && (
         <View style={styles.progress}>
-          <ProgressBar value={share} color={Colors.onHero} trackColor={Colors.heroTrack} />
+          {/* No booked count or bar (the final look, 2026-10-23): a calm line instead */}
           <AppText variant="label" weight={500} color="onHero2">
-            {[
-              t('planner.progress', { done: progress.done, total: progress.total }),
-              t('planner.eventsCount', { count: eventsCount }),
-            ].join(' · ')}
+            {progress.total > 0 && progress.done === progress.total
+              ? t('planner.eventsAllBooked', { count: eventsCount })
+              : firstEvent
+                ? t('planner.eventsFirst', { count: eventsCount, first: firstEvent })
+                : t('planner.eventsCount', { count: eventsCount })}
           </AppText>
         </View>
       )}
