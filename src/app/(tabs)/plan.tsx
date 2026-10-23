@@ -114,6 +114,7 @@ export default function PlanScreen() {
     <NavScreen
       title={t('planner.title')}
       subtitle={t('planner.subtitle')}
+      back={false}
       trailing={
         // Wed (mockup): the plan's next step, asked in the chat. Never sends.
         <AskWedButton

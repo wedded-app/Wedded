@@ -8,12 +8,11 @@ import {
 } from 'react-native';
 
 /**
- * Design tokens. The look is "Journey" (docs/DECISIONS.md, 2026-10-21; it
- * replaced the grouped-grey iOS look of 2026-09-29): white pages with cards
- * and grouped rows in a soft warm grey (as iOS draws grouped lists on a white
- * page), white outlined chips, black (ink) buttons and selected chips, Plus
- * Jakarta Sans, and maroon as the accent for links, icons and the family's
- * own things. Glass is only for floating chrome (tab bar,
+ * Design tokens. The look is the final redesign (docs/DECISIONS.md,
+ * 2026-10-23): the Journey palette (white pages, warm grey cards and grouped
+ * rows, white outlined chips, ink buttons and selected chips, maroon for
+ * links, icons and the family's own things) drawn in the iPhone's own system
+ * font, with iOS motion. Glass is only for floating chrome (tab bar,
  * bars over photos, sheet buttons), never for content.
  * Light and dark palettes share every key. Contrast ratios next to text
  * colours were computed against `surface` and, where it matters, `bg`.
@@ -322,8 +321,8 @@ export const BorderWidth = {
  */
 export const Typography = {
   // Big lines are a touch tighter, as in the Journey mockups (tracking: em)
-  display: { size: 34, weight: 800, lineHeight: 1.2, maxScale: 1.6, tracking: -0.02 },
-  title: { size: 28, weight: 800, lineHeight: 1.2, maxScale: 1.8, tracking: -0.02 },
+  display: { size: 34, weight: 700, lineHeight: 1.2, maxScale: 1.6, tracking: -0.02 },
+  title: { size: 28, weight: 700, lineHeight: 1.2, maxScale: 1.8, tracking: -0.02 },
   section: { size: 22, weight: 700, lineHeight: 1.25, maxScale: 1.8, tracking: -0.01 },
   heading: { size: 20, weight: 700, lineHeight: 1.25, maxScale: 2, tracking: -0.01 },
   bodyLg: { size: 19, weight: 400, lineHeight: 1.3, maxScale: 2 },
@@ -337,32 +336,21 @@ export type TypographyVariant = keyof typeof Typography;
 export type FontWeight = 400 | 500 | 600 | 700 | 800;
 
 /**
- * Latin text is Plus Jakarta Sans everywhere (the Journey look, 2026-10-21),
- * loaded at runtime so it works in Expo Go. Loaded fonts carry their weight in
- * the family name; adding a fontWeight to them makes Android and browsers draw
- * a fake bold, so none gets one.
- */
-const JAKARTA = {
-  400: 'PlusJakartaSans_400Regular',
-  500: 'PlusJakartaSans_500Medium',
-  600: 'PlusJakartaSans_600SemiBold',
-  700: 'PlusJakartaSans_700Bold',
-  800: 'PlusJakartaSans_800ExtraBold',
-} as const;
-
-/**
- * Fraunces, a soft and lively serif, for the few big display lines (the
- * welcome phrases, "What's your phone number?"). Loaded at runtime with the
- * other fonts, in two weights, so it carries its weight in the family name
- * like Inter.
+ * Fraunces, the serif the invitation cards are printed in. Not for the app's
+ * own screens, which draw in the system font (fontStyle). Loaded at runtime
+ * in two weights, so the weight is in the family name.
  */
 export function serifFamily(weight: FontWeight): string {
   return weight >= 600 ? 'Fraunces_600SemiBold' : 'Fraunces_500Medium';
 }
 
-/** The style that draws `weight`: the font family that carries it. */
-export function fontStyle(weight: FontWeight) {
-  return { fontFamily: JAKARTA[weight] };
+/**
+ * The style that draws `weight` in the system font: SF Pro on iPhone, Roboto
+ * on Android, the computer's own on the web. Nothing to load, it matches iOS,
+ * and it grows with the phone's Larger Text.
+ */
+export function fontStyle(weight: FontWeight): TextStyle {
+  return { fontWeight: String(weight) as TextStyle['fontWeight'] };
 }
 
 /**
@@ -383,6 +371,19 @@ export const Springs = {
   snappy: { mass: 1, stiffness: 520, damping: 46 },
   /** Things appearing and moving into place. */
   smooth: { mass: 1, stiffness: 260, damping: 34 },
-  /** The heart popping once when saved. */
-  pop: { mass: 1, stiffness: 420, damping: 16 },
+  /** The heart popping once when saved: quick, barely past full size. */
+  pop: { mass: 1, stiffness: 520, damping: 30 },
+} as const;
+
+/**
+ * Timings for Reanimated's withTiming, on iOS's own curve (the final look,
+ * 2026-10-23: crisp like iOS, no springs that overshoot). Pages and sheets
+ * take 340 ms in and 260 ms out; small moves 220; a press 100.
+ */
+export const Timing = {
+  curve: [0.32, 0.72, 0, 1] as const,
+  page: 340,
+  sheetOut: 260,
+  quick: 220,
+  press: 100,
 } as const;

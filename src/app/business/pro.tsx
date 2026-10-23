@@ -87,7 +87,7 @@ function Pro() {
     >
       <View>
         <View style={styles.price}>
-          <AppText serif weight={600} style={styles.amount} maxFontSizeMultiplier={1.3}>
+          <AppText weight={600} style={styles.amount} maxFontSizeMultiplier={1.3}>
             {t('pro.price')}
           </AppText>
           <AppText variant="title" weight={600}>

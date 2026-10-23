@@ -65,7 +65,7 @@ export function SentMoment({ title, body }: { title: string; body: string }) {
         </View>
       </View>
       <Animated.View entering={FadeInUp.delay(200).duration(420)} style={styles.words}>
-        <AppText variant="display" serif weight={600} style={styles.text}>
+        <AppText variant="display" weight={600} style={styles.text}>
           {title}
         </AppText>
         <AppText variant="bodyLg" color="text2" style={styles.text}>
@@ -133,7 +133,7 @@ export function MatchMoment({
               <Image source={{ uri: vendorPhoto }} style={styles.vendorPhoto} contentFit="cover" />
             ) : (
               <View style={[styles.vendorPhoto, styles.vendorEmpty]}>
-                <AppText serif weight={600} style={styles.initial} maxFontSizeMultiplier={1}>
+                <AppText weight={600} style={styles.initial} maxFontSizeMultiplier={1}>
                   {vendorName.trim()[0]?.toUpperCase() ?? ''}
                 </AppText>
               </View>
@@ -145,7 +145,7 @@ export function MatchMoment({
         </View>
       </View>
       <Animated.View entering={FadeInUp.delay(350).duration(420)} style={styles.words}>
-        <AppText variant="display" serif weight={600} style={styles.text}>
+        <AppText variant="display" weight={600} style={styles.text}>
           {title}
         </AppText>
         <AppText variant="bodyLg" color="text2" style={styles.text}>

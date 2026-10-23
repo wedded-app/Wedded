@@ -45,7 +45,6 @@ export default function ProfileScreen() {
   return (
     <NavScreen
       title={t('tabs.profile')}
-      back={false}
       trailing={
         <GlassButton
           icon="settings-outline"

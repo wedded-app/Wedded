@@ -51,7 +51,7 @@ export function Greeting({ minHeight, inset = 0 }: { minHeight?: number; inset?:
       <View style={styles.words}>
         <AppText
           variant="title"
-          serif
+
           weight={500}
           style={styles.center}
           accessibilityRole="header"

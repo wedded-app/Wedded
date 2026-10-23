@@ -77,7 +77,7 @@ function Requests() {
     content = (
       <GlassCard style={styles.empty}>
         <Icon name="megaphone-outline" size={34} color={Colors.champagne} />
-        <AppText variant="heading" serif weight={600} style={styles.center}>
+        <AppText variant="heading" weight={600} style={styles.center}>
           {t('requests.mine.emptyTitle')}
         </AppText>
         <AppText color="text2" style={styles.center}>

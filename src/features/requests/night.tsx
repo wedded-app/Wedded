@@ -111,7 +111,7 @@ function NightBody({
               </AppText>
             ) : null}
             {title ? (
-              <AppText variant="display" serif weight={600} accessibilityRole="header">
+              <AppText variant="display" weight={600} accessibilityRole="header">
                 {title}
               </AppText>
             ) : null}
@@ -214,12 +214,7 @@ export function DateTile({ date, size = 'md' }: { date: string; size?: 'md' | 'l
       <AppText variant="caption" weight={700} color="champagne" maxFontSizeMultiplier={1.3}>
         {month}
       </AppText>
-      <AppText
-        serif
-        weight={600}
-        style={big ? styles.dayLg : styles.day}
-        maxFontSizeMultiplier={1.2}
-      >
+      <AppText weight={600} style={big ? styles.dayLg : styles.day} maxFontSizeMultiplier={1.2}>
         {day}
       </AppText>
       <AppText variant="caption" color="text2" maxFontSizeMultiplier={1.3}>

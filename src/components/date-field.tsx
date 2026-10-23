@@ -59,7 +59,8 @@ export function DateField({ value, onChange, placeholder, mode = 'date' }: DateF
         border: `1px solid ${Colors.borderInput}`,
         background: Colors.surface,
         color: Colors.text,
-        fontFamily: 'PlusJakartaSans_400Regular, sans-serif',
+        fontFamily:
+          "-apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', Roboto, sans-serif",
         fontSize: 17,
         colorScheme: scheme,
       },

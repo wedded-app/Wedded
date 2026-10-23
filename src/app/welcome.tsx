@@ -299,7 +299,7 @@ function Phrases() {
   const { t } = useLocale();
   const reduceMotion = useReducedMotion();
   const [index, setIndex] = useState(0);
-  const { fontSize, lineHeight } = useTypeStyle({ variant: 'display', weight: 600, serif: true });
+  const { fontSize, lineHeight } = useTypeStyle({ variant: 'display', weight: 600 });
 
   useFocusEffect(
     useCallback(() => {
@@ -328,7 +328,7 @@ function Phrases() {
             <AppText
               variant="display"
               weight={600}
-              serif
+
               color="onPhoto"
               style={[styles.word, phraseGlow]}
             >

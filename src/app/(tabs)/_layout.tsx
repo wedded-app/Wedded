@@ -2,9 +2,9 @@ import { Redirect, Tabs } from 'expo-router';
 import { useState } from 'react';
 import { View } from 'react-native';
 
+import { RingsIcon } from '@/components/rings-icon';
 import { TabBar, TabBarSpaceProvider, useTabBarOffset, type TabSpec } from '@/components/tab-bar';
 import { Sizes, Spacing, useColors } from '@/constants/theme';
-import { useUnreadCount } from '@/data/chat';
 import { useSession } from '@/features/auth/session';
 import { useOpensInBusiness } from '@/features/business/app-mode';
 import { useOnboardingGate } from '@/features/onboarding/gate';
@@ -34,20 +34,24 @@ const TABS: (Omit<TabSpec, 'label'> & { labelKey: string })[] = [
     icon: 'play-circle-outline',
     iconFilled: 'play-circle',
   },
+  // My Wedding (the plan route): every event, guests, the website, family
   {
-    name: 'profile',
-    labelKey: 'tabs.profile',
-    icon: 'person-circle-outline',
-    iconFilled: 'person-circle',
+    name: 'plan',
+    labelKey: 'tabs.wedding',
+    icon: 'heart-outline',
+    renderIcon: (color, selected) => (
+      <RingsIcon size={Sizes.tabIcon} color={color} selected={selected} />
+    ),
   },
 ];
 
 /**
  * Bottom tabs: Home, Vendors (the (search) stack, with Search and Requests on
- * it), Wed's round button in the middle (WedButton, with how many of its cards
- * wait for a yes), Reels (the discover route) and Profile, in a floating glass
- * bar that content scrolls under (TabBar: each tab's icon over its name, a
- * lens behind the selected one). Wed's pages are in this group without a tab
+ * it), Wed's bow in the middle (WedButton, with how many of its cards wait
+ * for a yes), Reels (the discover route) and Wedding (My Wedding, the plan
+ * route), in a floating glass bar that content scrolls under (TabBar: each
+ * tab's icon over its name, a lens behind the selected one). Profile opens
+ * from your photo on Home (DECISIONS.md, 2026-10-23). Wed's pages are in this group without a tab
  * (href: null) and open from its button and the Wed buttons around the app. Expo Router's JS tabs
  * draw it the same on iPhone, Android and the web.
  */
@@ -55,7 +59,6 @@ export default function TabsLayout() {
   const Colors = useColors();
   const { t } = useLocale();
   const offset = useTabBarOffset();
-  const unread = useUnreadCount();
   // Signing out, or someone else signing in, starts every tab fresh, so the
   // next person never lands on the last one's pages. A first sign-in (often
   // mid-action, like Save) keeps them where they were.
@@ -70,12 +73,8 @@ export default function TabsLayout() {
   // Only someone who can say yes gets a count to clear
   const waiting = useWed(waitingCount);
   const canApprove = useWed((s) => s.role === 'owner');
-  // Unread messages show on Profile, where Messages lives.
-  const tabs = TABS.map(({ labelKey, ...tab }) => ({
-    ...tab,
-    label: t(labelKey),
-    badge: tab.name === 'profile' ? unread : undefined,
-  }));
+  // Unread messages show on the chat button at the top of Home.
+  const tabs = TABS.map(({ labelKey, ...tab }) => ({ ...tab, label: t(labelKey) }));
   // The first time the app opens: the welcome screen, or the first questions.
   const gate = useOnboardingGate();
   // Business mode has its own tabs (features/business/app-mode.ts)

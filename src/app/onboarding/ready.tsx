@@ -50,7 +50,7 @@ export default function ReadyScreen() {
           <AppText
             variant="display"
             weight={600}
-            serif
+
             accessibilityRole="header"
             style={[styles.center, styles.title]}
           >

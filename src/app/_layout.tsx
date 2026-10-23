@@ -44,7 +44,7 @@ SplashScreen.preventAutoHideAsync();
 // Message alerts show while the app is open, except for the chat on screen
 configurePushHandling();
 
-// Plus Jakarta Sans draws all Latin text, on every platform (fontStyle in constants/theme.ts)
+// Plus Jakarta Sans is for the guest website's designs; the app draws in the system font (fontStyle in constants/theme.ts)
 const LATIN_FONTS = {
   PlusJakartaSans_400Regular,
   PlusJakartaSans_500Medium,
@@ -58,7 +58,7 @@ export default function RootLayout() {
   // screen so no screen ever renders in a system fallback.
   const [fontsLoaded, fontError] = useFonts({
     ...LATIN_FONTS,
-    // The display serif for the welcome and phone sign-in screens.
+    // The serif the invitation cards are printed in (serifFamily).
     Fraunces_500Medium,
     Fraunces_600SemiBold,
   });
@@ -202,7 +202,7 @@ function AppShell() {
             name="wed-voice"
             options={{ presentation: 'fullScreenModal', animation: 'fade' }}
           />
-          <Stack.Screen name="plan" />
+          <Stack.Screen name="profile" />
           <Stack.Screen name="plan-events" options={{ presentation: 'modal' }} />
           <Stack.Screen name="cards" />
           <Stack.Screen name="guests" />

@@ -83,7 +83,7 @@ export function RequestInvite({
               {eventName.toUpperCase()}
             </AppText>
           ) : null}
-          <AppText variant={headline.length > 11 ? 'section' : 'title'} serif weight={600}>
+          <AppText variant={headline.length > 11 ? 'section' : 'title'} weight={600}>
             {headline}
           </AppText>
           {when ? (
