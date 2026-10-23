@@ -92,6 +92,12 @@ const light = {
   ombreRose: 'rgba(230, 91, 122, 0.85)',
   ombreBlush: 'rgba(247, 182, 194, 0.7)',
   ombreGold: 'rgba(242, 194, 139, 0.45)',
+  // Business mode's moving card: saffron instead of wine, so it never looks like the family side
+  saffronBase: '#8A3E06',
+  saffronDeep: 'rgba(184, 84, 10, 0.95)',
+  saffronMarigold: 'rgba(240, 150, 40, 0.8)',
+  saffronHoney: 'rgba(250, 200, 110, 0.55)',
+  saffronRose: 'rgba(214, 86, 80, 0.4)',
   // The welcome screen and first questions: a plain white page (Fezy asked for
   // white), with grey cards on it instead of the usual grey page and white rows.
   canvas: '#FFFFFF',
@@ -190,6 +196,12 @@ const dark: Palette = {
   ombreRose: 'rgba(230, 91, 122, 0.85)',
   ombreBlush: 'rgba(247, 182, 194, 0.7)',
   ombreGold: 'rgba(242, 194, 139, 0.45)',
+  // Business mode's moving card: saffron instead of wine, so it never looks like the family side
+  saffronBase: '#8A3E06',
+  saffronDeep: 'rgba(184, 84, 10, 0.95)',
+  saffronMarigold: 'rgba(240, 150, 40, 0.8)',
+  saffronHoney: 'rgba(250, 200, 110, 0.55)',
+  saffronRose: 'rgba(214, 86, 80, 0.4)',
   canvas: '#000000',
   canvasCard: '#1C1C1E',
   sand: '#2A2520',

@@ -176,6 +176,7 @@ function AppShell() {
           <Stack.Screen name="request-new" options={{ presentation: 'modal' }} />
           <Stack.Screen name="business/propose" options={{ presentation: 'modal' }} />
           <Stack.Screen name="business/photo" options={{ presentation: 'modal' }} />
+          <Stack.Screen name="business/wed" options={{ presentation: 'modal' }} />
           {/* Half height over the reel, which keeps playing above it */}
           <Stack.Screen
             name="reel-comments"

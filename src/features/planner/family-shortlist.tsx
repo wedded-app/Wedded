@@ -4,7 +4,6 @@ import { Pressable, View } from 'react-native';
 import { AppText } from '@/components/app-text';
 import { Button } from '@/components/button';
 import { Icon, type IconName } from '@/components/icon';
-import { SectionTitle } from '@/components/list';
 import { makeStyles, Radius, Sizes, Spacing, useColors } from '@/constants/theme';
 import {
   REACTIONS,
@@ -36,7 +35,9 @@ export function FamilyShortlist({ weddingId }: { weddingId: string }) {
   if (!shortlist.data || shortlist.data.length === 0) {
     return shortlist.data ? (
       <View style={styles.block}>
-        <SectionTitle>{t('familyShortlist.title')}</SectionTitle>
+        <AppText variant="heading" accessibilityRole="header" style={styles.title}>
+          {t('familyShortlist.title')}
+        </AppText>
         <AppText color="text2" style={styles.pad}>
           {t('familyShortlist.empty')}
         </AppText>
@@ -46,7 +47,9 @@ export function FamilyShortlist({ weddingId }: { weddingId: string }) {
 
   return (
     <View style={styles.block}>
-      <SectionTitle>{t('familyShortlist.title')}</SectionTitle>
+      <AppText variant="heading" accessibilityRole="header" style={styles.title}>
+        {t('familyShortlist.title')}
+      </AppText>
       <AppText color="text2" style={styles.pad}>
         {t('familyShortlist.hint')}
       </AppText>
@@ -152,6 +155,10 @@ function ShortlistCard({ vendor, weddingId }: { vendor: ShortlistVendor; wedding
 const useStyles = makeStyles((Colors) => ({
   block: {
     gap: Spacing.lg,
+  },
+  // Under Planning together on the Wedding tab, so a step under a section's title
+  title: {
+    paddingHorizontal: Spacing.xs,
   },
   pad: {
     paddingHorizontal: Spacing.xs,

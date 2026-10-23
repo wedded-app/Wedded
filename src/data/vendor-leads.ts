@@ -18,6 +18,8 @@ export type VendorLead = {
   instagramHandle?: string;
   /** Set for "Claim your profile". */
   claimedVendorId?: string;
+  /** For the founders, e.g. which second check a claimer picked. */
+  note?: string;
 };
 
 async function submitVendorLead(lead: VendorLead) {
@@ -30,6 +32,7 @@ async function submitVendorLead(lead: VendorLead) {
     city: lead.city,
     phone: lead.phone,
     instagram: lead.instagramHandle || null,
+    note: lead.note || null,
   });
   if (error) throw error;
 }
