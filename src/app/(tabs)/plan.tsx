@@ -1,4 +1,4 @@
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
 import { Pressable, View } from 'react-native';
 import Animated, {
@@ -80,6 +80,13 @@ export default function PlanScreen() {
 
   // Every event starts folded, so the page reads as one list; a tap opens one
   const [openSlugs, setOpen] = useState<string[]>([]);
+  // Tapping an event on Home opens it here (?event=mehndi)
+  const { event: openEvent } = useLocalSearchParams<{ event?: string }>();
+  const [seenEvent, setSeenEvent] = useState<string | undefined>(undefined);
+  if (openEvent !== seenEvent) {
+    setSeenEvent(openEvent);
+    if (openEvent && !openSlugs.includes(openEvent)) setOpen([...openSlugs, openEvent]);
+  }
   const toggleOpen = (slug: string) =>
     setOpen(openSlugs.includes(slug) ? openSlugs.filter((s) => s !== slug) : [...openSlugs, slug]);
 

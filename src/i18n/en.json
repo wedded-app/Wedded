@@ -104,7 +104,39 @@
     "seeMore": "See more",
     "freeOn": "Free {{date}}",
     "freeOnYourDate": "Free on your date",
-    "nearYou": "Near you"
+    "nearYou": "Near you",
+    "greeting": {
+      "morning": "Good morning, {{name}}",
+      "morningPlain": "Good morning",
+      "afternoon": "Good afternoon, {{name}}",
+      "afternoonPlain": "Good afternoon",
+      "evening": "Good evening, {{name}}",
+      "eveningPlain": "Good evening"
+    },
+    "upNext": {
+      "seeFree": "See {{shown}} free",
+      "seeNear": "See {{shown}} nearby",
+      "done": "Done",
+      "marked": "{{name}} marked booked",
+      "undo": "Undo",
+      "caughtUp": "All caught up"
+    },
+    "wedLine": {
+      "found": {
+        "one": "Wed found 1 thing",
+        "other": "Wed found {{count}} things"
+      },
+      "hint": "Opens Wed, where you can say yes or not now"
+    },
+    "events": {
+      "title": "Your events",
+      "allSet": "All set",
+      "toBook": "To book: {{what}}",
+      "toBookMore": {
+        "one": "To book: {{what}} and 1 more",
+        "other": "To book: {{what}} and {{count}} more"
+      }
+    }
   },
   "when": {
     "close": "Close",
