@@ -1,5 +1,6 @@
 import { useRouter } from 'expo-router';
 import Head from 'expo-router/head';
+import type { Metadata } from 'expo-router/server';
 import { View } from 'react-native';
 
 import { AppText } from '@/components/app-text';
@@ -13,7 +14,7 @@ import { localized } from '@/i18n/localized';
 import { useLocale } from '@/i18n/locale-context';
 
 /** For link previews: since SDK 58 only this reaches the page's HTML, not Head's tags. */
-export function generateMetadata() {
+export function generateMetadata(): Metadata {
   return { title: i18n.t('founding.title'), description: i18n.t('founding.intro') };
 }
 
