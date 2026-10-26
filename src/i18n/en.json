@@ -62,12 +62,6 @@
     "seeThem": "See them",
     "bookedButton": "Booked",
     "bookedSpoken": "Mark {{name}} booked for the {{event}}",
-    "yourVendors": "Your vendors",
-    "newReply": "New reply · {{time}}",
-    "replied": "Replied · {{time}}",
-    "waiting": "Waiting for a reply · {{time}}",
-    "bookedFor": "Booked for {{events}}",
-    "bookedPlain": "Booked",
     "vendorsEmpty": "When you ask vendors about price and date, their replies show up here.",
     "findVendors": "Find vendors",
     "freeOnDateTitle": "Free on your date: {{type}}",
@@ -3020,7 +3014,6 @@
   "looking": {
     "title": "Wanted",
     "subtitle": "Families near you who need what you do.",
-    "rowHint": "Send families your price",
     "reach": "How far",
     "miles": {
       "one": "1 mi",
