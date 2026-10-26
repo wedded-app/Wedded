@@ -15,6 +15,7 @@ import { appLink } from '@/constants/links';
 import { makeStyles, Radius, Spacing, useColors } from '@/constants/theme';
 import { useAcceptVaultInvite, useVaultInvitePreview, vaultProblem } from '@/data/memory-vault';
 import { useSession } from '@/features/auth/session';
+import { i18n } from '@/i18n';
 import { useLocale } from '@/i18n/locale-context';
 import { successHaptic } from '@/lib/haptics';
 
@@ -27,6 +28,14 @@ const JOIN_ERRORS: string[] = [
   'tooManyVaults',
   'offline',
 ];
+
+/** For link previews: since SDK 58 only this reaches the page's HTML, not Head's tags. */
+export function generateMetadata() {
+  return {
+    title: i18n.t('memoryVault.join.pageTitle'),
+    description: i18n.t('memoryVault.join.pageDescription'),
+  };
+}
 
 /**
  * A guest joining the couple's Memory Vault from the link or the QR card on
