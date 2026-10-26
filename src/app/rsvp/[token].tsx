@@ -1,5 +1,6 @@
 import { useLocalSearchParams } from 'expo-router';
 import Head from 'expo-router/head';
+import type { Metadata } from 'expo-router/server';
 import { useState } from 'react';
 import { Linking, Platform, View } from 'react-native';
 
@@ -30,9 +31,16 @@ function savedAnswer(event: RsvpEvent, partySize: number): Answer | null {
   return { answer: event.rsvp, coming: Math.min(event.coming ?? 0, partySize) };
 }
 
-/** For link previews: since SDK 58 only this reaches the page's HTML, not Head's tags. */
-export function generateMetadata() {
-  return { title: i18n.t('rsvp.pageTitle'), description: i18n.t('rsvp.pageDescription') };
+/**
+ * For link previews: since SDK 58 only this reaches the page's HTML, not
+ * Head's tags. Noindex, because the link is someone's private invitation.
+ */
+export function generateMetadata(): Metadata {
+  return {
+    title: i18n.t('rsvp.pageTitle'),
+    description: i18n.t('rsvp.pageDescription'),
+    robots: 'noindex',
+  };
 }
 
 /**

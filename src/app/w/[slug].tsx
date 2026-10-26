@@ -1,5 +1,6 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import Head from 'expo-router/head';
+import type { Metadata } from 'expo-router/server';
 import { StatusBar } from 'expo-status-bar';
 import { useState } from 'react';
 import {
@@ -26,7 +27,7 @@ import { i18n } from '@/i18n';
 import { useLocale } from '@/i18n/locale-context';
 
 /** For link previews: since SDK 58 only this reaches the page's HTML, not Head's tags. */
-export function generateMetadata() {
+export function generateMetadata(): Metadata {
   return { title: i18n.t('website.pageTitlePlain') };
 }
 
