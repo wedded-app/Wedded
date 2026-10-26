@@ -11,8 +11,17 @@ import { StateView } from '@/components/state-view';
 import { makeStyles, Radius, Spacing, useColors } from '@/constants/theme';
 import { groupErrorKind, useAcceptGroupInvite, useGroupInvitePreview } from '@/data/group-chat';
 import { useSession } from '@/features/auth/session';
+import { i18n } from '@/i18n';
 import { useLocale } from '@/i18n/locale-context';
 import { successHaptic } from '@/lib/haptics';
+
+/** For link previews: since SDK 58 only this reaches the page's HTML, not Head's tags. */
+export function generateMetadata() {
+  return {
+    title: i18n.t('groupChat.join.pageTitle'),
+    description: i18n.t('groupChat.join.pageDescription'),
+  };
+}
 
 /**
  * Joining a family chat from a link (A2, #125). The link is usually tapped in

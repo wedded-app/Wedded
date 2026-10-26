@@ -17,6 +17,7 @@ import { guestErrorKind, useRsvp, useRsvpPreview, type RsvpEvent } from '@/data/
 import { useEvent } from '@/data/reference';
 import { formatDate } from '@/features/inquiry/inquiry-helpers';
 import { formatTime } from '@/features/vendors/profile-format';
+import { i18n } from '@/i18n';
 import { localized } from '@/i18n/localized';
 import { useLocale } from '@/i18n/locale-context';
 import { successHaptic } from '@/lib/haptics';
@@ -27,6 +28,11 @@ type Answer = { answer: 'yes' | 'no'; coming: number };
 function savedAnswer(event: RsvpEvent, partySize: number): Answer | null {
   if (event.rsvp === 'pending') return null;
   return { answer: event.rsvp, coming: Math.min(event.coming ?? 0, partySize) };
+}
+
+/** For link previews: since SDK 58 only this reaches the page's HTML, not Head's tags. */
+export function generateMetadata() {
+  return { title: i18n.t('rsvp.pageTitle'), description: i18n.t('rsvp.pageDescription') };
 }
 
 /**

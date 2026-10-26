@@ -13,8 +13,14 @@ import { makeStyles, Radius, Spacing, useColors } from '@/constants/theme';
 import { joinErrorKind, useAcceptInvite, useInvitePreview } from '@/data/wedding';
 import { useSession } from '@/features/auth/session';
 import { formatDate } from '@/features/inquiry/inquiry-helpers';
+import { i18n } from '@/i18n';
 import { useLocale } from '@/i18n/locale-context';
 import { successHaptic } from '@/lib/haptics';
+
+/** For link previews: since SDK 58 only this reaches the page's HTML, not Head's tags. */
+export function generateMetadata() {
+  return { title: i18n.t('join.pageTitle'), description: i18n.t('join.pageDescription') };
+}
 
 /**
  * Joining a family's wedding plan from an invite link (Plan together). The

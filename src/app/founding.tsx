@@ -8,8 +8,14 @@ import { NavScreen } from '@/components/nav';
 import { StateView } from '@/components/state-view';
 import { makeStyles, Radius, Spacing } from '@/constants/theme';
 import { useFoundingVendors } from '@/data/vendors';
+import { i18n } from '@/i18n';
 import { localized } from '@/i18n/localized';
 import { useLocale } from '@/i18n/locale-context';
+
+/** For link previews: since SDK 58 only this reaches the page's HTML, not Head's tags. */
+export function generateMetadata() {
+  return { title: i18n.t('founding.title'), description: i18n.t('founding.intro') };
+}
 
 /**
  * The Founding Wall (vision doc §13): vendors with a founding number, in the

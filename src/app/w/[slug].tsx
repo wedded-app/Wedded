@@ -22,7 +22,13 @@ import { siteProblem, useSitePage, type SiteLock } from '@/data/website';
 import { siteDesign, sitePalette } from '@/features/website/designs';
 import { useSiteFonts } from '@/features/website/fonts';
 import { SiteButton, SiteView } from '@/features/website/site-view';
+import { i18n } from '@/i18n';
 import { useLocale } from '@/i18n/locale-context';
+
+/** For link previews: since SDK 58 only this reaches the page's HTML, not Head's tags. */
+export function generateMetadata() {
+  return { title: i18n.t('website.pageTitlePlain') };
+}
 
 /**
  * A family's wedding website, /w/{slug}: what guests open from the link on
