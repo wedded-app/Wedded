@@ -6,7 +6,7 @@
 begin;
 create extension if not exists pgtap with schema extensions;
 
-select plan(107);
+select plan(112);
 
 -- People: Asha (owns the wedding), Balwinder (editor), Charan (suggester),
 -- Dev and Farah (guests who join with the link), Esha (a stranger, later a guest)
@@ -618,6 +618,37 @@ select pg_temp.as_user('e9000000-0000-4000-8000-00000000000e');
 select is_empty(
   $$ select * from public.vault_vendors(pg_temp.id('vault')) $$,
   'Strangers never do'
+);
+
+-- Who's in it (#351) ------------------------------------------------------------------
+
+select pg_temp.as_user('a9000000-0000-4000-8000-00000000000a');
+select results_eq(
+  $$ select first_name from public.vault_people(pg_temp.id('vault')) order by first_name $$,
+  $$ values ('Dev'), ('Farah') $$,
+  'The couple sees who joined, by first name'
+);
+select is(
+  (select item_count from public.vault_people(pg_temp.id('vault'))
+   where user_id = 'd9000000-0000-4000-8000-00000000000d'),
+  (select count(*)::integer from public.vault_items
+   where vault_id = pg_temp.id('vault') and user_id = 'd9000000-0000-4000-8000-00000000000d'),
+  'with how many each added'
+);
+select pg_temp.as_user('b9000000-0000-4000-8000-00000000000b');
+select is(
+  (select count(*)::integer from public.vault_people(pg_temp.id('vault'))), 2,
+  'Editors see them too'
+);
+select pg_temp.as_user('c9000000-0000-4000-8000-00000000000c');
+select is_empty(
+  $$ select * from public.vault_people(pg_temp.id('vault')) $$,
+  'Family see no one'
+);
+select pg_temp.as_user('d9000000-0000-4000-8000-00000000000d');
+select is_empty(
+  $$ select * from public.vault_people(pg_temp.id('vault')) $$,
+  'and neither do guests'
 );
 
 -- Leaving ------------------------------------------------------------------------------
