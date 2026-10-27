@@ -33,6 +33,7 @@ import { useSession } from '@/features/auth/session';
 import { useStartPlanning } from '@/features/onboarding/start';
 import { askMediaAccess } from '@/features/reels/media-access';
 import { saveMediaToPhotos } from '@/features/vault/save-media';
+import { SendToGuests } from '@/features/vault/send-to-guests';
 import { useVaultLink } from '@/features/vault/use-vault-link';
 import { todaysEvent, videoLength } from '@/features/vault/vault-helpers';
 import { localized } from '@/i18n/localized';
@@ -286,6 +287,7 @@ function Vault({
             onPress={() => void invite()}
           />
         )}
+        {couple && <SendToGuests vault={vault} />}
         {linkProblem && (
           <AppText color={linkProblem === 'copied' ? 'success' : 'error'} weight={600}>
             {t(`memoryVault.link.${linkProblem}`)}
