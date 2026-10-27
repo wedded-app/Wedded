@@ -1,5 +1,5 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
-import { inquiryEmailFor, signedParams, verifiedEmail, withFooter } from './email-links.ts';
+import { inquiryEmailsFor, signedParams, verifiedEmail, withFooter } from './email-links.ts';
 import type { InquiryEmailInput, OutgoingEmail } from './inquiry-email.ts';
 
 function assert(value: unknown, message = 'Assertion failed'): asserts value {
@@ -41,6 +41,9 @@ Deno.test('footer explains why, escapes HTML and provides headers only for an un
   assert(result.headers?.['List-Unsubscribe-Post'] === 'List-Unsubscribe=One-Click');
   for (
     const shared of [{ ...email, cc: ['family@example.com'] }, {
+      ...email,
+      bcc: ['founders@example.com'],
+    }, {
       ...email,
       to: ['a@b.com', 'c@d.com'],
     }]
@@ -98,15 +101,29 @@ Deno.test('inquiries relay opted-out vendors and omit opted-out family copies', 
   Deno.env.set('EMAIL_LINK_SECRET', 'test-key');
   Deno.env.set('FOUNDERS_EMAIL', 'founders@example.com');
   Deno.env.delete('INQUIRY_TEST_INBOX');
-  const ordinary = await inquiryEmailFor(admin([]), input);
-  assert(ordinary.to[0] === 'vendor@example.com' && ordinary.cc[0] === 'family@example.com');
-  const relayed = await inquiryEmailFor(admin(['vendor@example.com', 'family@example.com']), input);
-  assert(relayed.to[0] === 'founders@example.com' && relayed.cc.length === 0);
-  const noCopy = await inquiryEmailFor(admin(['family@example.com']), input);
-  assert(noCopy.to[0] === 'vendor@example.com' && noCopy.cc.length === 0);
+  const [vendor, copy, extra] = await inquiryEmailsFor(admin([]), input);
+  assert(vendor.to.join() === 'vendor@example.com' && vendor.cc.length === 0);
+  assert(copy.to.join() === 'family@example.com' && copy.bcc.length === 0 && !extra);
+  // Each stop link stops only its own reader's emails
+  assert(vendor.text.includes('Stop these emails to vendor@example.com'));
+  assert(copy.text.includes('Stop these emails to family@example.com'));
+  assert(!copy.text.includes('vendor@example.com'), 'the copy names no vendor address');
+  assert(copy.headers?.['List-Unsubscribe'], 'the family can stop its copies in one click');
+  assert(!vendor.headers?.['List-Unsubscribe'], 'not while founders get a blind copy');
+  const relayed = await inquiryEmailsFor(
+    admin(['vendor@example.com', 'family@example.com']),
+    input,
+  );
+  assert(relayed.length === 1 && relayed[0].to.join() === 'founders@example.com');
+  const noCopy = await inquiryEmailsFor(admin(['family@example.com']), input);
+  assert(noCopy.length === 1 && noCopy[0].to.join() === 'vendor@example.com');
+  const relayedWithCopy = await inquiryEmailsFor(admin(['vendor@example.com']), input);
+  assert(
+    relayedWithCopy.map((e) => e.to.join()).join() === 'founders@example.com,family@example.com',
+  );
   let failed = false;
   try {
-    await inquiryEmailFor(admin([], true), input);
+    await inquiryEmailsFor(admin([], true), input);
   } catch {
     failed = true;
   }
@@ -120,7 +137,9 @@ Deno.test('the test inbox gets inquiries alone, sent from the Resend test addres
   Deno.env.delete('INQUIRY_FROM');
   try {
     for (const stopped of [[], ['vendor@example.com']]) {
-      const sent = await inquiryEmailFor(admin(stopped), input);
+      const emails = await inquiryEmailsFor(admin(stopped), input);
+      assert(emails.length === 1, 'no family copy in test mode');
+      const sent = emails[0];
       assert(sent.to.join() === 'inbox@example.com', `to: ${sent.to}`);
       assert(sent.cc.length === 0 && sent.bcc.length === 0, `copies: ${sent.cc} ${sent.bcc}`);
       assert(sent.from === 'Wedded App <onboarding@resend.dev>', `from: ${sent.from}`);

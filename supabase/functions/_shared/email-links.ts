@@ -8,7 +8,12 @@
 
 import type { SupabaseClient } from '@supabase/supabase-js';
 
-import { buildInquiryEmail, type InquiryEmailInput, type OutgoingEmail } from './inquiry-email.ts';
+import {
+  buildInquiryEmail,
+  type InquiryEmailInput,
+  type OutgoingEmail,
+  sendEmail,
+} from './inquiry-email.ts';
 
 function env(name: string): string | undefined {
   const value = Deno.env.get(name)?.trim();
@@ -102,8 +107,9 @@ export function businessLine(): string {
 
 /**
  * Adds the footer for `recipient` (why they get it, how to stop, who sends
- * it). The one-click headers go only on emails nobody else is copied on, so
- * a copied person's mail app can't stop someone else's emails.
+ * it). The one-click headers go only on emails nobody else is copied on,
+ * blind copies included, so a copied person's mail app can't stop someone
+ * else's emails.
  */
 export async function withFooter(
   email: OutgoingEmail,
@@ -123,7 +129,7 @@ export async function withFooter(
   const html = email.html.includes('</body>')
     ? email.html.replace('</body>', `${footer}</body>`)
     : `${email.html}\n${footer}`;
-  const alone = email.cc.length === 0 && email.to.length === 1;
+  const alone = email.cc.length === 0 && email.bcc.length === 0 && email.to.length === 1;
   return {
     ...email,
     text,
@@ -151,24 +157,53 @@ export async function optedOut(
 }
 
 /**
- * The inquiry email with everyone's wishes applied: a vendor who stopped
- * emails gets it relayed through the founders (by text or WhatsApp), so the
- * family still reaches them; a family who stopped emails gets no copy.
+ * The inquiry emails with everyone's wishes applied: first the vendor's (a
+ * vendor who stopped emails gets it relayed through the founders, by text or
+ * WhatsApp, so the family still reaches them), then the family's own copy.
+ * The copy is a separate email so each stop link stops only its reader's
+ * emails. No copy for a family who stopped emails, or while the test inbox
+ * is on (Resend delivers only there until the domain is verified).
  */
-export async function inquiryEmailFor(
+export async function inquiryEmailsFor(
   admin: SupabaseClient,
   input: InquiryEmailInput,
-): Promise<OutgoingEmail> {
+): Promise<OutgoingEmail[]> {
+  const family = input.sender.email;
   const stopped = await optedOut(
     admin,
-    [input.vendorEmail, input.sender.email].filter((a): a is string => !!a),
+    [input.vendorEmail, family].filter((a): a is string => !!a),
   );
   const vendorStopped = !!input.vendorEmail && stopped.has(normalizeEmail(input.vendorEmail));
   const channel = input.channel === 'email' && vendorStopped ? 'relay' : input.channel;
   const email = buildInquiryEmail({ ...input, channel });
-  const cc = email.cc.filter((address) => !stopped.has(normalizeEmail(address)));
   const why = channel === 'relay'
     ? `You get this because you relay inquiries for ${input.vendorName} on Wedded App.`
     : `You get this because a family asked ${input.vendorName} about their wedding on Wedded App.`;
-  return withFooter({ ...email, cc }, email.to[0], why);
+  const emails = [await withFooter(email, email.to[0], why)];
+  if (family && !env('INQUIRY_TEST_INBOX') && !stopped.has(normalizeEmail(family))) {
+    emails.push(
+      await withFooter(
+        { ...email, to: [family], bcc: [], replyTo: [] },
+        family,
+        `You get this copy because you asked ${input.vendorName} about your wedding on Wedded App.`,
+      ),
+    );
+  }
+  return emails;
+}
+
+/** Sends an inquiry, then the family's copy. Returns the provider's id for the inquiry. */
+export async function sendInquiry(
+  admin: SupabaseClient,
+  input: InquiryEmailInput,
+): Promise<string> {
+  const [email, copy] = await inquiryEmailsFor(admin, input);
+  const providerId = await sendEmail(email, input.inquiryId);
+  if (copy) {
+    // The vendor already has the inquiry, so a lost copy only gets logged
+    await sendEmail(copy, `${input.inquiryId}-family`).catch((error) =>
+      console.error('sending the family copy failed', input.inquiryId, error)
+    );
+  }
+  return providerId;
 }
