@@ -1,22 +1,11 @@
-import { useEventListener } from 'expo';
 import { Image } from 'expo-image';
 import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { useVideoPlayer, VideoView } from 'expo-video';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import {
-  Alert,
-  PanResponder,
-  Platform,
-  Pressable,
-  StyleSheet,
-  View,
-  type ViewStyle,
-} from 'react-native';
+import { Alert, PanResponder, Platform, Pressable, View, type ViewStyle } from 'react-native';
 import Animated, {
   cancelAnimation,
   Easing,
-  type SharedValue,
   useAnimatedStyle,
   useReducedMotion,
   useSharedValue,
@@ -32,15 +21,16 @@ import { StateView } from '@/components/state-view';
 import { makeStyles, Radius, Sizes, Spacing, Springs } from '@/constants/theme';
 import { useToggleBlock } from '@/data/reels';
 import { useSavedVendors, useSaveVendor } from '@/data/saved';
-import { type Story, type StoryGroup, useDeleteStory, useStories } from '@/data/stories';
+import { useDeleteStory, useStories } from '@/data/stories';
 import { useVendorPhotos } from '@/data/vendor-media';
 import { useVendor } from '@/data/vendors';
 import { useSession } from '@/features/auth/session';
-import { initials } from '@/features/planner/plan-together';
 import { timeAgo } from '@/features/requests/requests-format';
 import { markStorySeen, trayOrder, useStorySeen } from '@/features/stories/seen-stories';
+import { StoryHeader } from '@/features/stories/story-header';
+import { fromGroup, vendorTeller, type Teller } from '@/features/stories/story-tellers';
+import { StoryVideo } from '@/features/stories/story-video';
 import { shareVendor } from '@/features/vendors/share';
-import { localized } from '@/i18n/localized';
 import { useLocale } from '@/i18n/locale-context';
 import { saveHaptic } from '@/lib/haptics';
 
@@ -48,72 +38,12 @@ const PHOTO_MS = 5000;
 const CLOSE_DRAG = 120;
 // How far a sideways swipe goes before it changes person
 const SKIP_DRAG = 60;
-// Browsers only autoplay muted video
-const MUTED = Platform.OS === 'web';
 
-const topShade = (
-  Platform.OS === 'web'
-    ? { backgroundImage: 'linear-gradient(to bottom, rgba(0,0,0,0.7), rgba(0,0,0,0))' }
-    : { experimental_backgroundImage: 'linear-gradient(to bottom, rgba(0,0,0,0.7), rgba(0,0,0,0))' }
-) as ViewStyle;
 const bottomShade = (
   Platform.OS === 'web'
     ? { backgroundImage: 'linear-gradient(to top, rgba(0,0,0,0.8), rgba(0,0,0,0))' }
     : { experimental_backgroundImage: 'linear-gradient(to top, rgba(0,0,0,0.8), rgba(0,0,0,0))' }
 ) as ViewStyle;
-
-type Slide = {
-  id: string;
-  kind: 'photo' | 'video';
-  url: string;
-  blurhash: string | null;
-  caption: string | null;
-  /** When a posted story went up, for "3 hours ago". */
-  postedAt: string | null;
-  /** The posted story itself, to delete it. */
-  story: Story | null;
-};
-
-/** Whoever's slides are playing: a poster's stories, or a vendor's photos. */
-type Teller = {
-  key: string;
-  name: string;
-  /** "Photographer · Fremont" for a vendor's photos. */
-  place: string | null;
-  avatarUrl: string | null;
-  vendor: { id: string; slug: string; category: string | null; city: string } | null;
-  personId: string | null;
-  isMine: boolean;
-  isSample: boolean;
-  /** Posted stories: marked watched as they play, and can be reported. */
-  live: boolean;
-  slides: Slide[];
-};
-
-function fromGroup(group: StoryGroup, someone: string): Teller {
-  return {
-    key: group.key,
-    name: group.name ?? someone,
-    place: null,
-    avatarUrl: null,
-    vendor: group.vendor
-      ? { id: group.vendor.id, slug: group.vendor.slug, category: null, city: '' }
-      : null,
-    personId: group.vendor ? null : group.authorId,
-    isMine: group.isMine,
-    isSample: group.isSample,
-    live: true,
-    slides: group.stories.map((story) => ({
-      id: story.id,
-      kind: story.kind,
-      url: story.url,
-      blurhash: null,
-      caption: story.caption,
-      postedAt: story.createdAt,
-      story,
-    })),
-  };
-}
 
 /**
  * The full-screen story viewer, like Instagram's and TikTok's: one photo or
@@ -156,34 +86,7 @@ export default function StoryScreen() {
 
   const someone = t('reels.someone');
   const tellers = useMemo((): Teller[] => {
-    if (!live) {
-      const v = vendorPage.data;
-      if (!v || !photos.data?.length) return [];
-      const category = v.categories[0] ? localized(v.categories[0].name) : null;
-      const caption = (v.tagline ?? v.bio)?.trim() || null;
-      return [
-        {
-          key: v.slug,
-          name: localized(v.name),
-          place: [category, v.city].filter(Boolean).join(' · '),
-          avatarUrl: photos.data[0].url.small,
-          vendor: { id: v.id, slug: v.slug, category, city: v.city },
-          personId: null,
-          isMine: false,
-          isSample: v.isSample,
-          live: false,
-          slides: photos.data.map((photo) => ({
-            id: photo.id,
-            kind: 'photo',
-            url: photo.url.large,
-            blurhash: photo.blurhash,
-            caption,
-            postedAt: null,
-            story: null,
-          })),
-        },
-      ];
-    }
+    if (!live) return vendorTeller(vendorPage.data, photos.data);
     const byKey = new Map((stories.data ?? []).map((group) => [group.key, group]));
     return (order ?? []).flatMap((key) => {
       const group = byKey.get(key);
@@ -360,7 +263,6 @@ export default function StoryScreen() {
     }),
   );
 
-  const barStyle = useAnimatedStyle(() => ({ width: `${progress.value * 100}%` }));
   const zoomStyle = useAnimatedStyle(() => ({ transform: [{ scale: zoom.value }] }));
   const dragStyle = useAnimatedStyle(() => ({
     transform: [{ translateY: dragY.value }, { scale: 1 - Math.min(dragY.value, 300) / 2000 }],
@@ -515,94 +417,17 @@ export default function StoryScreen() {
           />
         </View>
 
-        <View style={[styles.top, topShade, { paddingTop: Math.max(insets.top, Spacing.md) }]}>
-          <View style={styles.bars}>
-            {teller.slides.map((item, i) => (
-              <View key={item.id} style={styles.track}>
-                {i < slideIndex && <View style={[styles.bar, styles.barFull]} />}
-                {i === slideIndex && <Animated.View style={[styles.bar, barStyle]} />}
-              </View>
-            ))}
-          </View>
-          <View style={styles.header}>
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel={t('story.viewProfile', { name })}
-              onPress={openProfile}
-              disabled={!vendor && !personId}
-              style={styles.who}
-            >
-              {teller.avatarUrl ? (
-                <Image
-                  source={{ uri: teller.avatarUrl }}
-                  contentFit="cover"
-                  accessible={false}
-                  style={styles.avatar}
-                />
-              ) : (
-                <View style={[styles.avatar, styles.avatarPlain]}>
-                  {vendor ? (
-                    <Icon name="storefront-outline" size={18} color="#FFFFFF" />
-                  ) : (
-                    <AppText variant="caption" weight={700} color="onPhoto">
-                      {initials(name)}
-                    </AppText>
-                  )}
-                </View>
-              )}
-              <View style={styles.whoText}>
-                <View style={styles.nameRow}>
-                  <AppText
-                    weight={600}
-                    color="onPhoto"
-                    numberOfLines={1}
-                    style={[styles.shrink, styles.shadowed]}
-                  >
-                    {teller.isMine ? t('stories.yours') : name}
-                  </AppText>
-                  {teller.isSample && (
-                    <View style={styles.tag} accessible accessibilityLabel={t('sample.label')}>
-                      <AppText variant="caption" weight={700} color="onPhoto">
-                        {t('sample.tag')}
-                      </AppText>
-                    </View>
-                  )}
-                </View>
-                {subtitle ? (
-                  <AppText
-                    variant="caption"
-                    color="onPhoto"
-                    numberOfLines={1}
-                    style={[styles.soft, styles.shadowed]}
-                  >
-                    {subtitle}
-                  </AppText>
-                ) : null}
-              </View>
-            </Pressable>
-            {paused && <Icon name="pause" size={18} color="#FFFFFF" />}
-            {teller.live && !teller.isMine && (
-              <Pressable
-                accessibilityRole="button"
-                accessibilityLabel={t('reels.more')}
-                onPress={more}
-                hitSlop={8}
-                style={({ pressed }) => [styles.close, pressed && styles.closePressed]}
-              >
-                <Icon name="ellipsis-horizontal" size={22} color="#FFFFFF" />
-              </Pressable>
-            )}
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel={t('story.close')}
-              onPress={close}
-              hitSlop={8}
-              style={({ pressed }) => [styles.close, pressed && styles.closePressed]}
-            >
-              <Icon name="close" size={22} color="#FFFFFF" weight="semibold" />
-            </Pressable>
-          </View>
-        </View>
+        <StoryHeader
+          teller={teller}
+          slideIndex={slideIndex}
+          progress={progress}
+          subtitle={subtitle}
+          paused={paused}
+          topInset={insets.top}
+          onProfile={openProfile}
+          onMore={more}
+          onClose={close}
+        />
 
         <View
           style={[
@@ -675,57 +500,6 @@ export default function StoryScreen() {
   );
 }
 
-/** One clip: plays once with its progress bar, then hands on to the next. */
-function StoryVideo({
-  url,
-  paused,
-  progress,
-  onEnd,
-  label,
-}: {
-  url: string;
-  paused: boolean;
-  progress: SharedValue<number>;
-  onEnd: () => void;
-  label: string;
-}) {
-  const player = useVideoPlayer(url, (p) => {
-    p.muted = MUTED;
-    p.timeUpdateEventInterval = 0.1;
-  });
-  useEventListener(player, 'timeUpdate', ({ currentTime }) => {
-    if (player.duration > 0) {
-      progress.set(
-        withTiming(Math.min(1, currentTime / player.duration), {
-          duration: 100,
-          easing: Easing.linear,
-        }),
-      );
-    }
-  });
-  useEventListener(player, 'playToEnd', onEnd);
-  // A clip that won't load is skipped rather than leaving a black screen
-  useEventListener(player, 'statusChange', ({ status }) => {
-    if (status === 'error') onEnd();
-  });
-  useEffect(() => {
-    if (paused) player.pause();
-    else player.play();
-  }, [paused, player]);
-  return (
-    <VideoView
-      player={player}
-      style={StyleSheet.absoluteFill}
-      contentFit="cover"
-      nativeControls={false}
-      allowsPictureInPicture={false}
-      surfaceType="textureView"
-      accessible
-      accessibilityLabel={label}
-    />
-  );
-}
-
 const useStyles = makeStyles((Colors) => ({
   screen: {
     flex: 1,
@@ -756,91 +530,6 @@ const useStyles = makeStyles((Colors) => ({
   },
   zoneNext: {
     flex: 2,
-  },
-  top: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    gap: Spacing.md,
-    paddingHorizontal: Spacing.md,
-    paddingBottom: Spacing.xl,
-  },
-  bars: {
-    flexDirection: 'row',
-    gap: 4,
-  },
-  track: {
-    flex: 1,
-    height: 3,
-    borderRadius: 2,
-    overflow: 'hidden',
-    backgroundColor: 'rgba(255, 255, 255, 0.35)',
-  },
-  bar: {
-    height: 3,
-    backgroundColor: '#FFFFFF',
-  },
-  barFull: {
-    width: '100%',
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.sm,
-  },
-  who: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.sm,
-    minHeight: Sizes.tapTarget,
-  },
-  avatar: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    borderWidth: 1.5,
-    borderColor: '#FFFFFF',
-  },
-  avatarPlain: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: 'rgba(138, 28, 51, 0.9)',
-  },
-  whoText: {
-    flex: 1,
-  },
-  nameRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.xs,
-  },
-  shrink: {
-    flexShrink: 1,
-  },
-  tag: {
-    paddingHorizontal: 6,
-    paddingVertical: 1,
-    borderRadius: 4,
-    backgroundColor: 'rgba(255, 255, 255, 0.22)',
-  },
-  soft: {
-    opacity: 0.9,
-  },
-  // Text over photos gets a soft shadow so it reads on bright ones too.
-  shadowed: {
-    textShadowColor: 'rgba(0, 0, 0, 0.5)',
-    textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 4,
-  },
-  close: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: 'rgba(120, 120, 128, 0.36)',
   },
   closePressed: {
     backgroundColor: 'rgba(120, 120, 128, 0.56)',
