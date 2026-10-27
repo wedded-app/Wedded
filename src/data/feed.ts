@@ -10,7 +10,7 @@ import { asLocalizedText, type LocalizedText } from '@/i18n/localized';
 import { supabase } from '@/lib/supabase';
 
 import { photoUrl, type VendorPhoto } from './vendor-media';
-import type { VendorPrice } from './vendors';
+import { priceOf, type VendorPrice } from './vendors';
 
 export type FeedPost = {
   vendorId: string;
@@ -27,59 +27,13 @@ export type FeedPost = {
   photos: VendorPhoto[];
 };
 
-type Row = {
-  id: string;
-  storage_path: string;
-  width: number;
-  height: number;
-  blurhash: string | null;
-  is_cover: boolean;
-  sort_order: number;
-  event_slug: string | null;
-  credit_text: string | null;
-  created_at: string;
-  vendor: {
-    id: string;
-    slug: string;
-    name: string;
-    tagline: string | null;
-    bio: string | null;
-    city: string;
-    founding_number: number | null;
-    is_sample: boolean;
-    price_display: string;
-    price_from: number | null;
-    price_to: number | null;
-    price_unit: string | null;
-    vendor_categories: {
-      position: number;
-      category: { slug: string; name: unknown; group_slug: string };
-    }[];
-  };
-};
-
-const PRICE_UNITS = ['event', 'hour', 'person', 'plate', 'hand', 'turban', 'day'] as const;
-
-function priceOf(v: Row['vendor']): VendorPrice | null {
-  const unit = PRICE_UNITS.find((u) => u === v.price_unit);
-  if (v.price_display === 'starting_at' && v.price_from) {
-    return { kind: 'starting_at', amount: v.price_from, unit };
-  }
-  if (v.price_display === 'range' && v.price_from && v.price_to) {
-    return { kind: 'range', from: v.price_from, to: v.price_to, unit };
-  }
-  if (v.price_display === 'packages') return { kind: 'packages' };
-  if (v.price_display === 'contact') return { kind: 'contact' };
-  return null;
-}
-
 async function fetchFeed(): Promise<FeedPost[]> {
   const { data, error } = await supabase
     .from('vendor_media')
     .select(
       `id, storage_path, width, height, blurhash, is_cover, sort_order, event_slug, credit_text, created_at,
-       vendor:vendors!vendor_media_vendor_id_fkey!inner(id, slug, name, tagline, bio, city,
-         founding_number, is_sample, price_display, price_from, price_to, price_unit, status,
+       vendor:vendors!vendor_media_vendor_id_fkey!inner(id, slug, name, tagline, bio, base_city:cities(name),
+         founding_number, is_sample, price_display, price_from_cents, price_to_cents, price_unit, status,
          vendor_categories(position, category:categories(slug, name, group_slug)))`,
     )
     .eq('vendor.status', 'published')
@@ -88,7 +42,7 @@ async function fetchFeed(): Promise<FeedPost[]> {
   if (error) throw error;
 
   const posts = new Map<string, FeedPost>();
-  for (const row of data as unknown as Row[]) {
+  for (const row of data) {
     const v = row.vendor;
     let post = posts.get(v.id);
     if (!post) {
@@ -98,7 +52,7 @@ async function fetchFeed(): Promise<FeedPost[]> {
         slug: v.slug,
         name: { en: v.name },
         caption: v.tagline ?? v.bio,
-        city: v.city,
+        city: v.base_city.name,
         foundingNumber: v.founding_number,
         isSample: v.is_sample,
         category: primary
