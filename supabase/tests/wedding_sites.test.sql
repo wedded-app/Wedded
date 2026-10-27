@@ -106,7 +106,7 @@ select is(
 select pg_temp.as_user('d9000000-0000-4000-8000-00000000000d');
 select throws_ok(
   $$ select public.site_page('asha-ravi') $$,
-  'P0002', 'site_not_found', 'A stranger can''t see a draft'
+  'PGRST', '{"code":"site_not_found","message":"site_not_found"}', 'A stranger can''t see a draft'
 );
 select is_empty(
   $$ select 1 from public.wedding_sites where wedding_id = pg_temp.id('wedding') $$,
@@ -279,7 +279,7 @@ select is(
 );
 select throws_ok(
   $$ select public.site_page('asha-ravi-nope') $$,
-  'P0002', 'site_not_found', 'An unknown link'
+  'PGRST', '{"code":"site_not_found","message":"site_not_found"}', 'An unknown link'
 );
 
 -- The password ----------------------------------------------------------------------------------
@@ -369,7 +369,7 @@ select is(
 );
 select throws_ok(
   $$ select public.site_page('asha-ravi') $$,
-  'P0002', 'site_not_found', 'and the old link stops working'
+  'PGRST', '{"code":"site_not_found","message":"site_not_found"}', 'and the old link stops working'
 );
 
 -- The cover photo -----------------------------------------------------------------------------------
