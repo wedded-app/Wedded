@@ -9,7 +9,12 @@ import { IconLine } from '@/components/icon-line';
 import { Screen } from '@/components/screen';
 import { SheetHeader } from '@/components/sheet-header';
 import { Sizes, Spacing } from '@/constants/theme';
-import { useInviteToEvent, useLogInviteSends } from '@/data/guests';
+import {
+  useInviteToEvent,
+  useLogInviteSends,
+  useWeddingRsvpToken,
+  weddingRsvpLink,
+} from '@/data/guests';
 import { useCreateVaultInvite, useOpenMemoryVault } from '@/data/memory-vault';
 import { cardFile } from '@/features/cards/card-export';
 import { whoOf } from '@/features/wed/guest-details';
@@ -47,6 +52,7 @@ export default function WedSendSheet() {
   const send = useWed((s) => s.approvals.find((a) => a.id === id)?.guests);
   const message = useWed((s) => s.approvals.find((a) => a.id === id)?.message ?? '');
   const list = useGuestList(send?.to);
+  const weddingToken = useWeddingRsvpToken(list.status === 'ready' ? list.weddingId : null);
   const invite = useInviteToEvent();
   const logSends = useLogInviteSends();
   const openVault = useOpenMemoryVault();
@@ -125,7 +131,12 @@ export default function WedSendSheet() {
           };
         }
       }
-      const link = linkFor(send, to, prepared.current.vaultUrl);
+      const link = linkFor(
+        send,
+        to,
+        prepared.current.vaultUrl,
+        weddingRsvpLink(weddingToken.data ?? null),
+      );
       const body = link ? `${message}\n\n${t(`wedSend.${link.line}`, { url: link.url })}` : message;
       const subject = t(send.vault ? 'wedSend.vaultSubject' : 'wedSend.subject');
       const result = await openComposer(channel, to, body, prepared.current.files, subject);

@@ -70,20 +70,29 @@ describe('sending to guests', () => {
     expect(namesPreview([priya])).toEqual({ names: ['Priya'], more: 0 });
   });
 
-  it("ends each person's own text with their RSVP link, and every vault message with its link", () => {
+  it("ends each person's own text with their RSVP link, group texts and emails with the wedding's, and vault messages with its link", () => {
     const cards: GuestSend = { to: { list: 'Mehndi' }, events: ['jaago'], channel: 'each' };
-    expect(linkFor(cards, [priya], null)).toEqual({
+    const wedding = 'https://wedded.app/rsvp/w/t';
+    expect(linkFor(cards, [priya], null, wedding)).toEqual({
       line: 'rsvpLine',
       url: 'https://wedded.app/rsvp/1',
     });
-    expect(linkFor({ ...cards, channel: 'group' }, [priya, aman], null)).toBeNull();
-    expect(linkFor({ ...cards, channel: 'email' }, [priya], null)).toBeNull();
+    expect(linkFor({ ...cards, channel: 'group' }, [priya, aman], null, wedding)).toEqual({
+      line: 'weddingRsvpLine',
+      url: wedding,
+    });
+    expect(linkFor({ ...cards, channel: 'email' }, [priya], null, wedding)).toEqual({
+      line: 'weddingRsvpLine',
+      url: wedding,
+    });
+    // The couple turned the wedding link off
+    expect(linkFor({ ...cards, channel: 'group' }, [priya, aman], null, null)).toBeNull();
     const vault: GuestSend = { ...cards, events: [], vault: true };
-    expect(linkFor(vault, [priya], 'https://wedded.app/join-vault/t')).toEqual({
+    expect(linkFor(vault, [priya], 'https://wedded.app/join-vault/t', wedding)).toEqual({
       line: 'vaultLine',
       url: 'https://wedded.app/join-vault/t',
     });
-    expect(linkFor({ ...vault, channel: 'group' }, [priya, aman], 'https://v')).toEqual({
+    expect(linkFor({ ...vault, channel: 'group' }, [priya, aman], 'https://v', wedding)).toEqual({
       line: 'vaultLine',
       url: 'https://v',
     });

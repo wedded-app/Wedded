@@ -82,16 +82,20 @@ export function namesPreview(recipients: Recipient[], show = 3) {
   };
 }
 
-/** The link a batch ends with: the vault's for everyone, or each person's own RSVP link when texted one by one. */
+/**
+ * The link a batch ends with: the vault's for everyone, each person's own RSVP
+ * link when texted one by one, else the wedding's one RSVP link (#337), where
+ * each guest types their number (none while the couple has it off).
+ */
 export function linkFor(
   send: GuestSend,
   to: Recipient[],
   vaultUrl: string | null,
-): { line: 'vaultLine' | 'rsvpLine'; url: string } | null {
+  weddingRsvpUrl: string | null,
+): { line: 'vaultLine' | 'rsvpLine' | 'weddingRsvpLine'; url: string } | null {
   if (send.vault) return vaultUrl ? { line: 'vaultLine', url: vaultUrl } : null;
-  return send.channel === 'each' && to.length === 1
-    ? { line: 'rsvpLine', url: to[0].rsvpUrl }
-    : null;
+  if (send.channel === 'each' && to.length === 1) return { line: 'rsvpLine', url: to[0].rsvpUrl };
+  return weddingRsvpUrl ? { line: 'weddingRsvpLine', url: weddingRsvpUrl } : null;
 }
 
 /** False on the web, in the iOS Simulator, and on a phone with no texting or no Mail account. */
