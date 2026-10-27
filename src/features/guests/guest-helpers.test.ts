@@ -4,7 +4,10 @@ import {
   answerLabel,
   contactToGuest,
   guestTotals,
+  inviteChanges,
   matchesSearch,
+  retick,
+  tickedIds,
   totalsLine,
 } from './guest-helpers';
 
@@ -92,5 +95,30 @@ describe('answerLabel', () => {
     expect(answerLabel('yes', 4, t)).toBe('guests.answer.yes 4');
     expect(answerLabel('no', 0, t)).toBe('guests.answer.no');
     expect(answerLabel('pending', null, t)).toBe('guests.answer.pending');
+  });
+});
+
+describe('invite ticks', () => {
+  const everyone = ['a', 'b', 'x', 'y'];
+
+  it('starts with whoever is invited ticked, and saves nothing', () => {
+    const invited = new Set(['a', 'y']);
+    expect(tickedIds(everyone, invited, new Map())).toEqual(['a', 'y']);
+    expect(inviteChanges(new Map(), invited)).toEqual({ fresh: [], removed: [] });
+  });
+
+  it('invites the newly ticked and takes off the unticked', () => {
+    const invited = new Set(['a', 'y']);
+    const ticks = retick(new Map(), ['a', 'y'], ['y', 'b']);
+    expect(tickedIds(everyone, invited, ticks)).toEqual(['b', 'y']);
+    expect(inviteChanges(ticks, invited)).toEqual({ fresh: ['b'], removed: ['a'] });
+  });
+
+  it("leaves someone else's change alone while the sheet is open", () => {
+    // The couple ticks b; meanwhile a partner invites x and takes y off
+    const ticks = retick(new Map(), ['a', 'y'], ['a', 'y', 'b']);
+    const live = new Set(['a', 'x']);
+    expect(tickedIds(everyone, live, ticks)).toEqual(['a', 'b', 'x']);
+    expect(inviteChanges(ticks, live)).toEqual({ fresh: ['b'], removed: [] });
   });
 });
