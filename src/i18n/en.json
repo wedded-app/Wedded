@@ -1279,6 +1279,12 @@
     "blocked": "Wedded can't see your photos. Turn on Photos for Wedded in Settings.",
     "locked": "The couple has closed the vault to new photos. You can still look at them and save them.",
     "invite": "Invite guests",
+    "send": {
+      "title": "Send to your guests",
+      "who": "Who gets it?",
+      "event": "Everyone at the {{event}}",
+      "noGuests": "Add people to your guest list first, then send them the vault from here."
+    },
     "inviteMessage": "Add the photos you took at our wedding to our Memory Vault on Wedded: {{link}}",
     "link": {
       "failed": "We couldn't make the link. Check your internet, then try again.",
