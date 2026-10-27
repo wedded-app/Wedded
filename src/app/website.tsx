@@ -150,7 +150,11 @@ function Builder({
           </Glass>
         </Pressable>
 
-        {canEdit && <WebsiteAsk site={site} weddingId={weddingId} />}
+        {canEdit ? (
+          <WebsiteAsk site={site} weddingId={weddingId} />
+        ) : (
+          <AppText color="text2">{t('website.cantMake')}</AppText>
+        )}
 
         {canEdit && (
           <ListSection header={t('website.startHere')} inset>
