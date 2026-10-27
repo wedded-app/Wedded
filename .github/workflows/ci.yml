@@ -71,7 +71,7 @@ jobs:
             exit 1
           fi
 
-  # Edge Functions are Deno code: type-check, lint and format-check each one
+  # Edge Functions are Deno code: type-check, lint, format-check and test each one
   functions:
     name: Edge Functions
     runs-on: ubuntu-latest
@@ -81,17 +81,17 @@ jobs:
       - uses: denoland/setup-deno@v2
         with:
           deno-version: v2.x
-      - name: Check, lint and format-check every function
+      - name: Check, lint, format-check and test every function
         shell: bash
         run: |
           for dir in supabase/functions/*/; do
             case "$dir" in */_*) continue ;; esac
             echo "::group::$dir"
-            (cd "$dir" && deno check index.ts && deno lint && deno fmt --check)
+            (cd "$dir" && deno check index.ts && deno lint && deno fmt --check && deno test --allow-env --permit-no-files)
             echo "::endgroup::"
           done
           echo "::group::supabase/functions/_shared/"
-          (cd supabase/functions/_shared && deno lint && deno fmt --check)
+          (cd supabase/functions/_shared && deno lint && deno fmt --check && deno test --allow-env)
           echo "::endgroup::"
 
   # AWS infrastructure (infra/): type-check, test the photo resizing and build
