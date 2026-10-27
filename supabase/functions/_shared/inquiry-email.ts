@@ -1,8 +1,8 @@
 // The inquiry email and how it's sent.
 //
 // Who it goes to (vision §8, S11):
-// - to the vendor, with reply-to set to the family and a copy to the family;
-//   founders get a blind copy
+// - to the vendor, with reply-to set to the family; founders get a blind copy,
+//   and the family its own copy with its own stop link (email-links.ts)
 // - relay: the vendor doesn't use email, so it goes to the founders, who
 //   forward it by WhatsApp or text
 // - test inbox: while there's no verified sending domain (Phase 5), set
@@ -347,7 +347,7 @@ ${
   return {
     from: env('INQUIRY_FROM') ?? 'Wedded App <onboarding@resend.dev>',
     to,
-    cc: sender.email && !testInbox ? [sender.email] : [],
+    cc: [],
     bcc: testInbox ? [] : founders.filter((address) => !to.includes(address)),
     replyTo: replyable && sender.email ? [sender.email] : [],
     subject,
