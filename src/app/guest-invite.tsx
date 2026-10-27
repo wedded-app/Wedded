@@ -15,7 +15,13 @@ import {
   useInviteToEvent,
   useUninviteFromEvent,
 } from '@/data/guests';
-import { answerLabel } from '@/features/guests/guest-helpers';
+import {
+  answerLabel,
+  inviteChanges,
+  retick,
+  tickedIds,
+  type InviteTicks,
+} from '@/features/guests/guest-helpers';
 import { closeGuestSheet, confirm, PickSheet } from '@/features/guests/pick-sheet';
 import { usePlanView } from '@/features/planner/use-plan-view';
 import { localized } from '@/i18n/localized';
@@ -38,8 +44,8 @@ export default function GuestInviteScreen() {
   const lists = useGuestLists(weddingId);
   const invite = useInviteToEvent();
   const uninvite = useUninviteFromEvent();
-  // Null until the first tick, so the already invited show ticked once guests load
-  const [picked, setPicked] = useState<string[] | null>(null);
+  // Only the couple's own changes, so others' changes while it's open stay
+  const [ticks, setTicks] = useState<InviteTicks>(() => new Map());
   const [error, setError] = useState<string>();
   const event = view.chosen.find((e) => e.slug === slug);
 
@@ -62,10 +68,15 @@ export default function GuestInviteScreen() {
           : undefined,
     };
   });
-  const ticked = picked ?? [...invites.keys()];
-  const fresh = ticked.filter((id) => !invites.has(id));
-  const removed = [...invites.keys()].filter((id) => !ticked.includes(id));
-  const tickAll = (ids: string[]) => setPicked([...new Set([...ticked, ...ids])]);
+  const invitedIds = new Set(invites.keys());
+  const ticked = tickedIds(
+    everyone.map((guest) => guest.id),
+    invitedIds,
+    ticks,
+  );
+  const { fresh, removed } = inviteChanges(ticks, invitedIds);
+  const choose = (next: string[]) => setTicks(retick(ticks, ticked, next));
+  const tickAll = (ids: string[]) => choose([...new Set([...ticked, ...ids])]);
 
   const save = async () => {
     if (!weddingId) return;
@@ -130,7 +141,7 @@ export default function GuestInviteScreen() {
       intro={event ? t('guests.invite.intro') : undefined}
       items={event ? items : []}
       picked={ticked}
-      onChange={setPicked}
+      onChange={choose}
       empty={empty}
       footer={
         event && everyone.length > 0 ? (

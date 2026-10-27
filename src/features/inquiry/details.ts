@@ -69,11 +69,23 @@ export function venueDetails(answers: VenueAnswers, isTour: boolean): Record<str
 const pick = <T>(value: unknown, allowed: readonly T[]): T | null =>
   allowed.includes(value as T) ? (value as T) : null;
 
+/** A real yyyy-mm-dd day, today or later: visit times that have passed can't be asked for. */
+function upcomingDay(value: unknown, today: string): value is string {
+  if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+  const [year, month, day] = value.split('-').map(Number);
+  const date = new Date(year, month - 1, day);
+  const real =
+    date.getFullYear() === year && date.getMonth() === month - 1 && date.getDate() === day;
+  return real && value >= today;
+}
+
 /**
  * A sent inquiry's details back into the venue answers, so "Ask again" starts
- * from what they asked last time (#352). Anything unexpected is left blank.
+ * from what they asked last time (#352). They come in through a link, so
+ * anything unexpected is left blank, and visit times only on real days still
+ * ahead (`today` is the phone's yyyy-mm-dd).
  */
-export function venueAnswersFrom(details: unknown): VenueAnswers {
+export function venueAnswersFrom(details: unknown, today: string): VenueAnswers {
   const d = (details && typeof details === 'object' ? details : {}) as Record<string, unknown>;
   const slots = Array.isArray(d.tourSlots) ? (d.tourSlots as Record<string, unknown>[]) : [];
   return {
@@ -84,7 +96,7 @@ export function venueAnswersFrom(details: unknown): VenueAnswers {
     sameDay: typeof d.sameDay === 'boolean' ? d.sameDay : null,
     tourSlots: slots.slice(0, 3).flatMap((slot) => {
       const part = pick(slot?.part, ['morning', 'afternoon', 'evening'] as const);
-      return typeof slot?.date === 'string' && part ? [{ date: slot.date, part }] : [];
+      return upcomingDay(slot?.date, today) && part ? [{ date: slot.date, part }] : [];
     }),
   };
 }

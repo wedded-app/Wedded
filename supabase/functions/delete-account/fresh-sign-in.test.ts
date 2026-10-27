@@ -1,5 +1,4 @@
-// deno test supabase/functions/delete-account (not run in CI; CI type-checks,
-// lints and format-checks the function).
+// In the function's folder: deno test --allow-env (CI runs it).
 import { signedInRecently } from './fresh-sign-in.ts';
 
 const now = 1_800_000_000;

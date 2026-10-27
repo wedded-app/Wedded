@@ -40,13 +40,17 @@ Until then, the demo sends codes through the founders' Gmail, `weddedapp.team@gm
 ## 4. Email for inquiries (you, then Claude)
 
 1. Create a free account at [resend.com](https://resend.com) with the shared founders' email, and create an API key (**Sending access** only).
-2. Set the server settings (README, "Edge Functions"):
+2. Set the server settings. On the AWS server (the demo since 2026-10-17), put them in Parameter Store with the `put` from infra/README.md ("Set it up", step 3), then deploy main again: merge anything, or run the demo workflow by hand (`gh workflow run demo.yml --repo wedded-app/Wedded`). `npm run backend -- deploy` ships the checkout it runs from, so run it only from an up-to-date `main`:
 
 ```bash
-supabase secrets set RESEND_API_KEY=<key> FOUNDERS_EMAIL=<founder1>,<founder2> INQUIRY_TEST_INBOX=<the Resend account email>
+put functions/RESEND_API_KEY '<key>'
+put functions/INQUIRY_TEST_INBOX <the Resend account email>
+put functions/FOUNDERS_EMAIL <founder1>,<founder2>
 ```
 
-Without a verified domain, Resend only delivers to the account's own email, so `INQUIRY_TEST_INBOX` sends every inquiry there. That's what the demo shows: the booking sheet arriving in our inbox. Once the domain is verified (Phase 5), set `INQUIRY_FROM` and remove `INQUIRY_TEST_INBOX`.
+On a hosted Supabase project it's `supabase secrets set RESEND_API_KEY=<key> FOUNDERS_EMAIL=<founder1>,<founder2> INQUIRY_TEST_INBOX=<the Resend account email>`.
+
+Without a verified domain, Resend only delivers to the account's own email, so `INQUIRY_TEST_INBOX` sends every inquiry and chat email there alone (no copy to the family or the founders), from Resend's test address `onboarding@resend.dev`. That's what the demo shows: the booking sheet arriving in our inbox. Once the domain is verified (Phase 5), set `INQUIRY_FROM` to an address on it and remove `INQUIRY_TEST_INBOX`.
 
 ## 5. Deploy the server code
 

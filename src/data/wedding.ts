@@ -27,6 +27,8 @@ import {
 } from '@/features/planner/plan';
 import { supabase } from '@/lib/supabase';
 
+import { siteKeys } from './website';
+
 export type WeddingRole = 'owner' | 'editor' | 'suggester';
 /** The roles an invite link can give. */
 export type InviteRole = 'editor' | 'suggester';
@@ -407,7 +409,13 @@ export function useWeddingPlan() {
     onError: (_error, _vars, context) => {
       if (context?.previous) queryClient.setQueryData(weddingKeys.mine(userId), context.previous);
     },
-    onSettled: () => queryClient.invalidateQueries({ queryKey: weddingKeys.mine(userId) }),
+    onSettled: (_data, _error, { weddingId, change }) => {
+      // A draft website's link follows the couple's names (#411)
+      if (change.kind === 'title') {
+        void queryClient.invalidateQueries({ queryKey: siteKeys.mine(weddingId) });
+      }
+      return queryClient.invalidateQueries({ queryKey: weddingKeys.mine(userId) });
+    },
   });
 
   if (!wedding) {

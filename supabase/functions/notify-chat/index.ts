@@ -85,7 +85,7 @@ export function buildChatEmail(claim: Claim): OutgoingEmail | null {
   const testInbox = env('INQUIRY_TEST_INBOX');
   const founders = list('FOUNDERS_EMAIL');
   const site = env('SITE_URL');
-  const from = env('INQUIRY_FROM') ?? 'Wedded App <inquiries@example.com>';
+  const from = env('INQUIRY_FROM') ?? 'Wedded App <onboarding@resend.dev>';
   const family = claim.family_name ?? 'A family';
   const toVendor = claim.notify_side === 'vendor';
   const needsClaim = toVendor && !claim.vendor_has_account;
@@ -188,7 +188,7 @@ export function groupEmailReason(claim: GroupClaim): string {
 export function buildGroupEmail(claim: GroupClaim): OutgoingEmail {
   const testInbox = env('INQUIRY_TEST_INBOX');
   const site = env('SITE_URL');
-  const from = env('INQUIRY_FROM') ?? 'Wedded App <inquiries@example.com>';
+  const from = env('INQUIRY_FROM') ?? 'Wedded App <onboarding@resend.dev>';
   const who = claim.last_sender_name ?? 'Someone';
   const what = claim.last_kind === 'photo' ? 'sent a photo' : 'wrote';
   const preview = claim.last_body ? claim.last_body.slice(0, 280) : null;

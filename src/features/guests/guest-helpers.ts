@@ -73,3 +73,37 @@ export function answerLabel(rsvp: Rsvp, coming: number | null, t: Translate): st
   if (rsvp === 'yes') return t('guests.answer.yes', { count: coming ?? 1 });
   return rsvp === 'no' ? t('guests.answer.no') : t('guests.answer.pending');
 }
+
+/**
+ * Who's invited to an event, as ticks: only what the couple changed is kept
+ * (id → ticked), so an invite someone else adds or takes off while the sheet
+ * is open stays as the server has it, rather than being undone on Save.
+ */
+export type InviteTicks = Map<string, boolean>;
+
+/** The ids ticked now: their own change, else whether they're invited. */
+export function tickedIds(ids: string[], invited: Set<string>, ticks: InviteTicks): string[] {
+  return ids.filter((id) => ticks.get(id) ?? invited.has(id));
+}
+
+/** Record a new set of ticks: only the ids that changed from `before`. */
+export function retick(ticks: InviteTicks, before: string[], after: string[]): InviteTicks {
+  const was = new Set(before);
+  const now = new Set(after);
+  const next = new Map(ticks);
+  for (const id of now) if (!was.has(id)) next.set(id, true);
+  for (const id of was) if (!now.has(id)) next.set(id, false);
+  return next;
+}
+
+/** What Save does: invite the newly ticked, take off the unticked, against the live invites. */
+export function inviteChanges(
+  ticks: InviteTicks,
+  invited: Set<string>,
+): { fresh: string[]; removed: string[] } {
+  const changed = [...ticks];
+  return {
+    fresh: changed.filter(([id, on]) => on && !invited.has(id)).map(([id]) => id),
+    removed: changed.filter(([id, on]) => !on && invited.has(id)).map(([id]) => id),
+  };
+}

@@ -13,8 +13,7 @@
 import { createClient } from '@supabase/supabase-js';
 import { isServiceRequest } from '../_shared/request-security.ts';
 
-import { inquiryEmailFor } from '../_shared/email-links.ts';
-import { sendEmail } from '../_shared/inquiry-email.ts';
+import { sendInquiry } from '../_shared/email-links.ts';
 import type { Contact, GuestBand, InquiryInput } from '../_shared/inquiry-input.ts';
 
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL') ?? '';
@@ -125,7 +124,7 @@ Deno.serve(async (request) => {
         phone: row.sender_phone,
         sendAgain: false,
       };
-      const email = await inquiryEmailFor(admin, {
+      const providerId = await sendInquiry(admin, {
         inquiryId: row.id,
         channel: row.channel === 'relay' ? 'relay' : 'email',
         vendorName: vendor.name,
@@ -145,7 +144,6 @@ Deno.serve(async (request) => {
           city: profile?.city ?? place,
         },
       });
-      const providerId = await sendEmail(email, row.id);
       await admin
         .from('inquiries')
         .update({
