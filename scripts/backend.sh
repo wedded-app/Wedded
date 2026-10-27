@@ -47,20 +47,43 @@ on_server() {
   }
 }
 
+# Deletes the web export's scripts in the bucket that this export doesn't have and that no
+# export has uploaded for 2 days. Until then a page opened before a deploy can still load
+# the script for its next screen, which a new export renames.
+prune_web_scripts() {
+  local current cutoff stale
+  current=$(cd "$WEB" && find _expo/static -type f | jq -R . | jq -s .) || return
+  cutoff=$(date -u -d '2 days ago' +%FT%T 2>/dev/null || date -u -v-2d +%FT%T)
+  stale=$(aws s3api list-objects-v2 --bucket "$1" --prefix app/web/_expo/static/ --output json \
+    --query 'Contents[].{Key: Key, LastModified: LastModified}' |
+    jq -c --argjson current "$current" --arg cutoff "$cutoff" '[.[]? | select(.LastModified < $cutoff)
+      | select(.Key | ltrimstr("app/web/") | IN($current[]) | not) | {Key}] | .[:1000]') || return
+  [ "$stale" = '[]' ] ||
+    aws s3api delete-objects --bucket "$1" --delete "{\"Objects\": $stale, \"Quiet\": true}" >/dev/null
+}
+
 case "${1:-}" in
   deploy)
     bucket=$(output Bucket)
     aws s3 sync supabase "s3://$bucket/app/supabase" --delete --quiet \
       --exclude '.temp/*' --exclude '.branches/*' --exclude 'tests/*'
     aws s3 sync infra/backend "s3://$bucket/app/infra/backend" --delete --quiet
-    [ -z "${WEB:-}" ] || aws s3 sync "$WEB" "s3://$bucket/app/web" --delete --quiet
+    if [ -n "${WEB:-}" ]; then
+      # The pages mirror the export; its scripts stay a while (prune_web_scripts)
+      aws s3 sync "$WEB" "s3://$bucket/app/web" --delete --exclude '_expo/static/*' --quiet
+      aws s3 sync "$WEB/_expo/static" "s3://$bucket/app/web/_expo/static" --quiet
+      prune_web_scripts "$bucket" ||
+        echo "Couldn't remove the web app's old scripts; the next deploy tries again." >&2
+    fi
     seed=$([ "${2:-}" = --seed ] && echo 1 || true)
     # A new server may still be on its first boot, which installs the AWS CLI. Without
-    # --exact-timestamps a download skips a changed file of the same size (most web pages)
+    # --exact-timestamps a download skips a changed file of the same size (most web pages).
+    # New web scripts come down first, so no page arrives before the scripts it loads
     on_server "cloud-init status --wait >/dev/null || {
         echo \"The server's first boot failed: see /var/log/cloud-init-output.log and /opt/wedded/setup.log\" >&2
         exit 1
       }
+      aws s3 sync s3://$bucket/app/web/_expo/static /opt/wedded/app/web/_expo/static --exact-timestamps --quiet --region $AWS_REGION &&
       aws s3 sync s3://$bucket/app /opt/wedded/app --delete --exact-timestamps --quiet --region $AWS_REGION &&
       DOMAIN=$(output Domain) STORAGE_BUCKET=$bucket AWS_REGION=$AWS_REGION SEED=$seed \
       bash /opt/wedded/app/infra/backend/deploy.sh"
