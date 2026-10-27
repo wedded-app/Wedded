@@ -85,7 +85,8 @@ export default function VendorProfileScreen() {
   const { width } = useWindowDimensions();
   const scroll = useNavScroll();
   // A draft's page is hidden from everyone, its own people too, so say it's theirs
-  const mine = useMyBusinesses().businesses.find((b) => b.slug === slug);
+  const myBusinesses = useMyBusinesses();
+  const mine = myBusinesses.businesses.find((b) => b.slug === slug);
   const navTop = useNavTop();
   const reduceMotion = useReducedMotion();
   // Side by side, a Punjabi "Save" breaks mid-word at very large text sizes.
@@ -142,7 +143,8 @@ export default function VendorProfileScreen() {
 
   let hero = null;
   let body;
-  if (vendor.isPending) {
+  // Not found waits for their businesses too, so their own draft never says "isn't listed"
+  if (vendor.isPending || (!vendor.data && myBusinesses.isPending)) {
     body = <StateView state="loading" style={{ marginTop: navTop }} />;
   } else if (vendor.isError) {
     body = (
