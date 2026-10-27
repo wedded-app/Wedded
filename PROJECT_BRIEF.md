@@ -20,7 +20,7 @@ Each task's issue has the owner as its assignee, a tab label (`tab-1`, `tab-2` o
 
 1. **Find your tab.** The founder says it when starting the session ("You're Fezy Tab 1"). Your tasks are the open issues assigned to that founder with that tab's label. If the founder didn't say, ask.
 2. **Pick the first `now` task that isn't waiting on anything.** Never start a task that's still waiting, already has an open PR, or belongs to the other founder.
-3. **Say which task a PR finishes.** Put `Closes #<issue>` in the PR description, so the task closes and its card moves to Done when the PR merges. A PR that does only part of a task says `Part of #<issue>`.
+3. **Say which task a PR finishes.** Put `Closes #<issue>` in the PR description to link the task. The bot's merge doesn't close it, so close it by hand once the PR merges (CLAUDE.md, Git workflow). A PR that does only part of a task says `Part of #<issue>`.
 4. **Stay in your tab's files.** If a task needs something on the other tab's side, keep it small, or add a task for that tab and tell the founder.
 5. **New work becomes a task:** `gh issue create --title "<what>" --assignee <login> --label tab-2,next` (Fezy is `faizant316`, Kirat is `gurkiratbagri13-netizen`). If it needs another task first, add a "blocked by" link on the issue page.
 6. **`founders` tasks are for the founder,** not you: remind them when one is blocking your work.
