@@ -1,5 +1,4 @@
-// deno test supabase/functions/_shared/stripe.test.ts --config supabase/functions/pay-deposit/deno.json
-// (not run in CI; CI lints and format-checks the shared code).
+// In supabase/functions/_shared: deno test --allow-env (CI runs it).
 import { canReusePayment, depositDescription, paymentStatus, readStripeEvent } from './stripe.ts';
 
 function expectEqual(actual: unknown, expected: unknown, what: string) {
