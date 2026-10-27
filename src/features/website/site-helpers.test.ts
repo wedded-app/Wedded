@@ -164,14 +164,24 @@ describe('slugify', () => {
 });
 
 describe('design colours', () => {
-  it('keeps small capitals readable on every page', () => {
+  it('keeps small capitals readable on every page and card', () => {
     for (const design of SITE_DESIGNS) {
       for (const p of design.palettes) {
         expect(contrast(capsColor(p), p.paper)).toBeGreaterThanOrEqual(4.5);
+        expect(contrast(capsColor(p, p.card), p.card)).toBeGreaterThanOrEqual(4.5);
         expect(contrast(p.ink, p.paper)).toBeGreaterThanOrEqual(7);
         expect(contrast(p.soft, p.paper)).toBeGreaterThanOrEqual(4.5);
+        expect(contrast(p.soft, p.card)).toBeGreaterThanOrEqual(4.5);
         expect(contrast(p.onInk, p.ink)).toBeGreaterThanOrEqual(4.5);
       }
     }
+  });
+
+  it('picks the card colour for capitals on a card only when the page colour is too faint there', () => {
+    const sage = SITE_DESIGNS.find((d) => d.id === 'classic')!.palettes.find(
+      (p) => p.id === 'sage',
+    )!;
+    expect(contrast(capsColor(sage), sage.card)).toBeLessThan(4.5);
+    expect(capsColor(sage, sage.card)).not.toBe(capsColor(sage));
   });
 });

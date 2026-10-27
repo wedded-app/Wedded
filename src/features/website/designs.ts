@@ -414,12 +414,10 @@ export function contrast(a: string, b: string): number {
 
 /**
  * The colour for the small capitals over each part: the accent when it reads
- * well on the page (4.5:1, for elders), else the drawing's second colour,
- * else the soft text colour. Gold on cream is lovely as a drawing but too
- * faint for small words.
+ * well on what's behind it (4.5:1, for elders; the page, or a card), else the
+ * drawing's second colour, else the soft text colour. Gold on cream is lovely
+ * as a drawing but too faint for small words.
  */
-export function capsColor(palette: SitePalette): string {
-  return (
-    [palette.accent, palette.accent2].find((c) => contrast(c, palette.paper) >= 4.5) ?? palette.soft
-  );
+export function capsColor(palette: SitePalette, on: string = palette.paper): string {
+  return [palette.accent, palette.accent2].find((c) => contrast(c, on) >= 4.5) ?? palette.soft;
 }

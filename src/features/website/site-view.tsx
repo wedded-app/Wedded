@@ -295,7 +295,7 @@ function EventCard({
       ) : null}
       {event.dressCode || event.dressColors.length > 0 ? (
         <View style={styles.wear}>
-          <Caps look={look} small left>
+          <Caps look={look} small left onCard>
             {t('website.site.whatToWear')}
           </Caps>
           <View
@@ -480,11 +480,14 @@ function Caps({
   children,
   small,
   left,
+  onCard,
 }: {
   look: Look;
   children: string;
   small?: boolean;
   left?: boolean;
+  /** Drawn on a card, so it must read on the card's colour */
+  onCard?: boolean;
 }) {
   const size = small ? 11 : 12;
   return (
@@ -495,7 +498,7 @@ function Caps({
         fontSize: size,
         lineHeight: size * 1.5,
         letterSpacing: size * 0.2,
-        color: capsColor(look.palette),
+        color: capsColor(look.palette, onCard ? look.palette.card : look.palette.paper),
         textAlign: left ? 'left' : 'center',
       }}
     >
