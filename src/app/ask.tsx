@@ -24,6 +24,7 @@ import { TextField } from '@/components/text-field';
 import { makeStyles, Spacing } from '@/constants/theme';
 import { useSendInquiry, type GuestBand, type ReplyBy, type SendOutcome } from '@/data/inquiries';
 import { useVendorDateStatus } from '@/data/availability';
+import { useCities } from '@/data/places';
 import { useHomeEvents } from '@/data/reference';
 import { usePlan } from '@/features/planner/plan';
 import { normalizePhone } from '@/features/auth/about-you-validation';
@@ -48,6 +49,8 @@ import {
   toDateString,
   useInquiryVendor,
 } from '@/features/inquiry/inquiry-helpers';
+import { townNear } from '@/features/location/nearest-city';
+import { useSearchLocation } from '@/features/location/search-location';
 import { localized } from '@/i18n/localized';
 import { useLocale } from '@/i18n/locale-context';
 import { formatPhone } from '@/lib/phone';
@@ -93,7 +96,11 @@ export default function AskScreen() {
   const [guests, setGuests] = useState<GuestBand | null>(
     GUEST_BANDS.includes(plannedGuests as GuestBand) ? (plannedGuests as GuestBand) : null,
   );
-  const [place, setPlace] = useState(profile?.city ?? '');
+  const { place: searchPlace } = useSearchLocation();
+  const cities = useCities();
+  // Null until they type, so the town near their search fills in once cities load
+  const [typedPlace, setPlace] = useState<string | null>(null);
+  const place = typedPlace ?? townNear(searchPlace, cities.data ?? []) ?? profile?.city ?? '';
   const [ownMessage, setOwnMessage] = useState<string | null>(null);
   const [name, setName] = useState(profile?.full_name ?? '');
   const [phone, setPhone] = useState(profile ? formatPhone(profile.phone) : '');
