@@ -55,12 +55,13 @@ case "${1:-}" in
     aws s3 sync infra/backend "s3://$bucket/app/infra/backend" --delete --quiet
     [ -z "${WEB:-}" ] || aws s3 sync "$WEB" "s3://$bucket/app/web" --delete --quiet
     seed=$([ "${2:-}" = --seed ] && echo 1 || true)
-    # A new server may still be on its first boot, which installs the AWS CLI
+    # A new server may still be on its first boot, which installs the AWS CLI. Without
+    # --exact-timestamps a download skips a changed file of the same size (most web pages)
     on_server "cloud-init status --wait >/dev/null || {
         echo \"The server's first boot failed: see /var/log/cloud-init-output.log and /opt/wedded/setup.log\" >&2
         exit 1
       }
-      aws s3 sync s3://$bucket/app /opt/wedded/app --delete --quiet --region $AWS_REGION &&
+      aws s3 sync s3://$bucket/app /opt/wedded/app --delete --exact-timestamps --quiet --region $AWS_REGION &&
       DOMAIN=$(output Domain) STORAGE_BUCKET=$bucket AWS_REGION=$AWS_REGION SEED=$seed \
       bash /opt/wedded/app/infra/backend/deploy.sh"
     ;;
