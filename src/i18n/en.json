@@ -1347,7 +1347,7 @@
     "people": {
       "title": "People in the vault",
       "empty": "No one has joined yet. Guests who join with the link or the QR card show up here.",
-      "footer": "Removing someone stops them seeing the Memory Vault. What they added stays.",
+      "footer": "Removing someone takes them out of the Memory Vault, and what they added stays. Your link still works for anyone who has it, so they could join again.",
       "noName": "A guest",
       "joined": "Joined {{date}}",
       "added": {
@@ -1357,7 +1357,7 @@
       "remove": "Remove",
       "keep": "Keep",
       "removeTitle": "Remove {{name}}?",
-      "removeBody": "They won't see the Memory Vault anymore. What they added stays."
+      "removeBody": "They'll be taken out of the Memory Vault, and what they added stays. Anyone with your link can still join, so they could come back."
     },
     "join": {
       "pageTitle": "Add your photos · Wedded App",
