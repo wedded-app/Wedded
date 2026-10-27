@@ -1480,7 +1480,7 @@
     },
     "invite": {
       "title": "Who's invited to the {{event}}?",
-      "intro": "Tick the people to invite. On their RSVP page, they'll see only the events they're invited to.",
+      "intro": "Tick the people to invite, or untick someone invited by mistake. On their RSVP page, they'll see only the events they're invited to.",
       "wholeList": "Tick a whole list",
       "everyone": "Everyone",
       "already": "Invited · {{answer}}",
@@ -1490,7 +1490,19 @@
         "one": "Invite 1 guest",
         "other": "Invite {{count}} guests"
       },
-      "tick": "Tick the people to invite"
+      "tick": "Tick the people to invite",
+      "remove": {
+        "one": "Take 1 guest off",
+        "other": "Take {{count}} guests off"
+      },
+      "saveBoth": "Save who's invited",
+      "removeTitle": "Take them off the {{event}}?",
+      "removeBody": {
+        "one": "{{name}} already answered. Their answer for the {{event}} will be removed too.",
+        "other": "{{count}} of them already answered. Their answers for the {{event}} will be removed too."
+      },
+      "removeYes": "Take off",
+      "removeNo": "Keep them"
     },
     "details": {
       "header": "Your invitation",
