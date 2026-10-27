@@ -9,7 +9,10 @@ name: Shared demo
 # Needs these repository secrets (Settings → Secrets and variables → Actions):
 #   AWS_ACCESS_KEY_ID      the WeddedBackend stack's DeployUser key (infra/README.md)
 #   AWS_SECRET_ACCESS_KEY
-#   EXPO_TOKEN             an Expo access token (expo.dev → Account settings → Access tokens)
+#   EXPO_TOKEN             a token for the Expo robot "GitHub Actions demo publish"
+#                          (expo.dev → kiki.bagri3787's team → Access tokens). The
+#                          robot needs the Developer role: without it, it can't read
+#                          the "preview" environment and the publish step fails
 # Until they're set, the steps that need them are skipped with a note.
 on:
   push:

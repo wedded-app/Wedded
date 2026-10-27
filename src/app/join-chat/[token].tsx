@@ -1,5 +1,6 @@
 import { router, useLocalSearchParams } from 'expo-router';
 import Head from 'expo-router/head';
+import type { Metadata } from 'expo-router/server';
 import { View } from 'react-native';
 
 import { AppText } from '@/components/app-text';
@@ -15,11 +16,15 @@ import { i18n } from '@/i18n';
 import { useLocale } from '@/i18n/locale-context';
 import { successHaptic } from '@/lib/haptics';
 
-/** For link previews: since SDK 58 only this reaches the page's HTML, not Head's tags. */
-export function generateMetadata() {
+/**
+ * For link previews: since SDK 58 only this reaches the page's HTML, not
+ * Head's tags. Noindex, because the link is someone's private invitation.
+ */
+export function generateMetadata(): Metadata {
   return {
     title: i18n.t('groupChat.join.pageTitle'),
     description: i18n.t('groupChat.join.pageDescription'),
+    robots: 'noindex',
   };
 }
 
