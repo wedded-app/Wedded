@@ -130,12 +130,12 @@ async function fetchMyInquiries() {
   const { data, error } = await supabase
     .from('inquiries')
     .select(
-      'id, vendor_id, event_date, guest_band, answers, status, created_at, sent_at, vendor:vendors!inquiries_vendor_id_fkey(slug, name), inquiry_events(event_slug, position), followups(question, asked_at, answer)',
+      'id, vendor_id, kind, event_date, guest_band, answers, status, created_at, sent_at, vendor:vendors!inquiries_vendor_id_fkey(slug, name), inquiry_events(event_slug, position), tour_slots(rank, day, part), followups(question, asked_at, answer)',
     )
     .order('created_at', { ascending: false });
   if (error) throw error;
   const now = Date.now();
-  return data.map(({ inquiry_events, followups, ...inquiry }) => {
+  return data.map(({ inquiry_events, tour_slots, followups, ...inquiry }) => {
     const followUp = followups.find((f) => f.question === 'did_they_reply');
     return {
       ...inquiry,
@@ -143,6 +143,10 @@ async function fetchMyInquiries() {
       event_slugs: [...inquiry_events]
         .sort((a, b) => a.position - b.position)
         .map((e) => e.event_slug),
+      /** A tour's visit times, first choice first (kept apart from `answers`). */
+      tourSlots: [...tour_slots]
+        .sort((a, b) => a.rank - b.rank)
+        .map((slot) => ({ date: slot.day, part: slot.part })),
       /** "Ask again" shows once 24 hours have passed, or if it didn't send (S16c). */
       canAskAgain:
         inquiry.status === 'failed' || now - new Date(inquiry.created_at).getTime() > DAY_MS,

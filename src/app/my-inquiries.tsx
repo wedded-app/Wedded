@@ -188,10 +188,12 @@ export default function MyInquiriesScreen() {
                             vendorId: item.vendor_id,
                             event: item.event_slugs[0] ?? '',
                             guests: item.guest_band,
-                            answers: JSON.stringify(item.answers),
-                            ...((item.answers as { tour?: unknown }).tour === true
-                              ? { kind: 'tour' }
-                              : {}),
+                            // The server keeps a tour as its kind and tour_slots, not in answers
+                            answers: JSON.stringify({
+                              ...(item.answers as Record<string, unknown>),
+                              tourSlots: item.tourSlots,
+                            }),
+                            ...(item.kind === 'tour' ? { kind: 'tour' } : {}),
                           },
                         })
                       }
