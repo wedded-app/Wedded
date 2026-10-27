@@ -23,13 +23,17 @@ export type GuestListState =
 /**
  * The guests Wed was asked to send to: one of the family's lists ("Mehndi"
  * finds the "Mehndi list") or everyone invited to an event, each with their
- * own RSVP link. Their own wedding, the first of useMyWeddings like My
- * Wedding's. Nothing is loaded until someone is asked for.
+ * own RSVP link. From the send's own wedding (the vault page's), else the
+ * first of useMyWeddings like My Wedding's. Nothing is loaded until someone
+ * is asked for.
  */
-export function useGuestList(to: GuestSend['to'] | undefined): GuestListState {
+export function useGuestList(send: GuestSend | undefined): GuestListState {
   const { status } = useSession();
   const weddings = useMyWeddings();
-  const wedding = to ? (weddings.data?.[0] ?? null) : null;
+  const to = send?.to;
+  let wedding = null;
+  if (send?.weddingId) wedding = weddings.data?.find((w) => w.id === send.weddingId) ?? null;
+  else if (send) wedding = weddings.data?.[0] ?? null;
   const weddingId = wedding?.id ?? null;
   const lists = useGuestLists(weddingId);
   const guests = useGuests(weddingId);

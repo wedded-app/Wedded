@@ -32,6 +32,8 @@ export type GuestSend = {
   /** The Memory Vault's link instead of cards, so guests add their photos. */
   vault?: boolean;
   channel: GuestChannel;
+  /** Whose guests, for someone in more than one wedding; their first (My Wedding's) when left out. */
+  weddingId?: string;
 };
 
 /** One guest, as a send needs them. */

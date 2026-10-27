@@ -684,9 +684,13 @@ export const wed = {
    * What Wed's brain (#124) calls to send something to a guest list: a
    * confirm card in the thread, and nothing goes until the family taps
    * Send. After the 10 seconds for Undo, /wed-send opens Messages or Mail.
+   * Returns the card's id: "send-vault-2" when an earlier one is still there.
    */
-  sendToGuests(send: GuestSend) {
-    apply({ op: 'approval', a: guestApproval(send) }, { flow: 'guests', ids: new Map() });
+  sendToGuests(send: GuestSend): string {
+    const spec = guestApproval(send);
+    const run: Run = { flow: 'guests', ids: new Map() };
+    apply({ op: 'approval', a: spec }, run);
+    return run.ids.get(spec.id) ?? spec.id;
   },
   /** Text each person, one group text or email, on an `invite` card. */
   setChannel(id: string, channel: GuestChannel) {

@@ -32,10 +32,17 @@ export function SendToGuests({ vault }: { vault: MemoryVault }) {
   const events = vault.events.filter((event) => invited.has(event.slug));
   const guestLists = lists.data ?? [];
 
-  const send = (to: GuestSend['to']) => {
-    wed.sendToGuests({ to, events: [], vault: true, channel: 'each' });
-    openWed({ focus: 'send-vault' });
-  };
+  // This vault's own wedding, and the card the store made, which may be "send-vault-2"
+  const send = (to: GuestSend['to']) =>
+    openWed({
+      focus: wed.sendToGuests({
+        to,
+        events: [],
+        vault: true,
+        channel: 'each',
+        weddingId: vault.weddingId,
+      }),
+    });
 
   let choices = null;
   if (summary.isPending || lists.isPending) {

@@ -51,7 +51,7 @@ export default function WedSendSheet() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const send = useWed((s) => s.approvals.find((a) => a.id === id)?.guests);
   const message = useWed((s) => s.approvals.find((a) => a.id === id)?.message ?? '');
-  const list = useGuestList(send?.to);
+  const list = useGuestList(send);
   const weddingToken = useWeddingRsvpToken(list.status === 'ready' ? list.weddingId : null);
   const invite = useInviteToEvent();
   const logSends = useLogInviteSends();
