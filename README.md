@@ -146,15 +146,15 @@ npm run demo:samples -- --local --family=<your email> --business=frames-by-jas
 
 `supabase/functions/` holds the server code, written for Deno. `npm run db:start` serves it locally at `http://127.0.0.1:54321/functions/v1/<name>`, and emails it sends land in Mailpit. To check a function, install Deno (`brew install deno`) and run `deno check index.ts && deno lint && deno fmt --check` in its folder. CI runs the same. After adding a new function (or if a local function answers 404 or 503), restart with `npm run db:stop && npm run db:start`.
 
-Settings for the hosted project (set once with `supabase secrets set NAME=value`):
+Settings for the server functions (on the AWS server in Parameter Store as `/wedded/backend/functions/<NAME>`, docs/HOSTED_SETUP.md step 4; on a hosted project with `supabase secrets set NAME=value`):
 
-| Name                 | What it's for                                                                                                           |
-| -------------------- | ----------------------------------------------------------------------------------------------------------------------- |
-| `RESEND_API_KEY`     | Sending inquiry emails through Resend                                                                                   |
-| `INQUIRY_FROM`       | The sender, e.g. `Wedded App <inquiries@mail.yourdomain.com>` (needs the verified domain, Phase 5)                      |
-| `FOUNDERS_EMAIL`     | Founders' emails, comma-separated: a blind copy of every inquiry, and relayed inquiries for vendors who don't use email |
-| `INQUIRY_TEST_INBOX` | While testing, every vendor email goes here instead of to the vendor                                                    |
-| `SITE_URL`           | The website once there's a domain, e.g. `https://weddedapp.com`: chat notification emails link to it                    |
+| Name                 | What it's for                                                                                                                                                                                |
+| -------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `RESEND_API_KEY`     | Sending inquiry and chat emails through Resend                                                                                                                                               |
+| `INQUIRY_FROM`       | The sender, e.g. `Wedded App <inquiries@mail.yourdomain.com>` (needs the verified domain, Phase 5). Until then leave it unset: emails go from Resend's test address, `onboarding@resend.dev` |
+| `FOUNDERS_EMAIL`     | Founders' emails, comma-separated: a blind copy of every inquiry, and relayed inquiries for vendors who don't use email (neither while `INQUIRY_TEST_INBOX` is set)                          |
+| `INQUIRY_TEST_INBOX` | Until the domain is verified: the Resend account's own email. Every inquiry and chat email goes here alone, with no copy to the family and no blind copy to the founders                     |
+| `SITE_URL`           | The website once there's a domain, e.g. `https://weddedapp.com`: chat notification emails link to it                                                                                         |
 
 The nightly job that sends queued inquiries (when the daily email limit was reached) reads two values from the database's Vault. Set them once per hosted project in the SQL editor:
 
