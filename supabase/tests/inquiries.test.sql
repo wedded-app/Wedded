@@ -4,7 +4,7 @@
 begin;
 create extension if not exists pgtap with schema extensions;
 
-select plan(29);
+select plan(32);
 
 -- Accounts (A, C and D have profiles; B doesn't) and vendors -----------------------
 
@@ -157,9 +157,14 @@ select ok(
   'Asking without an event saves the vendor under Not sure yet'
 );
 
--- The email to vendor 2 failed; trying again reuses that inquiry (#349)
-update public.inquiries set status = 'failed', failure = 'No email provider'
+-- The email to vendor 2 failed three days ago; trying again reuses that inquiry (#349)
+update public.inquiries set status = 'failed', failure = 'No email provider', created_at = now() - interval '3 days'
 where user_id = 'a0000000-0000-4000-8000-00000000000a' and vendor_id = '40000000-0000-4000-8000-000000000002';
+update public.messages m set created_at = now() - interval '3 days'
+from public.inquiries i
+where i.id = m.inquiry_id and i.user_id = 'a0000000-0000-4000-8000-00000000000a' and i.vendor_id = '40000000-0000-4000-8000-000000000002';
+update public.conversations set last_message_at = now() - interval '3 days'
+where family_user_id = 'a0000000-0000-4000-8000-00000000000a' and vendor_id = '40000000-0000-4000-8000-000000000002';
 select is(
   (pg_temp.ask('a0000000-0000-4000-8000-00000000000a', 2, array['mehndi']) ->> 'inquiry_id')::uuid,
   (select id from public.inquiries
@@ -179,6 +184,36 @@ select results_eq(
      where i.user_id = 'a0000000-0000-4000-8000-00000000000a' and i.vendor_id = '40000000-0000-4000-8000-000000000002' $$,
   $$ values (1, '["mehndi"]') $$,
   'The vendor''s chat keeps one card, updated to the retry'
+);
+select results_eq(
+  $$ select i.created_at = now(), m.created_at > now() - interval '1 hour', c.last_message_at > now() - interval '1 hour'
+     from public.inquiries i
+     join public.messages m on m.inquiry_id = i.id
+     join public.conversations c on c.id = m.conversation_id
+     where i.user_id = 'a0000000-0000-4000-8000-00000000000a' and i.vendor_id = '40000000-0000-4000-8000-000000000002' $$,
+  $$ values (true, true, true) $$,
+  'The retry is dated now, and its card and conversation come back to the top'
+);
+
+-- The vendor answered the card, then the email failed again: a retry keeps the card above the answer
+update public.inquiries set status = 'failed', failure = 'No email provider'
+where user_id = 'a0000000-0000-4000-8000-00000000000a' and vendor_id = '40000000-0000-4000-8000-000000000002';
+insert into public.messages (conversation_id, sender_role, kind, body, created_at)
+select m.conversation_id, 'vendor', 'text', 'Which date works?', clock_timestamp() + interval '1 minute'
+from public.messages m join public.inquiries i on i.id = m.inquiry_id
+where i.user_id = 'a0000000-0000-4000-8000-00000000000a' and i.vendor_id = '40000000-0000-4000-8000-000000000002';
+create temp table card_before as
+select m.created_at from public.messages m join public.inquiries i on i.id = m.inquiry_id
+where i.user_id = 'a0000000-0000-4000-8000-00000000000a' and i.vendor_id = '40000000-0000-4000-8000-000000000002';
+select is(
+  pg_temp.ask('a0000000-0000-4000-8000-00000000000a', 2, array['mehndi']) ->> 'outcome', 'created',
+  'Trying again after the vendor answered still goes out'
+);
+select is(
+  (select m.created_at from public.messages m join public.inquiries i on i.id = m.inquiry_id
+   where i.user_id = 'a0000000-0000-4000-8000-00000000000a' and i.vendor_id = '40000000-0000-4000-8000-000000000002'),
+  (select created_at from card_before),
+  'A card the vendor already answered keeps its place in the chat'
 );
 
 -- A has 3 in the last hour; 2 more reach the limit of 5
