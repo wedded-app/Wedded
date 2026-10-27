@@ -396,4 +396,12 @@ describe('invitations', () => {
     jest.advanceTimersByTime(10_000);
     expect(mockPush).toHaveBeenCalledWith({ pathname: '/wed-send', params: { id: 'send-vault' } });
   });
+
+  it("returns each send's own card id, so Wed opens on the new one", () => {
+    const send = { to: { event: 'reception' }, events: [], vault: true, channel: 'each' as const };
+    const first = wed.sendToGuests(send);
+    const second = wed.sendToGuests({ ...send, weddingId: 'w2' });
+    expect(second).not.toBe(first);
+    expect(getWed().approvals.find((a) => a.id === second)?.guests?.weddingId).toBe('w2');
+  });
 });
