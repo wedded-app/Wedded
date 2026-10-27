@@ -130,7 +130,7 @@ async function fetchMyInquiries() {
   const { data, error } = await supabase
     .from('inquiries')
     .select(
-      'id, vendor_id, event_date, guest_band, status, created_at, sent_at, vendor:vendors!inquiries_vendor_id_fkey(slug, name), inquiry_events(event_slug, position), followups(question, asked_at, answer)',
+      'id, vendor_id, event_date, guest_band, answers, status, created_at, sent_at, vendor:vendors!inquiries_vendor_id_fkey(slug, name), inquiry_events(event_slug, position), followups(question, asked_at, answer)',
     )
     .order('created_at', { ascending: false });
   if (error) throw error;

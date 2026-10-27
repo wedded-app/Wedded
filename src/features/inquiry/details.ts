@@ -66,6 +66,29 @@ export function venueDetails(answers: VenueAnswers, isTour: boolean): Record<str
   return details;
 }
 
+const pick = <T>(value: unknown, allowed: readonly T[]): T | null =>
+  allowed.includes(value as T) ? (value as T) : null;
+
+/**
+ * A sent inquiry's details back into the venue answers, so "Ask again" starts
+ * from what they asked last time (#352). Anything unexpected is left blank.
+ */
+export function venueAnswersFrom(details: unknown): VenueAnswers {
+  const d = (details && typeof details === 'object' ? details : {}) as Record<string, unknown>;
+  const slots = Array.isArray(d.tourSlots) ? (d.tourSlots as Record<string, unknown>[]) : [];
+  return {
+    catering: pick(d.catering, ['in_house', 'own', 'not_sure'] as const),
+    ownCaterer: typeof d.ownCaterer === 'string' ? d.ownCaterer : '',
+    alcohol: pick(d.alcohol, ['yes', 'no', 'not_sure'] as const),
+    ghoriDhol: typeof d.ghoriDhol === 'boolean' ? d.ghoriDhol : null,
+    sameDay: typeof d.sameDay === 'boolean' ? d.sameDay : null,
+    tourSlots: slots.slice(0, 3).flatMap((slot) => {
+      const part = pick(slot?.part, ['morning', 'afternoon', 'evening'] as const);
+      return typeof slot?.date === 'string' && part ? [{ date: slot.date, part }] : [];
+    }),
+  };
+}
+
 export function catererDetails(answers: CatererAnswers): Record<string, unknown> {
   const details: Record<string, unknown> = {};
   if (answers.food) details.food = answers.food;
