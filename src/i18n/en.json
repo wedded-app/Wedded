@@ -195,7 +195,7 @@
     "notFound": "We couldn't find that group."
   },
   "vendor": {
-    "notFound": "This vendor isn't listed anymore.",
+    "notFound": "This vendor isn't listed on Wedded right now.",
     "foundingNumber": "Founding vendor #{{number}}",
     "basedIn": "Based in {{city}}",
     "travelsUpTo": "Travels up to {{miles}} mi.",

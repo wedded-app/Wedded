@@ -43,8 +43,10 @@ import { useSavedEventsFor, useSaveVendor } from '@/data/saved';
 import { useVendorLinks, type LinkedVendor } from '@/data/vendor-links';
 import { useRealWeddingsAt, useVendorPhotos, type VendorPhoto } from '@/data/vendor-media';
 import { useVendor } from '@/data/vendors';
+import { useMyBusinesses } from '@/data/business';
 import { useMyWeddings } from '@/data/wedding';
 import { useSession } from '@/features/auth/session';
+import { chooseBusiness } from '@/features/business/use-current-business';
 import { SavedToastHost } from '@/features/saved/saved-toast';
 import { trackVendorActivity, useVendorPublicStats } from '@/data/vendor-stats';
 import { useStartConversation } from '@/data/chat';
@@ -210,6 +212,8 @@ export default function VendorProfileScreen() {
   const insets = useSafeAreaInsets();
   const { width } = useWindowDimensions();
   const scroll = useNavScroll();
+  // A draft's page is hidden from everyone, its own people too, so say it's theirs
+  const mine = useMyBusinesses().businesses.find((b) => b.slug === slug);
   const navTop = useNavTop();
   const reduceMotion = useReducedMotion();
   // Side by side, a Punjabi "Save" breaks mid-word at very large text sizes.
@@ -283,8 +287,18 @@ export default function VendorProfileScreen() {
       <StateView
         state="empty"
         icon="storefront-outline"
-        message={t('vendor.notFound')}
-        action={{ label: t('common.goHome'), onPress: () => router.navigate('/') }}
+        message={mine ? t('business.notLive') : t('vendor.notFound')}
+        action={
+          mine
+            ? {
+                label: t('business.myPage.finishIt'),
+                onPress: () => {
+                  chooseBusiness(mine.id);
+                  router.push('/business/listing');
+                },
+              }
+            : { label: t('common.goHome'), onPress: () => router.navigate('/') }
+        }
         style={{ marginTop: navTop }}
       />
     );
