@@ -6,7 +6,7 @@
 begin;
 create extension if not exists pgtap with schema extensions;
 
-select plan(112);
+select plan(113);
 
 -- People: Asha (owns the wedding), Balwinder (editor), Charan (suggester),
 -- Dev and Farah (guests who join with the link), Esha (a stranger, later a guest)
@@ -650,6 +650,21 @@ select is_empty(
   $$ select * from public.vault_people(pg_temp.id('vault')) $$,
   'and neither do guests'
 );
+-- A guest later added to the plan is family now, not a guest to remove
+reset role;
+insert into public.wedding_members (wedding_id, user_id, role) values
+  (pg_temp.id('wedding'), 'd9000000-0000-4000-8000-00000000000d', 'suggester');
+set local role authenticated;
+select pg_temp.as_user('a9000000-0000-4000-8000-00000000000a');
+select results_eq(
+  $$ select first_name from public.vault_people(pg_temp.id('vault')) $$,
+  $$ values ('Farah') $$,
+  'Someone added to the plan after joining by the link is no longer listed as a guest'
+);
+reset role;
+delete from public.wedding_members
+where wedding_id = pg_temp.id('wedding') and user_id = 'd9000000-0000-4000-8000-00000000000d';
+set local role authenticated;
 
 -- Leaving ------------------------------------------------------------------------------
 
