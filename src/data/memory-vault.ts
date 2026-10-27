@@ -43,6 +43,7 @@ export const vaultKeys = {
     ['memory-vault', 'items', vaultId, eventSlug] as const,
   mine: (userId: string) => ['memory-vault', 'mine', userId] as const,
   vendors: (vaultId: string) => ['memory-vault', 'vendors', vaultId] as const,
+  people: (vaultId: string) => ['memory-vault', 'people', vaultId] as const,
   invite: (token: string) => ['memory-vault', 'invite', token] as const,
   file: (path: string | null) => ['memory-vault', 'file', path] as const,
 };
@@ -662,6 +663,32 @@ export function useAcceptVaultInvite() {
       return data;
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: vaultKeys.all }),
+  });
+}
+
+export type VaultPerson = {
+  userId: string;
+  firstName: string | null;
+  joinedAt: string;
+  /** Photos and videos they added, hidden ones too. */
+  itemCount: number;
+};
+
+/** Who joined by the link, newest first (#351). The couple only; anyone else gets none. */
+export function useVaultPeople(vaultId: string) {
+  return useQuery({
+    queryKey: vaultKeys.people(vaultId),
+    queryFn: async (): Promise<VaultPerson[]> => {
+      const { data, error } = await supabase.rpc('vault_people', { p_vault_id: vaultId });
+      if (error) throw error;
+      return data.map((row) => ({
+        userId: row.user_id,
+        firstName: row.first_name,
+        joinedAt: row.joined_at,
+        itemCount: row.item_count,
+      }));
+    },
+    enabled: vaultId.length > 0,
   });
 }
 
