@@ -4834,6 +4834,15 @@ export type Database = {
           width: number;
         }[];
       };
+      vault_people: {
+        Args: { p_vault_id: string };
+        Returns: {
+          first_name: string;
+          item_count: number;
+          joined_at: string;
+          user_id: string;
+        }[];
+      };
       vault_vendors: {
         Args: { p_vault_id: string };
         Returns: {

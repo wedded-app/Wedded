@@ -1344,6 +1344,21 @@
       "showVendorsHint": "Guests see the vendors you booked, under the photos.",
       "failed": "That didn't save. Check your internet, then try again."
     },
+    "people": {
+      "title": "People in the vault",
+      "empty": "No one has joined yet. Guests who join with the link or the QR card show up here.",
+      "footer": "Removing someone stops them seeing the Memory Vault. What they added stays.",
+      "noName": "A guest",
+      "joined": "Joined {{date}}",
+      "added": {
+        "one": "added 1 photo or video",
+        "other": "added {{count}} photos and videos"
+      },
+      "remove": "Remove",
+      "keep": "Keep",
+      "removeTitle": "Remove {{name}}?",
+      "removeBody": "They won't see the Memory Vault anymore. What they added stays."
+    },
     "join": {
       "pageTitle": "Add your photos · Wedded App",
       "pageDescription": "Add the photos you took to the couple's Memory Vault on Wedded App.",

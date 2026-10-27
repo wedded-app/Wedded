@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { ScrollView } from 'react-native';
 
 import { AppText } from '@/components/app-text';
+import { Button } from '@/components/button';
 import { FieldError } from '@/components/field-error';
 import { ListRow, ListSection } from '@/components/list';
 import { Screen } from '@/components/screen';
@@ -10,8 +11,16 @@ import { SheetHeader } from '@/components/sheet-header';
 import { StateView } from '@/components/state-view';
 import { Switch } from '@/components/switch';
 import { makeStyles, Spacing } from '@/constants/theme';
-import { useVault, useVaultSettings, type MemoryVault } from '@/data/memory-vault';
+import {
+  useRemoveVaultGuest,
+  useVault,
+  useVaultPeople,
+  useVaultSettings,
+  type MemoryVault,
+} from '@/data/memory-vault';
 import { shareInvite } from '@/data/wedding';
+import { confirm } from '@/features/guests/pick-sheet';
+import { formatDate } from '@/features/inquiry/inquiry-helpers';
 import { printHtml } from '@/features/tent/print-html';
 import { tableTentHtml } from '@/features/tent/table-tent';
 import { useVaultLink } from '@/features/vault/use-vault-link';
@@ -23,8 +32,9 @@ const SETTINGS: Setting[] = ['uploadsOpen', 'guestsSeeAll', 'showVendors'];
 /**
  * The couple's Memory Vault settings, as a sheet over the vault: invite
  * guests (the link through the share sheet, or a QR card printed for the
- * tables, folded like the vendors' table tent), lock uploads after the
- * wedding, who sees whose photos, and showing their vendors to guests.
+ * tables, folded like the vendors' table tent), who joined and removing
+ * someone (#351), lock uploads after the wedding, who sees whose photos, and
+ * showing their vendors to guests.
  * /vault-settings?id={vault}
  */
 export default function VaultSettingsScreen() {
@@ -121,6 +131,8 @@ function Settings({ vault }: { vault: MemoryVault }) {
         </AppText>
       )}
 
+      <People vaultId={vault.id} />
+
       <ListSection header={t('memoryVault.settings.section')}>
         {SETTINGS.map((setting) => (
           <ListRow
@@ -139,6 +151,62 @@ function Settings({ vault }: { vault: MemoryVault }) {
       </ListSection>
       {update.isError && <FieldError message={t('memoryVault.settings.failed')} />}
     </ScrollView>
+  );
+}
+
+/** Everyone who joined by the link, with Remove; what they added stays. */
+function People({ vaultId }: { vaultId: string }) {
+  const { t } = useLocale();
+  const people = useVaultPeople(vaultId);
+  const remove = useRemoveVaultGuest();
+  const list = people.data ?? [];
+
+  const removeSomeone = (userId: string, name: string) =>
+    confirm(
+      t('memoryVault.people.removeTitle', { name }),
+      t('memoryVault.people.removeBody'),
+      t('memoryVault.people.remove'),
+      t('memoryVault.people.keep'),
+      () => remove.mutate({ vaultId, userId }),
+    );
+
+  if (people.isPending) return null;
+  return (
+    <>
+      <ListSection
+        header={t('memoryVault.people.title')}
+        footer={list.length === 0 ? t('memoryVault.people.empty') : t('memoryVault.people.footer')}
+      >
+        {list.map((person) => {
+          const name = person.firstName ?? t('memoryVault.people.noName');
+          return (
+            <ListRow
+              key={person.userId}
+              icon="person-outline"
+              title={name}
+              subtitle={[
+                t('memoryVault.people.joined', { date: formatDate(person.joinedAt.slice(0, 10)) }),
+                person.itemCount > 0
+                  ? t('memoryVault.people.added', { count: person.itemCount })
+                  : null,
+              ]
+                .filter(Boolean)
+                .join(' · ')}
+              trailing={
+                <Button
+                  variant="text"
+                  label={t('memoryVault.people.remove')}
+                  onPress={() => removeSomeone(person.userId, name)}
+                />
+              }
+            />
+          );
+        })}
+      </ListSection>
+      {(people.isError || remove.isError) && (
+        <FieldError message={t('memoryVault.settings.failed')} />
+      )}
+    </>
   );
 }
 
