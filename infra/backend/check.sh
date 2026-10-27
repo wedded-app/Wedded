@@ -18,5 +18,7 @@ curl -fsS -H "apikey: $key" "$url/rest/v1/categories?select=slug&limit=1" | grep
 curl -fsS -H "apikey: $key" -H 'Content-Type: application/json' -d '{}' \
   "$url/rest/v1/rpc/search_vendors" >/dev/null
 web=https://$(env_value WEB_DOMAIN)
-curl -fsS --retry 6 --retry-delay 5 --retry-all-errors -o /dev/null "$web/w/check"
+page=$(curl -fsS --retry 6 --retry-delay 5 --retry-all-errors "$web/w/check")
+# Every script the page loads, so a half-updated export fails here rather than for guests
+for js in $(grep -o '/_expo/static/js/web/[^"]*\.js' <<<"$page"); do curl -fsSg -o /dev/null "$web$js"; done
 echo "Answering: $url and $web"
