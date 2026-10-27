@@ -445,6 +445,7 @@
     "subject": "You're invited",
     "vaultSubject": "Our Memory Vault",
     "rsvpLine": "Tell us if you're coming: {{url}}",
+    "weddingRsvpLine": "Tell us if you're coming: tap the link and type your phone number. {{url}}",
     "vaultLine": "Add yours here: {{url}}",
     "receipt": {
       "texted": "Texted {{sent}} of {{count}} {{who}}",
@@ -1388,6 +1389,13 @@
     "everyone": "Everyone ({{count}})",
     "search": "Search by name or number",
     "noMatch": "No one matches \"{{query}}\".",
+    "weddingLink": {
+      "header": "One RSVP link for everyone",
+      "footer": "Put it in group texts and WhatsApp groups. Guests type their phone number and see only their own invitation.",
+      "share": "Share the RSVP link",
+      "copy": "Copy the RSVP link",
+      "shareMessage": "You're invited! Tap the link and type your phone number to tell us if you can come: {{link}}"
+    },
     "answer": {
       "yes": "Coming ({{count}})",
       "no": "Not coming",
@@ -1506,6 +1514,7 @@
     "pageDescription": "Tell the family if you can come to each event.",
     "notFound": "This RSVP link doesn't work",
     "askFamily": "Ask the family who sent it for a new link.",
+    "findTitle": "Find your invitation",
     "hello": "Hello {{name}}",
     "aWedding": "A family wedding",
     "party": {

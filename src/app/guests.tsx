@@ -1,3 +1,4 @@
+import { setStringAsync } from 'expo-clipboard';
 import { router } from 'expo-router';
 import { useState } from 'react';
 import { Platform, View } from 'react-native';
@@ -12,9 +13,12 @@ import {
   useGuestLists,
   useGuests,
   useGuestSummary,
+  useWeddingRsvpToken,
+  weddingRsvpLink,
   type Guest,
   type EventGuestSummary,
 } from '@/data/guests';
+import { shareInvite } from '@/data/wedding';
 import {
   answerLabel,
   guestTotals,
@@ -42,7 +46,19 @@ export default function GuestsScreen() {
   const guests = useGuests(weddingId);
   const lists = useGuestLists(weddingId);
   const summary = useGuestSummary(weddingId);
+  const weddingLink = weddingRsvpLink(useWeddingRsvpToken(weddingId).data ?? null);
   const [query, setQuery] = useState('');
+  const [copied, setCopied] = useState(false);
+
+  const copyLink = async (link: string) => {
+    await setStringAsync(link);
+    setCopied(true);
+  };
+  const shareLink = async (link: string) => {
+    if ((await shareInvite(link, t, 'guests.weddingLink.shareMessage')) === 'copied') {
+      setCopied(true);
+    }
+  };
 
   const eventName = (slug: string) => {
     const event = chosen.find((e) => e.slug === slug);
@@ -116,6 +132,28 @@ export default function GuestsScreen() {
           <StateView state="empty" icon="people-outline" message={t('guests.empty')} />
         ) : (
           <>
+            {/* Only once there are guests: with no one to find, every try counts toward the day's limit */}
+            {weddingLink && (
+              <ListSection
+                header={t('guests.weddingLink.header')}
+                footer={copied ? t('share.copied') : t('guests.weddingLink.footer')}
+                inset
+              >
+                <ListRow
+                  icon="share-outline"
+                  tone="primary"
+                  title={t('guests.weddingLink.share')}
+                  onPress={() => void shareLink(weddingLink)}
+                />
+                <ListRow
+                  icon="copy-outline"
+                  tone="primary"
+                  title={t('guests.weddingLink.copy')}
+                  onPress={() => void copyLink(weddingLink)}
+                />
+              </ListSection>
+            )}
+
             <ListSection header={t('guests.eventsHeader')} footer={t('guests.eventsFooter')} inset>
               {chosen.length === 0 ? (
                 <ListRow

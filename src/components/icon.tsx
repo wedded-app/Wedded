@@ -98,6 +98,7 @@ const SF_SYMBOLS: Partial<Record<IconName, SFSymbol>> = {
   'arrow-up-circle': 'arrow.up.circle.fill',
   'globe-outline': 'globe',
   'share-outline': 'square.and.arrow.up',
+  'copy-outline': 'doc.on.doc',
   'compass-outline': 'safari',
   compass: 'safari.fill',
   'settings-outline': 'gearshape',
