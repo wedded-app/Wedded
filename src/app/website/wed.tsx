@@ -316,7 +316,7 @@ function Reply({
         </AppText>
         {reply.parts.length > 0 && (
           <View style={sx.card}>
-            {reply.parts.slice(0, 8).map((part, i) => (
+            {reply.parts.map((part, i) => (
               <MissingRow key={i} part={part} />
             ))}
           </View>
