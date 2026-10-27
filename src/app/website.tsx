@@ -26,7 +26,7 @@ import { siteDesign } from '@/features/website/designs';
 import { useSiteFonts } from '@/features/website/fonts';
 import { PART_INFO, partSummary } from '@/features/website/parts';
 import { SiteCover } from '@/features/website/site-cover';
-import { startSteps } from '@/features/website/site-helpers';
+import { startSteps, withPart } from '@/features/website/site-helpers';
 import { useWebsite } from '@/features/website/use-website';
 import { WebsiteAsk } from '@/features/website/website-ask';
 import { useLocale } from '@/i18n/locale-context';
@@ -96,16 +96,9 @@ function Builder({
   const toggle = (section: SiteSection, on: boolean) => {
     selectionHaptic();
     const next = on
-      ? SITE_SECTIONS.filter((s) => s === section || site.sections.includes(s)).sort(
-          (a, b) => order(a) - order(b),
-        )
+      ? withPart(site.sections, section, SITE_SECTIONS)
       : site.sections.filter((s) => s !== section);
     update.mutate({ weddingId, changes: { sections: next } });
-  };
-  // A part switched back on goes back where it was among the others
-  const order = (s: SiteSection) => {
-    const i = site.sections.indexOf(s);
-    return i >= 0 ? i : SITE_SECTIONS.indexOf(s) + 0.5;
   };
 
   const share = () =>
