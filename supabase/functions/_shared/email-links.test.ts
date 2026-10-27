@@ -112,3 +112,20 @@ Deno.test('inquiries relay opted-out vendors and omit opted-out family copies', 
   }
   assert(failed, 'Database failures must not bypass opt-out checks');
 });
+
+Deno.test('the test inbox gets inquiries alone, sent from the Resend test address by default', async () => {
+  Deno.env.set('EMAIL_LINK_SECRET', 'test-key');
+  Deno.env.set('FOUNDERS_EMAIL', 'founders@example.com');
+  Deno.env.set('INQUIRY_TEST_INBOX', 'inbox@example.com');
+  Deno.env.delete('INQUIRY_FROM');
+  try {
+    for (const stopped of [[], ['vendor@example.com']]) {
+      const sent = await inquiryEmailFor(admin(stopped), input);
+      assert(sent.to.join() === 'inbox@example.com', `to: ${sent.to}`);
+      assert(sent.cc.length === 0 && sent.bcc.length === 0, `copies: ${sent.cc} ${sent.bcc}`);
+      assert(sent.from === 'Wedded App <onboarding@resend.dev>', `from: ${sent.from}`);
+    }
+  } finally {
+    Deno.env.delete('INQUIRY_TEST_INBOX');
+  }
+});
