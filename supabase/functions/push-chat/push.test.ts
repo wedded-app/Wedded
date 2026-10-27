@@ -1,5 +1,4 @@
-// deno test supabase/functions/push-chat (not run in CI; CI type-checks,
-// lints and format-checks the function).
+// In the function's folder: deno test --allow-env (CI runs it).
 import { buildGroupPushes, buildPushes, pushBody, type PushClaim } from './push.ts';
 
 function expectEqual(actual: unknown, expected: unknown, what: string) {

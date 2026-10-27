@@ -85,6 +85,20 @@ describe('matchSiteAsk', () => {
     });
   });
 
+  it('keeps a guide heading the site already has', () => {
+    const p = page({ guideTitle: 'Our gurdwara visit' });
+    const reply = matchSiteAsk('Add the gurdwara guide', p, tips);
+    if (reply.kind !== 'proposal') throw new Error(reply.kind);
+    expect(reply.proposal.lines[0].options?.title).toBe('Our gurdwara visit');
+    // Like i18n-js: text that isn't a key comes back as a missing translation
+    const t = (key: string) =>
+      key.startsWith('website.') ? `${key}!` : `[missing "en.${key}" translation]`;
+    expect(wordActions(reply.proposal.actions, t, p.title)[1]).toEqual({
+      kind: 'update',
+      changes: { sections: ['events', 'rsvp', 'guide'] },
+    });
+  });
+
   it('opens the photo sheet for a cover photo, not the guide', () => {
     expect(matchSiteAsk('Change the cover photo', page(), tips)).toMatchObject({
       kind: 'open',

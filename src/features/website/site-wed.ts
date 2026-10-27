@@ -175,7 +175,7 @@ export function guideProposal(page: SitePage, tips: string[]): SiteProposal | nu
     lines: [
       {
         key: 'website.wed.lines.guide',
-        options: { count: items.length - page.tips.length, title: titleKey },
+        options: { count: items.length - page.tips.length, title: page.guideTitle ?? titleKey },
       },
     ],
     actions: [
@@ -183,7 +183,8 @@ export function guideProposal(page: SitePage, tips: string[]): SiteProposal | nu
       {
         kind: 'update',
         changes: {
-          guide_title: page.guideTitle ?? titleKey,
+          // A heading the site has stays; only a missing one is filled in (wordActions translates keys)
+          ...(page.guideTitle ? {} : { guide_title: titleKey }),
           sections: page.sections.includes('guide') ? page.sections : [...page.sections, 'guide'],
         },
       },
