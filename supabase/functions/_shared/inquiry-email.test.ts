@@ -1,5 +1,4 @@
-// deno test supabase/functions/_shared (not run in CI; CI lints and
-// format-checks the shared code).
+// In supabase/functions/_shared: deno test --allow-env (CI runs it).
 import { eventDatesRow } from './inquiry-email.ts';
 
 function expectEqual(actual: unknown, expected: unknown, what: string) {

@@ -128,7 +128,7 @@ export default function AskScreen() {
   // Ask again (My inquiries) brings what they asked last time
   const [venueAnswers, setVenueAnswers] = useState<VenueAnswers>(() => {
     try {
-      return venueAnswersFrom(JSON.parse(params.answers ?? 'null'));
+      return venueAnswersFrom(JSON.parse(params.answers ?? 'null'), toDateString(new Date()));
     } catch {
       return emptyVenueAnswers();
     }

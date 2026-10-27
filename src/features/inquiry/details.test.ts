@@ -48,18 +48,34 @@ describe('venueAnswersFrom', () => {
       sameDay: true,
       tourSlots: [{ date: '2026-10-03', part: 'evening' as const }],
     };
-    expect(venueAnswersFrom(venueDetails(answers, true))).toEqual(answers);
+    expect(venueAnswersFrom(venueDetails(answers, true), '2026-10-01')).toEqual(answers);
   });
 
   it('leaves anything unexpected blank', () => {
-    expect(venueAnswersFrom(null)).toEqual(emptyVenueAnswers());
+    expect(venueAnswersFrom(null, '2026-10-01')).toEqual(emptyVenueAnswers());
     expect(
-      venueAnswersFrom({
-        catering: 'buffet',
-        ghoriDhol: 'yes',
-        tourSlots: [{ date: 3, part: 'evening' }, { date: '2026-10-04', part: 'night' }, 'x'],
-      }),
+      venueAnswersFrom(
+        {
+          catering: 'buffet',
+          ghoriDhol: 'yes',
+          tourSlots: [{ date: 3, part: 'evening' }, { date: '2026-10-04', part: 'night' }, 'x'],
+        },
+        '2026-10-01',
+      ),
     ).toEqual(emptyVenueAnswers());
+  });
+
+  it('keeps only visit times on real days, today or later', () => {
+    const slots = [
+      { date: '2026-09-30', part: 'morning' },
+      { date: '2026-10-01', part: 'evening' },
+      { date: '2026-02-30', part: 'evening' },
+      { date: 'tomorrow', part: 'evening' },
+      { date: '2026-12-05', part: 'afternoon' },
+    ];
+    expect(venueAnswersFrom({ tourSlots: slots }, '2026-10-01').tourSlots).toEqual([
+      { date: '2026-10-01', part: 'evening' },
+    ]);
   });
 });
 

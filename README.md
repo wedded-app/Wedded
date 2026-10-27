@@ -144,7 +144,7 @@ npm run demo:samples -- --local --family=<your email> --business=frames-by-jas
 
 ### Edge Functions (server code)
 
-`supabase/functions/` holds the server code, written for Deno. `npm run db:start` serves it locally at `http://127.0.0.1:54321/functions/v1/<name>`, and emails it sends land in Mailpit. To check a function, install Deno (`brew install deno`) and run `deno check index.ts && deno lint && deno fmt --check` in its folder. CI runs the same. After adding a new function (or if a local function answers 404 or 503), restart with `npm run db:stop && npm run db:start`.
+`supabase/functions/` holds the server code, written for Deno. `npm run db:start` serves it locally at `http://127.0.0.1:54321/functions/v1/<name>`, and emails it sends land in Mailpit. To check a function, install Deno (`brew install deno`) and run `deno check index.ts && deno lint && deno fmt --check && deno test --allow-env --permit-no-files` in its folder (in `_shared`, `deno lint && deno fmt --check && deno test --allow-env`). CI runs the same. After adding a new function (or if a local function answers 404 or 503), restart with `npm run db:stop && npm run db:start`.
 
 Settings for the server functions (on the AWS server in Parameter Store as `/wedded/backend/functions/<NAME>`, docs/HOSTED_SETUP.md step 4; on a hosted project with `supabase secrets set NAME=value`):
 
