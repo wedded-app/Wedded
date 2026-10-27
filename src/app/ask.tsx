@@ -34,6 +34,7 @@ import {
   catererDetails,
   emptyCatererAnswers,
   emptyVenueAnswers,
+  venueAnswersFrom,
   venueDetails,
   type CatererAnswers,
   type VenueAnswers,
@@ -57,13 +58,21 @@ const REPLY_BY: ReplyBy[] = ['call', 'text', 'whatsapp', 'email'];
 /**
  * "Ask about price & date" (vision S11), a modal. `?vendorId=` is required;
  * `&event=` preselects the event they came from; `&kind=tour` on a venue asks
- * for a visit ("Book a tour") with up to three preferred times. Anyone can fill it in; Send
- * asks logged-out people to sign in, then sends the same draft.
+ * for a visit ("Book a tour") with up to three preferred times. Ask again
+ * (My inquiries) adds `&guests=` and `&answers=` (last time's details, JSON).
+ * Anyone can fill it in; Send asks logged-out people to sign in, then sends
+ * the same draft.
  */
 export default function AskScreen() {
   const styles = useStyles();
   const { t } = useLocale();
-  const params = useLocalSearchParams<{ vendorId?: string; event?: string; kind?: string }>();
+  const params = useLocalSearchParams<{
+    vendorId?: string;
+    event?: string;
+    kind?: string;
+    guests?: string;
+    answers?: string;
+  }>();
   const isTour = params.kind === 'tour';
   const vendorId = params.vendorId ?? '';
   const vendor = useInquiryVendor(vendorId);
@@ -88,8 +97,8 @@ export default function AskScreen() {
   const [dateUnsure, setDateUnsure] = useState(false);
   const [pickerOpen, setPickerOpen] = useState(false);
   const dateStatus = useVendorDateStatus(vendorId || null, dateUnsure ? null : date);
-  // The guest count set for this event in My Wedding, if there is one
-  const plannedGuests = plan.guests?.[params.event ?? ''];
+  // The guest count from last time (Ask again), or set for this event in My Wedding
+  const plannedGuests = params.guests ?? plan.guests?.[params.event ?? ''];
   const [guests, setGuests] = useState<GuestBand | null>(
     GUEST_BANDS.includes(plannedGuests as GuestBand) ? (plannedGuests as GuestBand) : null,
   );
@@ -109,7 +118,14 @@ export default function AskScreen() {
   const phoneInput = useRef<TextInputInstance>(null);
   const [duplicateAt, setDuplicateAt] = useState<string | null>(null);
   const [touched, setTouched] = useState(false);
-  const [venueAnswers, setVenueAnswers] = useState<VenueAnswers>(emptyVenueAnswers);
+  // Ask again (My inquiries) brings what they asked last time
+  const [venueAnswers, setVenueAnswers] = useState<VenueAnswers>(() => {
+    try {
+      return venueAnswersFrom(JSON.parse(params.answers ?? 'null'));
+    } catch {
+      return emptyVenueAnswers();
+    }
+  });
   const [catererAnswers, setCatererAnswers] = useState<CatererAnswers>(emptyCatererAnswers);
   const questionSet = vendor.data?.questionSet ?? null;
 

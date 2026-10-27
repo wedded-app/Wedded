@@ -1,4 +1,10 @@
-import { catererDetails, emptyCatererAnswers, emptyVenueAnswers, venueDetails } from './details';
+import {
+  catererDetails,
+  emptyCatererAnswers,
+  emptyVenueAnswers,
+  venueAnswersFrom,
+  venueDetails,
+} from './details';
 
 describe('venueDetails', () => {
   it('sends nothing when nothing was answered', () => {
@@ -30,6 +36,30 @@ describe('venueDetails', () => {
         true,
       ),
     ).toEqual({ tour: true, tourSlots: [{ date: '2026-10-03', part: 'evening' }] });
+  });
+});
+
+describe('venueAnswersFrom', () => {
+  it('gives back what venueDetails sent', () => {
+    const answers = {
+      ...emptyVenueAnswers(),
+      catering: 'own' as const,
+      ownCaterer: 'Saffron',
+      sameDay: true,
+      tourSlots: [{ date: '2026-10-03', part: 'evening' as const }],
+    };
+    expect(venueAnswersFrom(venueDetails(answers, true))).toEqual(answers);
+  });
+
+  it('leaves anything unexpected blank', () => {
+    expect(venueAnswersFrom(null)).toEqual(emptyVenueAnswers());
+    expect(
+      venueAnswersFrom({
+        catering: 'buffet',
+        ghoriDhol: 'yes',
+        tourSlots: [{ date: 3, part: 'evening' }, { date: '2026-10-04', part: 'night' }, 'x'],
+      }),
+    ).toEqual(emptyVenueAnswers());
   });
 });
 
