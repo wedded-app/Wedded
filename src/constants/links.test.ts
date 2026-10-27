@@ -1,4 +1,6 @@
-import { shareLink } from './links';
+import * as Links from './links';
+
+const { shareLink } = Links;
 
 const mockManifest: { metadata?: object } = {};
 jest.mock('expo-constants', () => ({
@@ -30,5 +32,16 @@ describe('shareLink', () => {
     expect(shareLink('/w/asha-ravi', { g: 'tok' })).toBe(
       'exp://u.expo.dev/project/--/w/asha-ravi?g=tok&channel-name=demo',
     );
+  });
+
+  it('opens the web app when there is one, so guests need no app', () => {
+    process.env.EXPO_PUBLIC_WEB_URL = 'https://www.example.test/';
+    jest.isolateModules(() => {
+      const links = jest.requireActual<typeof Links>('./links');
+      expect(links.shareLink('/w/asha-ravi', { g: 'tok' })).toBe(
+        'https://www.example.test/w/asha-ravi?g=tok',
+      );
+    });
+    delete process.env.EXPO_PUBLIC_WEB_URL;
   });
 });

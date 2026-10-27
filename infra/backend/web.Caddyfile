@@ -1,0 +1,17 @@
+# The web app on its own name next to the API, so wedding websites, RSVPs and
+# invites open in any browser. CI builds the Expo web export and deploys it to
+# app/web (demo.yml); deploy.sh adds this file to Supabase's Caddyfile.
+{$WEB_DOMAIN} {
+	root * /srv/web
+	encode zstd gzip
+	# Expo's static export: /w/asha-ravi is w/[slug].html
+	try_files {path} {path}.html {path}/index.html {http.request.uri.path.dir}\[*\].html
+	file_server
+	handle_errors 404 {
+		rewrite * /+not-found.html
+		file_server
+	}
+	# shortcut: a stand-in address until the domain (#148), so search engines skip it
+	header X-Robots-Tag noindex
+	header -server
+}

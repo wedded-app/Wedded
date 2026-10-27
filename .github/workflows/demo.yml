@@ -2,8 +2,8 @@ name: Shared demo
 
 # Every merge to main goes live on the shared demo, so both founders always
 # see the latest: the backend server on AWS (infra/README.md) gets the new
-# migrations, server code and settings, then the app is published to the
-# "demo" channel that we open in Expo Go. The server's address and public key
+# migrations, server code, settings and web app, then the app is published to
+# the "demo" channel that we open in Expo Go. The server's address and public key
 # live in the Expo project's "preview" environment, not here.
 #
 # Needs these repository secrets (Settings → Secrets and variables → Actions):
@@ -37,6 +37,19 @@ jobs:
           cache: npm
       - run: npm ci
 
+      # The web app the server shows guests without the app (wedding websites,
+      # RSVPs, invites), built with the "preview" values like the app
+      - name: Build the web app
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+        shell: bash
+        run: |
+          if [ -z "$EXPO_TOKEN" ]; then
+            echo "::notice::EXPO_TOKEN isn't set, so the web app wasn't built."
+            exit 0
+          fi
+          npx eas-cli@latest env:exec preview 'npx expo export --platform web' --non-interactive
+
       # The backend first, so the app never runs against an older schema
       - name: Update the backend server on AWS
         env:
@@ -48,6 +61,7 @@ jobs:
             echo "::notice::AWS_ACCESS_KEY_ID or AWS_SECRET_ACCESS_KEY isn't set, so the AWS backend wasn't updated."
             exit 0
           fi
+          if [ -d dist ]; then export WEB=dist; fi
           npm run backend -- deploy
 
       # A green deploy only proves the migrations ran; this proves the app can read

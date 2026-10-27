@@ -30,6 +30,13 @@ services:
       STORAGE_BACKEND: ${STORAGE_BACKEND:-s3}
       ENABLE_IMAGE_TRANSFORMATION: 'false'
 
+  # The web app on its own name (web.Caddyfile); `aws s3 sync` in deploys fills app/web
+  caddy:
+    environment:
+      WEB_DOMAIN: ${WEB_DOMAIN}
+    volumes:
+      - /opt/wedded/app/web:/srv/web:ro
+
   # GoTrue reads email templates from a URL, so serve supabase/templates inside the server
   email-templates:
     container_name: supabase-email-templates
