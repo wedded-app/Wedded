@@ -1,4 +1,4 @@
-import type { SiteEvent, SitePage } from '@/data/website';
+import type { SiteEvent, SitePage, SiteSection } from '@/data/website';
 
 import { capsColor, contrast, SITE_DESIGNS } from './designs';
 
@@ -12,6 +12,7 @@ import {
   splitNames,
   startSteps,
   visibleSections,
+  withPart,
 } from './site-helpers';
 
 const event = (slug: string, date: string | null, city: string | null = null): SiteEvent => ({
@@ -117,6 +118,26 @@ describe('sections', () => {
     });
     expect(visibleSections(p)).toEqual(['events', 'story', 'rsvp']);
     expect(hasContent(page({ events: [event('a', null)] }), 'rsvp')).toBe(false);
+  });
+
+  it('puts a part switched back on in its usual place', () => {
+    const usual: SiteSection[] = ['family', 'story', 'events', 'rsvp', 'guide', 'travel', 'faq'];
+    for (const part of usual) {
+      expect(
+        withPart(
+          usual.filter((s) => s !== part),
+          part,
+          usual,
+        ),
+      ).toEqual(usual);
+    }
+    expect(withPart(['events', 'family', 'rsvp'], 'story', usual)).toEqual([
+      'events',
+      'family',
+      'story',
+      'rsvp',
+    ]);
+    expect(withPart(['events', 'family'], 'events', usual)).toEqual(['events', 'family']);
   });
 });
 

@@ -111,6 +111,21 @@ export function visibleSections(page: SitePage): SiteSection[] {
   return page.sections.filter((s) => hasContent(page, s));
 }
 
+/**
+ * The parts with one switched back on, in its usual place: right after the
+ * last part that normally comes before it (`usual` is the usual order).
+ */
+export function withPart(
+  sections: SiteSection[],
+  section: SiteSection,
+  usual: readonly SiteSection[],
+): SiteSection[] {
+  if (sections.includes(section)) return sections;
+  const rank = usual.indexOf(section);
+  const at = sections.reduce((after, s, i) => (usual.indexOf(s) < rank ? i + 1 : after), 0);
+  return [...sections.slice(0, at), section, ...sections.slice(at)];
+}
+
 /** The builder's first steps and whether each is done. */
 export function startSteps(page: SitePage) {
   return {
