@@ -183,7 +183,16 @@ export default function MyInquiriesScreen() {
                       onPress={() =>
                         router.push({
                           pathname: '/ask',
-                          params: { vendorId: item.vendor_id, event: item.event_slugs[0] ?? '' },
+                          // The same kind of ask, with last time's answers (#352)
+                          params: {
+                            vendorId: item.vendor_id,
+                            event: item.event_slugs[0] ?? '',
+                            guests: item.guest_band,
+                            answers: JSON.stringify(item.answers),
+                            ...((item.answers as { tour?: unknown }).tour === true
+                              ? { kind: 'tour' }
+                              : {}),
+                          },
                         })
                       }
                     />

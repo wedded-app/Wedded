@@ -44,7 +44,7 @@ export function closeGuestSheet() {
 /** Asks first on phones (an alert) and on the web (the browser's confirm). */
 export function confirm(title: string, body: string, yes: string, no: string, onYes: () => void) {
   if (Platform.OS === 'web') {
-    if (globalThis.confirm(body)) onYes();
+    if (globalThis.confirm(`${title}\n\n${body}`)) onYes();
     return;
   }
   Alert.alert(title, body, [

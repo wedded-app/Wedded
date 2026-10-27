@@ -7,6 +7,7 @@ import { ListRow, ListSection } from '@/components/list';
 import { StateView } from '@/components/state-view';
 import { makeStyles, Spacing, useColors } from '@/constants/theme';
 import { useExportBusiness } from '@/data/business-export';
+import { useBusinessChecklist } from '@/data/business-insights';
 import { useMyListing } from '@/data/listing';
 import { useVendorMenus } from '@/data/vendor-menus';
 import { useMyVendorPhotos } from '@/data/vendor-photos-self';
@@ -34,6 +35,7 @@ export default function BusinessScreen() {
   const current = useCurrentBusiness();
   const listing = useMyListing(current.vendorId);
   const menus = useVendorMenus(current.vendorId);
+  const checklist = useBusinessChecklist(current.vendorId);
   const photos = useMyVendorPhotos(current.vendorId);
   const exporting = useExportBusiness(current.vendorId);
   const business = current.business;
@@ -53,6 +55,10 @@ export default function BusinessScreen() {
     );
   }
 
+  // Menus fit halls and caterers: the server's checklist asks for them only
+  // there (#352). Anyone who already made one keeps the row.
+  const showMenus =
+    (menus.data?.length ?? 0) > 0 || !!checklist.data?.items.some((i) => i.key === 'menus');
   const photoList = photos.data ?? [];
   const cover = photoList.find((photo) => photo.isCover) ?? photoList[0] ?? null;
 
@@ -94,13 +100,15 @@ export default function BusinessScreen() {
           value={photos.data ? String(photos.data.length) : undefined}
           onPress={() => router.push('/business/photos')}
         />
-        <ListRow
-          icon="restaurant-outline"
-          title={t('business.myPage.packages')}
-          subtitle={t('business.myPage.packagesHint')}
-          value={menus.data ? String(menus.data.length) : undefined}
-          onPress={() => router.push('/business/menus')}
-        />
+        {showMenus && (
+          <ListRow
+            icon="restaurant-outline"
+            title={t('business.myPage.packages')}
+            subtitle={t('business.myPage.packagesHint')}
+            value={menus.data ? String(menus.data.length) : undefined}
+            onPress={() => router.push('/business/menus')}
+          />
+        )}
         <ListRow
           icon="create-outline"
           title={t('business.myPage.about')}
