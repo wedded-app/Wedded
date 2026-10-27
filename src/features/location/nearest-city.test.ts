@@ -1,6 +1,6 @@
 import type { City } from '@/data/places';
 
-import { milesBetween, nearestCity } from './nearest-city';
+import { milesBetween, nearestCity, townNear } from './nearest-city';
 
 const city = (name: string, latitude: number, longitude: number): City => ({
   slug: name.toLowerCase().replace(/ /g, '-'),
@@ -38,5 +38,19 @@ describe('nearestCity', () => {
 
   it('returns nothing without cities', () => {
     expect(nearestCity([], 39, -121)).toBeNull();
+  });
+});
+
+describe('townNear', () => {
+  it('names the closest city to a ZIP or area code', () => {
+    const zip = { label: 'ZIP 95993', latitude: 39.14, longitude: -121.62 };
+    expect(townNear(zip, [sacramento, yubaCity, fremont])).toBe('Yuba City');
+  });
+
+  it('names nothing without a search place, or far from every city', () => {
+    expect(townNear(null, [sacramento])).toBeNull();
+    expect(
+      townNear({ label: 'New York', latitude: 40.75, longitude: -73.99 }, [sacramento]),
+    ).toBeNull();
   });
 });

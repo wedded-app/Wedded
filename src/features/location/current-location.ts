@@ -2,10 +2,7 @@ import * as Location from 'expo-location';
 
 import type { City } from '@/data/places';
 
-import { nearestCity } from './nearest-city';
-
-/** Further than this from every city we know means outside Northern California. */
-const MAX_MILES_TO_A_CITY = 75;
+import { MAX_MILES_TO_A_CITY, nearestCity } from './nearest-city';
 
 export type LocateResult =
   | { kind: 'found'; city: City }

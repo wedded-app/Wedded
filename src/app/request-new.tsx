@@ -27,6 +27,7 @@ import { photoUrl } from '@/data/vendor-media';
 import { useCategoryVendorCounts } from '@/data/vendors';
 import { requestProblem, usePostRequest } from '@/data/requests';
 import { useSession } from '@/features/auth/session';
+import { townNear } from '@/features/location/nearest-city';
 import { useSearchLocation } from '@/features/location/search-location';
 import { StartPlanCard } from '@/features/planner/start-plan-card';
 import { usePlanView } from '@/features/planner/use-plan-view';
@@ -97,7 +98,9 @@ function AskVendors() {
   const event = picked ?? view.chosen[0]?.slug ?? null;
   const [category, setCategory] = useState<string | null>(params.category ?? null);
   const [budget, setBudget] = useState<string | null>(null);
-  const [town, setTown] = useState(profile?.city ?? '');
+  // Null until they type, so the town near their search fills in once cities load
+  const [typedTown, setTown] = useState<string | null>(null);
+  const town = typedTown ?? townNear(searchPlace, cities.data ?? []) ?? profile?.city ?? '';
   const [note, setNote] = useState('');
   const [sent, setSent] = useState(false);
   const [everyKind, setEveryKind] = useState(false);

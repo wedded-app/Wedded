@@ -1,6 +1,9 @@
-import type { City } from '@/data/places';
+import type { City, Place } from '@/data/places';
 
 const EARTH_RADIUS_MILES = 3958.8;
+
+/** Further than this from every city we know means outside Northern California. */
+export const MAX_MILES_TO_A_CITY = 75;
 
 /** Great-circle distance in miles. */
 export function milesBetween(
@@ -30,4 +33,14 @@ export function nearestCity(
     if (!best || miles < best.miles) best = { city, miles };
   }
   return best;
+}
+
+/**
+ * The town to fill in for "Where?" on an ask or a request: the closest of our
+ * cities to where they're searching (a city, ZIP or area code), so it isn't
+ * the profile's city when they're planning somewhere else (#352).
+ */
+export function townNear(place: Place | null, cities: City[]): string | null {
+  const nearest = place && nearestCity(cities, place.latitude, place.longitude);
+  return nearest && nearest.miles <= MAX_MILES_TO_A_CITY ? nearest.city.name : null;
 }
