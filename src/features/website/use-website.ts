@@ -1,7 +1,13 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { useEffect } from 'react';
 
-import { useCreateSite, useMySiteSlug, useSitePage, type SitePage } from '@/data/website';
+import {
+  siteProblem,
+  useCreateSite,
+  useMySiteSlug,
+  useSitePage,
+  type SitePage,
+} from '@/data/website';
 import { usePlanView } from '@/features/planner/use-plan-view';
 
 export type WebsiteState =
@@ -29,6 +35,18 @@ export function useWebsite(): WebsiteState & { view: ReturnType<typeof usePlanVi
   }, [needsSite, wedding, create]);
 
   const page = useSitePage(slug.data ?? '');
+
+  // The link can change under the builder (named from the couple while it's a
+  // draft, #411, or changed by another editor): when it's gone, read it again
+  // before calling it an error
+  const relink =
+    page.isError &&
+    siteProblem(page.error) === 'notFound' &&
+    slug.dataUpdatedAt < page.errorUpdatedAt;
+  const refetchSlug = slug.refetch;
+  useEffect(() => {
+    if (relink) void refetchSlug();
+  }, [relink, refetchSlug]);
 
   // The site shows the plan's names, days, times and places: when the family
   // changes those (here or in My Wedding), show the change on the site too
@@ -59,6 +77,7 @@ export function useWebsite(): WebsiteState & { view: ReturnType<typeof usePlanVi
 
   if (view.loading || (wedding && slug.isPending)) return { status: 'loading', view };
   if (!wedding) return { status: 'noWedding', view };
+  if (relink && !slug.isError) return { status: 'loading', view };
   if (slug.isError || create.isError || page.isError) return { status: 'error', retry, view };
   if (slug.data === null)
     return canEdit ? { status: 'loading', view } : { status: 'cantMake', view };
