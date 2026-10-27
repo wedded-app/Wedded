@@ -20,7 +20,7 @@ import {
 } from '@/data/memory-vault';
 import { shareInvite } from '@/data/wedding';
 import { confirm } from '@/features/guests/pick-sheet';
-import { formatDate } from '@/features/inquiry/inquiry-helpers';
+import { formatDate, toDateString } from '@/features/inquiry/inquiry-helpers';
 import { printHtml } from '@/features/tent/print-html';
 import { tableTentHtml } from '@/features/tent/table-tent';
 import { useVaultLink } from '@/features/vault/use-vault-link';
@@ -171,6 +171,8 @@ function People({ vaultId }: { vaultId: string }) {
     );
 
   if (people.isPending) return null;
+  // Not "No one has joined yet" when they just didn't load
+  if (people.isError) return <StateView state="error" onRetry={() => void people.refetch()} />;
   return (
     <>
       <ListSection
@@ -185,7 +187,9 @@ function People({ vaultId }: { vaultId: string }) {
               icon="person-outline"
               title={name}
               subtitle={[
-                t('memoryVault.people.joined', { date: formatDate(person.joinedAt.slice(0, 10)) }),
+                t('memoryVault.people.joined', {
+                  date: formatDate(toDateString(new Date(person.joinedAt))),
+                }),
                 person.itemCount > 0
                   ? t('memoryVault.people.added', { count: person.itemCount })
                   : null,
@@ -203,9 +207,7 @@ function People({ vaultId }: { vaultId: string }) {
           );
         })}
       </ListSection>
-      {(people.isError || remove.isError) && (
-        <FieldError message={t('memoryVault.settings.failed')} />
-      )}
+      {remove.isError && <FieldError message={t('memoryVault.settings.failed')} />}
     </>
   );
 }
