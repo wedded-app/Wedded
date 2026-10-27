@@ -3,6 +3,8 @@
 #
 #   npm run backend -- deploy [--seed]      bring it up to date with this checkout:
 #                                            settings, functions, migrations (--seed: sample vendors, new server only)
+#                                            WEB=dist also replaces the web app with that web export,
+#                                            built with the "preview" values (demo.yml)
 #   npm run backend -- check                ask the server the three things the app asks before sign-in
 #   npm run backend -- env                  print the address and keys for scripts:
 #                                            eval "$(npm run -s backend -- env)"
@@ -51,6 +53,7 @@ case "${1:-}" in
     aws s3 sync supabase "s3://$bucket/app/supabase" --delete --quiet \
       --exclude '.temp/*' --exclude '.branches/*' --exclude 'tests/*'
     aws s3 sync infra/backend "s3://$bucket/app/infra/backend" --delete --quiet
+    [ -z "${WEB:-}" ] || aws s3 sync "$WEB" "s3://$bucket/app/web" --delete --quiet
     seed=$([ "${2:-}" = --seed ] && echo 1 || true)
     # A new server may still be on its first boot, which installs the AWS CLI
     on_server "cloud-init status --wait >/dev/null || {
@@ -74,7 +77,7 @@ case "${1:-}" in
     on_server "REPLACE=${REPLACE:-} bash /opt/wedded/app/infra/backend/copy-from-supabase.sh"
     ;;
   *)
-    sed -n '2,11p' "$0"
+    sed -n '2,13p' "$0"
     exit 1
     ;;
 esac

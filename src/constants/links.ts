@@ -29,17 +29,26 @@ export function siteLink(path: string): string {
   return `${SITE_URL}/${path.replace(/^\//, '')}`;
 }
 
+// Where links someone else opens go: the website, or until there's a domain
+// the web app on the demo server (infra/README.md), which has the same pages.
+// shortcut: EXPO_PUBLIC_WEB_URL is the stand-in; drop it once the domain is set (#148)
+const SHARE_URL = (
+  process.env.EXPO_PUBLIC_SITE_URL ||
+  process.env.EXPO_PUBLIC_WEB_URL ||
+  ''
+).replace(/\/+$/, '');
+
 /**
  * A link someone else opens to land on `path` (an invite, an RSVP): the
- * website once there's a domain, else this app's own address. Expo Go can
+ * website or web app when there is one, else this app's own address. Expo Go can
  * only load a published update from that address with its channel, which
  * createURL leaves off ("channel-name: Required"); EAS names the branch after
  * the channel, so the update's branch is the channel.
  */
 export function shareLink(path: string, query?: Record<string, string>): string {
-  if (!SITE_URL_IS_PLACEHOLDER) {
+  if (SHARE_URL) {
     const search = query ? `?${new URLSearchParams(query).toString()}` : '';
-    return siteLink(path) + search;
+    return `${SHARE_URL}/${path.replace(/^\//, '')}${search}`;
   }
   const branch = (Constants.manifest2?.metadata as { branchName?: string } | undefined)?.branchName;
   const queryParams = { ...query, ...(branch ? { 'channel-name': branch } : {}) };

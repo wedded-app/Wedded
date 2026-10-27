@@ -1,9 +1,9 @@
 #!/bin/bash
 # Brings the backend server up to date with the repo: settings, the sign-in
-# email, the server functions and the database migrations. Runs on the server
-# as root: `npm run backend -- deploy` copies the repo's supabase/ and
-# infra/backend/ folders to /opt/wedded/app and starts this through AWS
-# Systems Manager.
+# email, the server functions, the database migrations and the web app's
+# site. Runs on the server as root: `npm run backend -- deploy` copies the
+# repo's supabase/ and infra/backend/ folders (and with WEB=, the web export)
+# to /opt/wedded/app and starts this through AWS Systems Manager.
 #
 #   DOMAIN=… STORAGE_BUCKET=… AWS_REGION=… [SEED=1] bash deploy.sh
 set -euo pipefail
@@ -55,6 +55,8 @@ set_env SUPABASE_PUBLIC_URL "$url"
 set_env API_EXTERNAL_URL "$url/auth/v1"
 set_env SITE_URL "$url"
 set_env PROXY_DOMAIN "$DOMAIN"
+# shortcut: the web app at www.<the API's sslip.io name> until the domain (#148); env/WEB_DOMAIN overrides it
+set_env WEB_DOMAIN "www.$DOMAIN"
 set_env ADDITIONAL_REDIRECT_URLS 'exp://**,weddingapp://**'
 # Auto-confirm off: with it on, a new sign-up by code gets a password session that refuse_password_sign_in blocks
 set_env ENABLE_EMAIL_AUTOCONFIRM false
@@ -80,10 +82,19 @@ jq -s '{imports: (map(.imports // {}) | add)}' "$APP"/supabase/functions/*/deno.
 mkdir -p volumes/email-templates
 cp "$APP"/supabase/templates/*.html volumes/email-templates/
 
+# The web app's site next to Supabase's in their Caddyfile
+caddyfiles() { cat volumes/proxy/caddy/*Caddyfile 2>/dev/null | md5sum; }
+caddy_before=$(caddyfiles)
+cp "$APP/infra/backend/web.Caddyfile" volumes/proxy/caddy/
+grep -qx 'import web.Caddyfile' volumes/proxy/caddy/Caddyfile ||
+  echo 'import web.Caddyfile' >>volumes/proxy/caddy/Caddyfile
+
 cp "$APP/infra/backend/docker-compose.wedded.yml" .
 sh run.sh config add caddy wedded >/dev/null
 docker compose --progress quiet up -d --wait --remove-orphans
 docker compose restart functions >/dev/null
+# Caddy fronts the API too, so it restarts only when its sites change
+[ "$(caddyfiles)" = "$caddy_before" ] || docker compose restart caddy >/dev/null
 
 if ! command -v supabase >/dev/null; then
   arch=$(uname -m | sed 's/aarch64/arm64/; s/x86_64/amd64/')
@@ -109,4 +120,4 @@ aws ssm put-parameter --overwrite --name /wedded/backend/keys/secret --type Secu
 aws ssm put-parameter --overwrite --name /wedded/backend/keys/dashboard --type SecureString \
   --value "$(read_env DASHBOARD_PASSWORD)" >/dev/null
 
-echo "Up to date: $url"
+echo "Up to date: $url (the web app: https://$(read_env WEB_DOMAIN))"
