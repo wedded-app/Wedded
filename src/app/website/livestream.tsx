@@ -57,7 +57,7 @@ function LiveForm({ site, weddingId }: { site: SitePage; weddingId: string }) {
         label={t('website.live.link')}
         value={url}
         onChangeText={setUrl}
-        placeholder="youtube.com/live/…"
+        placeholder={t('website.live.linkSample')}
         autoCapitalize="none"
         autoCorrect={false}
         keyboardType="url"

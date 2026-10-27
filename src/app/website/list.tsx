@@ -190,7 +190,7 @@ function ListForm({
               label={t('website.list.hotel.linkLabel')}
               value={item.link ?? ''}
               onChangeText={(link) => edit(i, { link })}
-              placeholder="marriott.com/…"
+              placeholder={t('website.list.hotel.linkSample')}
               autoCapitalize="none"
               autoCorrect={false}
               keyboardType="url"

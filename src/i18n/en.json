@@ -3435,6 +3435,7 @@
         "bodyLabel": "Details",
         "bodySample": "10 minutes from the gurdwara. Use code GILL when you book.",
         "linkLabel": "Booking link",
+        "linkSample": "marriott.com/…",
         "add": "Add a hotel",
         "invalid": "Check the booking link and try again."
       },
@@ -3454,6 +3455,7 @@
       "title": "Livestream",
       "hint": "A link family abroad can open to watch, from YouTube, Facebook or Zoom.",
       "link": "Link",
+      "linkSample": "youtube.com/live/…",
       "note": "A note",
       "noteSample": "Live from 9:00 AM Pacific (9:30 PM in Punjab).",
       "badLink": "Check the link and try again."
