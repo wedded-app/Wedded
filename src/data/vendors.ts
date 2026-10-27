@@ -94,7 +94,7 @@ export type VendorProfile = {
 };
 
 /** The listed price in whole dollars (the database keeps cents). */
-function priceOf(row: {
+export function priceOf(row: {
   price_display: string;
   price_from_cents: number | null;
   price_to_cents: number | null;
