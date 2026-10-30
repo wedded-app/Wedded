@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Alert, Platform, Pressable, View } from 'react-native';
+import { Pressable, View } from 'react-native';
 import Animated from 'react-native-reanimated';
 
 import { AppText } from '@/components/app-text';
@@ -23,23 +23,12 @@ import {
 import { useLocale } from '@/i18n/locale-context';
 import { selectionHaptic, successHaptic } from '@/lib/haptics';
 import { Motion } from '@/lib/motion';
+import { confirm } from '@/lib/confirm';
 
 import { initials } from './wedding-tab';
 
 // Kept here too for the screens that already take it from this file
 export { initials };
-
-function confirm(title: string, body: string, action: string, onYes: () => void) {
-  if (Platform.OS === 'web') {
-    // Alert does nothing in a web browser
-    if (globalThis.confirm(`${title}\n\n${body}`)) onYes();
-    return;
-  }
-  Alert.alert(title, body, [
-    { text: action, style: 'destructive', onPress: onYes },
-    { style: 'cancel', text: '✕' },
-  ]);
-}
 
 /**
  * "Plan together" on My Wedding (docs/RESEARCH_GROWTH.md #1): save the plan
@@ -136,6 +125,7 @@ function Together({ wedding }: { wedding: AccountWedding }) {
         : t('planTogether.removeTitle', { name: member.name ?? '' }),
       leaving ? t('planTogether.leaveBody') : t('planTogether.removeBody'),
       leaving ? t('planTogether.leave') : t('planTogether.remove'),
+      '✕',
       () =>
         remove.mutate(
           { weddingId: wedding.id, userId: member.userId },
@@ -163,6 +153,7 @@ function Together({ wedding }: { wedding: AccountWedding }) {
         t('planTogether.access.ownerTitle', { name }),
         t('planTogether.access.ownerBody'),
         t('planTogether.access.owner'),
+        '✕',
         apply,
       );
     } else apply();

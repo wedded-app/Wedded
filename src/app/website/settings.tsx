@@ -17,11 +17,11 @@ import {
   websiteLink,
   type SitePage,
 } from '@/data/website';
-import { confirm } from '@/features/guests/pick-sheet';
 import { slugify } from '@/features/website/site-helpers';
 import { closeWebsiteSheet, SheetForm, WebsiteSheet } from '@/features/website/website-sheet';
 import { useLocale } from '@/i18n/locale-context';
 import { successHaptic } from '@/lib/haptics';
+import { confirm } from '@/lib/confirm';
 
 /** The site's link, its password, search engines, and taking it down. */
 export default function WebsiteSettingsScreen() {

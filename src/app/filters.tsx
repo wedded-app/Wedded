@@ -18,17 +18,12 @@ import {
   useSearchFilters,
   type SearchSort,
 } from '@/features/search/search-filters';
+import { usd } from '@/features/vendors/profile-format';
 import { useLocale } from '@/i18n/locale-context';
 import { localized } from '@/i18n/localized';
 import { selectionHaptic } from '@/lib/haptics';
 
 const SORTS: SearchSort[] = ['distance', 'price_low', 'founding'];
-
-const usd = new Intl.NumberFormat('en-US', {
-  style: 'currency',
-  currency: 'USD',
-  maximumFractionDigits: 0,
-});
 
 /**
  * Filters for a results list (docs/RESEARCH_GROWTH.md #4), a sheet:

@@ -21,7 +21,6 @@ import {
   type SitePage,
   type SiteSection,
 } from '@/data/website';
-import { confirm } from '@/features/guests/pick-sheet';
 import { siteDesign } from '@/features/website/designs';
 import { useSiteFonts } from '@/features/website/fonts';
 import { PART_INFO, partSummary } from '@/features/website/parts';
@@ -31,6 +30,7 @@ import { useWebsite } from '@/features/website/use-website';
 import { WebsiteAsk } from '@/features/website/website-ask';
 import { useLocale } from '@/i18n/locale-context';
 import { selectionHaptic, successHaptic } from '@/lib/haptics';
+import { confirm } from '@/lib/confirm';
 
 /**
  * Website (DECISIONS.md, 2026-10-22; after The Knot's Website tab): where a

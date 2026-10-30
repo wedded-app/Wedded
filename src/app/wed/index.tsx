@@ -15,12 +15,12 @@ import Animated, { useAnimatedStyle } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useTabBarOffset } from '@/components/tab-bar';
-import { makeStyles, Sizes, Spacing, useColors } from '@/constants/theme';
+import { backgroundCss, makeStyles, Sizes, Spacing, useColors } from '@/constants/theme';
 import { SavedToastHost } from '@/features/saved/saved-toast';
 import { Greeting } from '@/features/wed/chat/greeting';
 import { ProgressChip } from '@/features/wed/chat/progress-chip';
 import { ThreadRow } from '@/features/wed/chat/thread-row';
-import { edgeStyle, WedHeader } from '@/features/wed/chat/wed-header';
+import { WedHeader } from '@/features/wed/chat/wed-header';
 import { useCloseWed } from '@/features/wed/close-wed';
 import { useKeyboardHeight } from '@/features/wed/keyboard-height';
 import { WedComposer } from '@/features/wed/wed-composer';
@@ -314,7 +314,7 @@ export default function WedScreen() {
           style={[
             styles.bottomEdge,
             { height: composerSpace },
-            edgeStyle(Colors.canvasEdgeUp),
+            backgroundCss(Colors.canvasEdgeUp),
             keyboardLift,
           ]}
         />

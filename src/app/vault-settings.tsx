@@ -19,12 +19,12 @@ import {
   type MemoryVault,
 } from '@/data/memory-vault';
 import { shareInvite } from '@/data/wedding';
-import { confirm } from '@/features/guests/pick-sheet';
 import { formatDate, toDateString } from '@/features/inquiry/inquiry-helpers';
 import { printHtml } from '@/features/tent/print-html';
 import { tableTentHtml } from '@/features/tent/table-tent';
 import { useVaultLink } from '@/features/vault/use-vault-link';
 import { useLocale } from '@/i18n/locale-context';
+import { confirm } from '@/lib/confirm';
 
 type Setting = 'uploadsOpen' | 'guestsSeeAll' | 'showVendors';
 const SETTINGS: Setting[] = ['uploadsOpen', 'guestsSeeAll', 'showVendors'];

@@ -1,20 +1,16 @@
 import { Image } from 'expo-image';
-import { Platform, Pressable, View, type ViewStyle } from 'react-native';
+import { Pressable, View } from 'react-native';
 import Animated, { type SharedValue, useAnimatedStyle } from 'react-native-reanimated';
 
 import { AppText } from '@/components/app-text';
 import { Icon } from '@/components/icon';
-import { makeStyles, Sizes, Spacing } from '@/constants/theme';
+import { backgroundCss, makeStyles, Sizes, Spacing } from '@/constants/theme';
 import { initials } from '@/features/planner/plan-together';
 import { useLocale } from '@/i18n/locale-context';
 
 import type { Teller } from './story-tellers';
 
-const topShade = (
-  Platform.OS === 'web'
-    ? { backgroundImage: 'linear-gradient(to bottom, rgba(0,0,0,0.7), rgba(0,0,0,0))' }
-    : { experimental_backgroundImage: 'linear-gradient(to bottom, rgba(0,0,0,0.7), rgba(0,0,0,0))' }
-) as ViewStyle;
+const topShade = backgroundCss('linear-gradient(to bottom, rgba(0,0,0,0.7), rgba(0,0,0,0))');
 
 /**
  * The story viewer's top: a progress bar per slide, who posted it (a tap

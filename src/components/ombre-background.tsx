@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Image, Platform, StyleSheet, View, type ViewStyle } from 'react-native';
+import { Image, StyleSheet, View } from 'react-native';
 import Animated, {
   Easing,
   useAnimatedStyle,
@@ -9,7 +9,7 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 
-import { useColors, type ColorToken } from '@/constants/theme';
+import { backgroundCss, useColors, type ColorToken } from '@/constants/theme';
 
 const GRAIN = require('../../assets/images/grain.png');
 
@@ -74,7 +74,7 @@ export function OmbreBackground({ tone = 'wine' }: { tone?: 'wine' | 'saffron' }
         (tone === 'saffron' ? SAFFRON : LIGHTS).map((light) => (
           <Glow key={light.color} light={light} width={size.width} height={size.height} />
         ))}
-      <View style={[StyleSheet.absoluteFill, gradient(SHEEN)]} />
+      <View style={[StyleSheet.absoluteFill, backgroundCss(SHEEN)]} />
       <Image source={GRAIN} resizeMode="repeat" style={[StyleSheet.absoluteFill, styles.grain]} />
     </View>
   );
@@ -114,17 +114,12 @@ function Glow({ light, width, height }: { light: Light; width: number; height: n
       style={[
         styles.light,
         { left: light.x * width, top: light.y * height, width: size, height: size },
-        gradient(`radial-gradient(circle, ${color} 0%, ${clear} 70%)`),
+        backgroundCss(`radial-gradient(circle, ${color} 0%, ${clear} 70%)`),
         moving,
       ]}
     />
   );
 }
-
-const gradient = (css: string) =>
-  (Platform.OS === 'web'
-    ? { backgroundImage: css }
-    : { experimental_backgroundImage: css }) as unknown as ViewStyle;
 
 const styles = StyleSheet.create({
   light: {

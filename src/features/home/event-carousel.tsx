@@ -1,20 +1,21 @@
 import { Image } from 'expo-image';
 import { router } from 'expo-router';
-import {
-  Platform,
-  ScrollView,
-  StyleSheet,
-  useWindowDimensions,
-  View,
-  type ViewStyle,
-} from 'react-native';
+import { ScrollView, StyleSheet, useWindowDimensions, View } from 'react-native';
 import Animated from 'react-native-reanimated';
 
 import { AppText } from '@/components/app-text';
 import { eventIcon } from '@/components/event-icon';
 import { Icon } from '@/components/icon';
 import { PressableScale } from '@/components/pressable-scale';
-import { makeStyles, Radius, Sizes, Spacing, useColors, type Palette } from '@/constants/theme';
+import {
+  backgroundCss,
+  makeStyles,
+  Radius,
+  Sizes,
+  Spacing,
+  useColors,
+  type Palette,
+} from '@/constants/theme';
 import type { FeedPost } from '@/data/feed';
 import type { HomeEvent, HomeSection } from '@/data/reference';
 import { localized } from '@/i18n/localized';
@@ -37,18 +38,10 @@ const fill = (Colors: Palette, phase: string) => {
         ? [Colors.heroFrom, '#4A0F1E']
         : [Colors.heroTo, Colors.heroFrom];
   const image = `linear-gradient(160deg, ${from} 0%, ${to} 100%)`;
-  return (
-    Platform.OS === 'web' ? { backgroundImage: image } : { experimental_backgroundImage: image }
-  ) as ViewStyle;
+  return backgroundCss(image);
 };
 
-const scrim = (
-  Platform.OS === 'web'
-    ? { backgroundImage: 'linear-gradient(to top, rgba(0,0,0,0.75), rgba(0,0,0,0.1))' }
-    : {
-        experimental_backgroundImage: 'linear-gradient(to top, rgba(0,0,0,0.75), rgba(0,0,0,0.1))',
-      }
-) as ViewStyle;
+const scrim = backgroundCss('linear-gradient(to top, rgba(0,0,0,0.75), rgba(0,0,0,0.1))');
 
 /**
  * "Plan by event" as tall cards that snap as you swipe, in ceremony order.

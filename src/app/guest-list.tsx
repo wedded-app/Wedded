@@ -16,10 +16,11 @@ import {
 } from '@/data/guests';
 import { useWeddingPlan } from '@/data/wedding';
 import { guestTotals } from '@/features/guests/guest-helpers';
-import { closeGuestSheet, confirm, PickSheet } from '@/features/guests/pick-sheet';
+import { closeGuestSheet, PickSheet } from '@/features/guests/pick-sheet';
 import { useLocale } from '@/i18n/locale-context';
 import { successHaptic } from '@/lib/haptics';
 import { formatPhone } from '@/lib/phone';
+import { confirm } from '@/lib/confirm';
 
 /**
  * A named guest list ("Mehndi list", "Mom's side", #308): its name and who's

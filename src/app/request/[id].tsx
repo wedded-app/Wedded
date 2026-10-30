@@ -1,7 +1,7 @@
 import { Image } from 'expo-image';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
-import { Alert, Platform, ScrollView, StyleSheet, View, useWindowDimensions } from 'react-native';
+import { ScrollView, StyleSheet, View, useWindowDimensions } from 'react-native';
 import Animated from 'react-native-reanimated';
 
 import { AppText } from '@/components/app-text';
@@ -35,31 +35,13 @@ import { usePlanView } from '@/features/planner/use-plan-view';
 import { FaceStack, GlassCard, GlowButton, NightScreen } from '@/features/requests/night';
 import { MatchMoment } from '@/features/requests/moments';
 import { RequestInvite } from '@/features/requests/request-invite';
-import { shortName } from '@/features/requests/requests-format';
+import { dollars, shortName } from '@/features/requests/requests-format';
 import { useRequestWords } from '@/features/requests/use-request-words';
 import { localized } from '@/i18n/localized';
 import { useLocale } from '@/i18n/locale-context';
 import { successHaptic } from '@/lib/haptics';
 import { Motion } from '@/lib/motion';
-
-const dollars = (cents: number) =>
-  (cents / 100).toLocaleString('en-US', {
-    style: 'currency',
-    currency: 'USD',
-    maximumFractionDigits: 0,
-  });
-
-/** A yes-or-no question, as an alert on phones and confirm() in a browser. */
-function ask(title: string, body: string, yes: string, no: string, onYes: () => void) {
-  if (Platform.OS === 'web') {
-    if (globalThis.confirm(body)) onYes();
-    return;
-  }
-  Alert.alert(title, body, [
-    { text: no, style: 'cancel' },
-    { text: yes, onPress: onYes },
-  ]);
-}
+import { confirm } from '@/lib/confirm';
 
 /**
  * One request and its proposals (#219), on the night page: the request as an
@@ -123,7 +105,7 @@ function Request() {
   const cardWidth = Math.min(width - Sizes.pageGutter * 2 - 28, 420);
 
   const choose = (p: Proposal, vendorName: string) =>
-    ask(
+    confirm(
       t('requests.inbox.acceptTitle'),
       p.priceCents != null
         ? t('requests.inbox.acceptBody', { vendor: vendorName, price: dollars(p.priceCents) })
@@ -146,6 +128,7 @@ function Request() {
             },
           },
         ),
+      'default',
     );
 
   const status = request.expired && request.status === 'open' ? 'expired' : request.status;
@@ -238,12 +221,13 @@ function Request() {
             variant="text"
             label={t('requests.inbox.close')}
             onPress={() =>
-              ask(
+              confirm(
                 t('requests.inbox.closeTitle'),
                 t('requests.inbox.closeBody'),
                 t('requests.inbox.closeYes'),
                 t('requests.inbox.notYet'),
                 () => close.mutate({ requestId: request.id, booked: false }),
+                'default',
               )
             }
           />
