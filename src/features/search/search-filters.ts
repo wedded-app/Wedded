@@ -5,6 +5,7 @@
  * /filters sheet sets them; results pass them to useVendorSearch().
  */
 import { useSyncExternalStore } from 'react';
+import { createListeners } from '@/lib/listeners';
 
 export type SearchSort = 'distance' | 'price_low' | 'founding';
 
@@ -57,23 +58,16 @@ export function activeFilterCount(filters: SearchFilters): number {
 }
 
 let current: SearchFilters = NO_FILTERS;
-const listeners = new Set<() => void>();
+const { subscribe, notify } = createListeners();
 
 export function setSearchFilters(change: Partial<SearchFilters>) {
   current = { ...current, ...change };
-  listeners.forEach((listener) => listener());
+  notify();
 }
 
 export function clearSearchFilters() {
   current = NO_FILTERS;
-  listeners.forEach((listener) => listener());
-}
-
-function subscribe(listener: () => void) {
-  listeners.add(listener);
-  return () => {
-    listeners.delete(listener);
-  };
+  notify();
 }
 
 /** The current filters, re-rendering when they change. */

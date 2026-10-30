@@ -9,6 +9,7 @@
 import { useSyncExternalStore } from 'react';
 
 import { readSetting, StorageKeys, writeSetting } from '@/lib/storage';
+import { createListeners } from '@/lib/listeners';
 
 import type { WeddingPlan } from './plan-helpers';
 
@@ -46,7 +47,7 @@ function load(): WeddingPlan {
 }
 
 let plan: WeddingPlan | null = null;
-const listeners = new Set<() => void>();
+const { subscribe, notify } = createListeners();
 
 function current(): WeddingPlan {
   plan ??= load();
@@ -56,14 +57,7 @@ function current(): WeddingPlan {
 function update(change: (plan: WeddingPlan) => WeddingPlan) {
   plan = change(current());
   void writeSetting(StorageKeys.weddingPlan, JSON.stringify(plan));
-  listeners.forEach((listener) => listener());
-}
-
-function subscribe(listener: () => void) {
-  listeners.add(listener);
-  return () => {
-    listeners.delete(listener);
-  };
+  notify();
 }
 
 /** Replace the whole plan: the copy of the account's plan. */
