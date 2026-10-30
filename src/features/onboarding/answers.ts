@@ -7,6 +7,7 @@ import { useSyncExternalStore } from 'react';
 
 import type { GuestBand } from '@/data/inquiries';
 import { getWeddingDraft } from '@/features/home/wedding-draft';
+import { createListeners } from '@/lib/listeners';
 
 /** Who the wedding is for, as profiles.planning_for stores it. */
 export type PlanningFor = 'self' | 'child' | 'sibling' | 'relative' | 'friend';
@@ -58,11 +59,11 @@ function startingAnswers(): Answers {
 }
 
 let answers: Answers | null = null;
-const listeners = new Set<() => void>();
+const { subscribe, notify } = createListeners();
 
 export function setAnswers(change: Partial<Answers>) {
   answers = { ...getAnswers(), ...change };
-  listeners.forEach((listener) => listener());
+  notify();
 }
 
 export function resetAnswers() {
@@ -72,13 +73,6 @@ export function resetAnswers() {
 export function getAnswers(): Answers {
   answers ??= startingAnswers();
   return answers;
-}
-
-function subscribe(listener: () => void) {
-  listeners.add(listener);
-  return () => {
-    listeners.delete(listener);
-  };
 }
 
 /** The answers so far, re-rendering when they change. */

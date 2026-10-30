@@ -2,11 +2,12 @@ import { useSyncExternalStore } from 'react';
 
 import type { StoryGroup } from '@/data/stories';
 import { readSetting, StorageKeys, writeSetting } from '@/lib/storage';
+import { createListeners } from '@/lib/listeners';
 
 // Stories watched on this phone, so their rings turn grey, as on Instagram.
 // Each is remembered for two days; a story only lasts one.
 const KEEP_MS = 2 * 24 * 60 * 60 * 1000;
-const listeners = new Set<() => void>();
+const { subscribe, notify } = createListeners();
 let seen: Map<string, number> | null = null;
 let version = 0;
 
@@ -27,15 +28,8 @@ export function markStorySeen(storyId: string) {
   if (all.has(storyId)) return;
   all.set(storyId, Date.now());
   version += 1;
-  listeners.forEach((listener) => listener());
+  notify();
   void writeSetting(StorageKeys.seenStories, JSON.stringify(Object.fromEntries(all)));
-}
-
-function subscribe(listener: () => void) {
-  listeners.add(listener);
-  return () => {
-    listeners.delete(listener);
-  };
 }
 
 /** Whether a story has been watched; re-renders when that changes. */

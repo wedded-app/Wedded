@@ -1,5 +1,6 @@
 import type { Href } from 'expo-router';
 import { useSyncExternalStore } from 'react';
+import { createListeners } from '@/lib/listeners';
 
 /**
  * The "Saved to Jaago · See list" toast's state, apart from its view
@@ -17,20 +18,13 @@ export type SavedToast = {
 
 let toast: SavedToast | null = null;
 let nextId = 1;
-const listeners = new Set<() => void>();
-
-function subscribe(listener: () => void) {
-  listeners.add(listener);
-  return () => {
-    listeners.delete(listener);
-  };
-}
+const { subscribe, notify } = createListeners();
 
 const getToast = () => toast;
 
 function setToast(next: SavedToast | null) {
   toast = next;
-  listeners.forEach((listener) => listener());
+  notify();
 }
 
 /** The toast to show, or null. */

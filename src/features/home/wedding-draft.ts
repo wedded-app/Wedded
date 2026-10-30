@@ -10,6 +10,7 @@ import { useSyncExternalStore } from 'react';
 import type { GuestBand } from '@/data/inquiries';
 import { GUEST_BANDS } from '@/features/inquiry/inquiry-helpers';
 import { readSetting, StorageKeys, writeSetting } from '@/lib/storage';
+import { createListeners } from '@/lib/listeners';
 
 export type WeddingDraft = {
   /** yyyy-mm-dd, or null when they haven't said. */
@@ -41,7 +42,7 @@ export function hasDraft(draft: WeddingDraft): boolean {
 }
 
 let draft: WeddingDraft | null = null;
-const listeners = new Set<() => void>();
+const { subscribe, notify } = createListeners();
 
 function current(): WeddingDraft {
   draft ??= parseDraft(readSetting(StorageKeys.weddingDraft));
@@ -56,20 +57,13 @@ export function getWeddingDraft(): WeddingDraft {
 export function setWeddingDraft(change: Partial<WeddingDraft>) {
   draft = { ...current(), ...change };
   void writeSetting(StorageKeys.weddingDraft, JSON.stringify(draft));
-  listeners.forEach((listener) => listener());
+  notify();
 }
 
 /** Forget it, once the account has the wedding. */
 export function clearWeddingDraft() {
   if (!hasDraft(current())) return;
   setWeddingDraft(EMPTY_DRAFT);
-}
-
-function subscribe(listener: () => void) {
-  listeners.add(listener);
-  return () => {
-    listeners.delete(listener);
-  };
 }
 
 export function useWeddingDraft(): WeddingDraft {

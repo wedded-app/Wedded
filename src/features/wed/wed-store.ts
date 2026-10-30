@@ -4,6 +4,7 @@ import { useRef, useSyncExternalStore } from 'react';
 import type { IconName } from '@/components/icon';
 import { sendToVendor } from '@/data/chat';
 import { selectionHaptic, successHaptic } from '@/lib/haptics';
+import { createListeners } from '@/lib/listeners';
 
 import {
   eventNames,
@@ -240,7 +241,7 @@ export const AWAY_LINE = 'While you were away';
 // The store
 
 let state: WedState = seed();
-const listeners = new Set<() => void>();
+const { subscribe, notify } = createListeners();
 // Every pending flow op and hold, so reset() can stop them all
 const timers = new Set<ReturnType<typeof setTimeout>>();
 const holds = new Map<string, ReturnType<typeof setTimeout>>();
@@ -248,18 +249,11 @@ const holds = new Map<string, ReturnType<typeof setTimeout>>();
 let awayLineShown = false;
 let nextKey = 0;
 
-function subscribe(listener: () => void) {
-  listeners.add(listener);
-  return () => {
-    listeners.delete(listener);
-  };
-}
-
 function set(patch: Partial<WedState>) {
   const next = { ...state, ...patch };
   if (patch.tasks) next.status = statusOf(next.tasks);
   state = next;
-  listeners.forEach((listener) => listener());
+  notify();
 }
 
 function later(ms: number, run: () => void) {
@@ -808,7 +802,7 @@ export const wed = {
     holds.clear();
     awayLineShown = false;
     state = { ...seed(), onWedTab: state.onWedTab };
-    listeners.forEach((listener) => listener());
+    notify();
     resetListeners.forEach((listener) => listener());
   },
 };

@@ -1,4 +1,5 @@
 import { useSyncExternalStore } from 'react';
+import { createListeners } from '@/lib/listeners';
 
 /**
  * The name Apple shared while signing in. Apple sends it only the very first
@@ -10,18 +11,11 @@ import { useSyncExternalStore } from 'react';
 export type NameHint = { appleUser: string; name: string };
 
 let current: NameHint | null = null;
-const listeners = new Set<() => void>();
+const { subscribe, notify } = createListeners();
 
 export function setNameHint(hint: NameHint | null) {
   current = hint;
-  listeners.forEach((listener) => listener());
-}
-
-function subscribe(listener: () => void) {
-  listeners.add(listener);
-  return () => {
-    listeners.delete(listener);
-  };
+  notify();
 }
 
 const read = () => current;
