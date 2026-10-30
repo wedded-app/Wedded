@@ -6,7 +6,6 @@ import { useEffect, useRef, useState } from 'react';
 import {
   type GestureResponderEvent,
   Linking,
-  Platform,
   Pressable,
   StyleSheet,
   View,
@@ -29,7 +28,7 @@ import Animated, {
 import { AppText } from '@/components/app-text';
 import { Icon } from '@/components/icon';
 import { storyRingStyle } from '@/components/story-ring';
-import { Radius, Spacing, Springs } from '@/constants/theme';
+import { backgroundCss, Radius, Spacing, Springs } from '@/constants/theme';
 import { trackReelView } from '@/data/business';
 import { compactCount, type Reel, reelVendors } from '@/data/reels';
 import { useSavedEventsFor, useSaveVendor } from '@/data/saved';
@@ -59,12 +58,8 @@ const HEART_MS = 900;
 const HEART_SIZE = 96;
 
 // Soft shades behind the words, so they read over any video
-const gradient = (css: string) =>
-  (Platform.OS === 'web'
-    ? { backgroundImage: css }
-    : { experimental_backgroundImage: css }) as ViewStyle;
-const bottomShade = gradient('linear-gradient(to top, rgba(0,0,0,0.62), rgba(0,0,0,0))');
-const topShade = gradient('linear-gradient(to bottom, rgba(0,0,0,0.35), rgba(0,0,0,0))');
+const bottomShade = backgroundCss('linear-gradient(to top, rgba(0,0,0,0.62), rgba(0,0,0,0))');
+const topShade = backgroundCss('linear-gradient(to bottom, rgba(0,0,0,0.35), rgba(0,0,0,0))');
 
 // A heart where you tapped: pops, then floats up and fades
 const heartPop = new Keyframe({

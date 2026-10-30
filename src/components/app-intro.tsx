@@ -2,7 +2,7 @@ import MaskedViewClass from '@react-native-masked-view/masked-view';
 import { useEventListener } from 'expo';
 import { useVideoPlayer, VideoView } from 'expo-video';
 import { type ComponentType, type ReactElement, useCallback, useEffect, useState } from 'react';
-import { Image, Platform, StyleSheet, View, type ViewProps, type ViewStyle } from 'react-native';
+import { Image, Platform, StyleSheet, View, type ViewProps } from 'react-native';
 import Animated, {
   Easing,
   ReduceMotion,
@@ -14,7 +14,7 @@ import Animated, {
 } from 'react-native-reanimated';
 
 import { AppText } from '@/components/app-text';
-import { useScheme } from '@/constants/theme';
+import { backgroundCss, useScheme } from '@/constants/theme';
 import { useLocale } from '@/i18n/locale-context';
 
 // Its class typings lean on React Native's NativeMethods, gone from 0.88's strict
@@ -77,11 +77,6 @@ const EXIT_AT = 380; // after the video ends
 const EXIT = 260;
 const FADE = 300;
 const HOLD = 500; // Reduce Motion: how long the lockup shows before it fades
-
-const gradient = (css: string) =>
-  (Platform.OS === 'web'
-    ? { backgroundImage: css }
-    : { experimental_backgroundImage: css }) as ViewStyle;
 
 export function AppIntro() {
   const [showing, setShowing] = useState(Platform.OS !== 'web');
@@ -214,7 +209,9 @@ function Intro({ onDone }: { onDone: () => void }) {
                 <Animated.View
                   style={[
                     styles.band,
-                    gradient(`linear-gradient(to right, transparent, ${SHEEN[mode]}, transparent)`),
+                    backgroundCss(
+                      `linear-gradient(to right, transparent, ${SHEEN[mode]}, transparent)`,
+                    ),
                     sheen,
                   ]}
                 />

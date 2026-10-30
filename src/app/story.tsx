@@ -2,7 +2,7 @@ import { Image } from 'expo-image';
 import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Alert, PanResponder, Platform, Pressable, View, type ViewStyle } from 'react-native';
+import { Alert, PanResponder, Platform, Pressable, View } from 'react-native';
 import Animated, {
   cancelAnimation,
   Easing,
@@ -18,7 +18,7 @@ import { AppText } from '@/components/app-text';
 import { Button } from '@/components/button';
 import { Icon } from '@/components/icon';
 import { StateView } from '@/components/state-view';
-import { makeStyles, Radius, Sizes, Spacing, Springs } from '@/constants/theme';
+import { backgroundCss, makeStyles, Radius, Sizes, Spacing, Springs } from '@/constants/theme';
 import { useToggleBlock } from '@/data/reels';
 import { useSavedVendors, useSaveVendor } from '@/data/saved';
 import { useDeleteStory, useStories } from '@/data/stories';
@@ -39,11 +39,7 @@ const CLOSE_DRAG = 120;
 // How far a sideways swipe goes before it changes person
 const SKIP_DRAG = 60;
 
-const bottomShade = (
-  Platform.OS === 'web'
-    ? { backgroundImage: 'linear-gradient(to top, rgba(0,0,0,0.8), rgba(0,0,0,0))' }
-    : { experimental_backgroundImage: 'linear-gradient(to top, rgba(0,0,0,0.8), rgba(0,0,0,0))' }
-) as ViewStyle;
+const bottomShade = backgroundCss('linear-gradient(to top, rgba(0,0,0,0.8), rgba(0,0,0,0))');
 
 /**
  * The full-screen story viewer, like Instagram's and TikTok's: one photo or

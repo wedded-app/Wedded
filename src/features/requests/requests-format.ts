@@ -34,7 +34,7 @@ export function budgetBands(groupSlug: string | null): BudgetBand[] {
 export const perGuest = (groupSlug: string | null) =>
   groupSlug === 'venues' || groupSlug === 'food';
 
-const dollars = (cents: number) =>
+export const dollars = (cents: number) =>
   (cents / 100).toLocaleString('en-US', {
     style: 'currency',
     currency: 'USD',

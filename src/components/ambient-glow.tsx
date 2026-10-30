@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { Platform, StyleSheet, View, useWindowDimensions, type ViewStyle } from 'react-native';
+import { StyleSheet, View, useWindowDimensions } from 'react-native';
 import Animated, {
   Easing,
   useAnimatedStyle,
@@ -9,7 +9,7 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 
-import { useColors, type ColorToken } from '@/constants/theme';
+import { backgroundCss, useColors, type ColorToken } from '@/constants/theme';
 
 type Light = {
   color: ColorToken;
@@ -83,17 +83,12 @@ function Glow({ light, width, height }: { light: Light; width: number; height: n
       style={[
         styles.light,
         { left: light.x * width, top: light.y * height, width: size, height: size },
-        gradient(`radial-gradient(circle, ${color} 0%, ${clear} 70%)`),
+        backgroundCss(`radial-gradient(circle, ${color} 0%, ${clear} 70%)`),
         moving,
       ]}
     />
   );
 }
-
-const gradient = (css: string) =>
-  (Platform.OS === 'web'
-    ? { backgroundImage: css }
-    : { experimental_backgroundImage: css }) as unknown as ViewStyle;
 
 const styles = StyleSheet.create({
   fill: {

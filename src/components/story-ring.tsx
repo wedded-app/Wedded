@@ -1,9 +1,9 @@
 import { Image } from 'expo-image';
-import { Platform, Pressable, View, type ViewStyle } from 'react-native';
+import { Pressable, View } from 'react-native';
 
 import { AppText } from '@/components/app-text';
 import { Icon, type IconName } from '@/components/icon';
-import { makeStyles, useColors } from '@/constants/theme';
+import { backgroundCss, makeStyles, useColors } from '@/constants/theme';
 
 export type StoryRingProps = {
   /** The photo in the circle; an icon when there is none. */
@@ -20,9 +20,7 @@ export type StoryRingProps = {
 // The unwatched ring runs from the app's maroon to marigold, the one place the
 // brand's second colour shows (vision §4: marigold for small fills only).
 const RING = 'linear-gradient(45deg, #F0A030 0%, #D9485F 50%, #8A1C30 100%)';
-export const storyRingStyle = (
-  Platform.OS === 'web' ? { backgroundImage: RING } : { experimental_backgroundImage: RING }
-) as ViewStyle;
+export const storyRingStyle = backgroundCss(RING);
 
 /**
  * A story circle: a round photo in a coloured ring with a short name under

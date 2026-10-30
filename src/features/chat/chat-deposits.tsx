@@ -1,5 +1,4 @@
 import { createContext, useContext, useState, type ReactNode } from 'react';
-import { Alert, Platform } from 'react-native';
 
 import { DepositCard, DepositLine } from '@/components/chat/deposit-card';
 import type { Message } from '@/data/chat';
@@ -16,6 +15,7 @@ import {
 import { useEventNames } from '@/features/business/business-parts';
 import { useLocale } from '@/i18n/locale-context';
 import { successHaptic } from '@/lib/haptics';
+import { confirm } from '@/lib/confirm';
 
 import { presentDepositPayment } from './deposit-pay';
 
@@ -31,18 +31,6 @@ type ChatDeposits = {
 };
 
 const DepositsContext = createContext<ChatDeposits | null>(null);
-
-/** A yes-or-no question, as an alert on phones and confirm() in a browser. */
-function confirmFirst(title: string, body: string, yes: string, no: string, onYes: () => void) {
-  if (Platform.OS === 'web') {
-    if (globalThis.confirm(body)) onYes();
-    return;
-  }
-  Alert.alert(title, body, [
-    { text: no, style: 'cancel' },
-    { text: yes, onPress: onYes },
-  ]);
-}
 
 /**
  * Deposits for one chat (#209): every deposit, kept live, and what paying
@@ -92,16 +80,17 @@ export function useChatDeposits(
     comingSoon,
     pay: (deposit) => {
       const amount = formatCents(deposit.amountCents);
-      confirmFirst(
+      confirm(
         t('chat.deposit.confirmTitle'),
         t('chat.deposit.confirm', { amount, vendor: vendorName }),
         t('chat.deposit.confirmYes', { amount }),
         t('chat.deposit.notNow'),
         () => void payNow(deposit),
+        'default',
       );
     },
     cancel: (deposit) =>
-      confirmFirst(
+      confirm(
         t('chat.deposit.cancelTitle'),
         t('chat.deposit.cancelConfirm', { amount: formatCents(deposit.amountCents) }),
         t('chat.deposit.cancel'),
@@ -110,6 +99,7 @@ export function useChatDeposits(
           setNotice(null);
           cancelDeposit.mutate(deposit.id, { onError: problem });
         },
+        'default',
       ),
   };
   return { value, notice };

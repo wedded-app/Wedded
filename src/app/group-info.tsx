@@ -1,6 +1,6 @@
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
-import { Alert, Platform, View } from 'react-native';
+import { View } from 'react-native';
 
 import { AppText } from '@/components/app-text';
 import { Button } from '@/components/button';
@@ -21,18 +21,7 @@ import {
 } from '@/data/group-chat';
 import { shareInvite, useWeddingMembers } from '@/data/wedding';
 import { useLocale } from '@/i18n/locale-context';
-
-/** Asks first on phones (an alert) and on the web (the browser's confirm). */
-function confirm(title: string, body: string, yes: string, no: string, onYes: () => void) {
-  if (Platform.OS === 'web') {
-    if (globalThis.confirm(body)) onYes();
-    return;
-  }
-  Alert.alert(title, body, [
-    { text: no, style: 'cancel' },
-    { text: yes, style: 'destructive', onPress: onYes },
-  ]);
-}
+import { confirm } from '@/lib/confirm';
 
 /**
  * Who's in a family chat (A2, #125). Everyone can leave. Owners and editors of

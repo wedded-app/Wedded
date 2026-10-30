@@ -1,10 +1,10 @@
 import { Image } from 'expo-image';
-import { Platform, StyleSheet, View, type ViewStyle } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
 import { AppText } from '@/components/app-text';
 import { Icon } from '@/components/icon';
 import { PressableScale } from '@/components/pressable-scale';
-import { makeStyles, Radius, Spacing, useColors } from '@/constants/theme';
+import { backgroundCss, makeStyles, Radius, Spacing, useColors } from '@/constants/theme';
 import { useLocale } from '@/i18n/locale-context';
 import { selectionHaptic } from '@/lib/haptics';
 
@@ -84,9 +84,7 @@ export function PagePreview({
   );
 }
 
-const shade = (Platform.OS === 'web'
-  ? { backgroundImage: SHADE }
-  : { experimental_backgroundImage: SHADE }) as unknown as ViewStyle;
+const shade = backgroundCss(SHADE);
 
 const useStyles = makeStyles((Colors) => ({
   card: {

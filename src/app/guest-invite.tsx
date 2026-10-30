@@ -22,11 +22,12 @@ import {
   tickedIds,
   type InviteTicks,
 } from '@/features/guests/guest-helpers';
-import { closeGuestSheet, confirm, PickSheet } from '@/features/guests/pick-sheet';
+import { closeGuestSheet, PickSheet } from '@/features/guests/pick-sheet';
 import { usePlanView } from '@/features/planner/use-plan-view';
 import { localized } from '@/i18n/localized';
 import { useLocale } from '@/i18n/locale-context';
 import { successHaptic } from '@/lib/haptics';
+import { confirm } from '@/lib/confirm';
 
 /**
  * Who's invited to one event (#308), /guest-invite?event={slug}: tick people,

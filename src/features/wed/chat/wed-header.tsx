@@ -1,5 +1,5 @@
 import { router } from 'expo-router';
-import { Platform, Pressable, View, type LayoutChangeEvent, type ViewStyle } from 'react-native';
+import { Pressable, View, type LayoutChangeEvent } from 'react-native';
 import Animated from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -216,12 +216,6 @@ function RoundButton({
     </Pressable>
   );
 }
-
-/** A CSS gradient as a view's background, on the web and on phones (the composer's edge). */
-export const edgeStyle = (gradient: string) =>
-  (Platform.OS === 'web'
-    ? { backgroundImage: gradient }
-    : { experimental_backgroundImage: gradient }) as ViewStyle;
 
 const useStyles = makeStyles((Colors) => ({
   band: {

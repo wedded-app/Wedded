@@ -15,6 +15,7 @@ import { Card } from '@/components/card';
 import { Glass } from '@/components/glass';
 import { Icon } from '@/components/icon';
 import { makeStyles, Radius, Sizes, Spacing, Springs, useColors } from '@/constants/theme';
+import { usd } from '@/features/vendors/profile-format';
 import { localized, type LocalizedText } from '@/i18n/localized';
 import { useLocale } from '@/i18n/locale-context';
 import { saveHaptic } from '@/lib/haptics';
@@ -48,14 +49,6 @@ export type VendorCardProps = {
   onPress?: () => void;
   style?: StyleProp<ViewStyle>;
 };
-
-// Prices keep Latin digits in both languages (vision doc section 4).
-const usd = new Intl.NumberFormat('en-US', {
-  style: 'currency',
-  currency: 'USD',
-  minimumFractionDigits: 0,
-  maximumFractionDigits: 0,
-});
 
 type Translate = (key: string, options?: Record<string, string | number>) => string;
 type Words = { shown: string; spoken: string };

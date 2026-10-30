@@ -7,12 +7,7 @@ import type { Conversation, Message } from '@/data/chat';
 import { useMyProposals, useRequestProposals } from '@/data/requests';
 import { useLocale } from '@/i18n/locale-context';
 
-const dollars = (cents: number) =>
-  (cents / 100).toLocaleString('en-US', {
-    style: 'currency',
-    currency: 'USD',
-    maximumFractionDigits: 0,
-  });
+import { dollars } from './requests-format';
 
 /**
  * A 'proposal' message (#219): the vendor's proposal from Families looking as

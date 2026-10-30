@@ -1,14 +1,6 @@
 import { Image } from 'expo-image';
 import { router } from 'expo-router';
-import {
-  FlatList,
-  Platform,
-  Pressable,
-  RefreshControl,
-  StyleSheet,
-  View,
-  type ViewStyle,
-} from 'react-native';
+import { FlatList, Pressable, RefreshControl, StyleSheet, View } from 'react-native';
 
 import { AppText } from '@/components/app-text';
 import { Icon } from '@/components/icon';
@@ -16,18 +8,14 @@ import { Screen } from '@/components/screen';
 import { SheetHeader } from '@/components/sheet-header';
 import { StateView } from '@/components/state-view';
 import { storyRingStyle } from '@/components/story-ring';
-import { Radius, Spacing, useColors } from '@/constants/theme';
+import { backgroundCss, Radius, Spacing, useColors } from '@/constants/theme';
 import type { StoryGroup } from '@/data/stories';
 import { useSession } from '@/features/auth/session';
 import { timeAgo } from '@/features/requests/requests-format';
 import { latestThumb, StoryFace, useStoryTray } from '@/features/stories/stories-bar';
 import { useLocale } from '@/i18n/locale-context';
 
-const bottomShade = (
-  Platform.OS === 'web'
-    ? { backgroundImage: 'linear-gradient(to top, rgba(0,0,0,0.75), rgba(0,0,0,0))' }
-    : { experimental_backgroundImage: 'linear-gradient(to top, rgba(0,0,0,0.75), rgba(0,0,0,0))' }
-) as ViewStyle;
+const bottomShade = backgroundCss('linear-gradient(to top, rgba(0,0,0,0.75), rgba(0,0,0,0))');
 
 type Item = { mine: true; group: StoryGroup | undefined } | { mine: false; group: StoryGroup };
 

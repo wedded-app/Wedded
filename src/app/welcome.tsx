@@ -11,7 +11,6 @@ import {
   View,
   type LayoutChangeEvent,
   type TextStyle,
-  type ViewStyle,
 } from 'react-native';
 import Animated, {
   FadeInDown,
@@ -31,6 +30,7 @@ import { LegalLine } from '@/components/legal-line';
 import { PressableScale } from '@/components/pressable-scale';
 import { WeddingReel } from '@/components/wedding-reel';
 import {
+  backgroundCss,
   makeStyles,
   Radius,
   SchemeContext,
@@ -59,11 +59,6 @@ const DIM = 'rgba(0, 0, 0, 0.12)';
 const TOP_SHADE = 'linear-gradient(to bottom, rgba(0,0,0,0.45) 0%, rgba(0,0,0,0) 100%)';
 const BOTTOM_SHADE =
   'linear-gradient(to top, rgba(0,0,0,0.82) 0%, rgba(0,0,0,0.5) 40%, rgba(0,0,0,0) 100%)';
-
-const gradient = (css: string) =>
-  (Platform.OS === 'web'
-    ? { backgroundImage: css }
-    : { experimental_backgroundImage: css }) as unknown as ViewStyle;
 
 // A soft glow under the phrases, for frames as light as the words.
 const phraseGlow = (Platform.OS === 'web'
@@ -195,8 +190,8 @@ function Welcome() {
       <StatusBar style="light" />
       <WeddingReel />
       <View style={[StyleSheet.absoluteFill, styles.dim]} />
-      <View style={[styles.topShade, gradient(TOP_SHADE)]} />
-      <View style={[styles.bottomShade, gradient(BOTTOM_SHADE)]} />
+      <View style={[styles.topShade, backgroundCss(TOP_SHADE)]} />
+      <View style={[styles.bottomShade, backgroundCss(BOTTOM_SHADE)]} />
 
       <ScrollView
         bounces={false}

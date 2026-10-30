@@ -1,9 +1,16 @@
-import { Platform, View, type ViewStyle } from 'react-native';
+import { View } from 'react-native';
 
 import { AppText } from '@/components/app-text';
 import { Icon } from '@/components/icon';
 import { PressableScale } from '@/components/pressable-scale';
-import { makeStyles, Radius, Spacing, useColors, type Palette } from '@/constants/theme';
+import {
+  backgroundCss,
+  makeStyles,
+  Radius,
+  Spacing,
+  useColors,
+  type Palette,
+} from '@/constants/theme';
 import { formatDate } from '@/features/inquiry/inquiry-helpers';
 import { useLocale } from '@/i18n/locale-context';
 import { useCountUp } from '@/lib/use-count-up';
@@ -24,9 +31,7 @@ export type CountdownCardProps = {
 /** The card's maroon-to-rose gradient (also behind "Plan your wedding"). */
 export const gradient = (Colors: Palette) => {
   const image = `linear-gradient(135deg, ${Colors.heroFrom} 0%, ${Colors.heroTo} 100%)`;
-  return (
-    Platform.OS === 'web' ? { backgroundImage: image } : { experimental_backgroundImage: image }
-  ) as ViewStyle;
+  return backgroundCss(image);
 };
 
 /**

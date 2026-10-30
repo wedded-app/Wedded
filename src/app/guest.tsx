@@ -22,10 +22,11 @@ import {
 } from '@/data/guests';
 import { shareInvite, useWeddingPlan } from '@/data/wedding';
 import { isValidEmail, normalizePhone } from '@/features/auth/about-you-validation';
-import { closeGuestSheet, confirm } from '@/features/guests/pick-sheet';
+import { closeGuestSheet } from '@/features/guests/pick-sheet';
 import { useLocale } from '@/i18n/locale-context';
 import { successHaptic } from '@/lib/haptics';
 import { formatPhone } from '@/lib/phone';
+import { confirm } from '@/lib/confirm';
 
 /**
  * One guest, typed in by hand or changed (#308): a name, and if they have

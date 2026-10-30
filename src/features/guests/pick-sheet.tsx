@@ -1,6 +1,6 @@
 import { router } from 'expo-router';
 import { useState, type ReactNode } from 'react';
-import { Alert, FlatList, Platform, StyleSheet, View } from 'react-native';
+import { FlatList, StyleSheet, View } from 'react-native';
 
 import { AppText } from '@/components/app-text';
 import { Checkbox } from '@/components/checkbox';
@@ -39,18 +39,6 @@ export type PickSheetProps = {
 export function closeGuestSheet() {
   if (router.canGoBack()) router.back();
   else router.replace('/guests');
-}
-
-/** Asks first on phones (an alert) and on the web (the browser's confirm). */
-export function confirm(title: string, body: string, yes: string, no: string, onYes: () => void) {
-  if (Platform.OS === 'web') {
-    if (globalThis.confirm(`${title}\n\n${body}`)) onYes();
-    return;
-  }
-  Alert.alert(title, body, [
-    { text: no, style: 'cancel' },
-    { text: yes, style: 'destructive', onPress: onYes },
-  ]);
 }
 
 /**

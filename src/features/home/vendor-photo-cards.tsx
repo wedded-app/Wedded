@@ -1,20 +1,13 @@
 import { Image } from 'expo-image';
 import { router } from 'expo-router';
-import {
-  Platform,
-  ScrollView,
-  StyleSheet,
-  useWindowDimensions,
-  View,
-  type ViewStyle,
-} from 'react-native';
+import { ScrollView, StyleSheet, useWindowDimensions, View } from 'react-native';
 
 import { AppText } from '@/components/app-text';
 import { SampleTag } from '@/components/sample-tag';
 import { GlassButton } from '@/components/glass-button';
 import { PressableScale } from '@/components/pressable-scale';
 import { distanceWords, priceWords } from '@/components/vendor-card';
-import { makeStyles, Radius, Sizes, Spacing, useColors } from '@/constants/theme';
+import { backgroundCss, makeStyles, Radius, Sizes, Spacing, useColors } from '@/constants/theme';
 import { useSavedEventsFor, useSaveVendor } from '@/data/saved';
 import { useVendorSearch, type VendorResult } from '@/data/search';
 import { photoUrl } from '@/data/vendor-media';
@@ -32,9 +25,7 @@ import { SectionHeader } from './section-header';
 const SHOWN = 10;
 
 const SHADE = 'linear-gradient(to bottom, rgba(0,0,0,0) 45%, rgba(0,0,0,0.78) 100%)';
-const shade = (
-  Platform.OS === 'web' ? { backgroundImage: SHADE } : { experimental_backgroundImage: SHADE }
-) as ViewStyle;
+const shade = backgroundCss(SHADE);
 
 type Props = {
   /** Leave out for cards with no title row of their own. */
