@@ -9,6 +9,7 @@ import { makeStyles, Radius, Spacing, useColors } from '@/constants/theme';
 import { enablePush, pushStatus } from '@/data/push';
 import { useLocale } from '@/i18n/locale-context';
 import { successHaptic } from '@/lib/haptics';
+import { createListeners } from '@/lib/listeners';
 
 const statusKey = ['push-status'] as const;
 
@@ -39,16 +40,11 @@ export function useEnablePush() {
 
 // "Not now" hides the card for the rest of the session, everywhere
 let notNow = false;
-const listeners = new Set<() => void>();
+const { subscribe, notify } = createListeners();
 function dismiss() {
   notNow = true;
-  for (const listener of listeners) listener();
+  notify();
 }
-function subscribe(listener: () => void) {
-  listeners.add(listener);
-  return () => listeners.delete(listener);
-}
-
 /**
  * "Get a buzz when vendors reply": says why before the phone asks, at the
  * moments it matters (after a request is sent, in a chat, a vendor's

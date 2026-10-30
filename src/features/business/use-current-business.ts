@@ -1,20 +1,16 @@
 import { useSyncExternalStore } from 'react';
 
 import { type Business, useMyBusinesses } from '@/data/business';
+import { createListeners } from '@/lib/listeners';
 
 // Which business the "My business" screens are about, for someone who runs
 // several. Kept for the session; the first (A to Z) until they pick.
 let chosenId: string | null = null;
-const listeners = new Set<() => void>();
+const { subscribe, notify } = createListeners();
 
 export function chooseBusiness(id: string) {
   chosenId = id;
-  for (const listener of listeners) listener();
-}
-
-function subscribe(listener: () => void) {
-  listeners.add(listener);
-  return () => listeners.delete(listener);
+  notify();
 }
 
 /** The business the screens show, and every one the person runs. */

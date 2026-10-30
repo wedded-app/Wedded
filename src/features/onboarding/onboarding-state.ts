@@ -6,6 +6,7 @@
 import { useSyncExternalStore } from 'react';
 
 import { readSetting, StorageKeys, writeSetting } from '@/lib/storage';
+import { createListeners } from '@/lib/listeners';
 
 export type OnboardingState = 'new' | 'seen' | 'done';
 
@@ -15,7 +16,7 @@ function load(): OnboardingState {
 }
 
 let state: OnboardingState | null = null;
-const listeners = new Set<() => void>();
+const { subscribe, notify } = createListeners();
 
 function current(): OnboardingState {
   state ??= load();
@@ -27,21 +28,14 @@ export function markOnboarding(next: 'seen' | 'done') {
   if (current() === 'done' && next === 'seen') return;
   state = next;
   void writeSetting(StorageKeys.onboarding, next);
-  listeners.forEach((listener) => listener());
+  notify();
 }
 
 /** Development only (Settings): forget it, so Home sends them to /welcome again. */
 export function resetOnboarding() {
   state = 'new';
   void writeSetting(StorageKeys.onboarding, 'new');
-  listeners.forEach((listener) => listener());
-}
-
-function subscribe(listener: () => void) {
-  listeners.add(listener);
-  return () => {
-    listeners.delete(listener);
-  };
+  notify();
 }
 
 export function useOnboardingState(): OnboardingState {
