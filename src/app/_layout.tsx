@@ -221,6 +221,7 @@ function AppShell() {
           />
           <Stack.Screen name="profile" />
           <Stack.Screen name="plan-events" options={{ presentation: 'modal' }} />
+          <Stack.Screen name="plan-days" options={{ presentation: 'modal' }} />
           <Stack.Screen name="cards" />
           <Stack.Screen name="guests" />
           <Stack.Screen name="guest" options={{ presentation: 'modal' }} />

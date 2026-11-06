@@ -1,48 +1,48 @@
-import { router, useLocalSearchParams } from 'expo-router';
-import { useEffect, useRef } from 'react';
-import { Pressable, View, type ScrollViewInstance } from 'react-native';
+import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
+import { setStatusBarStyle } from 'expo-status-bar';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { Pressable, View, useWindowDimensions, type ScrollViewInstance } from 'react-native';
 import Animated, { useReducedMotion } from 'react-native-reanimated';
 
 import { AppText } from '@/components/app-text';
 import { Button } from '@/components/button';
-import { FieldError } from '@/components/field-error';
 import { Icon } from '@/components/icon';
-import { ListRow, ListSection, SectionTitle } from '@/components/list';
+import { SectionTitle } from '@/components/list';
 import { NavScreen, useNavTop } from '@/components/nav';
 import { PressableScale } from '@/components/pressable-scale';
 import { StateView } from '@/components/state-view';
-import { VaultIcon } from '@/components/vault-icon';
-import { makeStyles, Radius, Sizes, Spacing, useColors } from '@/constants/theme';
-import { useGuests, useGuestSummary } from '@/data/guests';
-import { useMemoryVault, useOpenMemoryVault } from '@/data/memory-vault';
+import { makeStyles, Radius, Spacing, useColors, useScheme } from '@/constants/theme';
+import { useGuestSummary } from '@/data/guests';
 import { FamilyChats } from '@/features/group-chat/family-chats';
-import { totalsLine } from '@/features/guests/guest-helpers';
+import { DayTicket, ticketEntry } from '@/features/planner/day-ticket';
 import { FamilyShortlist } from '@/features/planner/family-shortlist';
-import { EventPlan } from '@/features/planner/event-plan';
+import { GuestTiles } from '@/features/planner/guest-tiles';
 import { PlanTogether } from '@/features/planner/plan-together';
 import { Suggestions } from '@/features/planner/suggestions';
 import { StartPlanCard } from '@/features/planner/start-plan-card';
 import { usePlanDays } from '@/features/planner/use-plan-days';
 import { usePlanView } from '@/features/planner/use-plan-view';
 import { comingLine, whenLine } from '@/features/planner/wedding-tab';
-import { WeddingTop } from '@/features/planner/wedding-top';
-import { WebsiteRow } from '@/features/website/website-card';
+import { heroHeight, WeddingHero } from '@/features/planner/wedding-hero';
 import { AskWedButton } from '@/features/wed/ask-wed-button';
 import { localized } from '@/i18n/localized';
 import { useLocale } from '@/i18n/locale-context';
-import { selectionHaptic, successHaptic } from '@/lib/haptics';
+import { selectionHaptic } from '@/lib/haptics';
 import { Motion } from '@/lib/motion';
 
 /**
- * Wedding, the tab (the final look, 2026-10-23), in four parts:
- * 1. The two of you: the couple's names, the wedding's days and the days to
- *    go, and the faces of everyone planning, which open Family below.
- * 2. Your events as tickets, in ceremony order: the day, when and where,
- *    what each still needs in words, who's booked and how many are coming.
- *    A tap opens the event's own page (/plan-event/{slug}): its day, time
- *    and guests, and what to book as tiles. The events are picked in the
+ * Wedding, the tab (the final look, 2026-10-23; its top and days 2026-11-06),
+ * in four parts:
+ * 1. The top: Home's moving ombre across the top of the screen, with the
+ *    couple's names, the days to go to the main day, the faces of everyone
+ *    planning (they open Family below) and Your days (/plan-days).
+ * 2. Your events a day at a time, in ceremony order: a ticket per day, with
+ *    two events on one day sharing its stub, each saying in words what it
+ *    still needs, who's booked and how many are coming. A tap opens the
+ *    event's own page (/plan-event/{slug}). The events are picked in the
  *    "Your events" sheet (/plan-events).
- * 3. For your guests: Guests, the website, invitation cards, the Memory Vault.
+ * 3. For your guests, as tiles: Guests, the website, invitations and the
+ *    Memory Vault.
  * 4. Planning together: Family and their roles, suggestions, the family
  *    shortlist to vote on, and the family chats.
  * Saved to the account and shared with family (Plan together,
@@ -56,21 +56,47 @@ export default function PlanScreen() {
   const view = usePlanView();
   const { plan, wedding, canEdit, saveFailed, active, chosen, needsByEvent } = view;
   const days = usePlanDays(view);
-  // Only the owner and editors see the guest list: it's other people's numbers
-  const guests = useGuests(canEdit ? (wedding?.id ?? null) : null);
+  // Only the owner and editors see who's coming: it's other people's numbers
   const guestSummary = useGuestSummary(canEdit ? (wedding?.id ?? null) : null);
-  const vault = useMemoryVault(wedding?.id ?? null);
-  const openVault = useOpenMemoryVault();
-  const openTheVault = () => {
-    if (vault.data) return router.push({ pathname: '/vault/[id]', params: { id: vault.data.id } });
-    if (!wedding || openVault.isPending) return;
-    openVault.mutate(wedding.id, {
-      onSuccess: (id) => {
-        successHaptic();
-        router.push({ pathname: '/vault/[id]', params: { id } });
+  const { height } = useWindowDimensions();
+  const scheme = useScheme();
+
+  // White clock and battery over the ombre; the app's own once it scrolls away
+  const [pastTop, setPastTop] = useState(false);
+  const hero = !!wedding;
+  useFocusEffect(
+    useCallback(() => {
+      setStatusBarStyle(hero && !pastTop ? 'light' : scheme === 'dark' ? 'light' : 'dark');
+      return () => setStatusBarStyle(scheme === 'dark' ? 'light' : 'dark');
+    }, [hero, pastTop, scheme]),
+  );
+
+  // The events a day at a time: those with a day of their own in their
+  // days, then the Whole wedding card
+  const entry = (slug: string) => {
+    const event = chosen.find((e) => e.slug === slug)!;
+    return ticketEntry(
+      event,
+      {
+        sections: needsByEvent[slug] ?? [],
+        booked: plan.booked[slug] ?? [],
+        bookedVendors: wedding?.bookedVendors ?? {},
+        dated: !!days.state.dates[slug],
+        when: whenLine(wedding?.eventTimes[slug], wedding?.eventPlaces[slug]),
+        coming: comingLine(
+          guestSummary.data?.find((s) => s.eventSlug === slug),
+          t,
+        ),
       },
-    });
+      t,
+    );
   };
+  const tickets = [
+    ...days.groups.map((group) => ({ date: group.date, slugs: group.slugs })),
+    ...chosen
+      .filter((event) => !days.order.includes(event.slug))
+      .map((event) => ({ date: null, slugs: [event.slug] })),
+  ];
 
   // The faces at the top open Family, further down this page
   const scroll = useRef<ScrollViewInstance>(null);
@@ -97,8 +123,10 @@ export default function PlanScreen() {
   return (
     <NavScreen
       scrollRef={scroll}
-      // With a wedding, the couple's names are the page's title (WeddingTop)
+      // With a wedding, the couple's names are on the ombre at the top
       title={wedding ? null : t('planner.title')}
+      collapseAt={wedding ? heroHeight(height) - navTop : undefined}
+      onCollapsedChange={setPastTop}
       subtitle={wedding ? null : t('planner.subtitle')}
       navTitle={wedding?.title?.trim() || t('planner.title')}
       back={false}
@@ -120,8 +148,8 @@ export default function PlanScreen() {
       )}
       {!wedding && view.loading && <StateView state="loading" />}
 
-      {/* 1. The two of you */}
-      {wedding && <WeddingTop view={view} onFamily={openFamily} />}
+      {/* 1. The top */}
+      {wedding && <WeddingHero view={view} days={days} onFamily={openFamily} />}
 
       {saveFailed && (
         <AppText color="error" style={styles.pad}>
@@ -169,20 +197,8 @@ export default function PlanScreen() {
               </AppText>
             )}
           </View>
-          {chosen.map((event) => (
-            <EventPlan
-              key={event.slug}
-              event={event}
-              sections={needsByEvent[event.slug] ?? []}
-              booked={plan.booked[event.slug] ?? []}
-              bookedVendors={wedding?.bookedVendors ?? {}}
-              date={days.state.dates[event.slug] ?? null}
-              when={whenLine(wedding?.eventTimes[event.slug], wedding?.eventPlaces[event.slug])}
-              coming={comingLine(
-                guestSummary.data?.find((s) => s.eventSlug === event.slug),
-                t,
-              )}
-            />
+          {tickets.map((ticket) => (
+            <DayTicket key={ticket.slugs[0]} date={ticket.date} entries={ticket.slugs.map(entry)} />
           ))}
           {/* The picker offers the family's traditions' events, from the database */}
           {canEdit && (
@@ -206,43 +222,7 @@ export default function PlanScreen() {
       {!view.loading && (
         <View style={styles.block}>
           <SectionTitle>{t('planner.forGuests')}</SectionTitle>
-          <ListSection>
-            {canEdit && (
-              <ListRow
-                icon="people-outline"
-                title={t('guests.title')}
-                subtitle={totalsLine(guests.data ?? [], t) ?? t('guests.planEntryBody')}
-                onPress={() => router.push('/guests')}
-              />
-            )}
-            {wedding && <WebsiteRow weddingId={wedding.id} />}
-            <ListRow
-              icon="mail-outline"
-              title={t('cards.planEntry')}
-              subtitle={t('cards.planEntryBody')}
-              onPress={() => router.push('/cards')}
-            />
-            {/* The Memory Vault: the couple opens it, then everyone in the wedding sees it */}
-            {wedding && !vault.isPending && (vault.data || canEdit) && (
-              <ListRow
-                leading={
-                  <View style={styles.rowIcon}>
-                    <VaultIcon size={Sizes.icon} color={Colors.primary} />
-                  </View>
-                }
-                title={vault.data ? t('memoryVault.title') : t('memoryVault.openTitle')}
-                subtitle={
-                  vault.data
-                    ? t('memoryVault.count', { count: vault.data.itemCount })
-                    : openVault.isPending
-                      ? t('memoryVault.opening')
-                      : t('memoryVault.openBody')
-                }
-                onPress={openTheVault}
-              />
-            )}
-          </ListSection>
-          {openVault.isError && <FieldError message={t('memoryVault.openFailed')} />}
+          <GuestTiles weddingId={wedding?.id ?? null} canEdit={canEdit} />
         </View>
       )}
 
@@ -287,10 +267,6 @@ const useStyles = makeStyles((Colors) => ({
   },
   together: {
     gap: Spacing.lg,
-  },
-  rowIcon: {
-    width: Sizes.rowIcon,
-    alignItems: 'center',
   },
   heading: {
     gap: Spacing.xs,

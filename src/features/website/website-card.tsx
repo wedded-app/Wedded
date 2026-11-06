@@ -4,7 +4,6 @@ import { Pressable, StyleSheet, View, type LayoutChangeEvent } from 'react-nativ
 
 import { AppText } from '@/components/app-text';
 import { Icon } from '@/components/icon';
-import { ListRow } from '@/components/list';
 import { makeStyles, Radius, Spacing, useColors } from '@/constants/theme';
 import { useMySiteSlug, useSitePage } from '@/data/website';
 import { useLocale } from '@/i18n/locale-context';
@@ -13,7 +12,7 @@ import { useSiteFonts } from './fonts';
 import { SiteCover } from './site-cover';
 
 /** The site's state in a few words, for Home and My Wedding. */
-function useSiteStatus(weddingId: string) {
+export function useSiteStatus(weddingId: string) {
   const { t } = useLocale();
   const slug = useMySiteSlug(weddingId);
   const page = useSitePage(slug.data ?? '');
@@ -72,20 +71,6 @@ export function WebsiteCard({ weddingId, canEdit }: { weddingId: string; canEdit
       </View>
       <Icon name="chevron-forward" size={18} color={Colors.chevron} weight="semibold" />
     </Pressable>
-  );
-}
-
-/** The Website row at the top of My Wedding's list. */
-export function WebsiteRow({ weddingId }: { weddingId: string }) {
-  const { t } = useLocale();
-  const { status } = useSiteStatus(weddingId);
-  return (
-    <ListRow
-      icon="globe-outline"
-      title={t('website.title')}
-      subtitle={status}
-      onPress={() => router.push('/website')}
-    />
   );
 }
 
