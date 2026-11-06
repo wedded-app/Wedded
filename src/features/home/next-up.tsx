@@ -222,62 +222,67 @@ function Ticket({
       accessibilityElementsHidden={depth > 0}
       importantForAccessibility={depth > 0 ? 'no-hide-descendants' : 'auto'}
     >
-      <Animated.View style={[styles.stub, words]}>
-        {stub ? (
-          <>
-            <AppText variant="caption" weight={600} color="primary" style={styles.caps}>
-              {stub.month}
-            </AppText>
-            <AppText weight={700} style={styles.day} maxFontSizeMultiplier={1.3}>
-              {stub.day}
-            </AppText>
-            <AppText variant="caption" weight={600} color="text2" style={styles.caps}>
-              {stub.weekday}
-            </AppText>
-          </>
-        ) : (
-          <WedMark size={28} color="ombre" />
-        )}
-      </Animated.View>
-      <Svg width={2} height="100%" style={styles.perforation}>
-        <Line
-          x1={1}
-          y1={10}
-          x2={1}
-          y2="100%"
-          stroke={Colors.separator}
-          strokeWidth={2}
-          strokeDasharray="5 5"
-        />
-      </Svg>
-      <Animated.View style={[styles.body, words]}>
-        <AppText variant="caption" weight={600} color="text2" style={styles.caps}>
-          {event.toUpperCase()}
-        </AppText>
-        <AppText variant="heading" weight={600} numberOfLines={2}>
-          {label}
-        </AppText>
-        <View style={styles.actions}>
-          <PressableScale accessibilityRole="button" onPress={find} style={styles.see}>
-            <AppText variant="label" weight={600} color="onPrimary" numberOfLines={1}>
-              {seeLabel}
-            </AppText>
-          </PressableScale>
-          {canEdit && (
-            <PressableScale
-              accessibilityRole="button"
-              accessibilityLabel={t('home.bookedSpoken', { name: label, event })}
-              onPress={onDone}
-              style={styles.done}
-            >
-              <Icon name="checkmark" size={16} color={Colors.text} weight="bold" />
-              <AppText variant="label" weight={600}>
-                {t('home.upNext.done')}
+      {/* A tap anywhere on the ticket finds them, like See them (Fezy,
+          2026-11-05). Its buttons answer for themselves; screen readers use
+          See them, so the ticket itself isn't another button to them. */}
+      <PressableScale accessible={false} pressedScale={0.98} onPress={find} style={styles.face}>
+        <Animated.View style={[styles.stub, words]}>
+          {stub ? (
+            <>
+              <AppText variant="caption" weight={600} color="primary" style={styles.caps}>
+                {stub.month}
+              </AppText>
+              <AppText weight={700} style={styles.day} maxFontSizeMultiplier={1.3}>
+                {stub.day}
+              </AppText>
+              <AppText variant="caption" weight={600} color="text2" style={styles.caps}>
+                {stub.weekday}
+              </AppText>
+            </>
+          ) : (
+            <WedMark size={28} color="ombre" />
+          )}
+        </Animated.View>
+        <Svg width={2} height="100%" style={styles.perforation}>
+          <Line
+            x1={1}
+            y1={10}
+            x2={1}
+            y2="100%"
+            stroke={Colors.separator}
+            strokeWidth={2}
+            strokeDasharray="5 5"
+          />
+        </Svg>
+        <Animated.View style={[styles.body, words]}>
+          <AppText variant="caption" weight={600} color="text2" style={styles.caps}>
+            {event.toUpperCase()}
+          </AppText>
+          <AppText variant="heading" weight={600} numberOfLines={2}>
+            {label}
+          </AppText>
+          <View style={styles.actions}>
+            <PressableScale accessibilityRole="button" onPress={find} style={styles.see}>
+              <AppText variant="label" weight={600} color="onPrimary" numberOfLines={1}>
+                {seeLabel}
               </AppText>
             </PressableScale>
-          )}
-        </View>
-      </Animated.View>
+            {canEdit && (
+              <PressableScale
+                accessibilityRole="button"
+                accessibilityLabel={t('home.bookedSpoken', { name: label, event })}
+                onPress={onDone}
+                style={styles.done}
+              >
+                <Icon name="checkmark" size={16} color={Colors.text} weight="bold" />
+                <AppText variant="label" weight={600}>
+                  {t('home.upNext.done')}
+                </AppText>
+              </PressableScale>
+            )}
+          </View>
+        </Animated.View>
+      </PressableScale>
       <View style={[styles.notch, styles.notchTop]} />
       <View style={[styles.notch, styles.notchBottom]} />
     </Animated.View>
@@ -299,6 +304,10 @@ const useStyles = makeStyles((Colors) => ({
     borderCurve: 'continuous',
     overflow: 'hidden',
     transformOrigin: 'bottom',
+  },
+  face: {
+    flex: 1,
+    flexDirection: 'row',
   },
   stub: {
     width: STUB,
