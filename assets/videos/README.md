@@ -26,3 +26,13 @@ ffmpeg the same way (scale and crop to 540 × 960, 30 fps, `xfade` between
 clips, `-crf 27 -movflags +faststart`, no audio) and keep the file under
 about 3 MB, since it ships inside the app. Once there is real footage from
 our founding vendors (with their permission), it should replace the stock.
+
+## join-planning.mp4, join-looking.mp4, join-business.mp4
+
+The three pages of "What brings you to Wedded?" (`src/features/auth/join-choice.tsx`), one each for planning, just looking and a wedding business: 5.8 seconds, 540 × 960, H.264, no sound, under 1 MB each, with their first frames as `assets/images/join-*.jpg`. Each is two 3.2-second cuts from the Pexels clips above with a 0.6-second crossfade, ending on a crossfade into the 0.6 seconds before its first cut starts, so the loop has no seam.
+
+| Page     | Clips (Pexels video, from second)                                      |
+| -------- | ---------------------------------------------------------------------- |
+| Planning | the couple at the fire (10805308, 0.8), joined hands (33499308, 3.0)   |
+| Looking  | the henna-night dance (7249112, 2.0), the bride in red (29575339, 1.5) |
+| Business | the flower trays (8855201, 1.0), mehndi being applied (15455199, 2.0)  |

@@ -699,6 +699,11 @@
       "lookingDetail": "Watch wedding reels and save the vendors you like.",
       "business": "I run a wedding business",
       "businessDetail": "Make a free listing so families can find you.",
+      "tabs": {
+        "planning": "Planning",
+        "looking": "Just looking",
+        "business": "Business"
+      },
       "continue": "Continue"
     },
     "business": {
