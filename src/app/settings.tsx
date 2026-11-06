@@ -17,6 +17,7 @@ import { usePlan } from '@/features/planner/plan';
 import { useEnablePush, usePushStatus } from '@/features/chat/push-ask';
 import { useSearchLocation } from '@/features/location/search-location';
 import { resetOnboarding } from '@/features/onboarding/onboarding-state';
+import { resetTour } from '@/features/planner/tour-state';
 import { TEXT_SIZES, useSettings, type TextSize } from '@/features/settings/settings';
 import { Initial } from '@/features/settings/settings-button';
 import { useLocale } from '@/i18n/locale-context';
@@ -224,6 +225,15 @@ export default function SettingsScreen() {
               if (status !== 'signedOut') await signOut();
               if (router.canDismiss()) router.dismissAll();
               router.replace('/');
+            }}
+          />
+          <ListRow
+            icon="map-outline"
+            title="Show the Wedding tour again"
+            onPress={() => {
+              resetTour();
+              if (router.canDismiss()) router.dismissAll();
+              router.navigate('/plan');
             }}
           />
         </ListSection>

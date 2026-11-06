@@ -1180,6 +1180,28 @@
       "siteNew": "Already filled in from your plan",
       "siteLive": "Live for your guests",
       "siteDraft": "Draft · only family can see it"
+    },
+    "tour": {
+      "stepOf": "{{step}} of {{total}}",
+      "skip": "Skip",
+      "next": "Next",
+      "done": "Got it",
+      "top": {
+        "title": "Your wedding at a glance",
+        "body": "The days to go, counted to your main day. Tap Your days to change when each event is."
+      },
+      "events": {
+        "title": "Every event, a day at a time",
+        "body": "Tap one to see what it still needs and find vendors for it."
+      },
+      "guests": {
+        "title": "Everything for your guests",
+        "body": "Your guest list, wedding website, invitations and everyone's photos."
+      },
+      "wed": {
+        "title": "Ask Wed",
+        "body": "Not sure what's next? Tap the bow to ask Wed what to book."
+      }
     }
   },
   "filters": {
