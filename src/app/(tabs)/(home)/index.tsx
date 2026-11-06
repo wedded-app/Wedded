@@ -26,7 +26,7 @@ import { VendorRows } from '@/features/home/vendor-rows';
 import { useWeddingDraft } from '@/features/home/wedding-draft';
 import { VendorTypeRow } from '@/features/home/vendor-type-row';
 import { YourFamily } from '@/features/home/your-family';
-import { ProfileButton } from '@/features/settings/profile-button';
+import { SettingsButton } from '@/features/settings/settings-button';
 import { findForPlan } from '@/features/planner/find-for-plan';
 import { usePlanView } from '@/features/planner/use-plan-view';
 import { WebsiteCard } from '@/features/website/website-card';
@@ -165,7 +165,7 @@ export default function HomeScreen() {
         trailing={
           <View style={styles.trailing}>
             <ChatButton />
-            <ProfileButton />
+            <SettingsButton />
           </View>
         }
       />

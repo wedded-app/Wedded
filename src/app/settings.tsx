@@ -18,6 +18,7 @@ import { useEnablePush, usePushStatus } from '@/features/chat/push-ask';
 import { useSearchLocation } from '@/features/location/search-location';
 import { resetOnboarding } from '@/features/onboarding/onboarding-state';
 import { TEXT_SIZES, useSettings, type TextSize } from '@/features/settings/settings';
+import { Initial } from '@/features/settings/settings-button';
 import { useLocale } from '@/i18n/locale-context';
 import { selectionHaptic } from '@/lib/haptics';
 
@@ -42,7 +43,7 @@ export default function SettingsScreen() {
   const { t } = useLocale();
   const settings = useSettings();
   const { place, maxMiles, openLocationSheet } = useSearchLocation();
-  const { status, signOut } = useSession();
+  const { status, profile, signOut } = useSession();
   const { isVendor } = useIsVendor();
   const planning = !!usePlan().syncedWeddingId;
   const version = Constants.expoConfig?.version ?? '1.0.0';
@@ -62,6 +63,17 @@ export default function SettingsScreen() {
 
   return (
     <NavScreen title={t('settings.title')}>
+      {/* Your profile first: Home's gear opens Settings, so Profile lives here (2026-11-05) */}
+      <ListSection inset>
+        <ListRow
+          leading={<Initial name={profile?.full_name} />}
+          titleVariant="heading"
+          title={profile?.full_name ?? t('tabs.profile')}
+          subtitle={t('settings.profileHint')}
+          onPress={() => router.push('/profile')}
+        />
+      </ListSection>
+
       <ListSection header={t('settings.appearance')}>
         <View style={styles.previews} accessibilityRole="radiogroup">
           {(['light', 'dark'] as const).map((scheme) => (

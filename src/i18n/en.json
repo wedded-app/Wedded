@@ -1011,6 +1011,7 @@
   },
   "settings": {
     "title": "Settings",
+    "profileHint": "Saved vendors, requests and messages",
     "appearance": "Appearance",
     "light": "Light",
     "dark": "Dark",
