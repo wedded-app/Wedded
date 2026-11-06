@@ -481,7 +481,13 @@ export function useStartWedding() {
       const { data: auth } = await supabase.auth.getSession();
       const userId = auth.session?.user.id;
       if (!userId) throw new Error('not_signed_in');
-      const existing = await fetchMyWeddings(userId);
+      // The list the first questions already loaded (the onboarding gate and
+      // the first question watch it) saves a round trip; older than a minute,
+      // it's fetched again, since create_wedding doesn't stop a second wedding
+      const cached = queryClient.getQueryState<AccountWedding[]>(weddingKeys.mine(userId));
+      const fresh =
+        !!cached?.data && !cached.isInvalidated && Date.now() - cached.dataUpdatedAt < 60_000;
+      const existing = fresh && cached?.data ? cached.data : await fetchMyWeddings(userId);
       if (existing[0]) return existing[0].id;
       const { data, error } = await supabase.rpc('create_wedding', {
         p_wedding_date: plan.weddingDate ?? undefined,

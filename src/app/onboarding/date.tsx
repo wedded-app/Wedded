@@ -8,7 +8,7 @@ import { useSession } from '@/features/auth/session';
 import { setAnswers, useAnswers } from '@/features/onboarding/answers';
 import { useFinishOnboarding } from '@/features/onboarding/finish';
 import { OnboardingStep } from '@/features/onboarding/onboarding-step';
-import { OptionCard } from '@/features/onboarding/option-card';
+import { OptionRow } from '@/features/onboarding/option-row';
 import { useLocale } from '@/i18n/locale-context';
 import { successHaptic } from '@/lib/haptics';
 
@@ -54,10 +54,8 @@ export default function DateStep() {
           onChange={(date) => setAnswers({ weddingDate: date, noDateYet: false })}
           placeholder={t('planner.pickDate')}
         />
-        <OptionCard
-          index={1}
+        <OptionRow
           role="checkbox"
-          icon="time-outline"
           label={t('onboarding.date.notYet')}
           detail={t('onboarding.date.notYetDetail')}
           selected={answers.noDateYet}

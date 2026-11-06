@@ -11,7 +11,7 @@ import { Spacing } from '@/constants/theme';
 import { startBusinessErrorKind, useStartMyBusiness } from '@/data/business';
 import { matchCities, useCities } from '@/data/places';
 import { useCategories } from '@/data/reference';
-import { OptionCard } from '@/features/onboarding/option-card';
+import { OptionRow } from '@/features/onboarding/option-row';
 import { matchCategories } from '@/features/search/match-categories';
 import { localized } from '@/i18n/localized';
 import { useLocale } from '@/i18n/locale-context';
@@ -39,7 +39,7 @@ export function JoinChoiceStep({ onChoose }: { onChoose: (choice: JoinedAs) => v
       </AppText>
       <View style={styles.list} accessibilityRole="radiogroup">
         {CHOICES.map((choice, index) => (
-          <OptionCard
+          <OptionRow
             key={choice.value}
             index={index}
             icon={choice.icon}

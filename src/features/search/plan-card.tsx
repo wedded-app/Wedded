@@ -13,6 +13,7 @@ import { useSession } from '@/features/auth/session';
 import { formatDate } from '@/features/inquiry/inquiry-helpers';
 import { resetAnswers, setAnswers } from '@/features/onboarding/answers';
 import { answersForTraditions } from '@/features/onboarding/faith';
+import { FIRST_STEP } from '@/features/onboarding/steps';
 import { localized } from '@/i18n/localized';
 import { useLocale } from '@/i18n/locale-context';
 import { selectionHaptic } from '@/lib/haptics';
@@ -108,7 +109,7 @@ export function PlanCard({ hint }: { hint: PlanHint }) {
           citySlug: hint.city?.slug ?? null,
           weddingDate: hint.date,
         });
-        router.push('/onboarding/who');
+        router.push(FIRST_STEP);
       },
       { planning: true },
     );

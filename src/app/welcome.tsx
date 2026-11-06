@@ -1,6 +1,6 @@
 import { router, useFocusEffect } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import {
   BackHandler,
   Image,
@@ -39,6 +39,7 @@ import {
   Springs,
   useColors,
 } from '@/constants/theme';
+import { prefetchFirstQuestions } from '@/data/reference';
 import { useSession } from '@/features/auth/session';
 import { SignInOptions } from '@/features/auth/sign-in-options';
 import { markOnboarding } from '@/features/onboarding/onboarding-state';
@@ -106,6 +107,10 @@ function Welcome() {
   const startHeight = useSharedValue(0);
   const optionsHeight = useSharedValue(0);
   const ready = useSharedValue(0);
+
+  // The first questions' answers load while the video plays, so they open
+  // complete once the account is made
+  useEffect(() => prefetchFirstQuestions(), []);
 
   // Back here signed in (Apple and Google finish on this screen; phone and
   // email finish on their own screens): About you if it's still missing,

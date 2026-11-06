@@ -6,8 +6,9 @@ import { useMyWeddings } from '@/data/wedding';
 import { useSession } from '@/features/auth/session';
 
 import { markOnboarding, useOnboardingState } from './onboarding-state';
+import { FIRST_STEP } from './steps';
 
-export type OnboardingGate = 'wait' | '/welcome' | '/onboarding/who' | '/discover' | null;
+export type OnboardingGate = 'wait' | '/welcome' | typeof FIRST_STEP | '/discover' | null;
 
 /**
  * Where the tabs should send someone who hasn't been through the welcome
@@ -45,5 +46,5 @@ export function useOnboardingGate(): OnboardingGate {
   if (status === 'signedOut') return '/welcome';
   // needsProfile and error: the sign-in sheet finishes About you first.
   if (!signedIn) return null;
-  return looking ? '/discover' : '/onboarding/who';
+  return looking ? '/discover' : FIRST_STEP;
 }

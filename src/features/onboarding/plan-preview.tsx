@@ -17,8 +17,8 @@ import type { Step } from './steps';
 const RIBBON = require('../../../assets/images/ribbon.png');
 
 /**
- * Their plan so far, a slim tan strip above Continue on each question after
- * the first: whose wedding it is, then the events their answers lead to
+ * Their plan so far, plain lines beside the arrow on each question after the
+ * first (no box, like the rest of the page): the plan, then the events their answers lead to
  * (Jaago · Baraat · Anand Karaj +6 more), then the countdown once they pick
  * a date. It changes as they tap, so by the last question they've watched
  * the app build their plan. Each screen mounts its own copy, so only what
@@ -107,16 +107,12 @@ export function PlanPreview({ step }: { step: Step }) {
   );
 }
 
-const useStyles = makeStyles((Colors) => ({
+const useStyles = makeStyles(() => ({
   strip: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: Spacing.md,
-    paddingVertical: Spacing.sm + 4,
-    paddingHorizontal: Spacing.lg,
-    borderRadius: 20,
-    borderCurve: 'continuous',
-    backgroundColor: Colors.sand,
+    paddingHorizontal: Spacing.xs,
   },
   ribbon: {
     width: 30,

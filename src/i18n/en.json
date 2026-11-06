@@ -2004,20 +2004,9 @@
     "skip": "Skip for now",
     "continue": "Continue",
     "stepOf": "{{step}} of {{total}}",
-    "who": {
-      "title": "Congratulations! Whose wedding is it?",
-      "subtitle": "3 quick questions, and we'll set up your plan: your events, what to book first and a countdown to the day.",
-      "self": "My own",
-      "child": "My son's or daughter's",
-      "sibling": "My brother's or sister's",
-      "relative": "Someone else in the family",
-      "friend": "A friend's",
-      "vendorPrompt": "Run a wedding business?",
-      "vendorLink": "List it free for families"
-    },
     "kind": {
       "title": "What kind of wedding will it be?",
-      "subtitle": "We'll line up the ceremonies, and the vendors who know them. Two families? Pick both.",
+      "subtitle": "We'll set up your events from it. Two families? Pick both.",
       "other": "Something else",
       "otherDetail": "You can pick your events in My Wedding."
     },
@@ -2028,7 +2017,7 @@
     },
     "date": {
       "title": "When's the big day?",
-      "subtitle": "We'll count down with you and show what to book first. The main day is enough.",
+      "subtitle": "The main day is enough. We'll count down with you.",
       "notYet": "We haven't picked a date yet",
       "notYetDetail": "You can add it any time in My Wedding.",
       "finish": "Make my plan",
