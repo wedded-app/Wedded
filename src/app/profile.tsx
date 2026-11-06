@@ -4,7 +4,6 @@ import { Pressable, View } from 'react-native';
 
 import { AppText } from '@/components/app-text';
 import { Button } from '@/components/button';
-import { GlassButton } from '@/components/glass-button';
 import { Icon } from '@/components/icon';
 import { ListRow, ListSection } from '@/components/list';
 import { NavScreen } from '@/components/nav';
@@ -28,7 +27,8 @@ import { formatPhone } from '@/lib/phone';
 /**
  * S16 Profile, shaped like an Instagram profile: the person, three counts
  * (saved, asked, booked), two buttons, the wedding countdown and a grid of
- * the vendors they've saved. Settings sit behind the gear, as in most apps.
+ * the vendors they've saved. It opens from the first row of Settings (Home's
+ * gear), so it doesn't link back to Settings.
  * Vendor accounts also get "Switch to business" (business mode, #252) at
  * the top of the list. Wed (the planning helper) has its own short list:
  * what it knows, the apps it can use and how much it does on its own.
@@ -43,17 +43,7 @@ export default function ProfileScreen() {
   const requests = useMyInquiries();
 
   return (
-    <NavScreen
-      title={t('tabs.profile')}
-      trailing={
-        <GlassButton
-          icon="settings-outline"
-          accessibilityLabel={t('settings.title')}
-          onPress={() => router.push('/settings')}
-          size={44}
-        />
-      }
-    >
+    <NavScreen title={t('tabs.profile')}>
       <Header />
       <WeddingCard compact />
       <SavedGrid />
@@ -89,11 +79,6 @@ export default function ProfileScreen() {
           title={t('chat.title')}
           value={unread > 0 ? String(unread) : undefined}
           onPress={() => router.push('/messages')}
-        />
-        <ListRow
-          icon="settings-outline"
-          title={t('settings.title')}
-          onPress={() => router.push('/settings')}
         />
       </ListSection>
       {/* These lived at the bottom of Home before the final look (2026-10-23) */}
