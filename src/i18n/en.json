@@ -1117,10 +1117,6 @@
     "nothingNext": "Every essential is booked. Nice work!",
     "pickEventsRow": "Pick your events to see what to book",
     "startPlanning": "Start planning",
-    "showNice": {
-      "one": "Show {{count}} more, nice to have",
-      "other": "Show {{count}} more, nice to have"
-    },
     "showLess": "Show less",
     "picker": {
       "title": "Your events",
@@ -1141,16 +1137,9 @@
       }
     },
     "cheerDone": "{{event}} is all booked!",
-    "cheerNext": "Next up: {{event}}",
-    "cheerAll": "Every event is booked. Congratulations!",
     "startCardTitle": "Plan your wedding",
     "startCardBody": "Your countdown, your events and what to book, shared with the family.",
     "signInToPlan": "Sign in to start",
-    "eventDateTitle": "When is the {{event}}?",
-    "eventDatePick": "Pick a date",
-    "eventDateClear": "Clear the date",
-    "eventDateNone": "No date yet",
-    "eventDateHint": "When you ask a vendor about this event, the date goes with your request.",
     "eventsFirst": {
       "one": "1 event · {{first}}",
       "other": "{{count}} events · {{first}} comes first"
@@ -1158,6 +1147,15 @@
     "eventsAllBooked": {
       "one": "1 event · everything’s booked",
       "other": "{{count}} events · everything’s booked"
+    },
+    "event": {
+      "booked": "Booked",
+      "allSet": "All set. Everything essential is booked.",
+      "back": "Back to your wedding",
+      "alongside": "With the {{events}}",
+      "guests": "Guests: {{band}}",
+      "wedFind": "Let Wed find the rest for the {{event}}",
+      "essentials": "Essentials"
     }
   },
   "filters": {

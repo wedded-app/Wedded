@@ -1,5 +1,5 @@
 import { router, useLocalSearchParams } from 'expo-router';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import { Pressable, View, type ScrollViewInstance } from 'react-native';
 import Animated, { useReducedMotion } from 'react-native-reanimated';
 
@@ -15,15 +15,14 @@ import { VaultIcon } from '@/components/vault-icon';
 import { makeStyles, Radius, Sizes, Spacing, useColors } from '@/constants/theme';
 import { useGuests, useGuestSummary } from '@/data/guests';
 import { useMemoryVault, useOpenMemoryVault } from '@/data/memory-vault';
-import { openCounts, useWeddingSuggestions } from '@/data/wedding-suggestions';
 import { FamilyChats } from '@/features/group-chat/family-chats';
 import { totalsLine } from '@/features/guests/guest-helpers';
 import { FamilyShortlist } from '@/features/planner/family-shortlist';
 import { EventPlan } from '@/features/planner/event-plan';
-import { essentialNeeds } from '@/features/planner/plan';
 import { PlanTogether } from '@/features/planner/plan-together';
 import { Suggestions } from '@/features/planner/suggestions';
 import { StartPlanCard } from '@/features/planner/start-plan-card';
+import { usePlanDays } from '@/features/planner/use-plan-days';
 import { usePlanView } from '@/features/planner/use-plan-view';
 import { comingLine, whenLine } from '@/features/planner/wedding-tab';
 import { WeddingTop } from '@/features/planner/wedding-top';
@@ -40,9 +39,9 @@ import { Motion } from '@/lib/motion';
  *    go, and the faces of everyone planning, which open Family below.
  * 2. Your events as tickets, in ceremony order: the day, when and where,
  *    what each still needs in words, who's booked and how many are coming.
- *    A tap opens one to its date, guests and what to book (essential first,
- *    ticked off as they book, with a shortcut to find each). The events are
- *    picked in the "Your events" sheet (/plan-events).
+ *    A tap opens the event's own page (/plan-event/{slug}): its day, time
+ *    and guests, and what to book as tiles. The events are picked in the
+ *    "Your events" sheet (/plan-events).
  * 3. For your guests: Guests, the website, invitation cards, the Memory Vault.
  * 4. Planning together: Family and their roles, suggestions, the family
  *    shortlist to vote on, and the family chats.
@@ -56,8 +55,7 @@ export default function PlanScreen() {
   const reduceMotion = useReducedMotion();
   const view = usePlanView();
   const { plan, wedding, canEdit, saveFailed, active, chosen, needsByEvent } = view;
-  const suggestions = useWeddingSuggestions(wedding?.id ?? null);
-  const suggested = openCounts(suggestions.data ?? []);
+  const days = usePlanDays(view);
   // Only the owner and editors see the guest list: it's other people's numbers
   const guests = useGuests(canEdit ? (wedding?.id ?? null) : null);
   const guestSummary = useGuestSummary(canEdit ? (wedding?.id ?? null) : null);
@@ -86,44 +84,15 @@ export default function PlanScreen() {
     });
   };
 
-  // Every event starts folded, so the page reads as one list; a tap opens one
-  const [openSlugs, setOpen] = useState<string[]>([]);
-  // Tapping an event on Home opens it here (?event=mehndi)
+  // Tapping an event on Home lands here (?event=mehndi): open its page
   const { event: openEvent } = useLocalSearchParams<{ event?: string }>();
-  const [seenEvent, setSeenEvent] = useState<string | undefined>(undefined);
-  if (openEvent !== seenEvent) {
-    setSeenEvent(openEvent);
-    if (openEvent && !openSlugs.includes(openEvent)) setOpen([...openSlugs, openEvent]);
-  }
-  const toggleOpen = (slug: string) =>
-    setOpen(openSlugs.includes(slug) ? openSlugs.filter((s) => s !== slug) : [...openSlugs, slug]);
+  useEffect(() => {
+    if (!openEvent) return;
+    router.setParams({ event: undefined });
+    router.push({ pathname: '/plan-event/[slug]', params: { slug: openEvent } });
+  }, [openEvent]);
 
   const openPicker = () => router.push('/plan-events');
-
-  // Booking an event's last essential: say so, fold it away and open the
-  // next event with something left, so there's always a clear next step.
-  const [cheer, setCheer] = useState<{ done: string; next: string | null } | null>(null);
-  useEffect(() => {
-    if (!cheer) return;
-    const timer = setTimeout(() => setCheer(null), 5000);
-    return () => clearTimeout(timer);
-  }, [cheer]);
-  function eventCompleted(slug: string) {
-    const done = chosen.find((event) => event.slug === slug);
-    const next = chosen.find(
-      (event) =>
-        event.slug !== slug &&
-        essentialNeeds(needsByEvent[event.slug]).some(
-          (need) => !(plan.booked[event.slug] ?? []).includes(need.categorySlug),
-        ),
-    );
-    successHaptic();
-    setCheer({
-      done: done ? localized(done.name) : '',
-      next: next ? localized(next.name) : null,
-    });
-    setTimeout(() => setOpen(next ? [next.slug] : []), 700);
-  }
 
   return (
     <NavScreen
@@ -200,31 +169,6 @@ export default function PlanScreen() {
               </AppText>
             )}
           </View>
-          {cheer && (
-            <Animated.View
-              entering={Motion.rise}
-              exiting={Motion.exit}
-              layout={Motion.layout}
-              style={styles.cheer}
-              accessibilityLiveRegion="polite"
-            >
-              <View style={styles.cheerIcon}>
-                <Icon name="checkmark" size={20} color={Colors.onPrimary} weight="bold" />
-              </View>
-              <View style={styles.grow}>
-                <AppText weight={700}>
-                  {cheer.next
-                    ? t('planner.cheerDone', { event: cheer.done })
-                    : t('planner.cheerAll')}
-                </AppText>
-                {cheer.next && (
-                  <AppText variant="label" weight={400} color="text2">
-                    {t('planner.cheerNext', { event: cheer.next })}
-                  </AppText>
-                )}
-              </View>
-            </Animated.View>
-          )}
           {chosen.map((event) => (
             <EventPlan
               key={event.slug}
@@ -232,30 +176,12 @@ export default function PlanScreen() {
               sections={needsByEvent[event.slug] ?? []}
               booked={plan.booked[event.slug] ?? []}
               bookedVendors={wedding?.bookedVendors ?? {}}
-              suggested={suggested}
-              guests={plan.guests?.[event.slug] ?? null}
-              date={plan.eventDates?.[event.slug] ?? null}
-              weddingDate={plan.weddingDate}
+              date={days.state.dates[event.slug] ?? null}
               when={whenLine(wedding?.eventTimes[event.slug], wedding?.eventPlaces[event.slug])}
               coming={comingLine(
                 guestSummary.data?.find((s) => s.eventSlug === event.slug),
                 t,
               )}
-              canEdit={canEdit}
-              open={openSlugs.includes(event.slug)}
-              onToggle={() => toggleOpen(event.slug)}
-              onComplete={() => eventCompleted(event.slug)}
-              onToggleBooked={(category) => view.toggleBooked(event.slug, category)}
-              onGuests={(band) => view.setEventGuests(event.slug, band)}
-              onDate={(date) => view.setEventDate(event.slug, date)}
-              vault={
-                vault.data
-                  ? {
-                      id: vault.data.id,
-                      count: vault.data.events.find((e) => e.slug === event.slug)?.count ?? 0,
-                    }
-                  : null
-              }
             />
           ))}
           {/* The picker offers the family's traditions' events, from the database */}
@@ -382,25 +308,6 @@ const useStyles = makeStyles((Colors) => ({
   pressed: {
     opacity: 0.5,
   },
-  cheer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.md,
-    padding: Spacing.lg,
-    borderRadius: Radius.card,
-    borderCurve: 'continuous',
-    backgroundColor: Colors.surface,
-    borderWidth: 1.5,
-    borderColor: Colors.success,
-  },
-  cheerIcon: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: Colors.success,
-  },
   addEvent: {
     minHeight: 56,
     flexDirection: 'row',
@@ -412,9 +319,5 @@ const useStyles = makeStyles((Colors) => ({
     borderWidth: 1.5,
     borderStyle: 'dashed',
     borderColor: Colors.borderInput,
-  },
-  grow: {
-    flex: 1,
-    gap: 2,
   },
 }));
