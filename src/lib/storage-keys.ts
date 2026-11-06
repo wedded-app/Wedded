@@ -23,4 +23,6 @@ export const StorageKeys = {
   pushToken: 'push.token',
   /** The Memory Vault's "Planning a wedding too?" card: "shown" once a guest has seen it. */
   vaultPlanCard: 'vault.planCard',
+  /** The Wedding tab's first-visit tour: "done" once it's been through or skipped. */
+  weddingTour: 'planner.tour',
 } as const;

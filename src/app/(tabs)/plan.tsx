@@ -23,7 +23,9 @@ import { StartPlanCard } from '@/features/planner/start-plan-card';
 import { usePlanDays } from '@/features/planner/use-plan-days';
 import { usePlanView } from '@/features/planner/use-plan-view';
 import { comingLine, whenLine } from '@/features/planner/wedding-tab';
+import { markTourSeen, useTourSeen } from '@/features/planner/tour-state';
 import { heroHeight, WeddingHero } from '@/features/planner/wedding-hero';
+import { useTourTargets, WeddingTour } from '@/features/planner/wedding-tour';
 import { AskWedButton } from '@/features/wed/ask-wed-button';
 import { localized } from '@/i18n/localized';
 import { useLocale } from '@/i18n/locale-context';
@@ -45,7 +47,8 @@ import { Motion } from '@/lib/motion';
  *    Memory Vault.
  * 4. Planning together: Family and their roles, suggestions, the family
  *    shortlist to vote on, and the family chats.
- * Saved to the account and shared with family (Plan together,
+ * The first time it opens with events, a short tour lights each part up
+ * in turn (WeddingTour). Saved to the account and shared with family (Plan together,
  * src/data/wedding.ts); viewers see the plan but can't change it.
  */
 export default function PlanScreen() {
@@ -110,6 +113,34 @@ export default function PlanScreen() {
     });
   };
 
+  // The first visit with events: a short tour of the page, once per phone
+  const tour = useTourTargets();
+  const tourSeen = useTourSeen();
+  const [focused, setFocused] = useState(false);
+  useFocusEffect(
+    useCallback(() => {
+      setFocused(true);
+      return () => setFocused(false);
+    }, []),
+  );
+  const [touring, setTouring] = useState(false);
+  const ready = focused && !tourSeen && !!wedding && !view.isPending && chosen.length > 0;
+  useEffect(() => {
+    if (!ready) return;
+    // Once the page has drawn and settled
+    const timer = setTimeout(() => setTouring(true), 900);
+    return () => clearTimeout(timer);
+  }, [ready]);
+  const endTour = () => {
+    setTouring(false);
+    markTourSeen();
+    scroll.current?.scrollTo({ y: 0, animated: !reduceMotion });
+  };
+  const scrollTo = useCallback(
+    (y: number) => scroll.current?.scrollTo({ y, animated: !reduceMotion }),
+    [reduceMotion],
+  );
+
   // Tapping an event on Home lands here (?event=mehndi): open its page
   const { event: openEvent } = useLocalSearchParams<{ event?: string }>();
   useEffect(() => {
@@ -132,12 +163,14 @@ export default function PlanScreen() {
       back={false}
       trailing={
         // Wed (mockup): the plan's next step, asked in the chat. Never sends.
-        <AskWedButton
-          variant="round"
-          a11y="Ask Wed"
-          about={{ kind: 'plan', label: 'My Wedding' }}
-          ask="What should we book next?"
-        />
+        <View {...tour.spot('wed')}>
+          <AskWedButton
+            variant="round"
+            a11y="Ask Wed"
+            about={{ kind: 'plan', label: 'My Wedding' }}
+            ask="What should we book next?"
+          />
+        </View>
       }
     >
       {/* A plan belongs to an account: signed out, or not started yet, offer to start one. */}
@@ -149,7 +182,9 @@ export default function PlanScreen() {
       {!wedding && view.loading && <StateView state="loading" />}
 
       {/* 1. The top */}
-      {wedding && <WeddingHero view={view} days={days} onFamily={openFamily} />}
+      {wedding && (
+        <WeddingHero view={view} days={days} onFamily={openFamily} spotRef={tour.spot('top').ref} />
+      )}
 
       {saveFailed && (
         <AppText color="error" style={styles.pad}>
@@ -172,9 +207,9 @@ export default function PlanScreen() {
         </Animated.View>
       )}
 
-      {/* 2. Your events, a ticket each */}
+      {/* 2. Your events, a day at a time */}
       {chosen.length > 0 && (
-        <View style={styles.block}>
+        <View style={styles.block} {...tour.place('events')}>
           <View style={styles.heading}>
             <View style={styles.titleRow}>
               <SectionTitle>{t('planner.eventsTitle')}</SectionTitle>
@@ -197,8 +232,10 @@ export default function PlanScreen() {
               </AppText>
             )}
           </View>
-          {tickets.map((ticket) => (
-            <DayTicket key={ticket.slugs[0]} date={ticket.date} entries={ticket.slugs.map(entry)} />
+          {tickets.map((ticket, index) => (
+            <View key={ticket.slugs[0]} {...(index === 0 ? tour.spot('events') : {})}>
+              <DayTicket date={ticket.date} entries={ticket.slugs.map(entry)} />
+            </View>
           ))}
           {/* The picker offers the family's traditions' events, from the database */}
           {canEdit && (
@@ -220,7 +257,7 @@ export default function PlanScreen() {
 
       {/* 3. For your guests */}
       {!view.loading && (
-        <View style={styles.block}>
+        <View style={styles.block} {...tour.target('guests')}>
           <SectionTitle>{t('planner.forGuests')}</SectionTitle>
           <GuestTiles weddingId={wedding?.id ?? null} canEdit={canEdit} />
         </View>
@@ -240,6 +277,14 @@ export default function PlanScreen() {
           <FamilyShortlist weddingId={wedding.id} />
           <FamilyChats wedding={wedding} />
         </View>
+      )}
+      {touring && (
+        <WeddingTour
+          targets={tour}
+          steps={['top', 'events', 'guests', 'wed']}
+          scrollTo={scrollTo}
+          onDone={endTour}
+        />
       )}
     </NavScreen>
   );

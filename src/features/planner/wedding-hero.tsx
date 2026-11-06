@@ -1,5 +1,12 @@
 import { router } from 'expo-router';
-import { Platform, Pressable, StyleSheet, View, useWindowDimensions } from 'react-native';
+import {
+  Platform,
+  Pressable,
+  StyleSheet,
+  View,
+  useWindowDimensions,
+  type ViewInstance,
+} from 'react-native';
 
 import { AppText, useFontScale } from '@/components/app-text';
 import { useNavTop } from '@/components/nav';
@@ -49,10 +56,13 @@ export function WeddingHero({
   view,
   days,
   onFamily,
+  spotRef,
 }: {
   view: PlanView;
   days: PlanDays;
   onFamily: () => void;
+  /** For the first-visit tour, which lights the top up first. */
+  spotRef?: (view: ViewInstance | null) => void;
 }) {
   const Colors = useColors();
   const styles = useStyles();
@@ -79,6 +89,8 @@ export function WeddingHero({
 
   return (
     <View
+      ref={spotRef}
+      collapsable={false}
       style={[
         styles.hero,
         {
