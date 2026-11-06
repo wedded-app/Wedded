@@ -1156,6 +1156,30 @@
       "guests": "Guests: {{band}}",
       "wedFind": "Let Wed find the rest for the {{event}}",
       "essentials": "Essentials"
+    },
+    "hero": {
+      "countLabel": {
+        "one": "{{count}} day until the {{event}}, {{date}}",
+        "other": "{{count}} days until the {{event}}, {{date}}"
+      },
+      "daysHint": "Shows every event's day",
+      "ask": "When's the wedding?",
+      "askKicker": "Pick the day of each event",
+      "until": "Until the {{event}} · {{date}}",
+      "days": "Your days",
+      "pickDays": "Pick your days"
+    },
+    "daysSheet": {
+      "empty": "Pick your events first, then give each one its day."
+    },
+    "tiles": {
+      "guests": "See who's coming",
+      "cardsTitle": "Invitations",
+      "cards": "Design a card and send it on WhatsApp",
+      "vault": "Everyone's photos in one place",
+      "siteNew": "Already filled in from your plan",
+      "siteLive": "Live for your guests",
+      "siteDraft": "Draft · only family can see it"
     }
   },
   "filters": {

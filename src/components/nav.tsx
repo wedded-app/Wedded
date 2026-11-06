@@ -1,4 +1,4 @@
-import type { ReactNode, Ref } from 'react';
+import { useEffect, type ReactNode, type Ref } from 'react';
 import {
   Platform,
   View,
@@ -11,10 +11,12 @@ import {
 import Animated, {
   Extrapolation,
   interpolate,
+  useAnimatedReaction,
   useAnimatedScrollHandler,
   useAnimatedStyle,
   useSharedValue,
 } from 'react-native-reanimated';
+import { scheduleOnRN } from 'react-native-worklets';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AppText } from '@/components/app-text';
@@ -177,6 +179,14 @@ type NavScreenProps = Omit<ScrollViewProps, 'onScroll' | 'children'> & {
   trailing?: ReactNode;
   /** The scroll view, for a screen that scrolls itself to one of its parts. */
   scrollRef?: Ref<ScrollViewInstance>;
+  /**
+   * How far it scrolls before the bar gets its backdrop and small title,
+   * for a page that opens on a full-bleed top of its own instead of a
+   * large title (the Wedding tab's ombre).
+   */
+  collapseAt?: number;
+  /** Told when the bar gets its backdrop or loses it, e.g. to turn the status bar dark. */
+  onCollapsedChange?: (collapsed: boolean) => void;
   children: ReactNode;
 };
 
@@ -195,6 +205,8 @@ export function NavScreen({
   leading,
   trailing,
   scrollRef,
+  collapseAt,
+  onCollapsedChange,
   children,
   contentContainerStyle,
   ...rest
@@ -203,6 +215,18 @@ export function NavScreen({
   const scroll = useNavScroll();
   const top = useNavTop();
   const bottom = useBottomSpace();
+  const { setCollapseAt, scrollY, collapseAt: collapsePoint } = scroll;
+
+  useEffect(() => {
+    if (collapseAt !== undefined) setCollapseAt(collapseAt);
+  }, [collapseAt, setCollapseAt]);
+  useAnimatedReaction(
+    () => scrollY.value > collapsePoint.value - 12,
+    (collapsed, was) => {
+      if (onCollapsedChange && collapsed !== was) scheduleOnRN(onCollapsedChange, collapsed);
+    },
+    [onCollapsedChange],
+  );
 
   return (
     <View style={styles.screen}>
