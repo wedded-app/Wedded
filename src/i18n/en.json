@@ -1158,6 +1158,14 @@
     "eventsAllBooked": {
       "one": "1 event · everything’s booked",
       "other": "{{count}} events · everything’s booked"
+    },
+    "event": {
+      "booked": "Booked",
+      "allSet": "All set. Everything essential is booked.",
+      "back": "Back to your wedding",
+      "alongside": "With the {{events}}",
+      "guests": "Guests: {{band}}",
+      "wedFind": "Let Wed find the rest for the {{event}}"
     }
   },
   "filters": {

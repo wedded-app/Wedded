@@ -1,20 +1,12 @@
-import { useEffect } from 'react';
 import { View } from 'react-native';
-import Animated, {
-  useAnimatedStyle,
-  useReducedMotion,
-  useSharedValue,
-  withTiming,
-} from 'react-native-reanimated';
 import Svg, { Line } from 'react-native-svg';
 
 import { AppText, useFontScale } from '@/components/app-text';
 import { eventIcon } from '@/components/event-icon';
 import { Icon } from '@/components/icon';
 import { PressableScale } from '@/components/pressable-scale';
-import { makeStyles, Radius, Spacing, Timing, useColors } from '@/constants/theme';
+import { makeStyles, Radius, Spacing, useColors } from '@/constants/theme';
 import { stubParts } from '@/features/home/greeting';
-import { iosEasing } from '@/lib/motion';
 
 const STUB = 78;
 const NOTCH = 20;
@@ -33,7 +25,6 @@ export type EventTicketProps = {
   booked: string | null;
   /** How many are coming, from the RSVPs, when anyone's invited. */
   coming: string | null;
-  open: boolean;
   onPress: () => void;
   /** Spoken in full for screen readers. */
   accessibilityLabel: string;
@@ -44,7 +35,7 @@ export type EventTicketProps = {
  * like Up next on Home and the date ticket on a vendor's page: the day on
  * a stub, a dashed perforation with notches cut top and bottom, then the
  * event's name, when and where, what it still needs in words, who's booked
- * and how many are coming. A tap opens or folds the event below it.
+ * and how many are coming. A tap opens the event's own page.
  */
 export function EventTicket({
   slug,
@@ -55,31 +46,18 @@ export function EventTicket({
   complete,
   booked,
   coming,
-  open,
   onPress,
   accessibilityLabel,
 }: EventTicketProps) {
   const Colors = useColors();
   const styles = useStyles();
-  const reduceMotion = useReducedMotion();
   // The stub widens a little with large text so the day still fits
   const stubWidth = Math.round(STUB * Math.min(useFontScale('caption'), 1.3));
   const stub = stubParts(date);
 
-  const turn = useSharedValue(open ? 1 : 0);
-  useEffect(() => {
-    turn.value = reduceMotion
-      ? open
-        ? 1
-        : 0
-      : withTiming(open ? 1 : 0, { duration: Timing.quick, easing: iosEasing });
-  }, [open, reduceMotion, turn]);
-  const chevron = useAnimatedStyle(() => ({ transform: [{ rotate: `${turn.value * 180}deg` }] }));
-
   return (
     <PressableScale
-      accessibilityRole="button"
-      accessibilityState={{ expanded: open }}
+      accessibilityRole="link"
       accessibilityLabel={accessibilityLabel}
       pressedScale={0.98}
       onPress={onPress}
@@ -118,9 +96,9 @@ export function EventTicket({
           <AppText variant="heading" weight={600} style={styles.grow}>
             {name}
           </AppText>
-          <Animated.View style={[styles.chevron, chevron]}>
-            <Icon name="chevron-down" size={18} color={Colors.chevron} weight="semibold" />
-          </Animated.View>
+          <View style={styles.chevron}>
+            <Icon name="chevron-forward" size={18} color={Colors.chevron} weight="semibold" />
+          </View>
         </View>
         {when && (
           <AppText variant="label" weight={400} color="text2">
