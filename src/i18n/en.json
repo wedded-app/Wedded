@@ -556,7 +556,9 @@
     "goHome": "Go to Home",
     "close": "Close",
     "fewer": "One fewer",
-    "more": "One more"
+    "more": "One more",
+    "previousMonth": "Previous month",
+    "nextMonth": "Next month"
   },
   "states": {
     "loading": "Loading…",
@@ -1056,8 +1058,14 @@
     "subtitle": "Your date, your events and who's booked",
     "married": "Congratulations on the wedding!",
     "days": {
-      "one": "day to go",
-      "other": "days to go"
+      "pick": "Pick a day",
+      "sameDayAs": "Same day as the {{event}}",
+      "join": "Put the {{event}} on the same day as the {{before}}",
+      "split": "The {{event}} is on the same day as the {{before}}. Double tap to give it its own day.",
+      "sheetTitle": "When's the {{event}}?",
+      "sheetTitleMany": "When are the {{events}}?",
+      "clear": "Clear this day",
+      "and": "{{first}} and {{last}}"
     },
     "whenTitle": "When is the wedding?",
     "whenBody": "Set the wedding date to start the countdown.",
@@ -2020,11 +2028,22 @@
       "subtitle": "Every place celebrates a little differently, so we'll match your ceremonies.",
       "elsewhere": "Somewhere else"
     },
-    "date": {
-      "title": "When's the big day?",
-      "subtitle": "The main day is enough. We'll count down with you.",
-      "notYet": "We haven't picked a date yet",
-      "notYetDetail": "You can add it any time in My Wedding.",
+    "events": {
+      "title": "Which events are you having?",
+      "subtitle": "We've ticked the usual ones. Tap any to add or take away.",
+      "subtitleOther": "Tick every event you're having.",
+      "more": "More events",
+      "showMore": {
+        "one": "Show {{count}} more",
+        "other": "Show {{count}} more"
+      },
+      "showLess": "Show fewer"
+    },
+    "days": {
+      "title": "When is each one?",
+      "subtitle": "Tap an event to pick its day. Two on one day? Link them.",
+      "notYet": "We haven't picked dates yet",
+      "notYetDetail": "Add them any time on the Wedding tab.",
       "finish": "Make my plan",
       "failed": "We couldn't save your plan. Check your internet and try again."
     },

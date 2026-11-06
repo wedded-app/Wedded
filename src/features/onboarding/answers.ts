@@ -24,9 +24,22 @@ export type Answers = {
   roots: string[];
   /** They said their kind of wedding isn't listed (they'll pick events themselves). */
   otherTradition: boolean;
+  /**
+   * The main day, kept in step with the wedding-day event's day once they
+   * pick days (it starts as the date they gave on Home's card).
+   */
   weddingDate: string | null;
   /** They said they haven't picked a date yet. */
   noDateYet: boolean;
+  /**
+   * The events they're having (events.slug), from "Which events are you
+   * having?"; null until they change the ones it starts with.
+   */
+  events: string[] | null;
+  /** Each event's day, yyyy-mm-dd, from "When is each one?". */
+  eventDates: Record<string, string>;
+  /** Events put on the same day as the one before them before either has a day. */
+  joined: string[];
   /** Events named in a search ("mehndi and jaago"), added to the traditions' main events. */
   extraEvents: string[];
   /** A guest count from a search ("for 300 people"), for every event. */
@@ -42,6 +55,9 @@ const EMPTY: Answers = {
   otherTradition: false,
   weddingDate: null,
   noDateYet: false,
+  events: null,
+  eventDates: {},
+  joined: [],
   extraEvents: [],
   guestBand: null,
   citySlug: null,

@@ -112,3 +112,75 @@ export function previewEvents(
   const events = lead.slice(0, shown);
   return { events, more: mainEvents(mergedEvents(picked)).length - events.length };
 }
+
+/**
+ * What "Which events are you having?" offers: the main events of the
+ * traditions their answers lead to (ticked to start with), then everything
+ * else those traditions and the rest of their faiths' have (a Muslim family
+ * can add a Dholki and a Mayun), once each. `ordered` is all of them in
+ * ceremony order. With no tradition ("Something else") it offers every
+ * event, none ticked. The Whole wedding card isn't a ceremony, so it's never
+ * asked about.
+ */
+export function eventChoices(
+  picked: Tradition[],
+  all: Tradition[],
+): { main: TraditionEvent[]; more: TraditionEvent[]; ordered: TraditionEvent[] } {
+  const faiths = new Set(picked.map((t) => t.faithSlug).filter(Boolean));
+  const kin = all.filter(
+    (t) => !picked.includes(t) && (picked.length === 0 || faiths.has(t.faithSlug)),
+  );
+  const main = mergedEvents(picked).filter((e) => e.isCore && e.phase !== 'whole_wedding');
+  const ticked = new Set(main.map((e) => e.slug));
+  // The picked traditions' names come first, so a shared event keeps theirs
+  const ordered = mergedEvents([...picked, ...kin]).filter((e) => e.phase !== 'whole_wedding');
+  return { main, more: ordered.filter((e) => !ticked.has(e.slug)), ordered };
+}
+
+/**
+ * The events ticked before they change anything: the main ones, and any
+ * named in a search that brought them here ("mehndi and jaago").
+ */
+export function startingChoice(
+  main: TraditionEvent[],
+  ordered: TraditionEvent[],
+  named: string[],
+): string[] {
+  const slugs = main.map((e) => e.slug);
+  const extra = ordered.filter((e) => named.includes(e.slug) && !slugs.includes(e.slug));
+  return [...slugs, ...extra.map((e) => e.slug)];
+}
+
+/**
+ * The traditions a plan with these events needs: the ones their answers
+ * led to, plus, for an event none of those has, the first tradition that
+ * does (a Dholki brings in the Pakistani one). Each tradition's Whole
+ * wedding card comes along when it's one of its main events.
+ */
+export function planFor(
+  chosen: string[],
+  picked: Tradition[],
+  all: Tradition[],
+): { traditions: Tradition[]; events: string[] } {
+  const traditions = new Set(picked);
+  const covered = () => new Set(mergedEvents([...traditions]).map((e) => e.slug));
+  for (const slug of chosen) {
+    if (covered().has(slug)) continue;
+    const faiths = new Set(picked.map((t) => t.faithSlug));
+    const owners = all.filter((t) => t.events.some((e) => e.slug === slug));
+    const owner = owners.find((t) => faiths.has(t.faithSlug)) ?? owners[0];
+    if (owner) traditions.add(owner);
+  }
+  const ordered = all.filter((t) => traditions.has(t));
+  const known = covered();
+  const whole = mergedEvents(ordered)
+    .filter((e) => e.isCore && e.phase === 'whole_wedding')
+    .map((e) => e.slug);
+  return {
+    traditions: ordered,
+    events: [
+      ...chosen.filter((slug) => known.has(slug)),
+      ...whole.filter((s) => !chosen.includes(s)),
+    ],
+  };
+}

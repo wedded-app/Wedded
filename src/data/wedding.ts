@@ -498,6 +498,20 @@ export function useStartWedding() {
         p_booked: plan.booked,
       });
       if (error) throw error;
+      // Each event's own day, from "When is each one?" (create_wedding
+      // doesn't take them). The plan is made either way: a day that didn't
+      // save can be picked again on the Wedding tab.
+      await Promise.all(
+        Object.entries(plan.eventDates ?? {})
+          .filter(([slug]) => plan.events.includes(slug))
+          .map(([slug, date]) =>
+            supabase
+              .from('wedding_events')
+              .update({ event_date: date })
+              .eq('wedding_id', data)
+              .eq('event_slug', slug),
+          ),
+      );
       return data;
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: weddingKeys.all }),

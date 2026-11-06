@@ -76,20 +76,62 @@ export function pickTradition(saved: string[], current: string[], slug: string):
 /**
  * Every event across the traditions, once each, in ceremony order. A shared
  * event keeps the first tradition's name for it and is a main event if any
- * of the traditions says so.
+ * of the traditions says so. Each tradition's own order is kept, so a
+ * Muslim wedding that adds a Pakistani Dholki and Mayun gets them before
+ * the Mehndi, as a Pakistani wedding has them; where the traditions don't
+ * say, earlier phases come first, then the lower place in the order.
  */
 export function mergedEvents(traditions: Tradition[]): TraditionEvent[] {
   const bySlug = new Map<string, TraditionEvent>();
+  const firstSeen = new Map<string, number>();
+  const after = new Map<string, Set<string>>();
+  const waitingOn = new Map<string, number>();
+  const byPlace = (a: TraditionEvent, b: TraditionEvent) =>
+    phaseRank(a.phase) - phaseRank(b.phase) ||
+    a.order - b.order ||
+    (firstSeen.get(a.slug) ?? 0) - (firstSeen.get(b.slug) ?? 0);
+
   for (const tradition of traditions) {
-    for (const event of tradition.events) {
+    const own = [...tradition.events].sort(
+      (a, b) => phaseRank(a.phase) - phaseRank(b.phase) || a.order - b.order,
+    );
+    own.forEach((event, index) => {
       const seen = bySlug.get(event.slug);
-      if (!seen) bySlug.set(event.slug, event);
-      else if (event.isCore && !seen.isCore) bySlug.set(event.slug, { ...seen, isCore: true });
+      if (!seen) {
+        bySlug.set(event.slug, event);
+        firstSeen.set(event.slug, firstSeen.size);
+        waitingOn.set(event.slug, waitingOn.get(event.slug) ?? 0);
+      } else if (event.isCore && !seen.isCore) bySlug.set(event.slug, { ...seen, isCore: true });
+      // This tradition has the one before it first
+      const before = own[index - 1];
+      if (before && before.slug !== event.slug) {
+        const next = after.get(before.slug) ?? new Set<string>();
+        if (!next.has(event.slug)) {
+          next.add(event.slug);
+          after.set(before.slug, next);
+          waitingOn.set(event.slug, (waitingOn.get(event.slug) ?? 0) + 1);
+        }
+      }
+    });
+  }
+
+  // Each step takes the earliest event nothing else must come before
+  const ordered: TraditionEvent[] = [];
+  const ready = [...bySlug.values()].filter((e) => waitingOn.get(e.slug) === 0);
+  while (ready.length > 0) {
+    ready.sort(byPlace);
+    const event = ready.shift()!;
+    ordered.push(event);
+    for (const slug of after.get(event.slug) ?? []) {
+      const left = (waitingOn.get(slug) ?? 1) - 1;
+      waitingOn.set(slug, left);
+      if (left === 0) ready.push(bySlug.get(slug)!);
     }
   }
-  return [...bySlug.values()].sort(
-    (a, b) => phaseRank(a.phase) - phaseRank(b.phase) || a.order - b.order,
-  );
+  // Traditions that disagree about an order: the rest by phase and place
+  const placed = new Set(ordered.map((e) => e.slug));
+  const rest = [...bySlug.values()].filter((e) => !placed.has(e.slug)).sort(byPlace);
+  return [...ordered, ...rest];
 }
 
 /** The main events of the picked traditions: what a new plan starts with. */
