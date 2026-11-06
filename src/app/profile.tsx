@@ -157,9 +157,14 @@ function Header() {
           <AppText variant="heading" weight={700}>
             {profile.full_name}
           </AppText>
-          <AppText variant="label" weight={400} color="text2">
-            {[profile.city, formatPhone(profile.phone)].join(' · ')}
-          </AppText>
+          {/* Sign-up asks only the name; the city and phone come with a first message */}
+          {(profile.city || profile.phone) && (
+            <AppText variant="label" weight={400} color="text2">
+              {[profile.city, profile.phone && formatPhone(profile.phone)]
+                .filter(Boolean)
+                .join(' · ')}
+            </AppText>
+          )}
           {email && (
             <AppText variant="label" weight={400} color="text2">
               {email}

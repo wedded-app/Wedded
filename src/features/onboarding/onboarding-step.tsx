@@ -149,7 +149,7 @@ export function OnboardingStep({
 
       <View style={styles.footer}>
         <View style={styles.preview}>{!first && <PlanPreview step={step} />}</View>
-        <NextButton
+        <ArrowButton
           label={continueLabel ?? t('onboarding.continue')}
           disabled={!canContinue}
           loading={loading}
@@ -190,9 +190,10 @@ function ProgressBar({ from, to, label }: { from: number; to: number; label: str
 
 /**
  * Hinge's round black arrow, bottom right: grey until the question has an
- * answer, then black, shrinking a little under the finger.
+ * answer, then black, shrinking a little under the finger. The name step at
+ * sign-up uses it too.
  */
-function NextButton({
+export function ArrowButton({
   label,
   onPress,
   disabled,

@@ -67,7 +67,7 @@ Keys: the reference tables (`events`, `categories`, `cultures`, `cities`, …) a
 
 ### People
 
-- `profiles`: About you: one row per signed-in person, created after their first email code. Email lives in auth.users.
+- `profiles`: About you: one row per signed-in person, created at sign-up with only the name (city and phone come with their first message to a vendor, 2026-11-05). Email lives in auth.users.
 - `devices`: Phones that get push alerts: an Expo push token each, newest first per person (at most 10).
 - `follows`: Following a person or a vendor; exactly one of the two.
 - `user_blocks`: People someone blocked: neither sees the other's reels, comments or stories.

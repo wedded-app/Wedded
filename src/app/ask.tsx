@@ -80,7 +80,7 @@ export default function AskScreen() {
   const vendorId = params.vendorId ?? '';
   const vendor = useInquiryVendor(vendorId);
   const events = useHomeEvents();
-  const { profile, requireSignIn } = useSession();
+  const { profile, requireSignIn, reloadProfile } = useSession();
   const sending = useSendInquiry();
 
   const [eventSlugs, setEventSlugs] = useState<string[]>(params.event ? [params.event] : []);
@@ -112,7 +112,7 @@ export default function AskScreen() {
   const place = typedPlace ?? townNear(searchPlace, cities.data ?? []) ?? profile?.city ?? '';
   const [ownMessage, setOwnMessage] = useState<string | null>(null);
   const [name, setName] = useState(profile?.full_name ?? '');
-  const [phone, setPhone] = useState(profile ? formatPhone(profile.phone) : '');
+  const [phone, setPhone] = useState(profile?.phone ? formatPhone(profile.phone) : '');
   const [replyBy, setReplyBy] = useState<ReplyBy>('text');
   const [error, setError] = useState<string>();
   // A required answer that's missing or wrong, shown at its own field
@@ -217,6 +217,8 @@ export default function AskScreen() {
     switch (outcome.kind) {
       case 'sent':
       case 'queued':
+        // The phone and town from a first message are on the profile now
+        if (!profile?.phone || !profile.city) reloadProfile();
         router.replace({
           pathname: '/ask-sent',
           params: {
@@ -241,7 +243,9 @@ export default function AskScreen() {
         setError(t('inquiry.errors.vendorGone'));
         return;
       case 'invalid':
-        setError(t('inquiry.errors.invalid'));
+        // A new account signed in at Send has no phone yet: ask for it there
+        if (outcome.field === 'phone') showMissing('phone', t('inquiry.errors.phone'));
+        else setError(t('inquiry.errors.invalid'));
         return;
       case 'offline':
         setError(t('inquiry.errors.offline'));
@@ -267,6 +271,12 @@ export default function AskScreen() {
     const cleanPhone = phone.trim() ? normalizePhone(phone) : null;
     if (phone.trim() && !cleanPhone) {
       showMissing('phone', t('aboutYou.errors.phoneInvalid'));
+      return;
+    }
+    // Sign-up asks only the name, so the first message to a vendor asks for the
+    // phone they'll reply on (the server keeps it, and the town, on the profile)
+    if (profile && !profile.phone && !cleanPhone) {
+      showMissing('phone', t('inquiry.errors.phone'));
       return;
     }
     setError(undefined);

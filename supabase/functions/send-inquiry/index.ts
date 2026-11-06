@@ -91,11 +91,27 @@ Deno.serve(async (request) => {
   }
   if (!profile) return json({ error: 'needs_profile' }, 403);
 
+  // Sign-up asks only the name, so the first message to a vendor brings the
+  // phone (the app asks for it then) and the town (the wedding's place).
+  // Vendors reply by phone, so an inquiry needs one from somewhere.
+  const phone = inquiry.phone ?? profile.phone;
+  if (!phone) return json({ error: 'invalid', field: 'phone' }, 400);
+  const town = inquiry.location.trim().slice(0, 80);
+  const missing = {
+    ...(profile.phone ? {} : { phone }),
+    ...(profile.city || !town ? {} : { city: town }),
+  };
+  if (Object.keys(missing).length > 0) {
+    // Kept for next time; the inquiry goes ahead even if this doesn't save
+    const { error: fillError } = await admin.from('profiles').update(missing).eq('id', user.id);
+    if (fillError) console.error('saving the first phone or town failed', fillError);
+  }
+
   const sender = {
     name: inquiry.name ?? profile.full_name,
-    phone: inquiry.phone ?? profile.phone,
+    phone,
     email: user.email ?? null,
-    city: profile.city,
+    city: profile.city ?? town,
   };
 
   const { data, error: createError } = await admin.rpc('create_inquiry', {

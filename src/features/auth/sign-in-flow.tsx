@@ -27,6 +27,7 @@ import { isValidEmail, normalizePhone, toLatinDigits } from './about-you-validat
 import { authErrorKey } from './auth-helpers';
 import { JoinChoicePages } from './join-choice';
 import { BusinessStep, type JoinedAs } from './join-steps';
+import { NameStep } from './name-step';
 import { formatPhoneDigits, nextPhoneDigits } from './phone-entry';
 import { useSession } from './session';
 import { SignInOptions } from './sign-in-options';
@@ -495,17 +496,18 @@ function AboutYouStep({ joinedAs, onDone }: { joinedAs: JoinedAs | null; onDone:
   const userId = session.user.id;
   // The profile's number first (editing), else the one they signed in with.
   const knownPhone = profile?.phone ?? phone;
+  const forBusiness = isVendor || joinedAs === 'business';
 
-  async function save(values: AboutYouValues) {
+  async function save(details: { name: string; city?: string | null; phone?: string | null }) {
     setError(undefined);
     setSaving(true);
     const { data, error: saveError } = await supabase
       .from('profiles')
       .upsert({
         id: userId,
-        full_name: values.name,
-        city: values.city,
-        phone: values.phone,
+        full_name: details.name,
+        ...(details.city !== undefined && { city: details.city }),
+        ...(details.phone !== undefined && { phone: details.phone }),
         ...(joinedAs && { joined_as: joinedAs }),
       })
       .select()
@@ -521,22 +523,39 @@ function AboutYouStep({ joinedAs, onDone }: { joinedAs: JoinedAs | null; onDone:
     onDone();
   }
 
+  // A new account: only the name (DECISIONS.md, 2026-11-05). A phone sign-in
+  // already gave its number, so that's kept too.
+  if (!profile) {
+    const signInPhone = phone ? normalizePhone(phone) : null;
+    return (
+      <NameStep
+        initialName={nameHint ?? undefined}
+        forBusiness={forBusiness}
+        saving={saving}
+        error={error}
+        onSubmit={(name) => save({ name, ...(signInPhone && { phone: signInPhone }) })}
+      />
+    );
+  }
+
+  // Editing from Profile: every detail, the city and phone optional
   return (
     <AboutYouForm
       initialValues={{
         email: email ?? '',
-        name: profile?.full_name ?? nameHint ?? undefined,
-        city: profile?.city,
+        name: profile.full_name,
+        city: profile.city ?? undefined,
         phone: knownPhone ? formatPhone(knownPhone) : undefined,
       }}
       emailLocked
       emailHidden={!email}
-      forBusiness={isVendor || joinedAs === 'business'}
-      confirmedAdult={!!profile}
-      submitLabel={profile ? t('aboutYou.save') : undefined}
+      forBusiness={forBusiness}
+      submitLabel={t('aboutYou.save')}
       submitting={saving}
       error={error}
-      onSubmit={save}
+      onSubmit={(values: AboutYouValues) =>
+        save({ name: values.name, city: values.city, phone: values.phone })
+      }
     />
   );
 }

@@ -4,34 +4,26 @@ export type AboutYouDraft = {
   city: string;
   phone: string;
   email: string;
-  isAdult: boolean;
 };
 
 /** Cleaned-up values, ready to save. */
 export type AboutYouValues = {
   /** Trimmed, inner spaces collapsed. Any script. */
   name: string;
-  /** Trimmed, inner spaces collapsed. */
-  city: string;
-  /** E.164, e.g. "+15305550101". A 10-digit number is taken as US/Canada. */
-  phone: string;
+  /** Trimmed, inner spaces collapsed; null when left empty. */
+  city: string | null;
+  /** E.164, e.g. "+15305550101"; null when left empty. A 10-digit number is
+   * taken as US/Canada. */
+  phone: string | null;
   /** Trimmed and lowercased; null when the account has none (phone sign-in).
    * Never saved to the profile: it's the account's own email. */
   email: string | null;
-  /** The form never submits unless the 18+ box is ticked. */
-  isAdult: true;
 };
 
 export type AboutYouField = keyof AboutYouDraft;
 
 /** i18n keys under `aboutYou.errors`. */
-export type AboutYouErrorKey =
-  | 'nameRequired'
-  | 'cityRequired'
-  | 'phoneRequired'
-  | 'phoneInvalid'
-  | 'emailInvalid'
-  | 'adultRequired';
+export type AboutYouErrorKey = 'nameRequired' | 'phoneInvalid' | 'emailInvalid';
 
 export type AboutYouErrors = Partial<Record<AboutYouField, AboutYouErrorKey>>;
 
@@ -72,9 +64,12 @@ export function isValidEmail(email: string): boolean {
 }
 
 /**
- * Name, city, phone and the 18+ box are required; email is optional (phone,
- * Apple and Google accounts may have none) but must look right when given.
- * The errors to show, or the cleaned values when there are none.
+ * Only the name is required (DECISIONS.md, 2026-11-05: the city and phone are
+ * asked the first time they message a vendor); a phone or email must look
+ * right when given (phone, Apple and Google accounts may have no email). 18+
+ * isn't a box any more: continuing past the line under Create account
+ * confirms it, and the database stamps it. The errors to show, or the
+ * cleaned values when there are none.
  */
 export function validateAboutYou(draft: AboutYouDraft): {
   errors: AboutYouErrors;
@@ -85,20 +80,17 @@ export function validateAboutYou(draft: AboutYouDraft): {
   const name = collapseSpaces(draft.name);
   if (!name) errors.name = 'nameRequired';
 
-  const city = collapseSpaces(draft.city);
-  if (!city) errors.city = 'cityRequired';
+  const city = collapseSpaces(draft.city) || null;
 
-  const phone = normalizePhone(draft.phone);
-  if (!draft.phone.trim()) errors.phone = 'phoneRequired';
-  else if (!phone) errors.phone = 'phoneInvalid';
+  const typedPhone = draft.phone.trim();
+  const phone = typedPhone ? normalizePhone(typedPhone) : null;
+  if (typedPhone && !phone) errors.phone = 'phoneInvalid';
 
   const email = draft.email.trim().toLowerCase() || null;
   if (email && !isValidEmail(email)) errors.email = 'emailInvalid';
 
-  if (!draft.isAdult) errors.isAdult = 'adultRequired';
-
-  if (Object.keys(errors).length > 0 || !phone) {
+  if (Object.keys(errors).length > 0) {
     return { errors, values: null };
   }
-  return { errors, values: { name, city, phone, email, isAdult: true } };
+  return { errors, values: { name, city, phone, email } };
 }
