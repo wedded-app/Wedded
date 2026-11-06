@@ -148,7 +148,14 @@
       "toBookMore": {
         "one": "To book: {{what}} and 1 more",
         "other": "To book: {{what}} and {{count}} more"
-      }
+      },
+      "dateToCome": "Date to come",
+      "today": "Today",
+      "inDays": {
+        "one": "in 1 day",
+        "other": "in {{count}} days"
+      },
+      "everyEvent": "Across every event"
     }
   },
   "when": {

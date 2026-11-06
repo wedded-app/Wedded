@@ -36,3 +36,40 @@ const EVENT_ICONS: Partial<Record<string, IconName>> = {
 export function eventIcon(eventSlug: string): IconName {
   return EVENT_ICONS[eventSlug] ?? 'calendar-outline';
 }
+
+// The decoration each event's stop wears on Home's timeline (Fezy,
+// 2026-11-05: rings for the Nikah). Display only, like the icons above, with
+// the same rule: no religious symbols. Rings only where rings are exchanged;
+// the Sikh and Hindu ceremonies get flowers.
+const EVENT_EMOJI: Partial<Record<string, string>> = {
+  roka: '🎁',
+  'chunni-kurmai': '💍',
+  saha: '✉️',
+  'akhand-paath': '🌸',
+  sangeet: '🎶',
+  mehndi: '🌿',
+  maiyan: '🌼',
+  jaago: '🪔',
+  choora: '💫',
+  'sehra-ghori': '🐎',
+  baraat: '🥁',
+  milni: '🤝',
+  'anand-karaj': '💐',
+  pheras: '🌺',
+  nikah: '💍',
+  'church-wedding': '💍',
+  langar: '🍲',
+  'viah-di-roti': '🍛',
+  walima: '🍽️',
+  shadi: '✨',
+  zaffa: '🎺',
+  doli: '🚗',
+  reception: '🥂',
+  'pag-phera': '🏡',
+  'whole-wedding': '🗓️',
+};
+
+/** The decoration for an event slug; one added later gets a sparkle. */
+export function eventEmoji(eventSlug: string): string {
+  return EVENT_EMOJI[eventSlug] ?? '✨';
+}

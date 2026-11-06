@@ -17,7 +17,7 @@ import { ChatButton } from '@/features/chat/chat-button';
 import { BookFirst } from '@/features/home/book-first-row';
 import { DateCard } from '@/features/home/date-card';
 import { EventCarousel } from '@/features/home/event-carousel';
-import { EventsRow } from '@/features/home/events-row';
+import { EventsTimeline } from '@/features/home/events-timeline';
 import { greetingKey, todayLine } from '@/features/home/greeting';
 import { NextUp } from '@/features/home/next-up';
 import { SectionHeader } from '@/features/home/section-header';
@@ -129,7 +129,7 @@ export default function HomeScreen() {
           {planning ? (
             <>
               <NextUp view={view} />
-              <EventsRow view={view} />
+              <EventsTimeline view={view} scrollY={scroll.scrollY} />
               {first ? (
                 <VendorPhotoCards
                   title={
