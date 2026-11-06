@@ -565,22 +565,22 @@
   },
   "aboutYou": {
     "title": "About you",
+    "nameTitle": "What's your name?",
+    "nameHint": "It's how vendors will know you when you message them.",
+    "nameHintBusiness": "So the Wedded team knows who runs your business.",
     "name": "Your name",
     "city": "Your city",
     "phone": "Phone number",
     "phoneHint": "Vendors call or text you back on this number.",
     "email": "Email",
-    "isAdult": "I am 18 or older",
     "submit": "Create account",
     "fixErrors": "Please fix the parts marked in red.",
     "errors": {
       "nameRequired": "Please type your name.",
-      "cityRequired": "Please type your city.",
       "phoneRequired": "Please type your phone number.",
       "phoneInvalid": "Type a 10-digit phone number, like 530 555 0101.",
       "emailRequired": "Please type your email.",
-      "emailInvalid": "Check your email. It should look like name@example.com.",
-      "adultRequired": "You need to be 18 or older to make an account."
+      "emailInvalid": "Check your email. It should look like name@example.com."
     },
     "emailLockedHint": "This is the email you signed in with.",
     "save": "Save",
@@ -688,7 +688,7 @@
     "signInWithGoogle": "Sign in with Google",
     "signInWithPhone": "Sign in with phone number",
     "signInWithEmail": "Sign in with email",
-    "legal": "By continuing, you agree to our {{terms}}. Learn how we use your data in our {{privacy}}.",
+    "legal": "By continuing, you confirm you're 18 or older and agree to our {{terms}}. Learn how we use your data in our {{privacy}}.",
     "captcha": "Checking you're a person",
     "captchaWait": "One moment, we're checking this is really you. Try again in a second.",
     "join": {
@@ -826,6 +826,7 @@
       "guests": "Pick about how many guests (or Not sure).",
       "place": "Type your city or the hall.",
       "message": "Please write a message.",
+      "phone": "Add your phone number so the vendor can call or text you back.",
       "tooManyHour": "You've sent 5 inquiries in the last hour. Please wait a little, or call the vendor.",
       "tooManyDay": "You've sent 15 inquiries today. Please try again tomorrow, or call the vendor.",
       "vendorGone": "This vendor is no longer listed.",
@@ -1992,7 +1993,7 @@
     "brand": "Wedded",
     "createAccount": "Create account",
     "signIn": "Sign in",
-    "legal": "By tapping “Create account” or “Sign in”, you agree to our {{terms}}. Learn how we use your data in our {{privacy}}.",
+    "legal": "By tapping “Create account” or “Sign in”, you confirm you're 18 or older and agree to our {{terms}}. Learn how we use your data in our {{privacy}}.",
     "termsLink": "Terms of Service",
     "privacyLink": "Privacy Policy",
     "phrases": {

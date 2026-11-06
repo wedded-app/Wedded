@@ -11,7 +11,6 @@ import {
 
 import { AppText } from '@/components/app-text';
 import { Button } from '@/components/button';
-import { Checkbox } from '@/components/checkbox';
 import { FieldError } from '@/components/field-error';
 import { TextField } from '@/components/text-field';
 import { Spacing } from '@/constants/theme';
@@ -26,7 +25,7 @@ import {
 
 export type { AboutYouValues } from './about-you-validation';
 
-type TextFieldName = Exclude<AboutYouField, 'isAdult'>;
+type TextFieldName = AboutYouField;
 
 export type AboutYouFormProps = {
   /** Called with cleaned-up values once every field is valid. */
@@ -44,8 +43,6 @@ export type AboutYouFormProps = {
   /** Leave the email out: the account has none (phone sign-in). It's optional
    * anyway, since it isn't saved to the profile. */
   emailHidden?: boolean;
-  /** They already confirmed 18+ (editing an existing profile): hide the box. */
-  confirmedAdult?: boolean;
   /** Button text; defaults to "Create account". */
   submitLabel?: string;
   /** A vendor account: the same details, asked in a business's words. */
@@ -53,12 +50,13 @@ export type AboutYouFormProps = {
   style?: StyleProp<ViewStyle>;
 };
 
-const FIELD_ORDER: AboutYouField[] = ['name', 'city', 'phone', 'email', 'isAdult'];
+const FIELD_ORDER: AboutYouField[] = ['name', 'city', 'phone', 'email'];
 
 /**
- * "About you" (vision doc S14): name, city, phone, email (when the account
- * has one) and the 18+ box, then
- * "Create account". It scrolls and keeps the focused field above the keyboard,
+ * "About you" (vision doc S14), now for editing your details from Profile
+ * (sign-up asks only the name, `NameStep`): name, then city and phone, which
+ * are optional here and checked when given, and the email when the account
+ * has one, then Save. It scrolls and keeps the focused field above the keyboard,
  * so it can fill a screen or a sheet; give it horizontal padding from the parent.
  * No placeholders, on purpose: grey example text reads as already filled in.
  * Errors show only after the first tap on "Create account", then clear as each
@@ -71,7 +69,6 @@ export function AboutYouForm({
   error,
   emailLocked = false,
   emailHidden = false,
-  confirmedAdult = false,
   submitLabel,
   forBusiness = false,
   style,
@@ -82,7 +79,6 @@ export function AboutYouForm({
     city: initialValues?.city ?? '',
     phone: initialValues?.phone ?? '',
     email: initialValues?.email ?? '',
-    isAdult: confirmedAdult,
   });
   const [attempted, setAttempted] = useState(false);
 
@@ -129,9 +125,7 @@ export function AboutYouForm({
     setAttempted(true);
     AccessibilityInfo.announceForAccessibility(t('aboutYou.fixErrors'));
     const firstInvalid = FIELD_ORDER.find((field) => errors[field]);
-    if (firstInvalid && firstInvalid !== 'isAdult') {
-      inputRefs[firstInvalid].current?.focus();
-    }
+    if (firstInvalid) inputRefs[firstInvalid].current?.focus();
   }
 
   return (
@@ -201,14 +195,6 @@ export function AboutYouForm({
           returnKeyType="done"
           submitBehavior="blurAndSubmit"
           onSubmitEditing={showSubmit}
-        />
-      )}
-      {!confirmedAdult && (
-        <Checkbox
-          label={t('aboutYou.isAdult')}
-          checked={draft.isAdult}
-          onChange={(isAdult) => setDraft((current) => ({ ...current, isAdult }))}
-          error={errorFor('isAdult')}
         />
       )}
 

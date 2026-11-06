@@ -1570,37 +1570,37 @@ export type Database = {
       profiles: {
         Row: {
           adult_confirmed_at: string;
-          city: string;
+          city: string | null;
           created_at: string;
           full_name: string;
           id: string;
           is_sample: boolean;
           joined_as: string | null;
-          phone: string;
+          phone: string | null;
           planning_for: string | null;
           updated_at: string;
         };
         Insert: {
           adult_confirmed_at?: string;
-          city: string;
+          city?: string | null;
           created_at?: string;
           full_name: string;
           id: string;
           is_sample?: boolean;
           joined_as?: string | null;
-          phone: string;
+          phone?: string | null;
           planning_for?: string | null;
           updated_at?: string;
         };
         Update: {
           adult_confirmed_at?: string;
-          city?: string;
+          city?: string | null;
           created_at?: string;
           full_name?: string;
           id?: string;
           is_sample?: boolean;
           joined_as?: string | null;
-          phone?: string;
+          phone?: string | null;
           planning_for?: string | null;
           updated_at?: string;
         };

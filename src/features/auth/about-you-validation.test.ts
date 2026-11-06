@@ -46,7 +46,6 @@ describe('validateAboutYou', () => {
     city: ' Yuba City ',
     phone: '(530) 555-0101',
     email: ' Harjit@Example.COM ',
-    isAdult: true,
   };
 
   it('cleans up a complete form', () => {
@@ -57,7 +56,6 @@ describe('validateAboutYou', () => {
         city: 'Yuba City',
         phone: '+15305550101',
         email: 'harjit@example.com',
-        isAdult: true,
       },
     });
   });
@@ -68,20 +66,20 @@ describe('validateAboutYou', () => {
       city: '',
       phone: '555',
       email: 'nope',
-      isAdult: false,
     });
     expect(values).toBeNull();
     expect(errors).toEqual({
       name: 'nameRequired',
-      city: 'cityRequired',
       phone: 'phoneInvalid',
       email: 'emailInvalid',
-      isAdult: 'adultRequired',
     });
   });
 
-  it('never submits without the 18+ box', () => {
-    expect(validateAboutYou({ ...complete, isAdult: false }).values).toBeNull();
+  it('needs only the name: the city and phone are asked when they first message a vendor', () => {
+    expect(validateAboutYou({ name: 'Harjit', city: ' ', phone: '', email: '' })).toEqual({
+      errors: {},
+      values: { name: 'Harjit', city: null, phone: null, email: null },
+    });
   });
 
   it('lets accounts without an email finish (phone, Apple or Google)', () => {
@@ -92,7 +90,6 @@ describe('validateAboutYou', () => {
         city: 'Yuba City',
         phone: '+15305550101',
         email: null,
-        isAdult: true,
       },
     });
   });
