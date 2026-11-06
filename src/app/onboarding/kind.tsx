@@ -93,6 +93,8 @@ export default function KindStep() {
                   setAnswers({
                     faiths: toggleIn(answers.faiths, faith.slug),
                     otherTradition: false,
+                    // A different kind of wedding starts its events afresh
+                    events: null,
                   })
                 }
               />
@@ -105,7 +107,12 @@ export default function KindStep() {
             detail={t('onboarding.kind.otherDetail')}
             selected={answers.otherTradition}
             onPress={() =>
-              setAnswers({ otherTradition: !answers.otherTradition, faiths: [], roots: [] })
+              setAnswers({
+                otherTradition: !answers.otherTradition,
+                faiths: [],
+                roots: [],
+                events: null,
+              })
             }
           />
         </View>

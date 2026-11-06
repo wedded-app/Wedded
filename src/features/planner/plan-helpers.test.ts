@@ -162,6 +162,49 @@ describe('mergedEvents', () => {
     ]);
   });
 
+  it("keeps each tradition's own order when one adds events to another", () => {
+    const muslim: Tradition = {
+      ...pakistani,
+      slug: 'muslim',
+      backgroundSlug: null,
+      events: [
+        event('engagement', 'before', 1),
+        event('mehndi', 'before', 2),
+        event('nikah', 'wedding_day', 3),
+        event('walima', 'after', 6),
+      ],
+    };
+    const withDholki: Tradition = {
+      ...pakistani,
+      events: [
+        event('engagement', 'before', 1, true, 'Mangni'),
+        event('dholki', 'before', 2),
+        event('maiyan', 'before', 3, true, 'Mayun'),
+        event('mehndi', 'before', 4),
+        event('nikah', 'wedding_day', 5),
+        event('shadi', 'wedding_day', 6),
+        event('walima', 'after', 8),
+      ],
+    };
+    const merged = mergedEvents([muslim, withDholki]);
+    expect(merged.map((e) => e.slug)).toEqual([
+      'engagement',
+      'dholki',
+      'maiyan',
+      'mehndi',
+      'nikah',
+      'shadi',
+      'walima',
+    ]);
+    expect(merged[0].name.en).toBe('engagement');
+  });
+
+  it('still lists everything when two traditions disagree about the order', () => {
+    const one: Tradition = { ...sikh, events: [event('a', 'before', 1), event('b', 'before', 2)] };
+    const two: Tradition = { ...sikh, events: [event('b', 'before', 1), event('a', 'before', 2)] };
+    expect(mergedEvents([one, two]).map((e) => e.slug)).toEqual(['a', 'b']);
+  });
+
   it("uses the first tradition's name and marks shared main events", () => {
     const withMainMilni: Tradition = {
       ...pakistani,

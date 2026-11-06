@@ -4,18 +4,19 @@ import { useStartWedding, useWeddingPlan } from '@/data/wedding';
 import { useSession } from '@/features/auth/session';
 import { clearWeddingDraft } from '@/features/home/wedding-draft';
 import { useSearchLocation } from '@/features/location/search-location';
-import { EMPTY_PLAN, startingEvents } from '@/features/planner/plan';
+import { EMPTY_PLAN } from '@/features/planner/plan';
 
 import { getAnswers } from './answers';
-import { traditionsForFaiths } from './faith';
+import { eventChoices, planFor, startingChoice, traditionsForFaiths } from './faith';
 import { markOnboarding } from './onboarding-state';
 
 /**
  * Turns the first questions into the family's plan, saved to their account:
  * the traditions their faith and roots lead to (never the faith itself),
- * those traditions' main events (changed
- * any time in My Wedding) and the date. An account that already has a
- * wedding (one started with nothing in it) is filled in instead. With no
+ * plus any that an added event comes from, the events they chose (changed
+ * any time on the Wedding tab), each one's day and the main day. An
+ * account that already has a wedding (one started with nothing in it) is
+ * filled in instead. With no
  * search area picked yet, vendors are searched near the city they gave in
  * About you, so results show distances from the start. Throws if saving
  * fails, so the last question can say so and try again.
@@ -30,13 +31,18 @@ export function useFinishOnboarding() {
 
   const finish = async () => {
     const answers = getAnswers();
-    const picked = traditionsForFaiths(answers.faiths, answers.roots, traditions.data ?? []);
-    const slugs = picked.map((t) => t.slug);
-    // Events named in a search ("mehndi and jaago") join the main events
-    const known = new Set((traditions.data ?? []).flatMap((t) => t.events.map((e) => e.slug)));
-    const main = startingEvents(picked);
-    const named = answers.extraEvents.filter((slug) => known.has(slug) && !main.includes(slug));
-    const events = [...main, ...named];
+    const all = traditions.data ?? [];
+    const picked = traditionsForFaiths(answers.faiths, answers.roots, all);
+    // The events they chose, or, if they skipped that question, the main
+    // ones and any named in a search ("mehndi and jaago")
+    const { main, ordered } = eventChoices(picked, all);
+    const chosen = answers.events ?? startingChoice(main, ordered, answers.extraEvents);
+    const plan = planFor(chosen, picked, all);
+    const slugs = plan.traditions.map((t) => t.slug);
+    const events = plan.events;
+    const eventDates = Object.fromEntries(
+      Object.entries(answers.eventDates).filter(([slug]) => events.includes(slug)),
+    );
     const band = answers.guestBand;
 
     if (wedding.wedding) {
@@ -44,6 +50,7 @@ export function useFinishOnboarding() {
       if (answers.weddingDate) wedding.setWeddingDate(answers.weddingDate);
       if (events.length > 0) wedding.addEvents(events);
       if (band) for (const event of events) wedding.setEventGuests(event, band);
+      for (const [event, date] of Object.entries(eventDates)) wedding.setEventDate(event, date);
     } else {
       await startWedding.mutateAsync({
         ...EMPTY_PLAN,
@@ -51,6 +58,7 @@ export function useFinishOnboarding() {
         weddingDate: answers.weddingDate,
         events,
         guests: band ? Object.fromEntries(events.map((event) => [event, band])) : {},
+        eventDates,
         planningFor: answers.planningFor,
       });
     }

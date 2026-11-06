@@ -78,6 +78,7 @@ const SF_SYMBOLS: Partial<Record<IconName, SFSymbol>> = {
   'chatbubbles-outline': 'bubble.left.and.bubble.right',
   'calendar-outline': 'calendar',
   calendar: 'calendar',
+  link: 'link',
   'finger-print': 'faceid',
   'key-outline': 'key',
   'shield-checkmark-outline': 'checkmark.shield',

@@ -1,13 +1,12 @@
 /**
  * The first questions, in order; each is a screen at /onboarding/{step},
- * starting at FIRST_STEP. Two in the progress bar: the kind of wedding and
- * the date, the two answers that build the plan (its events and its
- * countdown). "Whose wedding is it?" left the intro (DECISIONS.md,
- * 2026-11-05). "roots" (where the families are from) follows "kind" only
- * when a faith they picked has more than one tradition, and counts as its
- * second half.
+ * starting at FIRST_STEP. Three in the progress bar: the kind of wedding,
+ * which events they're having, and the day of each (DECISIONS.md,
+ * 2026-11-06), the answers that build the plan and its countdown. "roots"
+ * (where the families are from) follows "kind" only when a faith they
+ * picked has more than one tradition, and counts as its second half.
  */
-export const STEPS = ['kind', 'date'] as const;
+export const STEPS = ['kind', 'events', 'days'] as const;
 
 export type Step = (typeof STEPS)[number] | 'roots';
 

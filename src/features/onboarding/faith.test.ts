@@ -2,9 +2,12 @@ import type { Tradition, TraditionEvent } from '@/data/reference';
 
 import {
   answersForTraditions,
+  eventChoices,
   faithOptions,
   faithsNeedingRoots,
   faithWide,
+  planFor,
+  startingChoice,
   previewEvents,
   tellingEvents,
   traditionsForFaiths,
@@ -187,5 +190,77 @@ describe('previewEvents', () => {
 
   it('is empty before they pick', () => {
     expect(previewEvents([])).toEqual({ events: [], more: 0 });
+  });
+});
+
+describe('the events to offer and the plan they make', () => {
+  const pakistani = culture('pakistani', 'pakistani', 'muslim', [
+    ['mangni', 'before'],
+    ['dholki', 'before'],
+    ['mayun', 'before'],
+    ['mehndi', 'before'],
+    ['nikah', 'wedding_day'],
+    ['shadi', 'wedding_day'],
+    ['*rukhsati', 'wedding_day'],
+    ['walima', 'after'],
+    ['whole-wedding', 'whole_wedding'],
+  ]);
+  const muslim = culture('muslim', null, 'muslim', [
+    ['engagement', 'before'],
+    ['mehndi', 'before'],
+    ['nikah', 'wedding_day'],
+    ['*reception', 'wedding_day'],
+    ['walima', 'after'],
+    ['whole-wedding', 'whole_wedding'],
+  ]);
+  const sikh = culture('punjabi-sikh', 'punjabi', 'sikh', [
+    ['jaago', 'before'],
+    ['anand-karaj', 'wedding_day'],
+    ['whole-wedding', 'whole_wedding'],
+  ]);
+  const traditions = [pakistani, muslim, sikh];
+  const names = (events: TraditionEvent[]) => events.map((e) => e.slug);
+
+  it("ticks the tradition's main events and offers the rest of the faith's", () => {
+    const { main, more } = eventChoices([muslim], traditions);
+    expect(names(main)).toEqual(['engagement', 'mehndi', 'nikah', 'walima']);
+    expect(names(more)).toEqual(['mangni', 'dholki', 'mayun', 'reception', 'shadi', 'rukhsati']);
+  });
+
+  it('starts with the main events and any named in a search', () => {
+    const { main, ordered } = eventChoices([muslim], traditions);
+    expect(startingChoice(main, ordered, ['dholki', 'nikah', 'jaago'])).toEqual([
+      'engagement',
+      'mehndi',
+      'nikah',
+      'walima',
+      'dholki',
+    ]);
+  });
+
+  it('offers every event, none ticked, for something else', () => {
+    const { main, more } = eventChoices([], traditions);
+    expect(main).toEqual([]);
+    expect(names(more)).toContain('jaago');
+    expect(names(more)).toContain('dholki');
+    expect(names(more)).not.toContain('whole-wedding');
+  });
+
+  it('brings in the tradition an added event comes from, and the Whole wedding card', () => {
+    const plan = planFor(['mehndi', 'dholki', 'nikah'], [muslim], traditions);
+    expect(slugs(plan.traditions)).toEqual(['pakistani', 'muslim']);
+    expect(plan.events).toEqual(['mehndi', 'dholki', 'nikah', 'whole-wedding']);
+  });
+
+  it('keeps to the traditions they picked when nothing else is needed', () => {
+    const plan = planFor(['nikah', 'walima'], [muslim], traditions);
+    expect(slugs(plan.traditions)).toEqual(['muslim']);
+    expect(plan.events).toEqual(['nikah', 'walima', 'whole-wedding']);
+  });
+
+  it('finds the traditions for a plan made from something else', () => {
+    const plan = planFor(['jaago'], [], traditions);
+    expect(slugs(plan.traditions)).toEqual(['punjabi-sikh']);
+    expect(plan.events).toEqual(['jaago', 'whole-wedding']);
   });
 });

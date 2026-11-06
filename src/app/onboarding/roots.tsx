@@ -92,7 +92,9 @@ export default function RootsStep() {
                     .map((event) => localized(event.name))
                     .join(' · ')}
                   selected={answers.roots.includes(tradition.slug)}
-                  onPress={() => setAnswers({ roots: toggleIn(answers.roots, tradition.slug) })}
+                  onPress={() =>
+                    setAnswers({ roots: toggleIn(answers.roots, tradition.slug), events: null })
+                  }
                 />
               ))}
             </View>

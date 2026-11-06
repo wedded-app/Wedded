@@ -3,7 +3,6 @@ import Animated, { LayoutAnimationConfig } from 'react-native-reanimated';
 
 import { AppText } from '@/components/app-text';
 import { makeStyles, Spacing } from '@/constants/theme';
-import { useTraditions } from '@/data/reference';
 import { formatDate } from '@/features/inquiry/inquiry-helpers';
 import { daysUntil } from '@/features/planner/plan';
 import { localized } from '@/i18n/localized';
@@ -11,27 +10,31 @@ import { useLocale } from '@/i18n/locale-context';
 import { Motion } from '@/lib/motion';
 
 import { useAnswers } from './answers';
-import { previewEvents, traditionsForFaiths } from './faith';
+import { useChosenEvents } from './chosen-events';
+import { previewEvents } from './faith';
 import type { Step } from './steps';
 
 const RIBBON = require('../../../assets/images/ribbon.png');
 
 /**
  * Their plan so far, plain lines beside the arrow on each question after the
- * first (no box, like the rest of the page): the plan, then the events their answers lead to
- * (Jaago · Baraat · Anand Karaj +6 more), then the countdown once they pick
- * a date. It changes as they tap, so by the last question they've watched
- * the app build their plan. Each screen mounts its own copy, so only what
- * changes animates.
+ * first (no box, like the rest of the page): the plan, then the events their
+ * answers lead to (Jaago · Baraat · Anand Karaj +6 more), or the ones they
+ * chose once they've chosen, then the countdown once they pick a day. It
+ * changes as they tap, so by the last question they've watched the app
+ * build their plan. Each screen mounts its own copy, so only what changes
+ * animates.
  */
 export function PlanPreview({ step }: { step: Step }) {
   const styles = useStyles();
   const { t } = useLocale();
   const answers = useAnswers();
-  const traditions = useTraditions();
+  const { picked, inOrder } = useChosenEvents();
 
-  const picked = traditionsForFaiths(answers.faiths, answers.roots, traditions.data ?? []);
-  const { events, more } = previewEvents(picked);
+  const { events, more } =
+    answers.events === null
+      ? previewEvents(picked)
+      : { events: inOrder.slice(0, 3), more: Math.max(0, inOrder.length - 3) };
 
   const who = answers.planningFor
     ? t(`onboarding.plan.who.${answers.planningFor}`)
@@ -47,20 +50,22 @@ export function PlanPreview({ step }: { step: Step }) {
     plans = t('onboarding.plan.eventsSoon');
   }
 
+  // The countdown is to the main day, or the first day they've picked
+  const countTo = answers.weddingDate ?? Object.values(answers.eventDates).sort()[0] ?? null;
   let date: string | null = null;
-  if (answers.weddingDate) {
-    const days = daysUntil(answers.weddingDate);
-    const day = formatDate(answers.weddingDate);
+  if (countTo) {
+    const days = daysUntil(countTo);
+    const day = formatDate(countTo);
     date =
       days === 0
         ? t('onboarding.plan.today', { date: day })
         : t('onboarding.plan.date', { date: day, count: days });
   } else if (answers.noDateYet) {
     date = t('onboarding.plan.noDate');
-  } else if (step === 'date') {
+  } else if (step === 'days') {
     date = t('onboarding.plan.dateSoon');
   }
-  const waiting = { plans: events.length === 0, date: !answers.weddingDate && !answers.noDateYet };
+  const waiting = { plans: events.length === 0, date: !countTo && !answers.noDateYet };
 
   return (
     <Animated.View
