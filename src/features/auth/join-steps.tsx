@@ -4,14 +4,12 @@ import { ScrollView, StyleSheet, View } from 'react-native';
 import { AppText } from '@/components/app-text';
 import { Button } from '@/components/button';
 import { Chip } from '@/components/chip';
-import type { IconName } from '@/components/icon';
 import { StateView } from '@/components/state-view';
 import { TextField } from '@/components/text-field';
 import { Spacing } from '@/constants/theme';
 import { startBusinessErrorKind, useStartMyBusiness } from '@/data/business';
 import { matchCities, useCities } from '@/data/places';
 import { useCategories } from '@/data/reference';
-import { OptionRow } from '@/features/onboarding/option-row';
 import { matchCategories } from '@/features/search/match-categories';
 import { localized } from '@/i18n/localized';
 import { useLocale } from '@/i18n/locale-context';
@@ -21,43 +19,6 @@ export type JoinedAs = 'planning' | 'looking' | 'business';
 
 // Enough to find yours without a wall of chips
 const MAX_TYPE_MATCHES = 6;
-
-const CHOICES: { value: JoinedAs; icon: IconName }[] = [
-  { value: 'planning', icon: 'heart-outline' },
-  { value: 'looking', icon: 'play-circle-outline' },
-  { value: 'business', icon: 'storefront-outline' },
-];
-
-/** Before About you, for a new account: planning, just looking, or a wedding business. */
-export function JoinChoiceStep({ onChoose }: { onChoose: (choice: JoinedAs) => void }) {
-  const { t } = useLocale();
-  const [picked, setPicked] = useState<JoinedAs | null>(null);
-  return (
-    <ScrollView contentContainerStyle={styles.content}>
-      <AppText variant="title" accessibilityRole="header">
-        {t('signIn.join.title')}
-      </AppText>
-      <View style={styles.list} accessibilityRole="radiogroup">
-        {CHOICES.map((choice, index) => (
-          <OptionRow
-            key={choice.value}
-            index={index}
-            icon={choice.icon}
-            label={t(`signIn.join.${choice.value}`)}
-            detail={t(`signIn.join.${choice.value}Detail`)}
-            selected={picked === choice.value}
-            onPress={() => setPicked(choice.value)}
-          />
-        ))}
-      </View>
-      <Button
-        label={t('signIn.join.continue')}
-        disabled={!picked}
-        onPress={() => picked && onChoose(picked)}
-      />
-    </ScrollView>
-  );
-}
 
 /**
  * After About you, for "Wedding business": the name, the main vendor type (searched,

@@ -25,7 +25,8 @@ import { supabase } from '@/lib/supabase';
 import { AboutYouForm, type AboutYouValues } from './about-you-form';
 import { isValidEmail, normalizePhone, toLatinDigits } from './about-you-validation';
 import { authErrorKey } from './auth-helpers';
-import { BusinessStep, JoinChoiceStep, type JoinedAs } from './join-steps';
+import { JoinChoicePages } from './join-choice';
+import { BusinessStep, type JoinedAs } from './join-steps';
 import { formatPhoneDigits, nextPhoneDigits } from './phone-entry';
 import { useSession } from './session';
 import { SignInOptions } from './sign-in-options';
@@ -119,7 +120,8 @@ export function SignInFlow({ mode, method }: { mode: SignInMode; method?: SignIn
       />
     );
   } else if (status === 'needsProfile' && mode !== 'edit' && !joinedAs) {
-    content = <JoinChoiceStep onChoose={setJoinedAs} />;
+    // Full-bleed weddings with their own Close, so no sheet header over them
+    return <JoinChoicePages onChoose={setJoinedAs} onClose={leave} />;
   } else if (showAboutYou) {
     back = mode === 'edit' || !joinedAs ? undefined : () => setJoinedAs(null);
     content = (
