@@ -1,4 +1,4 @@
-import Constants from 'expo-constants';
+import Constants, { ExecutionEnvironment } from 'expo-constants';
 import { router } from 'expo-router';
 import { Linking, Pressable, View } from 'react-native';
 
@@ -20,6 +20,10 @@ import { resetOnboarding } from '@/features/onboarding/onboarding-state';
 import { TEXT_SIZES, useSettings, type TextSize } from '@/features/settings/settings';
 import { useLocale } from '@/i18n/locale-context';
 import { selectionHaptic } from '@/lib/haptics';
+
+// Testing tools: in development, and in Expo Go, where the shared demo runs a
+// published bundle with __DEV__ off. Never in the store app.
+const SHOW_TESTING = __DEV__ || Constants.executionEnvironment === ExecutionEnvironment.StoreClient;
 
 const LEGAL_PAGES: { page: LegalPage; icon: IconName }[] = [
   { page: 'terms', icon: 'reader-outline' },
@@ -193,9 +197,13 @@ export default function SettingsScreen() {
         </ListSection>
       )}
 
-      {__DEV__ && (
-        // Expo Go and development builds only, so it's never in the store app (English only).
-        <ListSection inset header="Testing" footer="Signs you out first if you're signed in.">
+      {SHOW_TESTING && (
+        // English only, like the rest of the testing tools.
+        <ListSection
+          inset
+          header="Testing"
+          footer="Signs you out first. An account that already has a wedding skips the first questions, so sign up with a new email to see them."
+        >
           <ListRow
             icon="refresh-outline"
             title="Show the welcome screen again"
