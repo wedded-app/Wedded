@@ -26,7 +26,7 @@ import { setWeddingDraft, useWeddingDraft } from '@/features/home/wedding-draft'
 import { GUEST_BANDS } from '@/features/inquiry/inquiry-helpers';
 import { useSearchLocation } from '@/features/location/search-location';
 import { PillButton } from '@/features/onboarding/onboarding-step';
-import { OptionCard } from '@/features/onboarding/option-card';
+import { OptionRow } from '@/features/onboarding/option-row';
 import { localized } from '@/i18n/localized';
 import { useLocale } from '@/i18n/locale-context';
 import { selectionHaptic, successHaptic } from '@/lib/haptics';
@@ -186,10 +186,8 @@ function WhenSteps() {
                     onChange={(date) => setWeddingDraft({ date, noDateYet: false })}
                     placeholder={t('when.date.pick')}
                   />
-                  <OptionCard
-                    index={1}
+                  <OptionRow
                     role="checkbox"
-                    icon="time-outline"
                     label={t('when.date.notYet')}
                     detail={t('when.date.notYetDetail')}
                     selected={draft.noDateYet}
@@ -207,51 +205,52 @@ function WhenSteps() {
                     onChangeText={setTyped}
                     placeholder={t('when.place.typePlaceholder')}
                   />
-                  {matches.map((city, index) => (
-                    <OptionCard
-                      key={city.slug}
-                      index={index}
-                      role="radio"
-                      icon="location-outline"
-                      label={city.name}
-                      selected={place?.label === city.name}
-                      onPress={() => {
-                        setTyped(city.name);
-                        setPlace({
-                          label: city.name,
-                          latitude: city.latitude,
-                          longitude: city.longitude,
-                        });
-                      }}
-                    />
-                  ))}
-                  {matches.length === 0 &&
-                    (areas.data ?? []).map((area, index) => {
-                      const label = `${area.code} · ${localized(area.label)}`;
-                      return (
-                        <OptionCard
-                          key={area.code}
-                          index={index}
-                          role="radio"
-                          label={localized(area.label)}
-                          detail={t('when.place.areaCode', { code: area.code })}
-                          selected={place?.label === label}
-                          onPress={() =>
-                            setPlace(
-                              { label, latitude: area.latitude, longitude: area.longitude },
-                              area.radiusMiles,
-                            )
-                          }
-                        />
-                      );
-                    })}
+                  <View>
+                    {matches.map((city, index) => (
+                      <OptionRow
+                        key={city.slug}
+                        index={index}
+                        role="radio"
+                        label={city.name}
+                        selected={place?.label === city.name}
+                        onPress={() => {
+                          setTyped(city.name);
+                          setPlace({
+                            label: city.name,
+                            latitude: city.latitude,
+                            longitude: city.longitude,
+                          });
+                        }}
+                      />
+                    ))}
+                    {matches.length === 0 &&
+                      (areas.data ?? []).map((area, index) => {
+                        const label = `${area.code} · ${localized(area.label)}`;
+                        return (
+                          <OptionRow
+                            key={area.code}
+                            index={index}
+                            role="radio"
+                            label={localized(area.label)}
+                            detail={t('when.place.areaCode', { code: area.code })}
+                            selected={place?.label === label}
+                            onPress={() =>
+                              setPlace(
+                                { label, latitude: area.latitude, longitude: area.longitude },
+                                area.radiusMiles,
+                              )
+                            }
+                          />
+                        );
+                      })}
+                  </View>
                 </View>
               )}
 
               {step === 'guests' && (
-                <View style={styles.list}>
+                <View>
                   {GUEST_BANDS.map((band, index) => (
-                    <OptionCard
+                    <OptionRow
                       key={band}
                       index={index}
                       role="radio"

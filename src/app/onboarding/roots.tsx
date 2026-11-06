@@ -8,7 +8,7 @@ import { useBackgrounds, useFaiths, useTraditions } from '@/data/reference';
 import { setAnswers, toggleIn, useAnswers } from '@/features/onboarding/answers';
 import { faithsNeedingRoots, faithWide, tellingEvents } from '@/features/onboarding/faith';
 import { OnboardingStep } from '@/features/onboarding/onboarding-step';
-import { OptionCard } from '@/features/onboarding/option-card';
+import { OptionRow } from '@/features/onboarding/option-row';
 import { nextHref } from '@/features/onboarding/steps';
 import { localized } from '@/i18n/localized';
 import { useLocale } from '@/i18n/locale-context';
@@ -83,7 +83,7 @@ export default function RootsStep() {
                 </AppText>
               )}
               {ordered.map((tradition, index) => (
-                <OptionCard
+                <OptionRow
                   key={tradition.slug}
                   index={index}
                   role="checkbox"
@@ -104,9 +104,10 @@ export default function RootsStep() {
 
 const styles = StyleSheet.create({
   list: {
-    gap: Spacing.sm + 2,
+    gap: 0,
   },
   heading: {
     paddingHorizontal: Spacing.xs,
+    paddingBottom: Spacing.xs,
   },
 });

@@ -1,16 +1,20 @@
 /**
  * The first questions, in order; each is a screen at /onboarding/{step},
- * starting at /onboarding/who. Three in the progress bar, one tap each
- * (docs/DECISIONS.md, 2026-10-07): everything else is asked later, where it
- * matters. "roots" (where the families are from) follows "kind" only when a
- * faith they picked has more than one tradition, and counts as its second
- * half: still 3 questions.
+ * starting at FIRST_STEP. Two in the progress bar: the kind of wedding and
+ * the date, the two answers that build the plan (its events and its
+ * countdown). "Whose wedding is it?" left the intro (DECISIONS.md,
+ * 2026-11-05). "roots" (where the families are from) follows "kind" only
+ * when a faith they picked has more than one tradition, and counts as its
+ * second half.
  */
-export const STEPS = ['who', 'kind', 'date'] as const;
+export const STEPS = ['kind', 'date'] as const;
 
 export type Step = (typeof STEPS)[number] | 'roots';
 
-/** 1-based position, for "2 of 3" and the progress bar. */
+/** Where the first questions start. */
+export const FIRST_STEP = '/onboarding/kind' as const;
+
+/** 1-based position, for "1 of 2" and the progress bar. */
 export function stepNumber(step: Step): number {
   return STEPS.indexOf(step === 'roots' ? 'kind' : step) + 1;
 }
@@ -23,4 +27,17 @@ export function nextHref(
   if (step === 'kind' && askRoots) return '/onboarding/roots';
   const next = STEPS[stepNumber(step)];
   return next ? `/onboarding/${next}` : '/onboarding/ready';
+}
+
+/**
+ * How full the progress bar is, from 0 to 1, as a question opens (`from`)
+ * and once it's showing (`to`): each question fills its share, and the
+ * first question's first half (`fill` 0.5) leaves room for "Where are the
+ * families from?" to fill the rest. Their plan being ready is the last
+ * share, so the bar is never full while a question is still open.
+ */
+export function progressFor(step: Step, fill = 1, fillFrom = 0): { from: number; to: number } {
+  const done = stepNumber(step) - 1;
+  const shares = STEPS.length + 1;
+  return { from: (done + fillFrom) / shares, to: (done + fill) / shares };
 }

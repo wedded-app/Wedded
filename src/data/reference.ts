@@ -12,6 +12,8 @@ import { activeTraditions, mergedEvents, usePlan } from '@/features/planner/plan
 import { asLocalizedText, type LocalizedText } from '@/i18n/localized';
 import { supabase } from '@/lib/supabase';
 
+import { queryClient } from './query-client';
+
 const DAY = 24 * 60 * 60 * 1000;
 const REFERENCE = { staleTime: DAY, gcTime: DAY } as const;
 
@@ -369,6 +371,31 @@ export function useFaiths() {
   return useQuery({
     queryKey: referenceKeys.faiths(),
     queryFn: () => fetchChoices('faiths'),
+    ...REFERENCE,
+  });
+}
+
+/**
+ * Loads what the first questions show (the faiths, their traditions and the
+ * places families are from) before they're asked, from the welcome screen
+ * and "Start planning", so each question opens with its answers showing
+ * instead of a spinner. Kept for a day like all reference data; a failure is
+ * left for the question itself to show and retry.
+ */
+export function prefetchFirstQuestions() {
+  void queryClient.prefetchQuery({
+    queryKey: referenceKeys.traditions(),
+    queryFn: fetchTraditions,
+    ...REFERENCE,
+  });
+  void queryClient.prefetchQuery({
+    queryKey: referenceKeys.faiths(),
+    queryFn: () => fetchChoices('faiths'),
+    ...REFERENCE,
+  });
+  void queryClient.prefetchQuery({
+    queryKey: referenceKeys.backgrounds(),
+    queryFn: () => fetchChoices('backgrounds'),
     ...REFERENCE,
   });
 }

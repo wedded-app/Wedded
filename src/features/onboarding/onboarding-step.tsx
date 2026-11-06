@@ -2,11 +2,11 @@ import { router } from 'expo-router';
 import { useEffect, type ReactNode } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, View } from 'react-native';
 import Animated, {
+  interpolateColor,
   useAnimatedStyle,
   useReducedMotion,
   useSharedValue,
-  withDelay,
-  withSpring,
+  withTiming,
 } from 'react-native-reanimated';
 
 import { AppText } from '@/components/app-text';
@@ -14,34 +14,35 @@ import { FieldError } from '@/components/field-error';
 import { Icon } from '@/components/icon';
 import { PressableScale } from '@/components/pressable-scale';
 import { Screen } from '@/components/screen';
-import { makeStyles, Radius, Sizes, Spacing, Springs, useColors } from '@/constants/theme';
+import { makeStyles, Radius, Sizes, Spacing, Timing, useColors } from '@/constants/theme';
 import { useLocale } from '@/i18n/locale-context';
 import { selectionHaptic } from '@/lib/haptics';
-import { Motion } from '@/lib/motion';
+import { iosEasing } from '@/lib/motion';
 
 import { resetAnswers } from './answers';
 import { markOnboarding } from './onboarding-state';
 import { PlanPreview } from './plan-preview';
-import { STEPS, stepNumber, type Step } from './steps';
+import { progressFor, STEPS, stepNumber, type Step } from './steps';
 
 export type OnboardingStepProps = {
   step: Step;
   title: string;
   subtitle?: string;
   children: ReactNode;
-  /** Continue is greyed out until this is true. */
+  /** The arrow is greyed out until this is true. */
   canContinue?: boolean;
   onContinue: () => void;
+  /** What the arrow does, for screen readers; defaults to "Continue". */
   continueLabel?: string;
-  /** A spinner on Continue while the answers are saved. */
+  /** A spinner in the arrow while the answers are saved. */
   loading?: boolean;
   /** Said under the choices when saving failed. */
   error?: string;
   /** Shows Skip at the top right; skipping moves on without an answer. */
   onSkip?: () => void;
   /**
-   * How far this question fills its part of the progress bar, and where the
-   * fill starts: the second question fills half when "Where are the families
+   * How far this question fills its share of the progress bar, and where the
+   * fill starts: the first question fills half when "Where are the families
    * from?" may follow, and that question fills the rest.
    */
   fill?: number;
@@ -49,12 +50,12 @@ export type OnboardingStepProps = {
 };
 
 /**
- * One question of the first-launch setup, one per screen: a round Back (or
- * Close on the first), a bar in three parts that fills in maroon as they go,
- * the question in the serif, the choices as tan bubbles, and pinned at the
- * bottom their plan so far (after the first question) over a black Continue
- * pill. White and black with a little tan and maroon (Fezy, 2026-10-07);
- * always light (the layout sets it).
+ * One question of the first-launch setup, one per screen, after Hinge's: a
+ * plain Back (or Close on the first), one thin bar that fills as they go, the
+ * question big and bold, the answers as plain rows, and at the bottom their
+ * plan so far (after the first question) beside a round black arrow. The page
+ * arrives whole with the iPhone's own slide: nothing fades in after it, so it
+ * never feels like waiting. White and black; always light (the layout sets it).
  */
 export function OnboardingStep({
   step,
@@ -73,17 +74,16 @@ export function OnboardingStep({
   const Colors = useColors();
   const styles = useStyles();
   const { t } = useLocale();
-  const number = stepNumber(step);
-  const first = number === 1;
+  const first = step === STEPS[0];
+  const progress = progressFor(step, fill, fillFrom);
 
   return (
     <Screen edges={['top', 'bottom']} plain>
       <View style={styles.bar}>
-        <PressableScale
+        <Pressable
           accessibilityRole="button"
           accessibilityLabel={first ? t('onboarding.close') : t('common.back')}
           hitSlop={8}
-          pressedScale={0.9}
           onPress={() => {
             selectionHaptic();
             if (!first && router.canGoBack()) {
@@ -95,30 +95,20 @@ export function OnboardingStep({
             resetAnswers();
             router.replace('/');
           }}
-          style={styles.round}
+          style={({ pressed }) => [styles.navButton, pressed && styles.pressed]}
         >
           <Icon
             name={first ? 'close' : 'chevron-back'}
-            size={22}
+            size={26}
             color={Colors.text}
             weight="semibold"
           />
-        </PressableScale>
-        <View
-          style={styles.progress}
-          accessible
-          accessibilityRole="progressbar"
-          accessibilityLabel={t('onboarding.stepOf', { step: number, total: STEPS.length })}
-        >
-          {STEPS.map((s, index) => (
-            <Segment
-              key={s}
-              state={index + 1 < number ? 'done' : index + 1 === number ? 'now' : 'next'}
-              fill={fill}
-              from={fillFrom}
-            />
-          ))}
-        </View>
+        </Pressable>
+        <ProgressBar
+          from={progress.from}
+          to={progress.to}
+          label={t('onboarding.stepOf', { step: stepNumber(step), total: STEPS.length })}
+        />
         <View style={styles.side}>
           {onSkip && (
             <Pressable
@@ -143,17 +133,8 @@ export function OnboardingStep({
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
-        <Animated.View entering={Motion.rise} style={styles.intro}>
-          <AppText variant="label" weight={600} color="primary">
-            {t('onboarding.stepOf', { step: number, total: STEPS.length })}
-          </AppText>
-          <AppText
-            variant="display"
-            weight={600}
-
-            accessibilityRole="header"
-            style={styles.title}
-          >
+        <View style={styles.intro}>
+          <AppText variant="display" weight={700} accessibilityRole="header" style={styles.title}>
             {title}
           </AppText>
           {subtitle && (
@@ -161,14 +142,14 @@ export function OnboardingStep({
               {subtitle}
             </AppText>
           )}
-        </Animated.View>
+        </View>
         {children}
         {error && <FieldError message={error} />}
       </ScrollView>
 
       <View style={styles.footer}>
-        {!first && <PlanPreview step={step} />}
-        <PillButton
+        <View style={styles.preview}>{!first && <PlanPreview step={step} />}</View>
+        <NextButton
           label={continueLabel ?? t('onboarding.continue')}
           disabled={!canContinue}
           loading={loading}
@@ -180,43 +161,91 @@ export function OnboardingStep({
 }
 
 /**
- * One part of the progress bar: full when done, filling in for this question
- * (from `from` to `fill`, so a question's second half picks up where the
- * first left off).
+ * The thin bar at the top: it starts where the last question left it and
+ * fills this question's share on the iPhone's curve as the page slides in.
  */
-function Segment({
-  state,
-  fill: to,
-  from,
-}: {
-  state: 'done' | 'now' | 'next';
-  fill: number;
-  from: number;
-}) {
+function ProgressBar({ from, to, label }: { from: number; to: number; label: string }) {
   const styles = useStyles();
   const reduceMotion = useReducedMotion();
-  const fill = useSharedValue(state === 'done' ? 1 : state === 'now' ? from : 0);
+  const value = useSharedValue(reduceMotion ? to : from);
 
   useEffect(() => {
-    const target = state === 'next' ? 0 : state === 'now' ? to : 1;
-    fill.value =
-      reduceMotion || state === 'done'
-        ? target
-        : withDelay(150, withSpring(target, Springs.smooth));
-  }, [fill, reduceMotion, state, to]);
+    value.value = reduceMotion ? to : withTiming(to, { duration: Timing.page, easing: iosEasing });
+  }, [value, reduceMotion, to]);
 
-  const inner = useAnimatedStyle(() => ({ width: `${fill.value * 100}%` }));
+  const inner = useAnimatedStyle(() => ({ width: `${value.value * 100}%` }));
 
   return (
-    <View style={styles.track}>
+    <View
+      style={styles.track}
+      accessible
+      accessibilityRole="progressbar"
+      accessibilityLabel={label}
+      accessibilityValue={{ min: 0, max: 100, now: Math.round(to * 100) }}
+    >
       <Animated.View style={[styles.fill, inner]} />
     </View>
   );
 }
 
 /**
- * The big black pill at the bottom of the first questions (Continue, Take me
- * to my wedding): white text on black, grey when it can't be pressed yet.
+ * Hinge's round black arrow, bottom right: grey until the question has an
+ * answer, then black, shrinking a little under the finger.
+ */
+function NextButton({
+  label,
+  onPress,
+  disabled,
+  loading,
+}: {
+  label: string;
+  onPress: () => void;
+  disabled: boolean;
+  loading: boolean;
+}) {
+  const Colors = useColors();
+  const styles = useStyles();
+  const reduceMotion = useReducedMotion();
+  const ready = useSharedValue(disabled ? 0 : 1);
+  const [offColor, onColor] = [Colors.separator, Colors.primaryFill];
+
+  useEffect(() => {
+    const target = disabled ? 0 : 1;
+    ready.value = reduceMotion
+      ? target
+      : withTiming(target, { duration: Timing.quick, easing: iosEasing });
+  }, [ready, reduceMotion, disabled]);
+
+  const fillStyle = useAnimatedStyle(() => ({
+    backgroundColor: interpolateColor(ready.value, [0, 1], [offColor, onColor]),
+  }));
+
+  return (
+    <PressableScale
+      accessibilityRole="button"
+      accessibilityLabel={label}
+      accessibilityState={{ disabled, busy: loading }}
+      disabled={disabled || loading}
+      pressedScale={0.92}
+      onPress={() => {
+        selectionHaptic();
+        onPress();
+      }}
+    >
+      <Animated.View style={[styles.next, fillStyle]}>
+        {loading ? (
+          <ActivityIndicator color={Colors.canvas} />
+        ) : (
+          <Icon name="arrow-forward" size={26} color={Colors.canvas} weight="semibold" />
+        )}
+      </Animated.View>
+    </PressableScale>
+  );
+}
+
+/**
+ * The big black pill for a labelled action, like "Take me to my wedding" at
+ * the end: white text on black, grey when it can't be pressed yet.
  */
 export function PillButton({
   label,
@@ -258,36 +287,32 @@ export function PillButton({
   );
 }
 
+const NEXT_SIZE = 64;
+
 const useStyles = makeStyles((Colors) => ({
   bar: {
     minHeight: Sizes.navBar,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: Spacing.lg,
+    gap: Spacing.md,
   },
-  round: {
+  navButton: {
     width: 44,
     height: 44,
-    borderRadius: 22,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: Colors.sand,
-  },
-  progress: {
-    flex: 1,
-    flexDirection: 'row',
-    gap: 6,
+    marginLeft: -Spacing.sm,
   },
   track: {
     flex: 1,
-    height: 6,
-    borderRadius: 3,
+    height: 4,
+    borderRadius: 2,
     overflow: 'hidden',
-    backgroundColor: Colors.sand,
+    backgroundColor: Colors.separator,
   },
   fill: {
     height: '100%',
-    borderRadius: 3,
+    borderRadius: 2,
     backgroundColor: Colors.primaryFill,
   },
   side: {
@@ -299,7 +324,7 @@ const useStyles = makeStyles((Colors) => ({
   },
   content: {
     gap: Spacing.xl,
-    paddingTop: Spacing.xl,
+    paddingTop: Spacing.xxl,
     paddingBottom: Spacing.xl,
   },
   intro: {
@@ -307,12 +332,24 @@ const useStyles = makeStyles((Colors) => ({
     paddingHorizontal: Spacing.xs,
   },
   title: {
-    letterSpacing: -0.3,
+    letterSpacing: -0.5,
   },
   footer: {
-    gap: Spacing.sm + 2,
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    gap: Spacing.md,
     paddingTop: Spacing.md,
     paddingBottom: Spacing.sm,
+  },
+  preview: {
+    flex: 1,
+  },
+  next: {
+    width: NEXT_SIZE,
+    height: NEXT_SIZE,
+    borderRadius: NEXT_SIZE / 2,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   pill: {
     minHeight: 58,
