@@ -204,7 +204,7 @@ export default function PlanEventScreen() {
 
       {essential.length > 0 && (
         <View style={styles.block}>
-          <SectionTitle>{t('event.essential')}</SectionTitle>
+          <SectionTitle>{t('planner.event.essentials')}</SectionTitle>
           <View style={styles.grid}>{essential.map((need) => tile(need, styles.half))}</View>
         </View>
       )}

@@ -120,6 +120,7 @@ export function NeedTile({
 
 const useStyles = makeStyles((Colors) => ({
   tile: {
+    flexGrow: 1,
     minHeight: 136,
     justifyContent: 'space-between',
     gap: Spacing.md,
