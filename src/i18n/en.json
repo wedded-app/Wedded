@@ -154,8 +154,7 @@
       "inDays": {
         "one": "in 1 day",
         "other": "in {{count}} days"
-      },
-      "everyEvent": "Across every event"
+      }
     }
   },
   "when": {
@@ -1155,6 +1154,10 @@
       "alongside": "With the {{events}}",
       "guests": "Guests: {{band}}",
       "wedFind": "Let Wed find the rest for the {{event}}"
+    },
+    "whole": {
+      "title": "For the whole wedding",
+      "footer": "What you book once and use for every event."
     },
     "needs": {
       "title": "To book",

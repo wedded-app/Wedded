@@ -9,31 +9,20 @@ const events = [
 const slugs = (list: { slug: string }[]) => list.map((event) => event.slug);
 
 describe('timelineOrder', () => {
-  it('keeps the ceremony order until every day has a date, with the whole wedding last', () => {
+  it('keeps the ceremony order until every day has a date, without the whole wedding', () => {
     expect(slugs(timelineOrder(events, { nikah: '2027-06-12' }))).toEqual([
       'mehndi',
       'nikah',
       'walima',
-      'whole-wedding',
     ]);
   });
 
   it('goes by date once every day has one', () => {
     const dates = { mehndi: '2027-06-14', nikah: '2027-06-12', walima: '2027-06-13' };
-    expect(slugs(timelineOrder(events, dates))).toEqual([
-      'nikah',
-      'walima',
-      'mehndi',
-      'whole-wedding',
-    ]);
+    expect(slugs(timelineOrder(events, dates))).toEqual(['nikah', 'walima', 'mehndi']);
   });
 
   it('works with no dates at all', () => {
-    expect(slugs(timelineOrder(events, undefined))).toEqual([
-      'mehndi',
-      'nikah',
-      'walima',
-      'whole-wedding',
-    ]);
+    expect(slugs(timelineOrder(events, undefined))).toEqual(['mehndi', 'nikah', 'walima']);
   });
 });
