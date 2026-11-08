@@ -1,6 +1,6 @@
 import type { EventNeed } from '@/data/reference';
 
-import { bookedNames, bookedText, stillNeedsText, unbookedNames } from './still-needs';
+import { bookedNames, bookedText, inSentence, stillNeedsText, unbookedNames } from './still-needs';
 
 jest.mock('@/i18n/localized', () => ({ localized: (text: { en: string }) => text.en }));
 
@@ -28,9 +28,22 @@ describe('stillNeedsText', () => {
   });
 });
 
+describe('inSentence', () => {
+  it('lowercases a name but keeps words in capitals', () => {
+    expect(inSentence('Banquet hall')).toBe('banquet hall');
+    expect(inSentence('DJ')).toBe('DJ');
+    expect(inSentence('Lighting and LED wall')).toBe('lighting and LED wall');
+    expect(inSentence('A')).toBe('a');
+  });
+});
+
 describe('unbookedNames', () => {
   it('lists what is not booked yet, in lowercase', () => {
     expect(unbookedNames([need('dj', 'DJ'), need('cake', 'Cake')], ['dj'])).toEqual(['cake']);
+  });
+
+  it('keeps DJ in capitals', () => {
+    expect(unbookedNames([need('dj', 'DJ'), need('cake', 'Cake')], [])).toEqual(['DJ', 'cake']);
   });
 });
 

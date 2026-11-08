@@ -2,11 +2,23 @@ import type { EventNeed } from '@/data/reference';
 import type { Translate } from '@/features/vendors/profile-format';
 import { localized } from '@/i18n/localized';
 
+/**
+ * A kind of vendor's name in the middle of a sentence: lowercase, except
+ * words in capitals ("DJ", "LED"), so "Lighting and LED wall" reads
+ * "lighting and LED wall".
+ */
+export function inSentence(name: string): string {
+  return name
+    .split(' ')
+    .map((word) => (word.length > 1 && word === word.toUpperCase() ? word : word.toLowerCase()))
+    .join(' ');
+}
+
 /** The essentials not booked yet for an event, by name, in lowercase for a sentence. */
 export function unbookedNames(essential: EventNeed[], booked: string[]): string[] {
   return essential
     .filter((need) => !booked.includes(need.categorySlug))
-    .map((need) => localized(need.name).toLowerCase());
+    .map((need) => inSentence(localized(need.name)));
 }
 
 /**
@@ -41,7 +53,7 @@ export function bookedNames(
     const vendor = vendorFor(slug);
     const need = needs.find((n) => n.categorySlug === slug);
     if (vendor) named.push(vendor);
-    else if (need) kinds.push(localized(need.name).toLowerCase());
+    else if (need) kinds.push(inSentence(localized(need.name)));
   }
   return [...named, ...kinds];
 }

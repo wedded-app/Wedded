@@ -1,12 +1,12 @@
 import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
-import { ScrollView, View } from 'react-native';
+import { View } from 'react-native';
 import Animated from 'react-native-reanimated';
 
 import { AppText } from '@/components/app-text';
 import { BottomSheet } from '@/components/bottom-sheet';
 import { Icon } from '@/components/icon';
-import { ListRow, ListSection, SectionTitle } from '@/components/list';
+import { ListRow, ListSection } from '@/components/list';
 import { NavScreen } from '@/components/nav';
 import { StateView } from '@/components/state-view';
 import { VaultIcon } from '@/components/vault-icon';
@@ -18,7 +18,7 @@ import { GUEST_BANDS } from '@/features/inquiry/inquiry-helpers';
 import { DaySheet } from '@/features/planner/day-sheet';
 import { longDate } from '@/features/planner/day-list';
 import { groupOf, setDay } from '@/features/planner/days';
-import { NeedTile } from '@/features/planner/need-tile';
+import { NeedList } from '@/features/planner/need-list';
 import { bookedVenueName } from '@/features/planner/place';
 import { PlaceSheet } from '@/features/planner/place-sheet';
 import { essentialNeeds } from '@/features/planner/plan';
@@ -32,18 +32,15 @@ import { useLocale } from '@/i18n/locale-context';
 import { selectionHaptic, successHaptic } from '@/lib/haptics';
 import { Motion } from '@/lib/motion';
 
-/** How wide a nice-to-have tile is in its sideways row. */
-const SIDE_TILE = 160;
-
 /**
  * One event of the wedding on its own page, opened from its card on the
  * Wedding tab (or Home): what it still needs in a line, then its day, time
  * and place, and guests as three rows, each opening a small sheet for just
- * this event (the place is Home or a venue); the essentials as tiles two across
- * (tap to find one, tick to mark it booked); the nice-to-haves in a row
- * that scrolls sideways, so the page stays short; and Wed, a request to
- * vendors and the event's photos at the end. Booking the last essential
- * says so at the top.
+ * this event (the place is Home or a venue); what's still to book a few
+ * at a time, with what's booked and the nice-to-haves folded away
+ * (NeedList), so the page stays short; and Wed, a request to vendors and
+ * the event's photos at the end. Booking the last essential says so at the
+ * top.
  */
 export default function PlanEventScreen() {
   const Colors = useColors();
@@ -123,21 +120,6 @@ export default function PlanEventScreen() {
     marks[other.date] = other.slugs.map((s) => days.listed.find((e) => e.slug === s)?.name ?? s);
   }
 
-  const tile = (need: (typeof essential)[number], style: object) => (
-    <NeedTile
-      key={need.categorySlug}
-      need={need}
-      eventSlug={slug}
-      booked={booked.includes(need.categorySlug)}
-      bookedWith={wedding?.bookedVendors[`${slug}/${need.categorySlug}`]?.name ?? null}
-      suggested={suggested[`${slug}/${need.categorySlug}`] ?? 0}
-      guests={guests}
-      canEdit={canEdit}
-      onToggle={() => view.toggleBooked(slug, need.categorySlug)}
-      style={style}
-    />
-  );
-
   return (
     <NavScreen
       title={name}
@@ -212,26 +194,17 @@ export default function PlanEventScreen() {
         />
       </ListSection>
 
-      {essential.length > 0 && (
-        <View style={styles.block}>
-          <SectionTitle>{t('planner.event.essentials')}</SectionTitle>
-          <View style={styles.grid}>{essential.map((need) => tile(need, styles.half))}</View>
-        </View>
-      )}
-
-      {extras.length > 0 && (
-        <View style={styles.block}>
-          <SectionTitle>{t('event.niceToHave')}</SectionTitle>
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            style={styles.bleed}
-            contentContainerStyle={styles.side}
-          >
-            {extras.map((need) => tile(need, styles.sideTile))}
-          </ScrollView>
-        </View>
-      )}
+      <NeedList
+        eventSlug={slug}
+        essential={essential}
+        extras={extras}
+        booked={booked}
+        bookedVendors={wedding?.bookedVendors ?? {}}
+        suggested={suggested}
+        guests={guests}
+        canEdit={canEdit}
+        onToggle={(category) => view.toggleBooked(slug, category)}
+      />
 
       <ListSection inset>
         {!complete && essential.length > 0 && (
@@ -316,28 +289,6 @@ export default function PlanEventScreen() {
 }
 
 const useStyles = makeStyles((Colors) => ({
-  block: {
-    gap: Spacing.md,
-  },
-  grid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: Spacing.md,
-  },
-  half: {
-    flexBasis: '46%',
-    flexGrow: 1,
-  },
-  bleed: {
-    marginHorizontal: -Sizes.pageGutter,
-  },
-  side: {
-    gap: Spacing.md,
-    paddingHorizontal: Sizes.pageGutter,
-  },
-  sideTile: {
-    width: SIDE_TILE,
-  },
   rowIcon: {
     width: Sizes.rowIcon,
     alignItems: 'center',
