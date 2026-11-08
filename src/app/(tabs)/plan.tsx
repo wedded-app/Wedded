@@ -7,7 +7,7 @@ import Animated, { useReducedMotion } from 'react-native-reanimated';
 import { AppText } from '@/components/app-text';
 import { Button } from '@/components/button';
 import { Icon } from '@/components/icon';
-import { SectionTitle } from '@/components/list';
+import { ListRow, ListSection, SectionTitle } from '@/components/list';
 import { NavScreen, useNavTop } from '@/components/nav';
 import { PressableScale } from '@/components/pressable-scale';
 import { StateView } from '@/components/state-view';
@@ -42,7 +42,9 @@ import { Motion } from '@/lib/motion';
  *    two events on one day sharing its stub, each saying in words what it
  *    still needs, who's booked and how many are coming. A tap opens the
  *    event's own page (/plan-event/{slug}). The events are picked in the
- *    "Your events" sheet (/plan-events).
+ *    "Your events" sheet (/plan-events). The whole wedding isn't a day
+ *    (Fezy, 2026-11-08), so it's one row under them, For the whole wedding:
+ *    what's booked once for every event, like the planner.
  * 3. For your guests, as tiles: Guests, the website, invitations and the
  *    Memory Vault.
  * 4. Planning together: Family and their roles, suggestions, the family
@@ -75,7 +77,7 @@ export default function PlanScreen() {
   );
 
   // The events a day at a time: those with a day of their own in their
-  // days, then the Whole wedding card
+  // days, then any without one; the whole wedding has its own row below
   const entry = (slug: string) => {
     const event = chosen.find((e) => e.slug === slug)!;
     return ticketEntry(
@@ -97,9 +99,11 @@ export default function PlanScreen() {
   const tickets = [
     ...days.groups.map((group) => ({ date: group.date, slugs: group.slugs })),
     ...chosen
-      .filter((event) => !days.order.includes(event.slug))
+      .filter((event) => !days.order.includes(event.slug) && event.phase !== 'whole_wedding')
       .map((event) => ({ date: null, slugs: [event.slug] })),
   ];
+  const whole = chosen.find((event) => event.phase === 'whole_wedding');
+  const wholeEntry = whole ? entry(whole.slug) : null;
 
   // The faces at the top open Family, further down this page
   const scroll = useRef<ScrollViewInstance>(null);
@@ -252,6 +256,24 @@ export default function PlanScreen() {
               <AppText weight={600}>{t('planner.addEvent')}</AppText>
             </PressableScale>
           )}
+        </View>
+      )}
+
+      {/* The vendors booked once for every event: not a day, so not a ticket */}
+      {whole && wholeEntry && (
+        <View style={styles.block}>
+          <SectionTitle>{t('planner.whole.title')}</SectionTitle>
+          <ListSection inset footer={t('planner.whole.footer')}>
+            <ListRow
+              icon="checkbox-outline"
+              title={wholeEntry.stillNeeds}
+              subtitle={wholeEntry.booked ?? undefined}
+              onPress={() => {
+                selectionHaptic();
+                router.push({ pathname: '/plan-event/[slug]', params: { slug: whole.slug } });
+              }}
+            />
+          </ListSection>
         </View>
       )}
 

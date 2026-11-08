@@ -22,7 +22,7 @@ import { NeedList } from '@/features/planner/need-list';
 import { bookedVenueName } from '@/features/planner/place';
 import { PlaceSheet } from '@/features/planner/place-sheet';
 import { essentialNeeds } from '@/features/planner/plan';
-import { stillNeedsText, unbookedNames } from '@/features/planner/still-needs';
+import { inSentence, stillNeedsText, unbookedNames } from '@/features/planner/still-needs';
 import { usePlanDays } from '@/features/planner/use-plan-days';
 import { usePlanView } from '@/features/planner/use-plan-view';
 import { comingLine, whenLine } from '@/features/planner/wedding-tab';
@@ -35,7 +35,8 @@ import { Motion } from '@/lib/motion';
 /**
  * One event of the wedding on its own page, opened from its card on the
  * Wedding tab (or Home): what it still needs in a line, then its day, time
- * and place, and guests as three rows, each opening a small sheet for just
+ * and place, and guests as three rows (none for the whole wedding, which
+ * isn't a day), each opening a small sheet for just
  * this event (the place is Home or a venue); what's still to book a few
  * at a time, with what's booked and the nice-to-haves folded away
  * (NeedList), so the page stays short; and Wed, a request to vendors and
@@ -112,6 +113,8 @@ export default function PlanEventScreen() {
   );
   const vaultCount = vault.data?.events.find((e) => e.slug === slug)?.count ?? 0;
   const hasDay = days.order.includes(slug);
+  // The whole wedding isn't a day: no time, place or guests of its own
+  const across = event.phase === 'whole_wedding';
 
   // The other days, dotted on the calendar
   const marks: Record<string, string[]> = {};
@@ -122,7 +125,7 @@ export default function PlanEventScreen() {
 
   return (
     <NavScreen
-      title={name}
+      title={across ? t('planner.whole.title') : name}
       subtitle={complete ? t('planner.event.allSet') : stillNeeds}
       trailing={
         <AskWedButton
@@ -144,55 +147,57 @@ export default function PlanEventScreen() {
         </Animated.View>
       )}
 
-      <ListSection inset>
-        {hasDay && (
+      {!across && (
+        <ListSection inset>
+          {hasDay && (
+            <ListRow
+              icon="calendar-outline"
+              title={date ? longDate(date) : t('planner.days.pick')}
+              tone={date ? 'default' : 'primary'}
+              subtitle={sameDayAs ? t('planner.event.alongside', { events: sameDayAs }) : undefined}
+              onPress={
+                canEdit
+                  ? () => {
+                      selectionHaptic();
+                      setSheet('day');
+                    }
+                  : undefined
+              }
+            />
+          )}
           <ListRow
-            icon="calendar-outline"
-            title={date ? longDate(date) : t('planner.days.pick')}
-            tone={date ? 'default' : 'primary'}
-            subtitle={sameDayAs ? t('planner.event.alongside', { events: sameDayAs }) : undefined}
+            icon="time-outline"
+            title={when ?? t('planner.ticket.timePlace')}
+            tone={when ? 'default' : 'primary'}
             onPress={
               canEdit
                 ? () => {
                     selectionHaptic();
-                    setSheet('day');
+                    setSheet('place');
                   }
                 : undefined
             }
           />
-        )}
-        <ListRow
-          icon="time-outline"
-          title={when ?? t('planner.ticket.timePlace')}
-          tone={when ? 'default' : 'primary'}
-          onPress={
-            canEdit
-              ? () => {
-                  selectionHaptic();
-                  setSheet('place');
-                }
-              : undefined
-          }
-        />
-        <ListRow
-          icon="people-outline"
-          title={
-            guests
-              ? t('planner.event.guests', { band: t(`inquiry.guestBands.${guests}`) })
-              : t('planner.guestsTitle')
-          }
-          tone={guests ? 'default' : 'primary'}
-          subtitle={coming ?? undefined}
-          onPress={
-            canEdit
-              ? () => {
-                  selectionHaptic();
-                  setSheet('guests');
-                }
-              : undefined
-          }
-        />
-      </ListSection>
+          <ListRow
+            icon="people-outline"
+            title={
+              guests
+                ? t('planner.event.guests', { band: t(`inquiry.guestBands.${guests}`) })
+                : t('planner.guestsTitle')
+            }
+            tone={guests ? 'default' : 'primary'}
+            subtitle={coming ?? undefined}
+            onPress={
+              canEdit
+                ? () => {
+                    selectionHaptic();
+                    setSheet('guests');
+                  }
+                : undefined
+            }
+          />
+        </ListSection>
+      )}
 
       <NeedList
         eventSlug={slug}
@@ -210,7 +215,7 @@ export default function PlanEventScreen() {
         {!complete && essential.length > 0 && (
           <AskWedButton
             variant="row"
-            label={t('planner.event.wedFind', { event: name })}
+            label={t('planner.event.wedFind', { event: across ? inSentence(name) : name })}
             about={{ kind: 'event', id: slug, label: event.name.en }}
             ask={`Find the vendors we still need for the ${event.name.en}`}
           />

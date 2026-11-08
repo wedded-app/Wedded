@@ -108,12 +108,7 @@ export function EventsTimeline({
               key={event.slug}
               slug={event.slug}
               name={localized(event.name)}
-              date={
-                event.phase === 'whole_wedding'
-                  ? null
-                  : (plan.eventDates?.[event.slug] ?? plan.weddingDate)
-              }
-              wholeWedding={event.phase === 'whole_wedding'}
+              date={plan.eventDates?.[event.slug] ?? plan.weddingDate}
               onDot={index === ordered.length - 1 ? (y) => lastDot.set(y) : undefined}
               status={stillNeedsText(names, t)}
               allSet={names.length === 0}
@@ -133,7 +128,6 @@ function Stop({
   slug,
   name,
   date,
-  wholeWedding,
   onDot,
   status,
   allSet,
@@ -145,8 +139,6 @@ function Stop({
   slug: string;
   name: string;
   date: string | null;
-  /** The whole wedding: no day, "Across every event" instead. */
-  wholeWedding: boolean;
   /** The last stop says where its dot is, so the rail ends there. */
   onDot?: (y: number) => void;
   status: string;
@@ -209,11 +201,7 @@ function Stop({
 
   const stub = stubParts(date);
   const days = date ? daysUntil(date) : null;
-  const when = wholeWedding
-    ? t('home.events.everyEvent')
-    : stub
-      ? `${stub.weekday} · ${stub.month} ${stub.day}`
-      : t('home.events.dateToCome');
+  const when = stub ? `${stub.weekday} · ${stub.month} ${stub.day}` : t('home.events.dateToCome');
   const until =
     days === null || days < 0
       ? null
