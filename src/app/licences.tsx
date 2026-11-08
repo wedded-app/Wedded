@@ -19,16 +19,21 @@ const CREDITS: { section: string; rows: { name: string; by: string; url: string 
     section: 'pictures',
     rows: [
       { name: 'welcomeVideo', by: 'Pexels', url: 'https://www.pexels.com/license/' },
+      { name: 'categoryPhotos', by: 'Pexels', url: 'https://www.pexels.com/license/' },
       { name: 'Ionicons', by: 'Ionic', url: 'https://github.com/ionic-team/ionicons' },
     ],
   },
 ];
 
+// Rows named by a string key rather than a proper name
+const NAMED = ['welcomeVideo', 'categoryPhotos'];
+
 /**
- * Licences (Settings > About): the fonts, the welcome video and the icons,
- * who made each and under which licence, each opening that licence. Then a
- * line for the open-source software the app is built on. The full clip list
- * is in assets/videos/README.md.
+ * Licences (Settings > About): the fonts, the welcome video, the category
+ * photos and the icons, who made each and under which licence, each opening
+ * that licence. Then a line for the open-source software the app is built
+ * on. The clips and photos are listed in assets/videos/README.md and
+ * assets/images/kinds/README.md.
  */
 export default function LicencesScreen() {
   const { t } = useLocale();
@@ -41,7 +46,7 @@ export default function LicencesScreen() {
           footer={t(`licences.${group.section}Footer`)}
         >
           {group.rows.map((row) => {
-            const name = row.name === 'welcomeVideo' ? t('licences.welcomeVideo') : row.name;
+            const name = NAMED.includes(row.name) ? t(`licences.${row.name}`) : row.name;
             return (
               <ListRow
                 key={row.name}

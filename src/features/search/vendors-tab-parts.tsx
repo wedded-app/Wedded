@@ -1,360 +1,231 @@
-import { Image } from 'expo-image';
 import { router } from 'expo-router';
-import { useState } from 'react';
-import { Pressable, View } from 'react-native';
-import Animated from 'react-native-reanimated';
+import { Pressable, ScrollView, View } from 'react-native';
 
-import { AppText } from '@/components/app-text';
-import { groupIcon } from '@/components/group-icon';
-import { Icon } from '@/components/icon';
-import { PressableScale } from '@/components/pressable-scale';
-import { makeStyles, Radius, Spacing, useColors } from '@/constants/theme';
-import type { CategoryGroup, EventNeed } from '@/data/reference';
-import { useVendorSearch } from '@/data/search';
-import { photoUrl } from '@/data/vendor-media';
+import { AppText, useFontScale } from '@/components/app-text';
+import { Button } from '@/components/button';
+import { Icon, type IconName } from '@/components/icon';
+import { makeStyles, Radius, Sizes, Spacing, useColors } from '@/constants/theme';
+import type { EventNeed } from '@/data/reference';
+import { useMyRequests } from '@/data/requests';
+import { useSavedVendors } from '@/data/saved';
+import { useSession } from '@/features/auth/session';
+import { placeName } from '@/features/location/place-name';
 import { useSearchLocation } from '@/features/location/search-location';
-import { filtersForGuests } from '@/features/planner/find-for-plan';
-import { NO_FILTERS } from '@/features/search/search-filters';
-import { localized } from '@/i18n/localized';
 import { useLocale } from '@/i18n/locale-context';
-import { selectionHaptic } from '@/lib/haptics';
-import { Motion } from '@/lib/motion';
 
-// Counting stops here ("50+ free")
-const COUNT_LIMIT = 50;
+import { KindCircle } from './kind-circle';
 
 /**
- * "What the Mehndi still needs": a photo tile for each kind of vendor the
- * picked event hasn't booked, with how many are free on its day (the final
- * look, 2026-10-23). A tap opens that kind's results for the day.
+ * Under the Vendors title: "Browse vendors near Sacramento, CA", the city
+ * underlined (2026-11-08). The whole line opens "Where should we look?".
+ * With no city yet: "Browse vendors anywhere. Choose a city".
  */
-export function NeedTiles({
-  needs,
-  date,
-  dayLabel,
-  guestBand,
-  onOpen,
-}: {
-  needs: EventNeed[];
-  date: string | null;
-  dayLabel: string | null;
-  guestBand: string | null;
-  onOpen: (need: EventNeed) => void;
-}) {
-  const styles = useStyles();
-  return (
-    <View style={styles.grid}>
-      {needs.map((need, index) => (
-        <Animated.View
-          key={need.categorySlug}
-          entering={Motion.stagger(index)}
-          style={styles.tileSlot}
-        >
-          <NeedTile
-            need={need}
-            date={date}
-            dayLabel={dayLabel}
-            guestBand={guestBand}
-            onOpen={() => onOpen(need)}
-          />
-        </Animated.View>
-      ))}
-    </View>
-  );
-}
-
-function NeedTile({
-  need,
-  date,
-  dayLabel,
-  guestBand,
-  onOpen,
-}: {
-  need: EventNeed;
-  date: string | null;
-  dayLabel: string | null;
-  guestBand: string | null;
-  onOpen: () => void;
-}) {
-  const Colors = useColors();
+export function NearPlace() {
   const styles = useStyles();
   const { t } = useLocale();
-  const { place, maxMiles } = useSearchLocation();
-  const search = useVendorSearch({
-    latitude: place?.latitude,
-    longitude: place?.longitude,
-    maxMiles,
-    categorySlug: need.categorySlug,
-    filters: {
-      ...NO_FILTERS,
-      ...filtersForGuests(need.groupSlug, guestBand ?? undefined),
-      availableOn: date,
-    },
-    limit: COUNT_LIMIT,
-  });
-  const results = search.data ?? [];
-  const cover = results.find((vendor) => vendor.coverPath)?.coverPath ?? null;
-  const shown = results.length >= COUNT_LIMIT ? `${COUNT_LIMIT}+` : String(results.length);
-  const name = localized(need.name);
-  const line = search.isPending
-    ? ' '
-    : results.length === 0
-      ? t('home.noneYet')
-      : date && dayLabel
-        ? t('vendorsTab.freeOn', { shown, day: dayLabel })
-        : t('vendorsTab.nearYou', { shown });
+  const { place, openLocationSheet } = useSearchLocation();
+  const name = place ? placeName(place.label, t) : null;
 
   return (
-    <PressableScale
+    <Pressable
       accessibilityRole="button"
-      accessibilityLabel={`${name}. ${line}`}
-      pressedScale={0.97}
-      onPress={() => {
-        selectionHaptic();
-        onOpen();
-      }}
-      style={styles.tile}
+      accessibilityLabel={
+        name ? t('vendorsTab.nearSpoken', { place: name }) : t('vendorsTab.choosePlace')
+      }
+      accessibilityHint={t('location.chip.hint')}
+      onPress={openLocationSheet}
+      hitSlop={{ top: 12, bottom: 12 }}
+      style={({ pressed }) => [styles.near, pressed && styles.pressed]}
     >
-      <View style={styles.tilePhoto}>
-        {cover ? (
-          <Image
-            source={{ uri: photoUrl(cover, 'medium') }}
-            contentFit="cover"
-            transition={200}
-            style={styles.fill}
-          />
-        ) : (
-          <View style={[styles.fill, styles.noPhoto]}>
-            <Icon name={groupIcon(need.groupSlug)} size={36} color={Colors.primary} />
-          </View>
-        )}
-      </View>
-      <AppText variant="heading" weight={600} numberOfLines={2}>
-        {name}
+      <AppText variant="bodyLg" color="text2">
+        {name ? t('vendorsTab.browseNear') : t('vendorsTab.browseAnywhere')}{' '}
+        <AppText variant="bodyLg" weight={600} style={styles.underline}>
+          {name ?? t('vendorsTab.choosePlace')}
+        </AppText>
       </AppText>
-      <AppText variant="caption" weight={600} color="success" numberOfLines={1}>
-        {line}
-      </AppText>
-    </PressableScale>
-  );
-}
-
-/** Calm rows with a tick: who's already booked for the picked event. */
-export function BookedRows({
-  rows,
-}: {
-  rows: { key: string; kind: string; vendor: { slug: string; name: string } | null }[];
-}) {
-  const Colors = useColors();
-  const styles = useStyles();
-  return (
-    <View style={styles.rows}>
-      {rows.map((row) => (
-        <Pressable
-          key={row.key}
-          accessibilityRole={row.vendor ? 'link' : undefined}
-          disabled={!row.vendor}
-          onPress={() =>
-            row.vendor && router.push({ pathname: '/v/[slug]', params: { slug: row.vendor.slug } })
-          }
-          style={({ pressed }) => [styles.row, pressed && styles.pressed]}
-        >
-          <View style={styles.tick}>
-            <Icon name="checkmark" size={13} color={Colors.onPrimary} weight="bold" />
-          </View>
-          <View style={styles.grow}>
-            <AppText weight={600} numberOfLines={1}>
-              {row.vendor?.name ?? row.kind}
-            </AppText>
-            {row.vendor && (
-              <AppText variant="caption" color="text2" numberOfLines={1}>
-                {row.kind}
-              </AppText>
-            )}
-          </View>
-          {row.vendor && (
-            <Icon name="chevron-forward" size={16} color={Colors.chevron} weight="semibold" />
-          )}
-        </Pressable>
-      ))}
-    </View>
+    </Pressable>
   );
 }
 
 /**
- * Every kind of vendor: the groups from the database (Venues to Services),
- * each opening straight down to its kinds as chips; a kind opens its results.
+ * Saved and Requests side by side, small: the vendors kept with the heart
+ * (opens Saved) and the requests still open (opens Requests).
  */
-export function KindsAccordion({ groups }: { groups: CategoryGroup[] }) {
-  const Colors = useColors();
+export function YourVendors({ weddingId }: { weddingId: string }) {
   const styles = useStyles();
   const { t } = useLocale();
-  const [open, setOpen] = useState<string | null>(null);
+  const { status } = useSession();
+  const signedIn = status === 'signedIn';
+  const saves = useSavedVendors();
+  const requests = useMyRequests(weddingId);
+  const savedCount = signedIn ? new Set((saves.data ?? []).map((save) => save.vendorId)).size : 0;
+  const openCount = signedIn
+    ? (requests.data ?? []).filter((r) => r.status === 'open' && !r.expired).length
+    : 0;
 
   return (
-    <View style={styles.rows}>
-      {groups.map((group) => {
-        const isOpen = open === group.slug;
-        return (
-          <View key={group.slug} style={styles.groupWrap}>
-            <Pressable
-              accessibilityRole="button"
-              accessibilityState={{ expanded: isOpen }}
-              onPress={() => {
-                selectionHaptic();
-                setOpen(isOpen ? null : group.slug);
-              }}
-              style={({ pressed }) => [styles.row, pressed && styles.pressed]}
-            >
-              <Icon name={groupIcon(group.slug)} size={22} color={Colors.primary} />
-              <AppText weight={500} style={styles.grow} numberOfLines={1}>
-                {localized(group.name)}
-              </AppText>
-              <AppText variant="caption" color="text2">
-                {t('vendorsTab.kindsCount', { count: group.categories.length })}
-              </AppText>
-              <Icon
-                name={isOpen ? 'chevron-down' : 'chevron-forward'}
-                size={16}
-                color={Colors.chevron}
-                weight="semibold"
-              />
-            </Pressable>
-            {isOpen && (
-              <Animated.View entering={Motion.enter} style={styles.kinds}>
-                {group.categories.map((category) => (
-                  <PressableScale
-                    key={category.slug}
-                    accessibilityRole="link"
-                    onPress={() =>
-                      router.push({
-                        pathname: '/c/[category]',
-                        params: { category: category.slug },
-                      })
-                    }
-                    style={styles.kind}
-                  >
-                    <AppText variant="label" weight={500}>
-                      {localized(category.name)}
-                    </AppText>
-                  </PressableScale>
-                ))}
-              </Animated.View>
-            )}
-          </View>
-        );
-      })}
+    <View style={styles.pair}>
+      <SmallButton
+        icon="heart-outline"
+        label={t('vendorsTab.saved')}
+        value={String(savedCount)}
+        spoken={
+          savedCount > 0
+            ? t('vendorsTab.savedCount', { count: savedCount })
+            : t('vendorsTab.savedNone')
+        }
+        onPress={() => router.push('/saved')}
+      />
+      <SmallButton
+        icon="paper-plane-outline"
+        label={t('vendorsTab.requests')}
+        value={openCount > 0 ? t('vendorsTab.requestsCount', { count: openCount }) : null}
+        spoken={
+          openCount > 0
+            ? t('vendorsTab.requestsCount', { count: openCount })
+            : t('vendorsTab.requestsNone')
+        }
+        onPress={() => router.push('/requests')}
+      />
     </View>
   );
 }
 
-/** The Requests card at the bottom of the tab: say what you need, vendors send offers. */
+function SmallButton({
+  icon,
+  label,
+  value,
+  spoken,
+  onPress,
+}: {
+  icon: IconName;
+  label: string;
+  value: string | null;
+  spoken: string;
+  onPress: () => void;
+}) {
+  const Colors = useColors();
+  const styles = useStyles();
+  const scale = useFontScale('body');
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={`${label}. ${spoken}`}
+      onPress={onPress}
+      style={({ pressed }) => [styles.small, pressed && styles.smallPressed]}
+    >
+      <Icon name={icon} size={Sizes.iconSmall * scale} color={Colors.text} />
+      <AppText weight={600} numberOfLines={1} style={styles.grow}>
+        {label}
+      </AppText>
+      {value ? (
+        <AppText color="text2" numberOfLines={1}>
+          {value}
+        </AppText>
+      ) : null}
+    </Pressable>
+  );
+}
+
+/** Browse categories: round photos of the kinds of vendor, swiped sideways. */
+export function KindsRow({
+  kinds,
+  onOpen,
+}: {
+  kinds: EventNeed[];
+  onOpen: (kind: EventNeed) => void;
+}) {
+  const styles = useStyles();
+  const scale = useFontScale('label');
+  return (
+    <ScrollView
+      horizontal
+      showsHorizontalScrollIndicator={false}
+      style={styles.bleed}
+      contentContainerStyle={styles.kinds}
+    >
+      {kinds.map((kind) => (
+        <KindCircle
+          key={kind.categorySlug}
+          kind={kind}
+          size={76}
+          // Wide enough for "Photographer" on one line, and the next circle
+          // still peeks in at the edge to show the row scrolls
+          width={Math.round(102 * Math.min(scale, 1.3))}
+          onPress={() => onOpen(kind)}
+        />
+      ))}
+    </ScrollView>
+  );
+}
+
+/** The card at the bottom of the tab: say what you need, vendors send offers. */
 export function RequestsCard() {
-  const Colors = useColors();
   const styles = useStyles();
   const { t } = useLocale();
   return (
-    <PressableScale
-      accessibilityRole="button"
-      pressedScale={0.98}
-      onPress={() => router.push('/requests')}
-      style={styles.requests}
-    >
-      <View style={styles.grow}>
-        <AppText variant="caption" weight={600} color="primary" style={styles.caps}>
-          {t('vendorsTab.requests').toUpperCase()}
-        </AppText>
-        <AppText variant="heading" weight={600}>
-          {t('vendorsTab.requestsCardTitle')}
-        </AppText>
-      </View>
-      <Icon name="arrow-forward" size={20} color={Colors.text} weight="semibold" />
-    </PressableScale>
+    <View style={styles.requests}>
+      <AppText variant="heading" accessibilityRole="header">
+        {t('vendorsTab.requestsCardTitle')}
+      </AppText>
+      <AppText color="text2">{t('vendorsTab.requestsCardBody')}</AppText>
+      <Button
+        label={t('vendorsTab.requestsCardButton')}
+        onPress={() => router.push('/requests')}
+        style={styles.requestsButton}
+      />
+    </View>
   );
 }
 
 const useStyles = makeStyles((Colors) => ({
-  grid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: Spacing.md,
-  },
-  tileSlot: {
-    width: '47.5%',
-    flexGrow: 1,
-  },
-  tile: {
-    gap: Spacing.xs,
-  },
-  tilePhoto: {
-    height: 170,
-    marginBottom: Spacing.xs,
-    overflow: 'hidden',
-    borderRadius: Radius.photo,
-    borderCurve: 'continuous',
-    backgroundColor: Colors.surface,
-  },
-  fill: {
-    width: '100%',
-    height: '100%',
-  },
-  noPhoto: {
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  rows: {
-    borderTopWidth: 1,
-    borderTopColor: Colors.separator,
-  },
-  groupWrap: {
-    borderBottomWidth: 1,
-    borderBottomColor: Colors.separator,
-  },
-  row: {
-    minHeight: 58,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.md,
-    borderBottomWidth: 1,
-    borderBottomColor: Colors.separator,
+  near: {
+    alignSelf: 'flex-start',
   },
   pressed: {
     opacity: 0.6,
   },
-  tick: {
-    width: 26,
-    height: 26,
-    borderRadius: 13,
+  underline: {
+    color: Colors.text,
+    textDecorationLine: 'underline',
+  },
+  pair: {
+    flexDirection: 'row',
+    gap: Spacing.md - 2,
+  },
+  small: {
+    flex: 1,
+    minHeight: Sizes.button,
+    flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: Colors.success,
+    gap: Spacing.sm + 2,
+    paddingHorizontal: Spacing.md + 2,
+    borderRadius: Radius.photo,
+    borderCurve: 'continuous',
+    boxShadow: `inset 0 0 0 1px ${Colors.border}`,
+  },
+  smallPressed: {
+    backgroundColor: Colors.rowPressed,
   },
   grow: {
     flex: 1,
   },
-  kinds: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: Spacing.sm,
-    paddingBottom: Spacing.lg,
+  bleed: {
+    marginHorizontal: -Sizes.pageGutter,
   },
-  kind: {
-    minHeight: 40,
-    paddingHorizontal: Spacing.lg,
-    justifyContent: 'center',
-    borderRadius: Radius.chip,
-    backgroundColor: Colors.surface,
+  kinds: {
+    gap: Spacing.xs,
+    paddingHorizontal: Sizes.pageGutter - Spacing.sm,
   },
   requests: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.md,
-    padding: Spacing.lg,
+    gap: Spacing.xs + 2,
+    padding: Spacing.xl - 4,
     borderRadius: Radius.card,
     borderCurve: 'continuous',
     backgroundColor: Colors.sand,
   },
-  caps: {
-    letterSpacing: 0.6,
+  requestsButton: {
+    marginTop: Spacing.sm,
+    alignSelf: 'flex-start',
   },
 }));
