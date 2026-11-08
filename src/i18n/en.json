@@ -1154,8 +1154,12 @@
       "back": "Back to your wedding",
       "alongside": "With the {{events}}",
       "guests": "Guests: {{band}}",
-      "wedFind": "Let Wed find the rest for the {{event}}",
-      "essentials": "Essentials"
+      "wedFind": "Let Wed find the rest for the {{event}}"
+    },
+    "needs": {
+      "title": "To book",
+      "seeAll": "See all {{count}}",
+      "ideas": "More ideas"
     },
     "place": {
       "title": "Where's the {{event}}?",

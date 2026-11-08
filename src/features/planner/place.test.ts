@@ -1,4 +1,39 @@
-import { AT_HOME, bookedVenueName, placeKind, placeToSave } from './place';
+import { AT_HOME, bookedVenueName, needsForPlaces, placeKind, placeToSave } from './place';
+
+describe('needsForPlaces', () => {
+  const need = (categorySlug: string, groupSlug: string) => ({
+    categorySlug,
+    groupSlug,
+    name: { en: categorySlug },
+  });
+  const needs = {
+    sangeet: [
+      {
+        importance: 'essential',
+        needs: [need('banquet-hall', 'venues'), need('dj', 'music'), need('caterer', 'food')],
+      },
+      { importance: 'nice_to_have', needs: [need('tent', 'venues')] },
+    ],
+    nikah: [{ importance: 'essential', needs: [need('mandir-masjid', 'venues')] }],
+  };
+
+  it('drops the venues from an event at home, and a section left empty', () => {
+    const out = needsForPlaces(needs, { sangeet: AT_HOME });
+    expect(out.sangeet).toEqual([
+      { importance: 'essential', needs: [need('dj', 'music'), need('caterer', 'food')] },
+    ]);
+    expect(out.nikah).toBe(needs.nikah);
+  });
+
+  it('keeps every need for an event at a venue or with no place', () => {
+    expect(needsForPlaces(needs, { sangeet: 'Royal Palace' })).toBe(needs);
+    expect(needsForPlaces(needs, {})).toBe(needs);
+  });
+
+  it('ignores a place for an event without needs', () => {
+    expect(needsForPlaces(needs, { mehndi: AT_HOME })).toBe(needs);
+  });
+});
 
 describe('bookedVenueName', () => {
   const needs = [

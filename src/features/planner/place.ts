@@ -1,3 +1,5 @@
+import type { EventNeedsSection } from '@/data/reference';
+
 /**
  * What an event's place says when it's at the family's home. It's saved as
  * the event's place, with no address: the wedding website shows the place
@@ -31,6 +33,31 @@ export function placeToSave(kind: PlaceKind | null, venue: string): string | nul
   if (kind === 'home') return AT_HOME;
   if (kind === 'venue') return venue.trim().replace(/\s+/g, ' ') || null;
   return null;
+}
+
+/**
+ * Each event's needs, without the halls and other venues for an event at
+ * home: a dholki in the living room doesn't need a banquet hall. Events
+ * elsewhere, or with no place yet, keep their whole list. Returns the same
+ * object when nothing is at home.
+ */
+export function needsForPlaces(
+  needsByEvent: Record<string, EventNeedsSection[]>,
+  places: Record<string, string>,
+): Record<string, EventNeedsSection[]> {
+  let out = needsByEvent;
+  for (const [slug, place] of Object.entries(places)) {
+    const sections = needsByEvent[slug];
+    if (!sections || placeKind(place) !== 'home') continue;
+    if (out === needsByEvent) out = { ...needsByEvent };
+    out[slug] = sections
+      .map((section) => ({
+        ...section,
+        needs: section.needs.filter((need) => need.groupSlug !== VENUES_GROUP),
+      }))
+      .filter((section) => section.needs.length > 0);
+  }
+  return out;
 }
 
 /**
