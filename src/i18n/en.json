@@ -1157,6 +1157,16 @@
       "wedFind": "Let Wed find the rest for the {{event}}",
       "essentials": "Essentials"
     },
+    "place": {
+      "title": "Where's the {{event}}?",
+      "home": "Home",
+      "venue": "Hall or venue",
+      "which": "Which one?",
+      "whichPlaceholder": "Its name and address",
+      "startsAt": "What time does it start?",
+      "pickTime": "Pick a time",
+      "save": "Save"
+    },
     "hero": {
       "countLabel": {
         "one": "{{count}} day until the {{event}}, {{date}}",

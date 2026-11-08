@@ -1,5 +1,5 @@
 import { useState, type ReactNode } from 'react';
-import { Modal, Pressable, StyleSheet, View } from 'react-native';
+import { KeyboardAvoidingView, Modal, Platform, Pressable, StyleSheet, View } from 'react-native';
 import Animated, { FadeIn, SlideInDown, useReducedMotion } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -15,7 +15,8 @@ import { iosEasing } from '@/lib/motion';
  * quick choice made in place (an event's day, about how many guests): a
  * grabber, a title with a round Close, then what's passed in. Tapping the
  * dim page or Close closes it. Open while `title` is set; it keeps its last
- * title while it fades out.
+ * title while it fades out. With a text field in it, the sheet rises above
+ * the keyboard.
  */
 export function BottomSheet({
   title,
@@ -42,7 +43,10 @@ export function BottomSheet({
       statusBarTranslucent
       onRequestClose={onClose}
     >
-      <View style={styles.root}>
+      <KeyboardAvoidingView
+        style={styles.root}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      >
         <Pressable
           accessibilityRole="button"
           accessibilityLabel={t('common.close')}
@@ -72,7 +76,7 @@ export function BottomSheet({
           </View>
           {children}
         </Animated.View>
-      </View>
+      </KeyboardAvoidingView>
     </Modal>
   );
 }
