@@ -19,6 +19,8 @@ import { DaySheet } from '@/features/planner/day-sheet';
 import { longDate } from '@/features/planner/day-list';
 import { groupOf, setDay } from '@/features/planner/days';
 import { NeedTile } from '@/features/planner/need-tile';
+import { bookedVenueName } from '@/features/planner/place';
+import { PlaceSheet } from '@/features/planner/place-sheet';
 import { essentialNeeds } from '@/features/planner/plan';
 import { stillNeedsText, unbookedNames } from '@/features/planner/still-needs';
 import { usePlanDays } from '@/features/planner/use-plan-days';
@@ -36,7 +38,8 @@ const SIDE_TILE = 160;
 /**
  * One event of the wedding on its own page, opened from its card on the
  * Wedding tab (or Home): what it still needs in a line, then its day, time
- * and place, and guests as three rows; the essentials as tiles two across
+ * and place, and guests as three rows, each opening a small sheet for just
+ * this event (the place is Home or a venue); the essentials as tiles two across
  * (tap to find one, tick to mark it booked); the nice-to-haves in a row
  * that scrolls sideways, so the page stays short; and Wed, a request to
  * vendors and the event's photos at the end. Booking the last essential
@@ -55,7 +58,7 @@ export default function PlanEventScreen() {
   const suggested = openCounts(suggestions.data ?? []);
   const guestSummary = useGuestSummary(canEdit ? (wedding?.id ?? null) : null);
   const vault = useMemoryVault(wedding?.id ?? null);
-  const [sheet, setSheet] = useState<'day' | 'guests' | null>(null);
+  const [sheet, setSheet] = useState<'day' | 'place' | 'guests' | null>(null);
 
   const sections = needsByEvent[slug] ?? [];
   const essential = essentialNeeds(sections);
@@ -180,7 +183,14 @@ export default function PlanEventScreen() {
           icon="time-outline"
           title={when ?? t('planner.ticket.timePlace')}
           tone={when ? 'default' : 'primary'}
-          onPress={canEdit ? () => router.push('/guest-details') : undefined}
+          onPress={
+            canEdit
+              ? () => {
+                  selectionHaptic();
+                  setSheet('place');
+                }
+              : undefined
+          }
         />
         <ListRow
           icon="people-outline"
@@ -264,6 +274,21 @@ export default function PlanEventScreen() {
         near={days.groups.find((g) => g.date)?.date ?? null}
         onPick={(picked) => days.change(setDay(days.order, days.state, slug, picked))}
         onClear={() => days.change(setDay(days.order, days.state, slug, null))}
+        onClose={() => setSheet(null)}
+      />
+      <PlaceSheet
+        title={sheet === 'place' ? t('planner.place.title', { event: name }) : null}
+        place={wedding?.eventPlaces[slug] ?? null}
+        time={wedding?.eventTimes[slug] ?? null}
+        bookedVenue={bookedVenueName(
+          sections.flatMap((s) => s.needs),
+          slug,
+          wedding?.bookedVendors ?? {},
+        )}
+        onSave={(place, time) => {
+          if (place !== (wedding?.eventPlaces[slug] ?? null)) view.setEventPlace(slug, place);
+          if (time !== (wedding?.eventTimes[slug] ?? null)) view.setEventTime(slug, time);
+        }}
         onClose={() => setSheet(null)}
       />
       <BottomSheet
