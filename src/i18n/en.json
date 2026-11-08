@@ -742,6 +742,7 @@
     "alreadySaved": "Saved"
   },
   "location": {
+    "cityState": "{{city}}, CA",
     "title": "Where should we look?",
     "subtitle": "We sort vendors by distance from here. It stays on this phone.",
     "cityOrZip": "City or ZIP code",
@@ -3236,9 +3237,10 @@
     "title": "Licences",
     "fonts": "Fonts",
     "fontsFooter": "Free to use under the SIL Open Font License.",
-    "pictures": "Video and icons",
-    "picturesFooter": "The welcome video is cut from free clips on Pexels, used under the Pexels License.",
+    "pictures": "Video, photos and icons",
+    "picturesFooter": "The welcome video is cut from free clips on Pexels, and the category photos are free photos from Pexels, used under the Pexels License.",
     "welcomeVideo": "Welcome video",
+    "categoryPhotos": "Category photos",
     "by": "By {{name}}",
     "software": "Software",
     "softwareFooter": "Thank you to everyone who builds and shares these.",
@@ -3249,9 +3251,11 @@
     "label": "Sample listing for the demo, not a real business"
   },
   "vendorsTab": {
-    "types": "Browse by type",
-    "forEvent": "For which event?",
-    "allEvents": "All events",
+    "browseNear": "Browse vendors near",
+    "browseAnywhere": "Browse vendors anywhere.",
+    "choosePlace": "Choose a city",
+    "nearSpoken": "Browsing vendors near {{place}}",
+    "browse": "Browse categories",
     "hallFirst": "Start with the hall",
     "hallFirstBody": "The hall sets your date, so book it first.",
     "saved": "Saved",
@@ -3266,18 +3270,14 @@
       "other": "{{count}} open"
     },
     "requestsNone": "Post what you need",
-    "stillNeeds": "What the {{event}} still needs",
-    "allSetTitle": "The {{event}} is all set",
-    "allSetBody": "Everything the {{event}} needs is booked. Nothing to find here.",
-    "bookedFor": "Booked for the {{event}}",
-    "freeOn": "{{shown}} free on {{day}}",
-    "nearYou": "{{shown}} near you",
-    "everyKind": "Every kind of vendor",
-    "kindsCount": {
-      "one": "1 kind",
-      "other": "{{count}} kinds"
-    },
-    "requestsCardTitle": "Say what you need. Vendors send you offers."
+    "requestsCardTitle": "Not sure who to ask?",
+    "requestsCardBody": "Say what you need and vendors send you offers.",
+    "requestsCardButton": "Post a request"
+  },
+  "categories": {
+    "title": "All categories",
+    "search": "Search categories",
+    "none": "No category matches “{{text}}”."
   },
   "website": {
     "title": "Website",

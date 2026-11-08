@@ -7,7 +7,7 @@ import type { EventNeed, HomeSection, NeedsByEvent } from '@/data/reference';
 import { essentialNeeds } from '@/features/planner/plan-helpers';
 
 // The venue sets the date, so it's booked before anything else
-const VENUE_GROUP = 'venues';
+export const VENUE_GROUP = 'venues';
 
 export type FirstNeed = EventNeed & {
   /** How many of the main events list it as essential. */
@@ -27,9 +27,18 @@ export function bookFirstNeeds(
   limit = 5,
 ): FirstNeed[] {
   const core = sections.flatMap((section) => section.events).filter((event) => event.isCore);
+  return firstNeedsFor(
+    core.map((event) => event.slug),
+    needs,
+    limit,
+  );
+}
+
+/** The same choice for any list of events, e.g. the ones a family is having. */
+export function firstNeedsFor(events: string[], needs: NeedsByEvent, limit = 5): FirstNeed[] {
   const kinds = new Map<string, { need: EventNeed; events: number; first: number }>();
-  for (const event of core) {
-    for (const need of essentialNeeds(needs[event.slug])) {
+  for (const event of events) {
+    for (const need of essentialNeeds(needs[event])) {
       const seen = kinds.get(need.categorySlug);
       if (seen) seen.events += 1;
       else kinds.set(need.categorySlug, { need, events: 1, first: kinds.size });

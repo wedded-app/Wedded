@@ -123,8 +123,8 @@ export function NavBar({ scroll, title, back = true, backTo, trailing, leading }
 type LargeTitleProps = {
   scroll: NavScroll;
   title: string;
-  /** A line of context under the title. */
-  subtitle?: string | null;
+  /** A line of context under the title, or your own (e.g. one that's tappable). */
+  subtitle?: ReactNode;
   /** A small line above the title, e.g. "Saving to Jaago". */
   eyebrow?: string | null;
   style?: StyleProp<ViewStyle>;
@@ -156,7 +156,9 @@ export function LargeTitle({ scroll, title, subtitle, eyebrow, style }: LargeTit
       <AppText variant="display" accessibilityRole="header">
         {title}
       </AppText>
-      {subtitle ? (
+      {typeof subtitle !== 'string' ? (
+        subtitle
+      ) : subtitle ? (
         <AppText variant="bodyLg" color="text2">
           {subtitle}
         </AppText>
@@ -169,7 +171,7 @@ type NavScreenProps = Omit<ScrollViewProps, 'onScroll' | 'children'> & {
   title?: string | null;
   /** A shorter title for the bar once the large one scrolls away, when the large one won't fit beside the buttons. */
   navTitle?: string;
-  subtitle?: string | null;
+  subtitle?: ReactNode;
   eyebrow?: string | null;
   back?: boolean;
   /** Where Back goes with nothing to go back to, instead of Home. */

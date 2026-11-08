@@ -5,11 +5,12 @@ import { Icon } from '@/components/icon';
 import { makeStyles, Radius, Sizes, Spacing, useColors } from '@/constants/theme';
 import { useLocale } from '@/i18n/locale-context';
 
+import { placeName } from './place-name';
 import { useSearchLocation } from './search-location';
 
 /**
  * The full-width location chip for Home and results (vision S4 item 2):
- * "Near Yuba City · 25 mi ⌄" on a white capsule, or "Set your location to see
+ * "Near Yuba City, CA · 25 mi ⌄" on a white capsule, or "Set your location to see
  * distance ⌄" tinted in the app colour when nothing is set. Opens the
  * location sheet.
  */
@@ -20,10 +21,11 @@ export function LocationChip({ style }: { style?: StyleProp<ViewStyle> }) {
   const { place, maxMiles, openLocationSheet } = useSearchLocation();
   const scale = useFontScale('body');
 
+  const name = place ? placeName(place.label, t) : '';
   let label: string;
   if (!place) label = t('location.chip.unset');
-  else if (maxMiles === null) label = t('location.chip.anywhere', { place: place.label });
-  else label = t('location.chip.near', { place: place.label, miles: maxMiles });
+  else if (maxMiles === null) label = t('location.chip.anywhere', { place: name });
+  else label = t('location.chip.near', { place: name, miles: maxMiles });
 
   return (
     <Pressable
