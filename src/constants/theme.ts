@@ -362,12 +362,20 @@ export function serifFamily(weight: FontWeight): string {
 }
 
 /**
+ * The web's stand-in for the system font: SF Pro where the browser has it
+ * (Macs and iPhones), else Inter (installWebFont in lib/web-font.web.ts), as
+ * on the redesign canvas, so a browser on Windows doesn't draw Segoe UI.
+ */
+export const WEB_FONT = '-apple-system, BlinkMacSystemFont, Inter, system-ui, sans-serif';
+
+/**
  * The style that draws `weight` in the system font: SF Pro on iPhone, Roboto
- * on Android, the computer's own on the web. Nothing to load, it matches iOS,
+ * on Android, WEB_FONT on the web. Nothing to load on phones, it matches iOS,
  * and it grows with the phone's Larger Text.
  */
 export function fontStyle(weight: FontWeight): TextStyle {
-  return { fontWeight: String(weight) as TextStyle['fontWeight'] };
+  const fontWeight = String(weight) as TextStyle['fontWeight'];
+  return Platform.OS === 'web' ? { fontFamily: WEB_FONT, fontWeight } : { fontWeight };
 }
 
 /**

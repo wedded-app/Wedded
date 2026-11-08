@@ -40,8 +40,11 @@ import { SettingsProvider } from '@/features/settings/settings';
 import { useWedNavigation } from '@/features/wed/open-wed';
 import { i18n } from '@/i18n';
 import { LocaleProvider } from '@/i18n/locale-context';
+import { installWebFont } from '@/lib/web-font';
 
 SplashScreen.preventAutoHideAsync();
+// Inter for browsers without San Francisco; nothing on phones
+installWebFont();
 // Message alerts show while the app is open, except for the chat on screen
 configurePushHandling();
 
