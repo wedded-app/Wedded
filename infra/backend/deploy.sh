@@ -80,7 +80,13 @@ cp -R "$APP/supabase/functions/." volumes/functions/
 jq -s '{imports: (map(.imports // {}) | add)}' "$APP"/supabase/functions/*/deno.json \
   >volumes/functions/deno.jsonc
 mkdir -p volumes/email-templates
-cp "$APP"/supabase/templates/*.html volumes/email-templates/
+templates() { cat volumes/email-templates/*.html 2>/dev/null | md5sum; }
+templates_before=$(templates)
+# The emails' pictures are on the web app (public/email), so email apps load them from its address
+web_url="https://$(read_env WEB_DOMAIN)"
+for template in "$APP"/supabase/templates/*.html; do
+  sed "s#https://WEB_DOMAIN#$web_url#g" "$template" >"volumes/email-templates/$(basename "$template")"
+done
 
 # The web app's site next to Supabase's in their Caddyfile
 caddyfiles() { cat volumes/proxy/caddy/*Caddyfile 2>/dev/null | md5sum; }
@@ -95,6 +101,8 @@ docker compose --progress quiet up -d --wait --remove-orphans
 docker compose restart functions >/dev/null
 # Caddy fronts the API too, so it restarts only when its sites change
 [ "$(caddyfiles)" = "$caddy_before" ] || docker compose restart caddy >/dev/null
+# Sign-in can keep a template it has already read, so it restarts when one changes
+[ "$(templates)" = "$templates_before" ] || docker compose restart auth >/dev/null
 
 if ! command -v supabase >/dev/null; then
   arch=$(uname -m | sed 's/aarch64/arm64/; s/x86_64/amd64/')
