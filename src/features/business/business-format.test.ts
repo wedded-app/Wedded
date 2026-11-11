@@ -41,6 +41,17 @@ describe('leadAnswerRows', () => {
     ]);
   });
 
+  it('says day or evening first, as Ask for a quote asks it', () => {
+    expect(
+      leadAnswerRows({ timeOfDay: 'evening', catering: 'in_house', food: 'halal' }, t),
+    ).toEqual([
+      { label: 'timeOfDay', value: 'times.evening' },
+      { label: 'catering', value: 'cateringInHouse' },
+      { label: 'food', value: 'foodHalal' },
+    ]);
+    expect(leadAnswerRows({ timeOfDay: 'midnight' }, t)).toEqual([]);
+  });
+
   it("lists each event's own day first, by name", () => {
     const names: Record<string, string> = { jaago: 'Jaago', 'anand-karaj': 'Anand Karaj' };
     expect(

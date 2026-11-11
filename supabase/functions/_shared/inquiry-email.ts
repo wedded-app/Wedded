@@ -13,7 +13,7 @@
 // How it's sent: Resend when RESEND_API_KEY is set (production), otherwise
 // the local Mailpit when MAILPIT_URL is set (npm run db:start).
 
-import type { Contact, GuestBand, InquiryInput } from './inquiry-input.ts';
+import type { GuestBand, InquiryInput } from './inquiry-input.ts';
 
 export type OutgoingEmail = {
   from: string;
@@ -35,13 +35,6 @@ const GUEST_LABELS: Record<GuestBand, string> = {
   '250_500': '250 to 500',
   '500_plus': '500 or more',
   not_sure: 'Not sure yet',
-};
-
-const CONTACT_LABELS: Record<Contact, string> = {
-  call: 'Call',
-  text: 'Text',
-  whatsapp: 'WhatsApp',
-  email: 'Email',
 };
 
 function env(name: string): string | undefined {
@@ -103,12 +96,17 @@ function areaCode(e164: string): string {
 
 const DETAIL_VALUES: Record<string, Record<string, string>> = {
   catering: {
-    in_house: "The hall's food",
+    in_house: "The hall's kitchen",
     own: 'Bringing their own caterer',
     not_sure: 'Not sure',
   },
   alcohol: { yes: 'Yes', no: 'No', not_sure: 'Not sure' },
   food: { veg: 'Veg only', veg_nonveg: 'Veg and non-veg', jhatka: 'Jhatka', halal: 'Halal' },
+  timeOfDay: {
+    day: 'Daytime (lunch)',
+    evening: 'Evening (dinner)',
+    both: 'Lunch and evening, the same day',
+  },
 };
 
 const yesNo = (value: unknown) => (value === true ? 'Yes' : value === false ? 'No' : null);
@@ -132,6 +130,8 @@ export function detailRows(details: Record<string, unknown>): [string, string][]
       .map((slot) => `${formatDate(slot.date)} (${slot.part})`);
     if (slots.length > 0) rows.push(['Could visit', slots.join('; ')]);
   }
+  const timeOfDay = DETAIL_VALUES.timeOfDay[String(details.timeOfDay)];
+  if (timeOfDay) rows.push(['Time of day', timeOfDay]);
   const catering = DETAIL_VALUES.catering[String(details.catering)];
   if (catering) {
     const caterer = text(details.ownCaterer);
@@ -143,7 +143,7 @@ export function detailRows(details: Record<string, unknown>): [string, string][]
   const alcohol = DETAIL_VALUES.alcohol[String(details.alcohol)];
   if (alcohol) rows.push(['Alcohol', alcohol]);
   const ghoriDhol = yesNo(details.ghoriDhol);
-  if (ghoriDhol) rows.push(['Baraat with ghori and dhol', ghoriDhol]);
+  if (ghoriDhol) rows.push(['Baraat arriving with a horse and dhol', ghoriDhol]);
   const sameDay = yesNo(details.sameDay);
   if (sameDay) rows.push(['Lunch and evening same day', sameDay]);
   const food = DETAIL_VALUES.food[String(details.food)];
@@ -265,8 +265,8 @@ export function buildInquiryEmail(input: InquiryEmailInput): OutgoingEmail {
     ].filter((row): row is [string, string] => row !== null),
     ['Guests', guests],
     ['Where', inquiry.location],
+    // How to reply is the vendor's choice (Ask for a quote no longer asks)
     ...detailRows(inquiry.details),
-    ['Best way to reply', CONTACT_LABELS[inquiry.preferredContact]],
   ];
   if (sender.email) rows.push(['Email', sender.email]);
 
@@ -294,9 +294,7 @@ export function buildInquiryEmail(input: InquiryEmailInput): OutgoingEmail {
     inquiry.message,
     '',
     replyable
-      ? `Reply to this email, or contact ${firstName} directly by ${
-        CONTACT_LABELS[inquiry.preferredContact].toLowerCase()
-      }: ${phone}.`
+      ? `Reply to this email, or call or text ${firstName}: ${phone}.`
       : `Please contact ${firstName} by phone: ${phone}.`,
     '',
     '--',

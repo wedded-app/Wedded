@@ -147,6 +147,8 @@ const SF_SYMBOLS: Partial<Record<IconName, SFSymbol>> = {
   'gift-outline': 'gift',
   'diamond-outline': 'diamond',
   'sunny-outline': 'sun.max',
+  'moon-outline': 'moon',
+  'bag-handle-outline': 'bag',
   'flame-outline': 'flame',
   'people-circle-outline': 'person.2.circle',
   'infinite-outline': 'infinity',
