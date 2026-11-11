@@ -28,7 +28,7 @@ import { hasDraftPlan, useWeddingDraft } from '@/features/home/wedding-draft';
 import { VendorTypeRow } from '@/features/home/vendor-type-row';
 import { YourFamily } from '@/features/home/your-family';
 import { useKeepDraftOnSignIn } from '@/features/onboarding/save-draft';
-import { SettingsButton } from '@/features/settings/settings-button';
+import { YouButton } from '@/features/settings/settings-button';
 import { findForPlan } from '@/features/planner/find-for-plan';
 import { useDraftPlanView, usePlanView } from '@/features/planner/use-plan-view';
 import { WebsiteCard } from '@/features/website/website-card';
@@ -39,8 +39,8 @@ import { useLocale } from '@/i18n/locale-context';
 /**
  * S4 Home answers one question: what should we do next? (the final look,
  * 2026-10-23; canvas board "2 · Home"). Its parts, always in this order:
- * today's date and a greeting, with chat and your initial (Profile) at the
- * top right; the wedding card (OmbreBackground; with a plan it counts down
+ * today's date and a greeting, with Messages at the top left and you at the
+ * top right (Sign in, or your initial, which opens Settings; 2026-11-11); the wedding card (OmbreBackground; with a plan it counts down
  * and opens My Wedding, before one it asks when the wedding is); Wed's line,
  * only when Wed needs an OK; Up next, one ticket at a time; your events,
  * each saying in words what it still needs; vendors free on your dates; the
@@ -181,12 +181,8 @@ export default function HomeScreen() {
         scroll={scroll}
         title={t('app.name')}
         back={false}
-        trailing={
-          <View style={styles.trailing}>
-            <ChatButton />
-            <SettingsButton />
-          </View>
-        }
+        leading={<ChatButton plain />}
+        trailing={<YouButton />}
       />
     </View>
   );
@@ -232,10 +228,6 @@ function BrowseSections({ posts }: { posts: FeedPost[] }) {
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-  },
-  trailing: {
-    flexDirection: 'row',
-    gap: Spacing.sm,
   },
   body: {
     gap: Spacing.xxl,
