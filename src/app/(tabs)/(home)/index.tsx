@@ -20,15 +20,17 @@ import { EventCarousel } from '@/features/home/event-carousel';
 import { EventsTimeline } from '@/features/home/events-timeline';
 import { greetingKey, todayLine } from '@/features/home/greeting';
 import { NextUp } from '@/features/home/next-up';
+import { SavePlanCard } from '@/features/home/save-plan-card';
 import { SectionHeader } from '@/features/home/section-header';
 import { VendorPhotoCards } from '@/features/home/vendor-photo-cards';
 import { VendorRows } from '@/features/home/vendor-rows';
-import { useWeddingDraft } from '@/features/home/wedding-draft';
+import { hasDraftPlan, useWeddingDraft } from '@/features/home/wedding-draft';
 import { VendorTypeRow } from '@/features/home/vendor-type-row';
 import { YourFamily } from '@/features/home/your-family';
+import { useKeepDraftOnSignIn } from '@/features/onboarding/save-draft';
 import { SettingsButton } from '@/features/settings/settings-button';
 import { findForPlan } from '@/features/planner/find-for-plan';
-import { usePlanView } from '@/features/planner/use-plan-view';
+import { useDraftPlanView, usePlanView } from '@/features/planner/use-plan-view';
 import { WebsiteCard } from '@/features/website/website-card';
 import { WedLine } from '@/features/wed/wed-line';
 import { localized } from '@/i18n/localized';
@@ -44,6 +46,8 @@ import { useLocale } from '@/i18n/locale-context';
  * each saying in words what it still needs; vendors free on your dates; the
  * website; and what the family has been up to. No booked counts. Before
  * there's a plan: what to book first, the kinds of vendor and the events.
+ * A plan made before signing in shows its events too, from this phone,
+ * with a card to save it; signing in saves it (useKeepDraftOnSignIn).
  */
 export default function HomeScreen() {
   const Colors = useColors();
@@ -63,10 +67,15 @@ export default function HomeScreen() {
   // cover (their My business card comes first instead), and nor does someone
   // who joined just looking: they came to browse, not to be asked to plan
   const { isVendor } = useIsVendor();
-  const { profile } = useSession();
+  const { profile, status } = useSession();
   const browsing = !isVendor && profile?.joined_as !== 'looking';
-  // The wedding card: the plan's countdown, or before a plan, asking for the date
+  // The wedding card: the plan's countdown, or before a plan, starting one
   const showDateCard = !planning && !loading && browsing;
+  // A plan made in the first questions before signing in, kept on this phone
+  const draft = useWeddingDraft();
+  const phoneView = useDraftPlanView();
+  const drafted = !planning && hasDraftPlan(draft);
+  useKeepDraftOnSignIn();
 
   // The small title and the bar's backdrop come in as the greeting scrolls away
   const [greetingHeight, setGreetingHeight] = useState(0);
@@ -153,7 +162,17 @@ export default function HomeScreen() {
               {wedding && <YourFamily weddingId={wedding.id} eventName={eventName} />}
             </>
           ) : loading ? null : (
-            <BrowseSections posts={posts} />
+            <>
+              {drafted && (
+                <EventsTimeline
+                  view={phoneView}
+                  scrollY={scroll.scrollY}
+                  onOpen={(slug) => router.push({ pathname: '/e/[slug]', params: { slug } })}
+                />
+              )}
+              {drafted && status !== 'signedIn' && <SavePlanCard />}
+              <BrowseSections posts={posts} />
+            </>
           )}
         </View>
       </Animated.ScrollView>

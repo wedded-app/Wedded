@@ -1,13 +1,15 @@
 import { useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
+import Animated, { LayoutAnimationConfig } from 'react-native-reanimated';
 
 import { AppText, useFontScale } from '@/components/app-text';
 import { Icon } from '@/components/icon';
 import { PressableScale } from '@/components/pressable-scale';
-import { makeStyles, Spacing, useColors } from '@/constants/theme';
+import { makeStyles, Radius, Sizes, Spacing, useColors } from '@/constants/theme';
 import { stubParts } from '@/features/home/greeting';
 import { useLocale } from '@/i18n/locale-context';
 import { selectionHaptic } from '@/lib/haptics';
+import { Motion } from '@/lib/motion';
 
 import { DaySheet } from './day-sheet';
 import { dayGroups, groupOf, joinDay, setDay, splitDay, type DaysState } from './days';
@@ -30,13 +32,22 @@ export function longDate(date: string): string {
   });
 }
 
+/** "Sat". */
+function weekday(date: string): string {
+  const [year, month, day] = date.split('-').map(Number);
+  return new Date(year, month - 1, day).toLocaleDateString('en-US', { weekday: 'short' });
+}
+
 /**
- * The wedding's events down the page, each with its day: a date stub on
- * the left (month over day) and the event beside it. Tapping an event opens
- * the calendar for its day. Between two events sits a small link: tap it
- * and they're on the same day (one stub, a line down to the second), tap
- * it again to give the second its own day. Used by "When is each one?" and
- * by Your days on the Wedding tab; `onChange` gets the new days to keep.
+ * The wedding's days, one card each, in ceremony order: a little calendar
+ * leaf on the left (month over day) and the day's events stacked beside
+ * it, so two events on one day plainly share a card. Tapping an event opens
+ * the calendar for its day. An event without a day, after one that has
+ * one, offers a single tap under its card, "Same day as the Anand Karaj",
+ * which slides it into that day; the × beside a joined event gives it a
+ * day of its own again. Used by
+ * "When is each one?" and by Your days on the Wedding tab; `onChange` gets
+ * the new days to keep.
  */
 export function DayList({
   events,
@@ -50,11 +61,13 @@ export function DayList({
   onChange: (next: DaysState) => void;
   editable?: boolean;
 }) {
+  const Colors = useColors();
   const styles = useStyles();
   const { t } = useLocale();
   const order = events.map((event) => event.slug);
   const groups = dayGroups(order, state);
   const nameOf = (slug: string) => events.find((event) => event.slug === slug)?.name ?? slug;
+  const timingOf = (slug: string) => events.find((event) => event.slug === slug)?.timing ?? null;
   const [open, setOpen] = useState<string | null>(null);
   const openGroup = open ? groupOf(groups, open) : undefined;
 
@@ -78,88 +91,113 @@ export function DayList({
   const near = groups.find((group) => group.date)?.date ?? null;
 
   return (
-    <View>
-      {events.map((event, index) => {
-        const group = groupOf(groups, event.slug);
-        const first = group?.slugs[0] === event.slug;
-        const lastOfDay = group?.slugs[group.slugs.length - 1] === event.slug;
-        const date = group?.date ?? null;
-        const before = index > 0 ? events[index - 1] : null;
-        return (
-          <View key={event.slug}>
-            {before && (
-              <Joint
-                linked={!first}
-                editable={editable}
-                label={
-                  first
-                    ? t('planner.days.join', { event: event.name, before: before.name })
-                    : t('planner.days.split', { event: event.name, before: before.name })
-                }
-                onPress={() => {
-                  selectionHaptic();
-                  if (first) onChange(joinDay(order, state, event.slug));
-                  else {
-                    onChange(splitDay(order, state, event.slug));
-                    setOpen(event.slug);
-                  }
-                }}
-              />
-            )}
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel={[
-                event.name,
-                first
-                  ? date
-                    ? longDate(date)
-                    : t('planner.days.pick')
-                  : t('planner.days.sameDayAs', { event: nameOf(group?.slugs[0] ?? '') }),
-              ].join(', ')}
-              disabled={!editable}
-              onPress={() => {
-                selectionHaptic();
-                setOpen(event.slug);
-              }}
-              style={({ pressed }) => [styles.row, pressed && styles.pressed]}
+    <View style={styles.days}>
+      {/* Only what changes animates, never the list arriving */}
+      <LayoutAnimationConfig skipEntering>
+        {groups.map((group, index) => {
+          const before = index > 0 ? groups[index - 1] : null;
+          const lead = group.slugs[0];
+          // "Same day as" offers the day before only once that day has a date
+          const previous = before?.date ? nameOf(before.slugs[before.slugs.length - 1]) : null;
+          return (
+            <Animated.View
+              key={lead}
+              entering={Motion.rise}
+              layout={Motion.layout}
+              style={styles.group}
             >
-              <View style={styles.left}>
-                {first ? (
-                  <Stub date={date} />
-                ) : (
-                  <>
-                    <View style={[styles.rail, lastOfDay && styles.railEnd]} />
-                    <View style={styles.node} />
-                  </>
-                )}
+              <View style={styles.card}>
+                <Leaf date={group.date} />
+                <View style={styles.events}>
+                  {group.slugs.map((slug, row) => {
+                    const joined = row > 0;
+                    const timing = !joined && !group.date ? timingOf(slug) : null;
+                    return (
+                      <Animated.View
+                        key={slug}
+                        entering={joined ? Motion.rise : undefined}
+                        style={[styles.eventRow, joined && styles.divided]}
+                      >
+                        <Pressable
+                          accessibilityRole="button"
+                          accessibilityLabel={[
+                            nameOf(slug),
+                            group.date ? longDate(group.date) : t('planner.days.pick'),
+                          ].join(', ')}
+                          disabled={!editable}
+                          onPress={() => {
+                            selectionHaptic();
+                            setOpen(slug);
+                          }}
+                          style={({ pressed }) => [styles.event, pressed && styles.pressed]}
+                        >
+                          <View style={styles.grow}>
+                            <AppText variant="bodyLg" weight={600}>
+                              {nameOf(slug)}
+                            </AppText>
+                            {timing && (
+                              <AppText variant="caption" color="text2">
+                                {timing}
+                              </AppText>
+                            )}
+                          </View>
+                          {!joined &&
+                            (group.date ? (
+                              <AppText variant="label" weight={500} color="text2">
+                                {weekday(group.date)}
+                              </AppText>
+                            ) : (
+                              <AppText variant="label" weight={600} color="primary">
+                                {t('planner.days.pick')}
+                              </AppText>
+                            ))}
+                        </Pressable>
+                        {joined && editable && (
+                          <Pressable
+                            accessibilityRole="button"
+                            accessibilityLabel={t('planner.days.ownDay', { event: nameOf(slug) })}
+                            hitSlop={10}
+                            onPress={() => {
+                              selectionHaptic();
+                              onChange(splitDay(order, state, slug));
+                              setOpen(slug);
+                            }}
+                            style={({ pressed }) => [styles.unlink, pressed && styles.pressed]}
+                          >
+                            <Icon name="close" size={14} color={Colors.text2} weight="bold" />
+                          </Pressable>
+                        )}
+                      </Animated.View>
+                    );
+                  })}
+                </View>
               </View>
-              <View style={styles.text}>
-                <AppText variant="bodyLg" weight={600}>
-                  {event.name}
-                </AppText>
-                {first ? (
-                  <AppText
-                    variant="label"
-                    weight={date ? 500 : 600}
-                    color={date ? 'text2' : 'primary'}
+              {editable && !group.date && previous && (
+                <Animated.View entering={Motion.enter}>
+                  <PressableScale
+                    accessibilityRole="button"
+                    accessibilityLabel={t('planner.days.join', {
+                      event: nameOf(lead),
+                      before: previous,
+                    })}
+                    pressedScale={0.96}
+                    onPress={() => {
+                      selectionHaptic();
+                      onChange(joinDay(order, state, lead));
+                    }}
+                    style={styles.same}
                   >
-                    {date ? longDate(date) : t('planner.days.pick')}
-                  </AppText>
-                ) : (
-                  <AppText variant="label" weight={500} color="text2">
-                    {t('planner.days.sameDayAs', { event: nameOf(group?.slugs[0] ?? '') })}
-                  </AppText>
-                )}
-                {first && !date && event.timing && (
-                  <AppText variant="caption" color="text2">
-                    {event.timing}
-                  </AppText>
-                )}
-              </View>
-            </Pressable>
-          </View>
-        );
-      })}
+                    <Icon name="link" size={17} color={Colors.text} weight="semibold" />
+                    <AppText variant="label" weight={600}>
+                      {t('planner.days.sameDayAs', { event: previous })}
+                    </AppText>
+                  </PressableScale>
+                </Animated.View>
+              )}
+            </Animated.View>
+          );
+        })}
+      </LayoutAnimationConfig>
 
       <DaySheet
         title={sheetTitle}
@@ -174,176 +212,140 @@ export function DayList({
   );
 }
 
-/** The date in a little block, month over day, like a tear-off calendar; a calendar icon before there's one. */
-function Stub({ date }: { date: string | null }) {
+/**
+ * A day's date on a little white calendar leaf, month over day; a dashed
+ * leaf with a plus before there's one.
+ */
+function Leaf({ date }: { date: string | null }) {
   const Colors = useColors();
   const styles = useStyles();
+  const scale = Math.min(useFontScale('caption'), 1.3);
   const stub = stubParts(date);
+  const size = Math.round(LEAF * scale);
   return (
-    <View style={styles.stub}>
+    <View
+      style={[
+        styles.leaf,
+        { width: size, minHeight: size },
+        stub ? styles.leafDay : styles.leafEmpty,
+      ]}
+      accessible={false}
+      importantForAccessibility="no-hide-descendants"
+    >
       {stub ? (
         <>
           <AppText
             variant="caption"
             weight={700}
             color="primary"
-            style={styles.caps}
-            maxFontSizeMultiplier={1.2}
+            style={styles.month}
+            maxFontSizeMultiplier={1.3}
           >
             {stub.month}
           </AppText>
-          <AppText weight={700} style={styles.day} maxFontSizeMultiplier={1.2}>
+          <AppText weight={700} style={styles.day} maxFontSizeMultiplier={1.3}>
             {stub.day}
           </AppText>
         </>
       ) : (
-        <Icon name="calendar-outline" size={22} color={Colors.text2} />
+        <Icon name="add" size={20} color={Colors.text2} weight="semibold" />
       )}
     </View>
   );
 }
 
-/**
- * The link between two events: an outline ring with a link in it while
- * they're on different days, filled ink once they share one. Its line
- * runs through it when they're joined.
- */
-function Joint({
-  linked,
-  editable,
-  label,
-  onPress,
-}: {
-  linked: boolean;
-  editable: boolean;
-  label: string;
-  onPress: () => void;
-}) {
-  const Colors = useColors();
-  const styles = useStyles();
-  const size = Math.round(30 * Math.min(useFontScale('caption'), 1.2));
-  return (
-    <View style={styles.joint}>
-      <View style={styles.left}>
-        {linked && <View style={styles.railThrough} />}
-        {editable && (
-          <PressableScale
-            accessibilityRole="button"
-            accessibilityLabel={label}
-            accessibilityState={{ checked: linked }}
-            pressedScale={0.88}
-            hitSlop={10}
-            onPress={onPress}
-            style={[
-              styles.link,
-              { width: size, height: size, borderRadius: size / 2 },
-              linked ? styles.linkOn : styles.linkOff,
-            ]}
-          >
-            <Icon
-              name="link"
-              size={15}
-              color={linked ? Colors.onPrimary : Colors.text2}
-              weight="semibold"
-            />
-          </PressableScale>
-        )}
-      </View>
-      {!linked && <View style={styles.hairline} />}
-    </View>
-  );
-}
-
-const STUB = 52;
+const LEAF = 46;
 
 const useStyles = makeStyles((Colors) => ({
-  row: {
-    minHeight: 72,
+  days: {
+    gap: Spacing.sm,
+  },
+  group: {
+    gap: Spacing.sm,
+  },
+  card: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: Spacing.md,
+    paddingVertical: Spacing.xs,
+    paddingLeft: Spacing.sm,
+    paddingRight: Spacing.md,
+    borderRadius: Radius.card,
+    borderCurve: 'continuous',
+    backgroundColor: Colors.surface,
+  },
+  leaf: {
+    marginTop: Spacing.xs,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 12,
+    borderCurve: 'continuous',
+  },
+  leafDay: {
+    backgroundColor: Colors.canvas,
+    boxShadow: '0 1px 2px rgba(0, 0, 0, 0.06)',
+  },
+  leafEmpty: {
+    borderWidth: 1.5,
+    borderStyle: 'dashed',
+    borderColor: Colors.borderInput,
+  },
+  month: {
+    fontSize: 11,
+    lineHeight: 13,
+    letterSpacing: 0.6,
+  },
+  day: {
+    fontSize: 19,
+    lineHeight: 22,
+    fontVariant: ['tabular-nums'],
+  },
+  events: {
+    flex: 1,
+  },
+  eventRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: Spacing.lg,
+    gap: Spacing.sm,
+  },
+  divided: {
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: Colors.separator,
+  },
+  event: {
+    flex: 1,
+    minHeight: Sizes.tapTarget + 6,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.sm,
     paddingVertical: Spacing.sm,
-    paddingHorizontal: Spacing.xs,
+  },
+  grow: {
+    flex: 1,
+    gap: 1,
   },
   pressed: {
     opacity: 0.55,
   },
-  left: {
-    width: STUB,
-    alignSelf: 'stretch',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  text: {
-    flex: 1,
-    gap: 2,
-  },
-  stub: {
-    width: STUB,
-    minHeight: 58,
-    alignItems: 'center',
-    justifyContent: 'center',
+  unlink: {
+    width: 28,
+    height: 28,
     borderRadius: 14,
-    borderCurve: 'continuous',
-    backgroundColor: Colors.surface,
-  },
-  caps: {
-    letterSpacing: 0.8,
-    textTransform: 'uppercase',
-  },
-  day: {
-    fontSize: 22,
-    lineHeight: 26,
-    fontVariant: ['tabular-nums'],
-  },
-  rail: {
-    position: 'absolute',
-    top: -Spacing.sm,
-    bottom: -Spacing.sm,
-    left: STUB / 2 - 1,
-    width: 2,
-    backgroundColor: Colors.primaryFill,
-  },
-  railEnd: {
-    bottom: '50%',
-  },
-  node: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    backgroundColor: Colors.primaryFill,
-  },
-  railThrough: {
-    position: 'absolute',
-    top: 0,
-    bottom: 0,
-    left: STUB / 2 - 1,
-    width: 2,
-    backgroundColor: Colors.primaryFill,
-  },
-  joint: {
-    height: 30,
-    flexDirection: 'row',
     alignItems: 'center',
-    gap: Spacing.lg,
-    paddingHorizontal: Spacing.xs,
-  },
-  hairline: {
-    flex: 1,
-    height: StyleSheet.hairlineWidth,
+    justifyContent: 'center',
     backgroundColor: Colors.separator,
   },
-  link: {
+  same: {
+    alignSelf: 'flex-start',
+    minHeight: Sizes.tapTarget,
+    flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
+    gap: Spacing.sm,
+    marginLeft: Spacing.sm,
+    paddingHorizontal: Spacing.lg,
+    borderRadius: Sizes.tapTarget / 2,
     borderWidth: 1.5,
-  },
-  linkOn: {
-    backgroundColor: Colors.primaryFill,
-    borderColor: Colors.primaryFill,
-  },
-  linkOff: {
-    backgroundColor: Colors.bg,
-    borderColor: Colors.borderInput,
+    borderColor: Colors.text,
+    backgroundColor: Colors.canvas,
   },
 }));

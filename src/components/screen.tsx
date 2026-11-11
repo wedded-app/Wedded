@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { View, type ViewProps } from 'react-native';
 import { SafeAreaView, type Edge } from 'react-native-safe-area-context';
 
@@ -7,6 +8,8 @@ type ScreenProps = ViewProps & {
   edges?: readonly Edge[];
   /** A plain white page (black in dark mode) instead of the grouped grey: the welcome screen and first questions. */
   plain?: boolean;
+  /** Drawn behind the page, under the safe areas too: the first questions' wash. */
+  backdrop?: ReactNode;
 };
 
 /**
@@ -14,10 +17,18 @@ type ScreenProps = ViewProps & {
  * simple pages. Scrolling pages with a title use NavScreen (components/nav)
  * instead, which scrolls under a floating bar.
  */
-export function Screen({ edges = ['top'], plain, style, children, ...rest }: ScreenProps) {
+export function Screen({
+  edges = ['top'],
+  plain,
+  backdrop,
+  style,
+  children,
+  ...rest
+}: ScreenProps) {
   const styles = useStyles();
   return (
     <SafeAreaView edges={edges} style={[styles.safeArea, plain && styles.plain]}>
+      {backdrop}
       <View style={[styles.content, style]} {...rest}>
         {children}
       </View>
