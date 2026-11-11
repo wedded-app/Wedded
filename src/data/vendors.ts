@@ -51,6 +51,8 @@ export type VendorPrice =
 export type HallFacts = {
   /** The biggest room's seats. */
   seatedCapacity?: number;
+  /** yes, no or optional: whether the hall cooks */
+  inHouseCatering?: string;
   /** yes, approved_list or no */
   outsideCatering?: string;
   /** full_bar, beer_wine, byob or dry */
@@ -118,6 +120,7 @@ export function priceOf(row: {
 }
 
 type PolicyRow = {
+  in_house_catering: string | null;
   outside_catering: string | null;
   alcohol_policy: string | null;
   corkage_cents: number | null;
@@ -130,6 +133,7 @@ function factsOf(policies: PolicyRow | null, rooms: { seated: number | null }[])
   const seats = rooms.flatMap((room) => (room.seated === null ? [] : [room.seated]));
   return {
     seatedCapacity: seats.length > 0 ? Math.max(...seats) : undefined,
+    inHouseCatering: policies?.in_house_catering ?? undefined,
     outsideCatering: policies?.outside_catering ?? undefined,
     alcoholPolicy: policies?.alcohol_policy ?? undefined,
     corkage: policies?.corkage_cents == null ? undefined : policies.corkage_cents / 100,
@@ -144,7 +148,7 @@ async function fetchVendor(slug: string): Promise<VendorProfile | null> {
   const { data, error } = await supabase
     .from('vendors')
     .select(
-      'id, slug, name, tagline, bio, base_city:cities(name), public_address, service_radius_miles, will_travel, travel_fee_note, vendor_contacts(kind, value), vendor_languages(language:languages(name, sort_order)), price_display, price_from_cents, price_to_cents, price_unit, price_note, founding_number, is_sample, venue_policies(outside_catering, alcohol_policy, corkage_cents, ghori_allowed, music_curfew, parking_spaces), venue_rooms(seated), vendor_categories(position, category:categories(slug, name, group_slug))',
+      'id, slug, name, tagline, bio, base_city:cities(name), public_address, service_radius_miles, will_travel, travel_fee_note, vendor_contacts(kind, value), vendor_languages(language:languages(name, sort_order)), price_display, price_from_cents, price_to_cents, price_unit, price_note, founding_number, is_sample, venue_policies(in_house_catering, outside_catering, alcohol_policy, corkage_cents, ghori_allowed, music_curfew, parking_spaces), venue_rooms(seated), vendor_categories(position, category:categories(slug, name, group_slug))',
     )
     .eq('slug', slug)
     .maybeSingle();
