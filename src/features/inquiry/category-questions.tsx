@@ -7,7 +7,7 @@ import { Button } from '@/components/button';
 import { Card } from '@/components/card';
 import { Chip } from '@/components/chip';
 import { TextField } from '@/components/text-field';
-import { Spacing } from '@/constants/theme';
+import { Spacing, useScheme } from '@/constants/theme';
 import { useLocale } from '@/i18n/locale-context';
 
 import {
@@ -201,6 +201,8 @@ function TourSlots({
   onChange: (slots: TourSlot[]) => void;
 }) {
   const { t } = useLocale();
+  // Match the app's light or dark setting, not the phone's (see ask.tsx)
+  const scheme = useScheme();
   const [picking, setPicking] = useState<number | null>(null);
   const shown = slots.length > 0 ? slots : [{ date: null, part: 'morning' as DayPart }];
   const update = (index: number, patch: Partial<TourSlot>) =>
@@ -223,6 +225,7 @@ function TourSlots({
               mode="date"
               display={Platform.OS === 'ios' ? 'spinner' : 'default'}
               minimumDate={new Date()}
+              themeVariant={scheme}
               onChange={(event, picked) => {
                 if (Platform.OS !== 'ios') setPicking(null);
                 if (event.type === 'set' && picked) update(index, { date: toDateString(picked) });
