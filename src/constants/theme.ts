@@ -113,6 +113,11 @@ const light = {
   glowBlush: 'rgba(236, 160, 178, 0.55)',
   glowGold: 'rgba(246, 196, 140, 0.5)',
   glowRose: 'rgba(196, 120, 160, 0.32)',
+  // The first questions' page (QuestionsBackdrop): white with a blush wash
+  // at the top and a faint rose light in its corner, standing still. Fills
+  // only; the words stay on white.
+  washBlush: 'rgba(248, 226, 232, 0.9)',
+  washRose: 'rgba(214, 70, 110, 0.13)',
   // Text fields floating on the glow: white, a little see-through.
   canvasField: 'rgba(255, 255, 255, 0.82)',
   // Celebrations (PetalBurst): rose petals and gold dust.
@@ -213,6 +218,8 @@ const dark: Palette = {
   glowBlush: 'rgba(184, 53, 78, 0.35)',
   glowGold: 'rgba(240, 160, 75, 0.22)',
   glowRose: 'rgba(150, 70, 130, 0.28)',
+  washBlush: 'rgba(138, 28, 48, 0.32)',
+  washRose: 'rgba(214, 70, 110, 0.2)',
   canvasField: 'rgba(44, 44, 46, 0.82)',
   petalRose: '#E58FA6',
   petalBlush: '#F6C9D3',

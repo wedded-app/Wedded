@@ -22,6 +22,7 @@ import { iosEasing } from '@/lib/motion';
 import { resetAnswers } from './answers';
 import { markOnboarding } from './onboarding-state';
 import { PlanPreview } from './plan-preview';
+import { QuestionsBackdrop } from './questions-backdrop';
 import { progressFor, STEPS, stepNumber, type Step } from './steps';
 
 export type OnboardingStepProps = {
@@ -51,11 +52,12 @@ export type OnboardingStepProps = {
 
 /**
  * One question of the first-launch setup, one per screen, after Hinge's: a
- * plain Back (or Close on the first), one thin bar that fills as they go, the
- * question big and bold, the answers as plain rows, and at the bottom their
- * plan so far (after the first question) beside a round black arrow. The page
- * arrives whole with the iPhone's own slide: nothing fades in after it, so it
- * never feels like waiting. White and black; always light (the layout sets it).
+ * plain Back (or Close on the first), one thin maroon bar that fills as they
+ * go, the question big and bold, the answers as plain rows, and at the
+ * bottom their plan so far (after the first question) beside a round maroon
+ * arrow. The page arrives whole with the iPhone's own slide: nothing fades
+ * in after it, so it never feels like waiting. White with a blush wash at
+ * the top (QuestionsBackdrop); always light (the layout sets it).
  */
 export function OnboardingStep({
   step,
@@ -78,7 +80,7 @@ export function OnboardingStep({
   const progress = progressFor(step, fill, fillFrom);
 
   return (
-    <Screen edges={['top', 'bottom']} plain>
+    <Screen edges={['top', 'bottom']} plain backdrop={<QuestionsBackdrop />}>
       <View style={styles.bar}>
         <Pressable
           accessibilityRole="button"
@@ -189,8 +191,8 @@ function ProgressBar({ from, to, label }: { from: number; to: number; label: str
 }
 
 /**
- * Hinge's round black arrow, bottom right: grey until the question has an
- * answer, then black, shrinking a little under the finger.
+ * Hinge's round arrow, bottom right: grey until the question has an
+ * answer, then maroon, shrinking a little under the finger.
  */
 function NextButton({
   label,
@@ -207,7 +209,7 @@ function NextButton({
   const styles = useStyles();
   const reduceMotion = useReducedMotion();
   const ready = useSharedValue(disabled ? 0 : 1);
-  const [offColor, onColor] = [Colors.separator, Colors.primaryFill];
+  const [offColor, onColor] = [Colors.separator, Colors.primary];
 
   useEffect(() => {
     const target = disabled ? 0 : 1;
@@ -245,18 +247,21 @@ function NextButton({
 
 /**
  * The big black pill for a labelled action, like "Take me to my wedding" at
- * the end: white text on black, grey when it can't be pressed yet.
+ * the end: white text on black (maroon with `tint`, like the questions'
+ * arrow), grey when it can't be pressed yet.
  */
 export function PillButton({
   label,
   onPress,
   disabled = false,
   loading = false,
+  tint = false,
 }: {
   label: string;
   onPress: () => void;
   disabled?: boolean;
   loading?: boolean;
+  tint?: boolean;
 }) {
   const Colors = useColors();
   const styles = useStyles();
@@ -270,7 +275,7 @@ export function PillButton({
         selectionHaptic();
         onPress();
       }}
-      style={[styles.pill, disabled && styles.pillOff]}
+      style={[styles.pill, tint && styles.pillTint, disabled && styles.pillOff]}
     >
       {loading ? (
         <ActivityIndicator color={Colors.canvas} />
@@ -313,7 +318,7 @@ const useStyles = makeStyles((Colors) => ({
   fill: {
     height: '100%',
     borderRadius: 2,
-    backgroundColor: Colors.primaryFill,
+    backgroundColor: Colors.primary,
   },
   side: {
     minWidth: 44,
@@ -359,6 +364,9 @@ const useStyles = makeStyles((Colors) => ({
     borderRadius: Radius.button,
     borderCurve: 'continuous',
     backgroundColor: Colors.text,
+  },
+  pillTint: {
+    backgroundColor: Colors.primary,
   },
   pillOff: {
     backgroundColor: Colors.sand,

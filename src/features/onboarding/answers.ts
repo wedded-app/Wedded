@@ -42,8 +42,10 @@ export type Answers = {
   joined: string[];
   /** Events named in a search ("mehndi and jaago"), added to the traditions' main events. */
   extraEvents: string[];
-  /** A guest count from a search ("for 300 people"), for every event. */
+  /** About how many guests, from a search ("for 300 people") or "About how many guests?". */
   guestBand: GuestBand | null;
+  /** The number they set on "About how many guests?"; only its band is kept in the plan. */
+  guestCount: number | null;
   /** A city named in a search (cities.slug), searched around once the plan is made. */
   citySlug: string | null;
 };
@@ -60,10 +62,11 @@ const EMPTY: Answers = {
   joined: [],
   extraEvents: [],
   guestBand: null,
+  guestCount: null,
   citySlug: null,
 };
 
-/** A fresh start, with the date and guests they gave before signing in (Home's wedding card). */
+/** A fresh start, with the date and guests they gave before (a plan kept on this phone). */
 function startingAnswers(): Answers {
   const draft = getWeddingDraft();
   return {

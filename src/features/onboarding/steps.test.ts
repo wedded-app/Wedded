@@ -10,6 +10,7 @@ describe('the first questions', () => {
     expect(stepNumber('roots')).toBe(1);
     expect(stepNumber('events')).toBe(2);
     expect(stepNumber('days')).toBe(3);
+    expect(stepNumber('guests')).toBe(5);
   });
 
   it('asks where the families are from only when told to', () => {
@@ -17,18 +18,20 @@ describe('the first questions', () => {
     expect(nextHref('kind', true)).toBe('/onboarding/roots');
     expect(nextHref('roots')).toBe('/onboarding/events');
     expect(nextHref('events')).toBe('/onboarding/days');
-    expect(nextHref('days')).toBe('/onboarding/ready');
+    expect(nextHref('days')).toBe('/onboarding/where');
+    expect(nextHref('where')).toBe('/onboarding/guests');
+    expect(nextHref('guests')).toBe('/onboarding/ready');
   });
 
   it('fills the bar a share per question, picking up where the last one left off', () => {
-    expect(progressFor('kind')).toEqual({ from: 0, to: 1 / 4 });
-    expect(progressFor('kind', 0.5)).toEqual({ from: 0, to: 1 / 8 });
-    expect(progressFor('roots', 1, 0.5)).toEqual({ from: 1 / 8, to: 1 / 4 });
-    expect(progressFor('events')).toEqual({ from: 1 / 4, to: 2 / 4 });
-    expect(progressFor('days')).toEqual({ from: 2 / 4, to: 3 / 4 });
+    expect(progressFor('kind')).toEqual({ from: 0, to: 1 / 6 });
+    expect(progressFor('kind', 0.5)).toEqual({ from: 0, to: 1 / 12 });
+    expect(progressFor('roots', 1, 0.5)).toEqual({ from: 1 / 12, to: 1 / 6 });
+    expect(progressFor('events')).toEqual({ from: 1 / 6, to: 2 / 6 });
+    expect(progressFor('guests')).toEqual({ from: 4 / 6, to: 5 / 6 });
   });
 
   it('never fills the bar while a question is open: the ready plan is the last share', () => {
-    expect(progressFor('days').to).toBeLessThan(1);
+    expect(progressFor('guests').to).toBeLessThan(1);
   });
 });

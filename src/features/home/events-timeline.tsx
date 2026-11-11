@@ -29,7 +29,8 @@ import { stubParts } from './greeting';
 import { SectionHeader } from './section-header';
 import { timelineOrder } from './timeline-order';
 
-type PlanView = ReturnType<typeof usePlanView>;
+/** What the timeline reads of a plan: the account's (usePlanView) or the phone's (useDraftPlanView). */
+type PlanView = Pick<ReturnType<typeof usePlanView>, 'plan' | 'chosen' | 'needsByEvent'>;
 
 // The rail's column, a stop's dot, how far down its card the dot sits (level
 // with the date line), and the size of each event's decoration
@@ -49,14 +50,17 @@ const FOCUS = 0.58;
  * the middle of the screen, each stop's dot fills as the line reaches it with
  * a light tick, and the event at that line comes alive: its decoration grows,
  * straightens and comes into full colour. With Reduce Motion it all shows
- * still and filled. A tap opens the event on the Wedding tab.
+ * still and filled. A tap opens the event on the Wedding tab, or `onOpen`
+ * for a plan that's only on this phone (the event's guide, /e/[slug]).
  */
 export function EventsTimeline({
   view,
   scrollY,
+  onOpen,
 }: {
   view: PlanView;
   scrollY: SharedValue<number>;
+  onOpen?: (slug: string) => void;
 }) {
   const styles = useStyles();
   const { t } = useLocale();
@@ -116,6 +120,7 @@ export function EventsTimeline({
               scrollY={scrollY}
               focus={focus}
               still={reduceMotion}
+              onOpen={onOpen}
             />
           );
         })}
@@ -135,6 +140,7 @@ function Stop({
   scrollY,
   focus,
   still,
+  onOpen,
 }: {
   slug: string;
   name: string;
@@ -148,6 +154,7 @@ function Stop({
   focus: number;
   /** Reduce Motion: shown filled and in full colour, nothing moving. */
   still: boolean;
+  onOpen?: (slug: string) => void;
 }) {
   const Colors = useColors();
   const styles = useStyles();
@@ -231,7 +238,8 @@ function Stop({
         pressedScale={0.98}
         onPress={() => {
           selectionHaptic();
-          router.navigate({ pathname: '/plan', params: { event: slug } });
+          if (onOpen) onOpen(slug);
+          else router.navigate({ pathname: '/plan', params: { event: slug } });
         }}
         style={styles.card}
       >
