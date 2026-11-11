@@ -162,7 +162,12 @@ export default function SearchScreen() {
                     foundingNumber={vendor.foundingNumber}
                     isSample={vendor.isSample}
                     saved={savedIds.has(vendor.id)}
-                    onToggleSave={() => toggleSave(vendor.id)}
+                    onToggleSave={() =>
+                      toggleSave(vendor.id, undefined, {
+                        name: localized(vendor.name),
+                        photo: vendor.photoUrl,
+                      })
+                    }
                     onPress={() =>
                       router.push({ pathname: '/v/[slug]', params: { slug: vendor.slug } })
                     }

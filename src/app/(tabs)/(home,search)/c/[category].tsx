@@ -178,7 +178,12 @@ export default function ResultsScreen() {
             isSample={item.isSample}
             travelsToYou={item.withinSearchRadius === false}
             saved={savedIds.has(item.id)}
-            onToggleSave={() => toggleSave(item.id, eventSlug)}
+            onToggleSave={() =>
+              toggleSave(item.id, eventSlug, {
+                name: localized(item.name),
+                photo: item.photoUrl,
+              })
+            }
             onPress={() =>
               router.push({
                 pathname: '/v/[slug]',

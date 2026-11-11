@@ -51,12 +51,15 @@ export function SavePlanCard() {
             label={t('home.savePlan.save')}
             loading={saving}
             onPress={() =>
-              requireSignIn(() => {
-                setFailed(false);
-                save()
-                  .then(() => router.navigate('/plan'))
-                  .catch(() => setFailed(true));
-              })
+              requireSignIn(
+                () => {
+                  setFailed(false);
+                  save()
+                    .then(() => router.navigate('/plan'))
+                    .catch(() => setFailed(true));
+                },
+                { reason: { kind: 'plan' } },
+              )
             }
           />
         </View>

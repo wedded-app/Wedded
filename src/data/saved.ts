@@ -155,20 +155,28 @@ export function useSaveVendor() {
     onSettled: refresh,
   });
 
-  function toggleSave(vendorId: string, eventSlug?: string | null) {
+  /** `about` is the vendor's name and photo, for the sign-in page ("Save Royal Orchard"). */
+  function toggleSave(
+    vendorId: string,
+    eventSlug?: string | null,
+    about?: { name: string; photo: string | null },
+  ) {
     const matching = (saves ?? []).filter(
       (save) =>
         save.vendorId === vendorId && (eventSlug === undefined || save.eventSlug === eventSlug),
     );
-    requireSignIn(() => {
-      if (matching.length > 0) {
-        matching.forEach((save) => remove.mutate(save.id));
-      } else if (eventSlug === undefined) {
-        router.push({ pathname: '/save-vendor', params: { vendorId } });
-      } else {
-        add.mutate({ vendorId, eventSlug });
-      }
-    });
+    requireSignIn(
+      () => {
+        if (matching.length > 0) {
+          matching.forEach((save) => remove.mutate(save.id));
+        } else if (eventSlug === undefined) {
+          router.push({ pathname: '/save-vendor', params: { vendorId } });
+        } else {
+          add.mutate({ vendorId, eventSlug });
+        }
+      },
+      about ? { reason: { kind: 'save', ...about } } : undefined,
+    );
   }
 
   return {

@@ -618,7 +618,12 @@ export default function VendorProfileScreen() {
               onPress={() => {
                 if (!vendor.data) return;
                 if (!saved) saveHaptic();
-                toggleSave(vendor.data.id, event);
+                const shown = photos.data ?? [];
+                const cover = shown.find((photo) => photo.isCover) ?? shown[0];
+                toggleSave(vendor.data.id, event, {
+                  name: localized(vendor.data.name),
+                  photo: cover?.url.medium ?? null,
+                });
               }}
               style={[styles.barButton, !stackButtons && styles.save]}
             />

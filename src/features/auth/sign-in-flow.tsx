@@ -1,10 +1,12 @@
+import { Image } from 'expo-image';
 import { router } from 'expo-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { AccessibilityInfo, ScrollView, StyleSheet } from 'react-native';
+import { AccessibilityInfo, ScrollView, StyleSheet, View } from 'react-native';
 
 import { AppText } from '@/components/app-text';
 import { Button } from '@/components/button';
 import { GlassButton } from '@/components/glass-button';
+import { Icon } from '@/components/icon';
 import { LegalLine } from '@/components/legal-line';
 import { Screen } from '@/components/screen';
 import { SheetHeader } from '@/components/sheet-header';
@@ -28,7 +30,7 @@ import { authErrorKey } from './auth-helpers';
 import { JoinChoicePages } from './join-choice';
 import { BusinessStep, type JoinedAs } from './join-steps';
 import { formatPhoneDigits, nextPhoneDigits } from './phone-entry';
-import { useSession } from './session';
+import { useSession, type SignInReason } from './session';
 import { SignInOptions } from './sign-in-options';
 
 const CODE_LENGTH = 6;
@@ -197,17 +199,48 @@ export function SignInFlow({ mode, method }: { mode: SignInMode; method?: SignIn
   );
 }
 
+/**
+ * The first page: how to sign in, under why they're here when they came for
+ * something (requireSignIn's `reason`, 2026-11-11). After a heart, the
+ * vendor's photo with the heart on its corner and "Save Royal Orchard";
+ * from the plan, "Save your plan"; from Ask, "Ask Dhol Di Awaaz". Otherwise
+ * a plain "Sign in or create an account".
+ */
 function ChooseStep({ onChoose }: { onChoose: (method: SignInMethod) => void }) {
   const { t } = useLocale();
+  const { signInReason } = useSession();
+  // Read once: the reason goes when sign-in finishes
+  const [reason] = useState<SignInReason | null>(signInReason);
+  const title =
+    reason?.kind === 'save'
+      ? t('signIn.reason.saveTitle', { name: reason.name })
+      : reason?.kind === 'plan'
+        ? t('signIn.reason.planTitle')
+        : reason?.kind === 'ask'
+          ? t('signIn.reason.askTitle', { name: reason.name })
+          : t('signIn.title');
+  const why =
+    reason?.kind === 'save'
+      ? t('signIn.reason.saveWhy')
+      : reason?.kind === 'plan'
+        ? t('signIn.reason.planWhy')
+        : reason?.kind === 'ask'
+          ? t('signIn.reason.askWhy', { name: reason.name })
+          : t('signIn.why');
+
   return (
     <ScrollView contentContainerStyle={styles.content}>
-      <AppText variant="title" accessibilityRole="header">
-        {t('signIn.title')}
-      </AppText>
-      <AppText variant="bodyLg" color="text2">
-        {t('signIn.why')}
-      </AppText>
-      <SignInOptions onChoose={onChoose} />
+      {reason?.kind === 'save' && reason.photo && <SavedPhoto uri={reason.photo} />}
+      <View style={styles.words}>
+        <AppText variant="title" accessibilityRole="header">
+          {title}
+        </AppText>
+        <AppText variant="bodyLg" color="text2">
+          {why}
+        </AppText>
+      </View>
+      {/* Only the ways that work today; "Coming soon" ones would crowd the reason */}
+      <SignInOptions hideUnavailable onChoose={onChoose} />
       <LegalLine sentence="signIn.legal" />
     </ScrollView>
   );
@@ -541,10 +574,43 @@ function AboutYouStep({ joinedAs, onDone }: { joinedAs: JoinedAs | null; onDone:
   );
 }
 
+/** The vendor they hearted, wide, with the heart filled on its top corner as on the cards. */
+function SavedPhoto({ uri }: { uri: string }) {
+  const Colors = useColors();
+  return (
+    <View style={styles.photo} accessible={false} importantForAccessibility="no-hide-descendants">
+      <Image source={{ uri }} style={StyleSheet.absoluteFill} contentFit="cover" transition={200} />
+      <View style={[styles.heart, { backgroundColor: Colors.canvas }]}>
+        <Icon name="heart" size={22} color={Colors.primary} />
+      </View>
+    </View>
+  );
+}
+
 const styles = StyleSheet.create({
   content: {
     gap: Spacing.xl,
     paddingTop: Spacing.sm,
     paddingBottom: Spacing.xl,
+  },
+  words: {
+    gap: Spacing.sm,
+  },
+  photo: {
+    height: 190,
+    borderRadius: 22,
+    borderCurve: 'continuous',
+    overflow: 'hidden',
+  },
+  heart: {
+    position: 'absolute',
+    top: Spacing.md,
+    right: Spacing.md,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    alignItems: 'center',
+    justifyContent: 'center',
+    boxShadow: '0 1px 4px rgba(0, 0, 0, 0.18)',
   },
 });

@@ -621,6 +621,14 @@
   },
   "signIn": {
     "title": "Sign in or create an account",
+    "reason": {
+      "saveTitle": "Save {{name}}",
+      "saveWhy": "Make an account to keep your favorites in one place and share them with your family.",
+      "planTitle": "Save your plan",
+      "planWhy": "Make an account to keep your plan safe, open it on any phone and plan it with your family.",
+      "askTitle": "Ask {{name}}",
+      "askWhy": "Make an account so {{name}} can reply to you here."
+    },
     "subtitle": "We'll email you a 6-digit code. No password needed.",
     "email": "Your email",
     "sendCode": "Email me a code",

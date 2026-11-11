@@ -33,12 +33,15 @@ export function StartPlanCard() {
 
   const onPress = drafted
     ? () =>
-        requireSignIn(() => {
-          setFailed(false);
-          save()
-            .then(() => router.navigate('/plan'))
-            .catch(() => setFailed(true));
-        })
+        requireSignIn(
+          () => {
+            setFailed(false);
+            save()
+              .then(() => router.navigate('/plan'))
+              .catch(() => setFailed(true));
+          },
+          { reason: { kind: 'plan' } },
+        )
     : startPlanning;
 
   return (

@@ -139,7 +139,7 @@ function ShelfCard({
   const saveLabel = saved ? t('vendorCard.unsave', { name }) : t('vendorCard.save', { name });
   const save = () => {
     saveHaptic();
-    toggleSave(vendor.id);
+    toggleSave(vendor.id, undefined, { name, photo: vendor.photoUrl });
   };
 
   return (

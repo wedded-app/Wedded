@@ -141,16 +141,19 @@ export default function ReadyScreen() {
             label={t('onboarding.ready.save')}
             loading={saving}
             onPress={() =>
-              requireSignIn(async () => {
-                setFailed(false);
-                try {
-                  await save();
-                  resetAnswers();
-                  router.replace('/plan');
-                } catch {
-                  setFailed(true);
-                }
-              })
+              requireSignIn(
+                async () => {
+                  setFailed(false);
+                  try {
+                    await save();
+                    resetAnswers();
+                    router.replace('/plan');
+                  } catch {
+                    setFailed(true);
+                  }
+                },
+                { reason: { kind: 'plan' } },
+              )
             }
           />
           <Button
