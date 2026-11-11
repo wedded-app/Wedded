@@ -252,8 +252,9 @@ export function JoinChoicePages({
 /**
  * One page's loop behind its words: the still first, then the video fading
  * in over it once it's playing. Plays only while its page is on screen.
+ * List your business (/for-vendors) opens on one too.
  */
-function Clip({
+export function Clip({
   video,
   poster,
   active,

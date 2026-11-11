@@ -156,6 +156,7 @@ const SF_SYMBOLS: Partial<Record<IconName, SFSymbol>> = {
   'megaphone-outline': 'megaphone',
   megaphone: 'megaphone.fill',
   'arrow-forward': 'arrow.right',
+  'swap-horizontal': 'arrow.left.arrow.right',
   'pencil-outline': 'pencil',
   'person-outline': 'person',
   'logo-apple': 'apple.logo',

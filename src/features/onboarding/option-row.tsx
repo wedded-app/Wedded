@@ -1,3 +1,4 @@
+import { Image, type ImageSource } from 'expo-image';
 import { useEffect } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 import Animated, {
@@ -19,6 +20,11 @@ export type OptionRowProps = {
   /** A second line, e.g. a tradition's main events. */
   detail?: string;
   icon?: IconName;
+  /**
+   * A small round photo at the start (List your business's kinds); null
+   * keeps the round place and shows the icon in it, for a kind with no photo.
+   */
+  image?: ImageSource | number | null;
   selected: boolean;
   onPress: () => void;
   /** 'radio' when picking one turns the others off; 'checkbox' when several can be on. */
@@ -38,6 +44,7 @@ export function OptionRow({
   label,
   detail,
   icon,
+  image,
   selected,
   onPress,
   role = 'radio',
@@ -78,7 +85,17 @@ export function OptionRow({
         }}
         style={({ pressed }) => [styles.row, pressed && styles.pressed]}
       >
-        {icon && <Icon name={icon} size={24} color={Colors.text} />}
+        {image !== undefined ? (
+          <View style={styles.thumb}>
+            {image !== null ? (
+              <Image source={image} contentFit="cover" style={styles.photo} accessible={false} />
+            ) : (
+              icon && <Icon name={icon} size={22} color={Colors.text2} />
+            )}
+          </View>
+        ) : (
+          icon && <Icon name={icon} size={24} color={Colors.text} />
+        )}
         <View style={styles.text}>
           <AppText variant="bodyLg" weight={600}>
             {label}
@@ -131,5 +148,18 @@ const useStyles = makeStyles((Colors) => ({
   },
   square: {
     borderRadius: 8,
+  },
+  thumb: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    overflow: 'hidden',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: Colors.surface,
+  },
+  photo: {
+    width: '100%',
+    height: '100%',
   },
 }));

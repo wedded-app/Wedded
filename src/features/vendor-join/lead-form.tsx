@@ -1,4 +1,4 @@
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { View } from 'react-native';
 
@@ -22,17 +22,17 @@ type Proof = 'email' | 'instagram' | 'license';
 const PROOFS: Proof[] = ['email', 'instagram', 'license'];
 
 /**
- * S16g For vendors: a free founding listing and a short form. There are no
- * real vendors yet; the founders call these people back and set them up.
- * With ?claim={slug} it becomes "Claim your profile" for that listing, with
- * the two checks spelled out first (the final look, 2026-10-23): a code to
- * the business phone on the listing, then one more proof they pick (their
- * business email, a code in their Instagram bio, or a photo of their
- * license), and a person reviews every claim. The pick goes to the founders
- * in the lead's note. Deep link: /for-vendors.
+ * S16g the short form that sends the founders a lead (vendor_leads), for
+ * people who'd rather talk to us than make their page themselves (List your
+ * business's "Leave your number", /for-vendors/call-me): the founders call
+ * them back and set them up. With a `claim` slug it becomes "Claim your
+ * profile" for that listing (/for-vendors?claim={slug}), with the two checks
+ * spelled out first (the final look, 2026-10-23): a code to the business
+ * phone on the listing, then one more proof they pick (their business email,
+ * a code in their Instagram bio, or a photo of their license), and a person
+ * reviews every claim. The pick goes to the founders in the lead's note.
  */
-export default function ForVendorsScreen() {
-  const { claim = '' } = useLocalSearchParams<{ claim?: string }>();
+export function LeadForm({ claim = '' }: { claim?: string }) {
   const router = useRouter();
   const styles = useStyles();
   const { t } = useLocale();

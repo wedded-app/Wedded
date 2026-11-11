@@ -58,8 +58,19 @@ function sendCode({ kind, to }: CodeTarget, captcha: Captcha) {
  * Phone and email send a 6-digit code; then About you if there's no profile
  * yet. New and returning people take the same path; there is no password.
  * In edit mode it opens straight on About you with their details filled in.
+ * `joinAs: 'business'` comes from List your business, which has asked its
+ * own questions and makes the page itself once they're in: a new account
+ * skips "What brings you to Wedded?" and the business step.
  */
-export function SignInFlow({ mode, method }: { mode: SignInMode; method?: SignInMethod }) {
+export function SignInFlow({
+  mode,
+  method,
+  joinAs,
+}: {
+  mode: SignInMode;
+  method?: SignInMethod;
+  joinAs?: 'business';
+}) {
   const Colors = useColors();
   const { t } = useLocale();
   const { status, session, profile, reloadProfile, finishSignIn, cancelSignIn } = useSession();
@@ -72,7 +83,7 @@ export function SignInFlow({ mode, method }: { mode: SignInMode; method?: SignIn
   // One bot check for the whole flow, so a resend gets a fresh token (#234)
   const captcha = useCaptcha();
   // What someone new came for, asked before About you (R5, #222)
-  const [joinedAs, setJoinedAs] = useState<JoinedAs | null>(null);
+  const [joinedAs, setJoinedAs] = useState<JoinedAs | null>(joinAs ?? null);
   const [businessStep, setBusinessStep] = useState(false);
 
   // Signed in without a profile (a code was just accepted, Apple or Google
@@ -97,9 +108,10 @@ export function SignInFlow({ mode, method }: { mode: SignInMode; method?: SignIn
   // Signed in with a profile, i.e. a returning person: nothing more to ask.
   useEffect(() => {
     if (mode === 'edit' || finished.current) return;
-    // A new business still names its listing after About you
-    if (status === 'signedIn' && joinedAs !== 'business') done();
-  }, [mode, status, done, joinedAs]);
+    // A new business still names its listing after About you, unless List
+    // your business has its answers already
+    if (status === 'signedIn' && (joinedAs !== 'business' || joinAs)) done();
+  }, [mode, status, done, joinedAs, joinAs]);
 
   // Closing the sheet without finishing forgets the action that was waiting.
   useEffect(() => () => cancelSignIn(), [cancelSignIn]);
@@ -123,11 +135,11 @@ export function SignInFlow({ mode, method }: { mode: SignInMode; method?: SignIn
     // Full-bleed weddings with their own Close, so no sheet header over them
     return <JoinChoicePages onChoose={setJoinedAs} onClose={leave} />;
   } else if (showAboutYou) {
-    back = mode === 'edit' || !joinedAs ? undefined : () => setJoinedAs(null);
+    back = mode === 'edit' || !joinedAs || joinAs ? undefined : () => setJoinedAs(null);
     content = (
       <AboutYouStep
         joinedAs={joinedAs}
-        onDone={joinedAs === 'business' ? () => setBusinessStep(true) : done}
+        onDone={joinedAs === 'business' && !joinAs ? () => setBusinessStep(true) : done}
       />
     );
   } else if (status === 'error') {
