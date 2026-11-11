@@ -6,26 +6,21 @@ import Animated from 'react-native-reanimated';
 
 import { AppText } from '@/components/app-text';
 import { NavBar, useNavScroll, useNavTop } from '@/components/nav';
-import { StateView } from '@/components/state-view';
 import { useBottomSpace } from '@/components/tab-bar';
 import { Sizes, Spacing, useColors } from '@/constants/theme';
 import { useIsVendor } from '@/data/chat';
-import { useFeed, type FeedPost } from '@/data/feed';
-import { useCategoryGroups, useHomeEvents } from '@/data/reference';
 import { useSession } from '@/features/auth/session';
 import { ChatButton } from '@/features/chat/chat-button';
-import { BookFirst } from '@/features/home/book-first-row';
 import { DateCard } from '@/features/home/date-card';
-import { EventCarousel } from '@/features/home/event-carousel';
 import { EventsTimeline } from '@/features/home/events-timeline';
 import { greetingKey, todayLine } from '@/features/home/greeting';
+import { HallShelf } from '@/features/home/hall-shelf';
 import { NextUp } from '@/features/home/next-up';
+import { PlanByEvent } from '@/features/home/plan-by-event';
+import { ReelsRow } from '@/features/home/reels-row';
 import { SavePlanCard } from '@/features/home/save-plan-card';
-import { SectionHeader } from '@/features/home/section-header';
 import { VendorPhotoCards } from '@/features/home/vendor-photo-cards';
-import { VendorRows } from '@/features/home/vendor-rows';
 import { hasDraftPlan, useWeddingDraft } from '@/features/home/wedding-draft';
-import { VendorTypeRow } from '@/features/home/vendor-type-row';
 import { YourFamily } from '@/features/home/your-family';
 import { useKeepDraftOnSignIn } from '@/features/onboarding/save-draft';
 import { YouButton } from '@/features/settings/settings-button';
@@ -45,9 +40,12 @@ import { useLocale } from '@/i18n/locale-context';
  * only when Wed needs an OK; Up next, one ticket at a time; your events,
  * each saying in words what it still needs; vendors free on your dates; the
  * website; and what the family has been up to. No booked counts. Before
- * there's a plan: what to book first, the kinds of vendor and the events.
- * A plan made before signing in shows its events too, from this phone,
- * with a card to save it; signing in saves it (useKeepDraftOnSignIn).
+ * there's a plan (Fezy, 2026-11-11: make them want to start one and tap
+ * around): Plan by event, a tradition's events down a rail with photos,
+ * ending at "Your dates go here"; then one shelf of halls and a row of
+ * wedding reels. A plan made before signing in shows its own events instead,
+ * from this phone, with a card to save it; signing in saves it
+ * (useKeepDraftOnSignIn).
  */
 export default function HomeScreen() {
   const Colors = useColors();
@@ -58,8 +56,6 @@ export default function HomeScreen() {
   const navTop = useNavTop();
   const bottom = useBottomSpace();
   const view = usePlanView();
-  const feed = useFeed();
-  const posts = feed.data ?? [];
   const [refreshing, setRefreshing] = useState(false);
   const { wedding, loading, plan, events, next } = view;
   const planning = !!wedding || (loading && !!plan.syncedWeddingId);
@@ -163,15 +159,27 @@ export default function HomeScreen() {
             </>
           ) : loading ? null : (
             <>
-              {drafted && (
-                <EventsTimeline
-                  view={phoneView}
-                  scrollY={scroll.scrollY}
-                  onOpen={(slug) => router.push({ pathname: '/e/[slug]', params: { slug } })}
-                />
+              {drafted ? (
+                <>
+                  <EventsTimeline
+                    view={phoneView}
+                    scrollY={scroll.scrollY}
+                    onOpen={(slug) => router.push({ pathname: '/e/[slug]', params: { slug } })}
+                  />
+                  {status !== 'signedIn' && <SavePlanCard />}
+                </>
+              ) : (
+                <PlanByEvent scrollY={scroll.scrollY} />
               )}
-              {drafted && status !== 'signedIn' && <SavePlanCard />}
-              <BrowseSections posts={posts} />
+              <HallShelf
+                events={(drafted ? phoneView.chosen : events.filter((event) => event.isCore)).map(
+                  (event) => event.slug,
+                )}
+                needsByEvent={drafted ? phoneView.needsByEvent : view.needsByEvent}
+                date={draft.date}
+                guestBand={draft.guestBand}
+              />
+              <ReelsRow />
             </>
           )}
         </View>
@@ -185,43 +193,6 @@ export default function HomeScreen() {
         trailing={<YouButton />}
       />
     </View>
-  );
-}
-
-/** Home before there's a plan: what to book first, the kinds of vendor, and the events. */
-function BrowseSections({ posts }: { posts: FeedPost[] }) {
-  const { t } = useLocale();
-  const router = useRouter();
-  const { date } = useWeddingDraft();
-  const groups = useCategoryGroups();
-  const { data: sections, status, refetch } = useHomeEvents();
-
-  return (
-    <>
-      <BookFirst />
-      <VendorRows date={date} />
-
-      <View style={styles.block}>
-        <SectionHeader
-          title={t('home.whatDoYouNeed')}
-          link={t('home.seeAllTypes')}
-          onLink={() => router.navigate('/search')}
-        />
-        {groups.isPending && <StateView state="loading" />}
-        {groups.isError && <StateView state="error" onRetry={() => void groups.refetch()} />}
-        {groups.data && <VendorTypeRow groups={groups.data} />}
-      </View>
-
-      <View style={styles.block}>
-        <SectionHeader title={t('home.planByEvent')} />
-        {status === 'pending' && <StateView state="loading" />}
-        {status === 'error' && <StateView state="error" onRetry={() => void refetch()} />}
-        {status === 'success' && sections.length === 0 && (
-          <StateView state="empty" icon="calendar-outline" message={t('home.empty')} />
-        )}
-        {sections && sections.length > 0 && <EventCarousel sections={sections} posts={posts} />}
-      </View>
-    </>
   );
 }
 
@@ -240,8 +211,5 @@ const styles = StyleSheet.create({
   },
   caps: {
     letterSpacing: 0.6,
-  },
-  block: {
-    gap: Spacing.md,
   },
 });
