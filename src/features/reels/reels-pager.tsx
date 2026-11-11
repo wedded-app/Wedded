@@ -91,7 +91,9 @@ export function ReelsPager({
   const remove = useDeleteReel();
   const tray = useStoryTray();
   const [active, setActive] = useState(initialIndex);
-  const [focused, setFocused] = useState(true);
+  // Paused until its screen is on top: iPhone's tabs draw Reels at launch,
+  // out of sight, and it mustn't play there (the focus effect starts it)
+  const [focused, setFocused] = useState(false);
   const [muted, setMuted] = useState(!soundOn);
   const [hint, setHint] = useState(
     () => swipeHint && readSetting(StorageKeys.reelsSwipeHint) !== 'done',

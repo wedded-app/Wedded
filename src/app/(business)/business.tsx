@@ -119,7 +119,7 @@ export default function BusinessScreen() {
           icon="play-circle-outline"
           title={t('business.myPage.reels')}
           subtitle={t('business.myPage.reelsHint')}
-          onPress={() => router.navigate('/reels')}
+          onPress={() => router.push('/business/reels')}
         />
       </ListSection>
 

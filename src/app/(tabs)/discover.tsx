@@ -32,9 +32,16 @@ import { selectionHaptic } from '@/lib/haptics';
  * (Hick's law). Every reel is one tap from booking its vendor (the strip in
  * booking-strip.tsx). The rings play everyone's stories full screen, from
  * the first person with something new (DECISIONS.md 2026-10-16), so they
- * never cover the video.
+ * never cover the video. Business mode opens it as a page from My page
+ * (/business/reels) with `back`: a Back button takes the rings' place.
  */
-export default function ReelsScreen({ business = false }: { business?: boolean }) {
+export default function ReelsScreen({
+  business = false,
+  back = false,
+}: {
+  business?: boolean;
+  back?: boolean;
+}) {
   const { t } = useLocale();
   const router = useRouter();
   const insets = useSafeAreaInsets();
@@ -162,36 +169,50 @@ export default function ReelsScreen({ business = false }: { business?: boolean }
         <View style={styles.bar} pointerEvents="box-none">
           {/* Stories: the rings of the first two with one today, new ones first */}
           <View style={styles.side} pointerEvents="box-none">
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel={
-                tray.fresh > 0 ? t('stories.button', { count: tray.fresh }) : t('stories.title')
-              }
-              onPress={watchStories}
-              hitSlop={4}
-              style={({ pressed }) => [styles.rings, pressed && styles.pressed]}
-            >
-              {faces.length > 0 ? (
-                faces.map((group, index) => (
-                  <View
-                    key={group.key}
-                    style={[
-                      styles.ring,
-                      tray.seen(group) ? styles.ringSeen : storyRingStyle,
-                      index > 0 && styles.ringBehind,
-                    ]}
-                  >
-                    <View style={styles.face}>
-                      <StoryFace group={group} size={FACE} photo />
-                    </View>
-                  </View>
-                ))
-              ) : (
-                <Glass scheme="dark" style={styles.round}>
-                  <Icon name="images-outline" size={22} color={REEL_INK} />
+            {back ? (
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel={t('common.back')}
+                onPress={() => (router.canGoBack() ? router.back() : router.replace('/business'))}
+                hitSlop={4}
+                style={({ pressed }) => pressed && styles.pressedSmall}
+              >
+                <Glass scheme="dark" interactive style={styles.round}>
+                  <Icon name="chevron-back" size={24} color={REEL_INK} weight="semibold" />
                 </Glass>
-              )}
-            </Pressable>
+              </Pressable>
+            ) : (
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel={
+                  tray.fresh > 0 ? t('stories.button', { count: tray.fresh }) : t('stories.title')
+                }
+                onPress={watchStories}
+                hitSlop={4}
+                style={({ pressed }) => [styles.rings, pressed && styles.pressed]}
+              >
+                {faces.length > 0 ? (
+                  faces.map((group, index) => (
+                    <View
+                      key={group.key}
+                      style={[
+                        styles.ring,
+                        tray.seen(group) ? styles.ringSeen : storyRingStyle,
+                        index > 0 && styles.ringBehind,
+                      ]}
+                    >
+                      <View style={styles.face}>
+                        <StoryFace group={group} size={FACE} photo />
+                      </View>
+                    </View>
+                  ))
+                ) : (
+                  <Glass scheme="dark" style={styles.round}>
+                    <Icon name="images-outline" size={22} color={REEL_INK} />
+                  </Glass>
+                )}
+              </Pressable>
+            )}
           </View>
           <FeedSwitch
             options={[

@@ -1,15 +1,17 @@
-import { Redirect, Tabs } from 'expo-router';
+import { Image } from 'expo-image';
+import { Redirect } from 'expo-router';
 import { useState } from 'react';
 import { View } from 'react-native';
 
+import { AppTabs } from '@/components/app-tabs';
 import { RingsIcon } from '@/components/rings-icon';
-import { TabBar, TabBarSpaceProvider, useTabBarOffset, type TabSpec } from '@/components/tab-bar';
-import { Sizes, Spacing, useColors } from '@/constants/theme';
+import type { TabAction, TabSpec } from '@/components/tab-bar';
+import { Sizes, useColors } from '@/constants/theme';
 import { useSession } from '@/features/auth/session';
 import { useOpensInBusiness } from '@/features/business/app-mode';
 import { useOnboardingGate } from '@/features/onboarding/gate';
 import { SavedToastHost } from '@/features/saved/saved-toast';
-import { WedButton } from '@/features/wed/wed-button';
+import { openWed } from '@/features/wed/open-wed';
 import { useWed, waitingCount } from '@/features/wed/wed-store';
 import { useLocale } from '@/i18n/locale-context';
 
@@ -19,6 +21,7 @@ const TABS: (Omit<TabSpec, 'label'> & { labelKey: string })[] = [
     labelKey: 'tabs.home',
     icon: 'home-outline',
     iconFilled: 'home',
+    sf: { default: 'house', selected: 'house.fill' },
   },
   // The (search) stack: Vendors first, with Search, results and Requests on top
   {
@@ -26,12 +29,14 @@ const TABS: (Omit<TabSpec, 'label'> & { labelKey: string })[] = [
     labelKey: 'tabs.vendors',
     icon: 'storefront-outline',
     iconFilled: 'storefront',
+    sf: { default: 'storefront', selected: 'storefront.fill' },
   },
   {
     name: 'discover',
     labelKey: 'tabs.discover',
     icon: 'play-circle-outline',
     iconFilled: 'play-circle',
+    sf: { default: 'play.circle', selected: 'play.circle.fill' },
   },
   // My Wedding (the plan route): every event, guests, the website, family
   {
@@ -41,24 +46,33 @@ const TABS: (Omit<TabSpec, 'label'> & { labelKey: string })[] = [
     renderIcon: (color, selected) => (
       <RingsIcon size={Sizes.tabIcon} color={color} selected={selected} />
     ),
+    // RingsIcon's drawing as 26 pt images (@2x, @3x), thicker when selected
+    png: {
+      default: require('../../../assets/images/tab-rings.png'),
+      selected: require('../../../assets/images/tab-rings-selected.png'),
+    },
   },
 ];
 
+// The bow: a 28 x 24 pt template image for iPhone's bar (@2x, @3x), and the
+// same cut (ribbon-glyph.png is its @3x) drawn at that size on the others
+const WED_ICON = require('../../../assets/images/tab-wed.png');
+const WED_GLYPH = require('../../../assets/images/ribbon-glyph.png');
+
 /**
- * Bottom tabs: Home, Vendors (the (search) stack, with Search and Requests on
- * it), Wed's bow in the middle (WedButton, with how many of its cards wait
- * for a yes), Reels (the discover route) and Wedding (My Wedding, the plan
- * route), in a floating glass bar that content scrolls under (TabBar: each
- * tab's icon over its name, a lens behind the selected one). Profile opens
- * from your photo on Home (DECISIONS.md, 2026-10-23). Wed isn't a tab: its
- * button slides Wed up as a sheet over whichever tab is open (src/app/wed,
- * presented by the root stack), and closing it leaves that tab as it was.
- * Expo Router's JS tabs draw it the same on iPhone, Android and the web.
+ * The planning tabs (AppTabs: iOS's own bar on iPhone, one drawn to match
+ * it elsewhere): Home, Vendors (the (search) stack, with Search and Requests
+ * on it), Wed in the middle (with how many of its cards wait for a yes),
+ * Reels (the discover route) and Wedding (My Wedding, the plan route).
+ * Profile opens from Settings on Home (DECISIONS.md, 2026-10-23). Wed isn't
+ * a tab: it looks like one, but a tap slides Wed up as a sheet over
+ * whichever tab is open (src/app/wed, presented by the root stack), and
+ * closing it leaves that tab as it was. Its place in the bar is the empty
+ * route wed-tab.tsx.
  */
 export default function TabsLayout() {
   const Colors = useColors();
   const { t } = useLocale();
-  const offset = useTabBarOffset();
   // Signing out, or someone else signing in, starts every tab fresh, so the
   // next person never lands on the last one's pages. A first sign-in (often
   // mid-action, like Save) keeps them where they were.
@@ -72,6 +86,7 @@ export default function TabsLayout() {
   // Only someone who can say yes gets a count to clear
   const waiting = useWed(waitingCount);
   const canApprove = useWed((s) => s.role === 'owner');
+  const wedCount = canApprove ? waiting : 0;
   // Unread messages show on the chat button at the top of Home.
   const tabs = TABS.map(({ labelKey, ...tab }) => ({ ...tab, label: t(labelKey) }));
   // The first time the app opens: the welcome screen, or the first questions.
@@ -84,23 +99,28 @@ export default function TabsLayout() {
   if (gate) return <Redirect href={gate} />;
   if (business) return <Redirect href="/today" />;
 
+  const wed: TabAction = {
+    route: 'wed-tab',
+    label: t('tabs.wed'),
+    renderIcon: (color) => (
+      <Image
+        source={WED_GLYPH}
+        tintColor={color}
+        contentFit="contain"
+        style={{ width: 28, height: 24 }}
+        accessible={false}
+      />
+    ),
+    png: WED_ICON,
+    badge: wedCount,
+    accessibilityLabel:
+      wedCount > 0 ? t('wedButton.waiting', { count: wedCount }) : t('wedButton.label'),
+    onPress: () => openWed(),
+  };
+
   return (
-    <TabBarSpaceProvider value={Sizes.tabBar + offset + Spacing.sm}>
-      <Tabs
-        key={generation}
-        tabBar={(props) => (
-          <TabBar {...props} tabs={tabs} center={<WedButton count={canApprove ? waiting : 0} />} />
-        )}
-        screenOptions={{
-          headerShown: false,
-          sceneStyle: { backgroundColor: Colors.bg },
-        }}
-      >
-        {tabs.map((tab) => (
-          <Tabs.Screen key={tab.name} name={tab.name} options={{ title: tab.label }} />
-        ))}
-      </Tabs>
+    <AppTabs key={generation} tabs={tabs} action={wed}>
       <SavedToastHost />
-    </TabBarSpaceProvider>
+    </AppTabs>
   );
 }
