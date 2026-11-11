@@ -29,7 +29,7 @@ export type OptionRowProps = {
 
 /**
  * One answer in the first questions, like Hinge's: plain words on white, a
- * hairline between rows, and a mark at the end that fills black with a tick
+ * hairline between rows, and a mark at the end that fills maroon with a tick
  * when it's picked (round when it's one of a kind, square when several can
  * be ticked). It dims under the finger the moment it's touched, the way iOS
  * rows do, and arrives with its page rather than after it.
@@ -57,9 +57,9 @@ export function OptionRow({
 
   const [offFill, onFill, offEdge, onEdge] = [
     Colors.canvas,
-    Colors.text,
+    Colors.primary,
     Colors.borderInput,
-    Colors.text,
+    Colors.primary,
   ];
   const mark = useAnimatedStyle(() => ({
     backgroundColor: interpolateColor(on.value, [0, 1], [offFill, onFill]),

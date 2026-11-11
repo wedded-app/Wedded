@@ -2,26 +2,19 @@ import { router } from 'expo-router';
 import { useCallback } from 'react';
 
 import { prefetchFirstQuestions } from '@/data/reference';
-import { useSession } from '@/features/auth/session';
 
 import { resetAnswers } from './answers';
 import { FIRST_STEP } from './steps';
 
 /**
- * "Start planning" on Home and My Wedding. A plan belongs to an account, so
- * someone signed out signs in first, then gets the first questions, whose
- * answers start loading on the tap.
+ * "Start your plan" on Home and My Wedding: the first questions, whose
+ * answers start loading on the tap. No account needed: signed out, the plan
+ * they make stays on this phone until they save it (2026-11-11).
  */
 export function useStartPlanning() {
-  const { requireSignIn } = useSession();
   return useCallback(() => {
     prefetchFirstQuestions();
-    requireSignIn(
-      () => {
-        resetAnswers();
-        router.push(FIRST_STEP);
-      },
-      { planning: true },
-    );
-  }, [requireSignIn]);
+    resetAnswers();
+    router.push(FIRST_STEP);
+  }, []);
 }

@@ -8,11 +8,12 @@ import { useUnreadCount } from '@/data/chat';
 import { useLocale } from '@/i18n/locale-context';
 
 /**
- * The chat button at the top right of Home, like Instagram's: opens Messages,
- * with the red count of unread messages. Signed out, Messages explains why to
- * sign in. A solid circle rather than glass, so it reads over any cover photo.
+ * The chat button, like Instagram's: opens Messages, with the red count of
+ * unread messages. Signed out, Messages explains why to sign in. A solid
+ * circle rather than glass, so it reads over any cover photo; `plain` is
+ * just the icon, for Home's top left (2026-11-11).
  */
-export function ChatButton() {
+export function ChatButton({ plain = false }: { plain?: boolean }) {
   const Colors = useColors();
   const styles = useStyles();
   const { t } = useLocale();
@@ -28,7 +29,7 @@ export function ChatButton() {
         accessibilityLabel={label}
         onPress={() => router.push('/messages')}
         hitSlop={4}
-        style={({ pressed }) => [styles.circle, pressed && styles.pressed]}
+        style={({ pressed }) => [plain ? styles.bare : styles.circle, pressed && styles.pressed]}
       >
         <Icon
           name="chatbubble-ellipses-outline"
@@ -38,7 +39,7 @@ export function ChatButton() {
         />
       </Pressable>
       {unread > 0 && (
-        <View style={styles.badge} pointerEvents="none">
+        <View style={[styles.badge, plain && styles.badgePlain]} pointerEvents="none">
           <AppText
             variant="caption"
             weight={700}
@@ -64,6 +65,12 @@ const useStyles = makeStyles((Colors) => ({
     backgroundColor: Colors.surface,
     boxShadow: '0 2px 8px rgba(0,0,0,0.25)',
   },
+  bare: {
+    width: Sizes.tapTarget,
+    height: Sizes.tapTarget,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   pressed: {
     opacity: 0.7,
   },
@@ -81,6 +88,11 @@ const useStyles = makeStyles((Colors) => ({
     backgroundColor: Colors.errorFill,
     borderWidth: 2,
     borderColor: Colors.surface,
+  },
+  badgePlain: {
+    top: 2,
+    right: 0,
+    borderColor: Colors.bg,
   },
   badgeText: {
     fontSize: 11,

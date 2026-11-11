@@ -1,6 +1,15 @@
 import { router } from 'expo-router';
-import { Platform, Pressable, View } from 'react-native';
-import Animated from 'react-native-reanimated';
+import { useEffect, type ReactNode } from 'react';
+import { Alert, Platform, View } from 'react-native';
+import Animated, {
+  useAnimatedStyle,
+  useReducedMotion,
+  useSharedValue,
+  withDelay,
+  withRepeat,
+  withSequence,
+  withTiming,
+} from 'react-native-reanimated';
 
 import { AppText } from '@/components/app-text';
 import { Icon } from '@/components/icon';
@@ -10,15 +19,17 @@ import { makeStyles, Radius, Sizes, Spacing, useColors } from '@/constants/theme
 import { useSession } from '@/features/auth/session';
 import { formatDate } from '@/features/inquiry/inquiry-helpers';
 import { useSearchLocation } from '@/features/location/search-location';
+import { useSaveDraftPlan } from '@/features/onboarding/save-draft';
 import { useStartPlanning } from '@/features/onboarding/start';
+import { STEPS } from '@/features/onboarding/steps';
 import { daysUntil } from '@/features/planner/plan';
 import { WedMark } from '@/features/wed/wed-mark';
 import { useLocale } from '@/i18n/locale-context';
 import { selectionHaptic } from '@/lib/haptics';
-import { Motion } from '@/lib/motion';
+import { iosEasing, Motion } from '@/lib/motion';
 import { useCountUp } from '@/lib/use-count-up';
 
-import { hasDraft, useWeddingDraft } from './wedding-draft';
+import { hasDraftPlan, useWeddingDraft } from './wedding-draft';
 
 // The date in the corner, like a stamp: 06.13.27
 const MONO = Platform.select({
@@ -35,26 +46,31 @@ export function stampDate(date: string | null): string {
 }
 
 /**
- * The first thing on Home before there's a plan: the wedding, on a card of
- * slowly moving wine-and-rose ombre (OmbreBackground). Before they've said:
- * "When's the wedding?" with a round arrow to tap. After: the days counting
- * up to it, where, and the date stamped in the corner. A tap opens the
- * quick questions (/when), which need no account; once there's something
- * to save, a line under it signs them in and makes the plan from it.
- * Signed in without a plan, the card starts the first questions instead.
- * With a plan (`planDate` given, null when there's no date yet) it's the
- * plan's wedding: the same card counting down to that date, opening My Wedding.
+ * The first thing on Home: the wedding, on a card of slowly moving
+ * wine-and-rose ombre (OmbreBackground).
+ *
+ * - Before a plan: "Start your plan", every event with one countdown, in a
+ *   few quick questions and no account needed, with an arrow that nudges
+ *   now and then. A tap starts the first questions.
+ * - With a plan made before signing in (kept on this phone): its countdown,
+ *   and "Open my plan" in the corner. A tap saves it to their account
+ *   (signing in first) and opens My Wedding: the rest of the app is behind
+ *   it, so the card is the reason to sign in.
+ * - With a plan (`planDate` given, null when there's no date yet): the
+ *   plan's countdown, opening My Wedding.
  */
 export function DateCard({ planDate }: { planDate?: string | null }) {
   const Colors = useColors();
   const styles = useStyles();
   const { t } = useLocale();
-  const { status } = useSession();
+  const { status, requireSignIn } = useSession();
   const draft = useWeddingDraft();
   const { place } = useSearchLocation();
   const startPlanning = useStartPlanning();
+  const { save } = useSaveDraftPlan();
   const signedIn = status === 'signedIn';
   const planning = planDate !== undefined;
+  const drafted = !planning && hasDraftPlan(draft);
   const date = planning ? planDate : draft.date;
   const days = date ? daysUntil(date) : null;
   const counting = days !== null && days > 0;
@@ -64,20 +80,57 @@ export function DateCard({ planDate }: { planDate?: string | null }) {
   const open = () => {
     selectionHaptic();
     if (planning) router.push('/plan');
-    else if (signedIn) startPlanning();
-    else router.push('/when');
+    else if (drafted) {
+      requireSignIn(() => {
+        save()
+          .then(() => router.navigate('/plan'))
+          .catch(() => {
+            const message = t('home.dateCard.saveFailed');
+            if (Platform.OS === 'web') globalThis.alert(message);
+            else Alert.alert(message);
+          });
+      });
+    } else startPlanning();
   };
 
   const label = counting
     ? t('home.dateCard.countingLabel', { count: days, date: formatDate(date!) })
-    : t('home.dateCard.askLabel');
+    : planning || drafted
+      ? t('home.dateCard.yourWedding')
+      : t('home.dateCard.startLabel', { count: STEPS.length });
+  const hint = planning
+    ? t('home.dateCard.hintPlan')
+    : drafted
+      ? t('home.dateCard.hintSave')
+      : t('home.dateCard.hint');
+
+  let corner: ReactNode;
+  if (planning) corner = counting ? <WedMark size={30} color="onHero" /> : <Go />;
+  else if (drafted) {
+    corner = (
+      <Nudge>
+        <View style={styles.open}>
+          <AppText variant="label" weight={700} style={{ color: Colors.ombreBase }}>
+            {t('home.dateCard.open')}
+          </AppText>
+          <Icon name="arrow-forward" size={16} color={Colors.ombreBase} weight="bold" />
+        </View>
+      </Nudge>
+    );
+  } else {
+    corner = (
+      <Nudge>
+        <Go />
+      </Nudge>
+    );
+  }
 
   return (
-    <Animated.View entering={Motion.rise} style={styles.wrap}>
+    <Animated.View entering={Motion.rise}>
       <PressableScale
         accessibilityRole="button"
         accessibilityLabel={label}
-        accessibilityHint={t('home.dateCard.hint')}
+        accessibilityHint={hint}
         pressedScale={0.98}
         onPress={open}
         style={styles.card}
@@ -120,14 +173,16 @@ export function DateCard({ planDate }: { planDate?: string | null }) {
                   ? days === 0
                     ? t('home.dateCard.today')
                     : t('home.dateCard.married')
-                  : t('home.dateCard.ask')}
+                  : planning || drafted
+                    ? t('home.dateCard.yourWedding')
+                    : t('home.dateCard.start')}
               </AppText>
               <AppText color="onHero2" style={styles.kicker} maxFontSizeMultiplier={1.4}>
                 {(days !== null
                   ? formatDate(date!)
-                  : planning || draft.noDateYet
+                  : planning || drafted
                     ? t('home.dateCard.noDateYet')
-                    : t('home.dateCard.askKicker')
+                    : t('home.dateCard.startKicker')
                 ).toUpperCase()}
               </AppText>
             </>
@@ -135,39 +190,65 @@ export function DateCard({ planDate }: { planDate?: string | null }) {
         </View>
 
         <View style={styles.bottom}>
-          <AppText color="onHero2" style={styles.stamp} maxFontSizeMultiplier={1.3}>
-            {stampDate(date ?? null)}
-          </AppText>
-          {counting ? (
-            <WedMark size={30} color="onHero" />
+          {planning || drafted ? (
+            <AppText color="onHero2" style={styles.stamp} maxFontSizeMultiplier={1.3}>
+              {stampDate(date ?? null)}
+            </AppText>
           ) : (
-            <View style={styles.go}>
-              <Icon name="arrow-forward" size={22} color={Colors.ombreBase} weight="semibold" />
+            <View style={styles.grow}>
+              <AppText color="onHero2" style={styles.small} maxFontSizeMultiplier={1.4}>
+                {t('home.dateCard.questions', { count: STEPS.length }).toUpperCase()}
+              </AppText>
+              {!signedIn && (
+                <AppText color="onHero2" style={styles.small} maxFontSizeMultiplier={1.4}>
+                  {t('home.dateCard.noAccount').toUpperCase()}
+                </AppText>
+              )}
             </View>
           )}
+          {corner}
         </View>
       </PressableScale>
-
-      {!planning && !signedIn && hasDraft(draft) && (
-        <Pressable
-          accessibilityRole="button"
-          onPress={startPlanning}
-          style={({ pressed }) => [styles.save, pressed && styles.pressed]}
-        >
-          <AppText weight={600} color="primary">
-            {t('home.dateCard.save')}
-          </AppText>
-          <Icon name="chevron-forward" size={16} color={Colors.primary} weight="semibold" />
-        </Pressable>
-      )}
     </Animated.View>
   );
 }
 
+/** The round white arrow in the card's corner. */
+function Go() {
+  const Colors = useColors();
+  const styles = useStyles();
+  return (
+    <View style={styles.go}>
+      <Icon name="arrow-forward" size={22} color={Colors.ombreBase} weight="semibold" />
+    </View>
+  );
+}
+
+/**
+ * Leans forward a few points every few seconds and back, on the iPhone's
+ * curve, like a hand beckoning: the card is meant to be tapped. Still with
+ * Reduce Motion.
+ */
+function Nudge({ children }: { children: ReactNode }) {
+  const reduceMotion = useReducedMotion();
+  const x = useSharedValue(0);
+
+  useEffect(() => {
+    if (reduceMotion) return;
+    x.value = withRepeat(
+      withSequence(
+        withDelay(2400, withTiming(6, { duration: 280, easing: iosEasing })),
+        withTiming(0, { duration: 360, easing: iosEasing }),
+      ),
+      -1,
+    );
+  }, [x, reduceMotion]);
+
+  const style = useAnimatedStyle(() => ({ transform: [{ translateX: x.value }] }));
+  return <Animated.View style={style}>{children}</Animated.View>;
+}
+
 const useStyles = makeStyles((Colors) => ({
-  wrap: {
-    gap: Spacing.sm,
-  },
   card: {
     minHeight: 228,
     justifyContent: 'space-between',
@@ -212,12 +293,22 @@ const useStyles = makeStyles((Colors) => ({
     flexDirection: 'row',
     alignItems: 'flex-end',
     justifyContent: 'space-between',
+    gap: Spacing.md,
+  },
+  grow: {
+    flex: 1,
   },
   stamp: {
     fontFamily: MONO,
     fontSize: 22,
     lineHeight: 26,
     letterSpacing: 1,
+  },
+  small: {
+    fontFamily: MONO,
+    fontSize: 12,
+    lineHeight: 17,
+    letterSpacing: 1.8,
   },
   go: {
     width: Sizes.tapTarget,
@@ -227,14 +318,13 @@ const useStyles = makeStyles((Colors) => ({
     justifyContent: 'center',
     backgroundColor: Colors.onHero,
   },
-  save: {
-    minHeight: Sizes.tapTarget,
+  open: {
+    minHeight: 40,
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
     gap: Spacing.xs,
-  },
-  pressed: {
-    opacity: 0.5,
+    paddingHorizontal: Spacing.lg,
+    borderRadius: 20,
+    backgroundColor: Colors.onHero,
   },
 }));

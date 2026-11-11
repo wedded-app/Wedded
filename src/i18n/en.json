@@ -81,9 +81,13 @@
     "inviteBody": "Invite them to see the plan, save vendors and vote on favorites.",
     "inviteButton": "Invite family",
     "dateCard": {
-      "ask": "When's the wedding?",
-      "askKicker": "Tap to start your countdown",
-      "askLabel": "When's the wedding? Set your date",
+      "start": "Start your plan",
+      "startKicker": "Every event, one countdown",
+      "startLabel": "Start your plan, in {{count}} quick questions",
+      "questions": "{{count}} quick questions",
+      "noAccount": "No account needed",
+      "yourWedding": "Your wedding",
+      "open": "Open my plan",
       "noDateYet": "Pick a date when you're ready",
       "days": {
         "one": "day to go",
@@ -95,10 +99,18 @@
         "one": "1 day until the wedding, {{date}}",
         "other": "{{count}} days until the wedding, {{date}}"
       },
-      "hint": "Opens three quick questions",
+      "hint": "Opens the first questions",
+      "hintPlan": "Opens My Wedding",
+      "hintSave": "Saves your plan to your account and opens it",
+      "saveFailed": "We couldn't save your plan. Check your internet and try again.",
       "today": "Today's the day",
-      "married": "Married!",
-      "save": "Save it and plan with your family"
+      "married": "Married!"
+    },
+    "savePlan": {
+      "title": "Your plan is only on this phone",
+      "body": "Save it so it's never lost, and plan it together with your family.",
+      "save": "Save my plan",
+      "notNow": "Not now"
     },
     "bookFirst": {
       "title": "Book these first",
@@ -110,6 +122,7 @@
       },
       "addDate": "Add your date to see who's free"
     },
+    "signIn": "Sign in",
     "hello": "Hello, {{name}}",
     "helloPlain": "Hello",
     "yourWedding": "Your wedding",
@@ -154,33 +167,6 @@
         "one": "in 1 day",
         "other": "in {{count}} days"
       }
-    }
-  },
-  "when": {
-    "close": "Close",
-    "skip": "Skip",
-    "continue": "Continue",
-    "finish": "Show my wedding",
-    "stepOf": "{{step}} of {{total}}",
-    "yourWedding": "Your wedding",
-    "guests": "{{band}} guests",
-    "date": {
-      "title": "When's the wedding?",
-      "subtitle": "For your countdown, and to see who's free that day.",
-      "pick": "Pick the date",
-      "notYet": "We haven't picked a date yet",
-      "notYetDetail": "That's fine. Add it any time."
-    },
-    "place": {
-      "title": "Where's it happening?",
-      "subtitle": "So we show vendors near you first.",
-      "typeLabel": "Town or city",
-      "typePlaceholder": "Yuba City, Fremont, Fresno…",
-      "areaCode": "Area code {{code}}"
-    },
-    "guestsStep": {
-      "title": "About how many guests?",
-      "subtitle": "Halls show only if they fit everyone. A guess is fine."
     }
   },
   "event": {
@@ -1067,7 +1053,7 @@
       "pick": "Pick a day",
       "sameDayAs": "Same day as the {{event}}",
       "join": "Put the {{event}} on the same day as the {{before}}",
-      "split": "The {{event}} is on the same day as the {{before}}. Double tap to give it its own day.",
+      "ownDay": "Give the {{event}} its own day",
       "sheetTitle": "When's the {{event}}?",
       "sheetTitleMany": "When are the {{events}}?",
       "clear": "Clear this day",
@@ -1138,7 +1124,8 @@
     "cheerDone": "{{event}} is all booked!",
     "startCardTitle": "Plan your wedding",
     "startCardBody": "Your countdown, your events and what to book, shared with the family.",
-    "signInToPlan": "Sign in to start",
+    "savedCardTitle": "Your plan is on this phone",
+    "savedCardBody": "Save it to open it here, with every event and what each one needs.",
     "eventsFirst": {
       "one": "1 event · {{first}}",
       "other": "{{count}} events · {{first}} comes first"
@@ -2109,9 +2096,39 @@
     },
     "days": {
       "title": "When is each one?",
-      "subtitle": "Tap an event to pick its day. Two on one day? Link them.",
+      "subtitle": "Tap an event to pick its day. Events on the same day share a card.",
       "notYet": "We haven't picked dates yet",
-      "notYetDetail": "Add them any time on the Wedding tab.",
+      "notYetDetail": "Add them any time on the Wedding tab."
+    },
+    "where": {
+      "title": "Where's the wedding?",
+      "subtitle": "We'll show vendors near you first.",
+      "label": "Town or city",
+      "placeholder": "Town or city",
+      "clear": "Clear",
+      "here": "Use where I am",
+      "areas": "Or pick an area",
+      "areaCode": "Area code {{code}}"
+    },
+    "guests": {
+      "title": "About how many guests?",
+      "subtitle": "At the biggest event. A guess is fine.",
+      "label": "Guests",
+      "count": {
+        "one": "{{count}} guest",
+        "other": "{{count}} guests"
+      },
+      "unit": "guests",
+      "fewer": "Fewer guests",
+      "more": "More guests",
+      "fits": {
+        "under_50": "Under 50 guests",
+        "50_100": "50 to 100 guests",
+        "100_250": "100 to 250 guests",
+        "250_500": "250 to 500 guests",
+        "500_plus": "500 or more guests"
+      },
+      "halls": "We'll show halls with room for everyone.",
       "finish": "Make my plan",
       "failed": "We couldn't save your plan. Check your internet and try again."
     },
@@ -2127,6 +2144,11 @@
       },
       "eventsSoon": "Your events will show here",
       "more": "+{{count}} more",
+      "events": {
+        "one": "{{count}} event",
+        "other": "{{count}} events"
+      },
+      "guests": "{{count}} guests",
       "dateSoon": "Your countdown will show here",
       "noDate": "Date to come",
       "date": {
@@ -2154,7 +2176,11 @@
       "vendorsDetail": "Ask about prices and dates. It's free.",
       "together": "Plan it together",
       "togetherDetail": "Invite family from My Wedding. They can suggest vendors too.",
-      "go": "Take me to my wedding"
+      "go": "Take me to my wedding",
+      "onPhone": "It's only on this phone for now. Save it to keep it and plan with your family.",
+      "save": "Save my plan",
+      "saveFailed": "We couldn't save your plan. Check your internet and try again.",
+      "notNow": "Not now"
     }
   },
   "suggestions": {
