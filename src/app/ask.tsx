@@ -21,7 +21,7 @@ import { Screen } from '@/components/screen';
 import { SheetHeader } from '@/components/sheet-header';
 import { StateView } from '@/components/state-view';
 import { TextField } from '@/components/text-field';
-import { makeStyles, Spacing } from '@/constants/theme';
+import { makeStyles, Spacing, useScheme } from '@/constants/theme';
 import { useSendInquiry, type GuestBand, type ReplyBy, type SendOutcome } from '@/data/inquiries';
 import { useVendorDateStatus } from '@/data/availability';
 import { useCities } from '@/data/places';
@@ -68,6 +68,9 @@ const REPLY_BY: ReplyBy[] = ['call', 'text', 'whatsapp', 'email'];
  */
 export default function AskScreen() {
   const styles = useStyles();
+  // The app's own light or dark setting, so the iPhone's date wheel matches
+  // it even when the phone's setting differs (else white dates on white)
+  const scheme = useScheme();
   const { t } = useLocale();
   const params = useLocalSearchParams<{
     vendorId?: string;
@@ -384,6 +387,7 @@ export default function AskScreen() {
               mode="date"
               display={Platform.OS === 'ios' ? 'spinner' : 'default'}
               minimumDate={new Date()}
+              themeVariant={scheme}
               onChange={(event, picked) => {
                 if (Platform.OS !== 'ios') setPickerOpen(false);
                 if (event.type === 'set' && picked) change(setPickedDate)(toDateString(picked));
