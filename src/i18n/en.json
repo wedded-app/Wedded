@@ -41,24 +41,27 @@
     "working": "Working · {{step}} of {{steps}}"
   },
   "home": {
-    "phases": {
-      "before": "Before the wedding",
-      "weddingDay": "Wedding day",
-      "after": "After"
-    },
-    "empty": "Events will show here soon.",
     "foundingWall": "Meet our founding vendors",
     "planByEvent": "Plan by event",
+    "planBy": {
+      "intro": "How {{tradition}} weddings come together, from the {{first}} to the {{last}}.",
+      "change": "Showing {{tradition}} weddings. Change",
+      "pick": "Which kind of wedding?",
+      "datesTitle": "Your dates go here",
+      "datesBody": "Add them and your countdown starts.",
+      "start": "Start"
+    },
+    "reels": {
+      "title": "Wedding reels",
+      "label": "Reel from {{who}}"
+    },
     "forVendors": "Are you a vendor? Get listed",
     "seeAll": "See all",
-    "whatDoYouNeed": "What do you need?",
-    "seeAllTypes": "All types",
     "nextUp": "Next up",
     "booked": "booked",
     "seePlan": "See plan",
     "freeOnDateCount": "{{shown}} free on your date",
     "nearYouCount": "{{shown}} near you",
-    "noneYet": "None near you yet",
     "seeThem": "See them",
     "bookedButton": "Booked",
     "bookedSpoken": "Mark {{name}} booked for the {{event}}",
@@ -113,24 +116,12 @@
       "save": "Save my plan",
       "notNow": "Not now"
     },
-    "bookFirst": {
-      "title": "Book these first",
-      "toChoose": "{{shown}} to choose from",
-      "notBooked": "{{shown}} not booked on {{date}}",
-      "forEvents": {
-        "one": "Needed at 1 event",
-        "other": "Needed at {{count}} events"
-      },
-      "addDate": "Add your date to see who's free"
-    },
     "signIn": "Sign in",
     "hello": "Hello, {{name}}",
     "helloPlain": "Hello",
     "yourWedding": "Your wedding",
     "seeMore": "See more",
     "freeOn": "Free {{date}}",
-    "freeOnYourDate": "Free on your date",
-    "nearYou": "Near you",
     "greeting": {
       "morning": "Good morning, {{name}}",
       "morningPlain": "Good morning",
@@ -586,10 +577,6 @@
     }
   },
   "counts": {
-    "vendorTypes": {
-      "one": "1 vendor type",
-      "other": "{{count}} vendor types"
-    },
     "vendors": {
       "zero": "No vendors yet",
       "one": "1 vendor",
