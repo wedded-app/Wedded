@@ -21,6 +21,7 @@ import {
   RequestsCard,
   YourVendors,
 } from '@/features/search/vendors-tab-parts';
+import { BusinessButton, BusinessCard } from '@/features/vendor-join/business-entry';
 import { localized } from '@/i18n/localized';
 import { useLocale } from '@/i18n/locale-context';
 
@@ -36,7 +37,11 @@ const SHELVES = 3;
  * Start with the hall, a few small shelves of what's still to book, and the
  * Requests card. With a plan it follows the family's events and what they've
  * booked; without one, the main events of their tradition. Search, a kind's
- * results, All categories and Requests open on this tab's stack. /vendors
+ * results, All categories and Requests open on this tab's stack. Businesses
+ * come in here too (2026-11-10): For business at the top left, where
+ * business mode shows its label (one tap to the business side for someone
+ * who runs one), and a card at the bottom.
+ * /vendors
  */
 export default function VendorsScreen() {
   const { t } = useLocale();
@@ -72,6 +77,7 @@ export default function VendorsScreen() {
       title={t('tabs.vendors')}
       subtitle={<NearPlace />}
       back={false}
+      leading={<BusinessButton />}
       trailing={<ChatButton />}
     >
       <View style={styles.top}>
@@ -126,6 +132,7 @@ export default function VendorsScreen() {
       )}
 
       <RequestsCard />
+      <BusinessCard />
     </NavScreen>
   );
 }

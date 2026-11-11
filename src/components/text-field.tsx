@@ -28,7 +28,8 @@ export type TextFieldProps = Omit<TextInputProps, 'style' | 'placeholderTextColo
   style?: StyleProp<ViewStyle>;
 };
 
-const TYPE_PROPS: Record<TextFieldType, TextInputProps> = {
+/** The keyboard and autofill for each kind of field (LineField uses them too). */
+export const TYPE_PROPS: Record<TextFieldType, TextInputProps> = {
   text: {},
   name: {
     autoComplete: 'name',
@@ -58,10 +59,12 @@ const TYPE_PROPS: Record<TextFieldType, TextInputProps> = {
 };
 
 /**
- * A labelled text box, 52 tall: white with a thin grey outline on the grey
- * page, the outline turning the app colour while you type. The label stays
- * visible above the box, and the box grows with large system text. Pass
- * `ref` to move focus between fields.
+ * A labelled text box, 52 tall: the soft field colour with a thin grey
+ * outline, the outline turning ink while you type (black, or white in dark
+ * mode, like the buttons; Fezy, 2026-11-10: quieter than the maroon). The
+ * label stays visible above the box, and the box grows with large system
+ * text. Pass `ref` to move focus between fields. A page that asks one thing
+ * uses LineField instead.
  */
 export function TextField({
   label,
@@ -99,7 +102,7 @@ export function TextField({
         placeholderTextColor={Colors.text2}
         maxFontSizeMultiplier={maxFontSizeMultiplier}
         selectionColor={Colors.primary}
-        cursorColor={Colors.primary}
+        cursorColor={Colors.text}
         {...TYPE_PROPS[type]}
         {...rest}
         value={value}
@@ -153,7 +156,7 @@ const useStyles = makeStyles((Colors) => ({
   },
   focused: {
     borderWidth: BorderWidth.strong,
-    borderColor: Colors.primary,
+    borderColor: Colors.text,
     // Keep the text still when the outline thickens.
     paddingHorizontal: Spacing.lg - 1,
     paddingVertical: Spacing.md - 1,

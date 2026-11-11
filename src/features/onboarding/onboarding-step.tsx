@@ -163,8 +163,9 @@ export function OnboardingStep({
 /**
  * The thin bar at the top: it starts where the last question left it and
  * fills this question's share on the iPhone's curve as the page slides in.
+ * List your business (/for-vendors) uses it too.
  */
-function ProgressBar({ from, to, label }: { from: number; to: number; label: string }) {
+export function ProgressBar({ from, to, label }: { from: number; to: number; label: string }) {
   const styles = useStyles();
   const reduceMotion = useReducedMotion();
   const value = useSharedValue(reduceMotion ? to : from);
@@ -192,7 +193,7 @@ function ProgressBar({ from, to, label }: { from: number; to: number; label: str
  * Hinge's round black arrow, bottom right: grey until the question has an
  * answer, then black, shrinking a little under the finger.
  */
-function NextButton({
+export function NextButton({
   label,
   onPress,
   disabled,
@@ -207,7 +208,8 @@ function NextButton({
   const styles = useStyles();
   const reduceMotion = useReducedMotion();
   const ready = useSharedValue(disabled ? 0 : 1);
-  const [offColor, onColor] = [Colors.separator, Colors.primaryFill];
+  // Ink: black on white, white on black (List your business follows dark mode)
+  const [offColor, onColor] = [Colors.separator, Colors.text];
 
   useEffect(() => {
     const target = disabled ? 0 : 1;
@@ -313,7 +315,7 @@ const useStyles = makeStyles((Colors) => ({
   fill: {
     height: '100%',
     borderRadius: 2,
-    backgroundColor: Colors.primaryFill,
+    backgroundColor: Colors.text,
   },
   side: {
     minWidth: 44,

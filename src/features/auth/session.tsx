@@ -54,8 +54,13 @@ type SessionContextValue = {
    * sign-in and run it once they finish (vision §8, "pending action after
    * login"). Kept in memory only. `planning` marks an action that opens the
    * wedding questions, which a new account that came for something else skips.
+   * `joinAs: 'business'` (List your business, which asks its own questions
+   * first) makes a new account a business without asking what it came for.
    */
-  requireSignIn: (action?: () => void, options?: { planning?: boolean }) => void;
+  requireSignIn: (
+    action?: () => void,
+    options?: { planning?: boolean; joinAs?: 'business' },
+  ) => void;
   /**
    * Called by the sign-in screen when it's done: closes it, then runs the
    * pending action, unless that's planning and a new account joined as
@@ -150,13 +155,15 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const requireSignIn = useCallback(
-    (action?: () => void, options?: { planning?: boolean }) => {
+    (action?: () => void, options?: { planning?: boolean; joinAs?: 'business' }) => {
       if (status === 'signedIn') {
         action?.();
         return;
       }
       pendingAction.current = { run: action, planning: options?.planning };
-      router.push('/sign-in');
+      router.push(
+        options?.joinAs ? { pathname: '/sign-in', params: { as: options.joinAs } } : '/sign-in',
+      );
     },
     [status],
   );

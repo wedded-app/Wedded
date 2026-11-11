@@ -459,9 +459,81 @@
       "nothing": "Nothing went to anyone {{who}}"
     }
   },
-  "forVendors": {
+  "vendorJoin": {
+    "kicker": "Wedded for business",
     "title": "List your business, free",
-    "intro": "Listing your business on Wedded is free. Families browsing find you for exactly what you do. Leave your details and we'll call or text you to set up your page.",
+    "body": "Families planning a wedding near you find you by what you do.",
+    "promises": {
+      "free": {
+        "title": "Free to list",
+        "body": "No fees to be found, asked or messaged."
+      },
+      "families": {
+        "title": "Families write to you",
+        "body": "They ask about their dates, and you reply right here."
+      },
+      "calendar": {
+        "title": "Your page, your calendar",
+        "body": "Show your work and prices, and the days you're free."
+      }
+    },
+    "start": "Get started",
+    "open": "Open my business",
+    "another": "List another business",
+    "callMe": "Rather talk to us? Leave your number",
+    "signIn": "Sign in",
+    "name": {
+      "title": "What's your business called?",
+      "subtitle": "The name families will see.",
+      "label": "Business name"
+    },
+    "kind": {
+      "title": "What do you do?",
+      "subtitle": "Pick the one that fits best.",
+      "search": "Search, like DJ or caterer",
+      "searchLabel": "Search what you do"
+    },
+    "town": {
+      "title": "Where are you based?",
+      "subtitle": "So families nearby can find you.",
+      "label": "Town or city"
+    },
+    "make": "Make my page",
+    "previewName": "Your business",
+    "previewEmpty": "What you do · where",
+    "previewSpoken": "Your page so far: {{name}}. {{details}}",
+    "ready": {
+      "tag": "Not live yet",
+      "title": "Your page is started",
+      "next": {
+        "photos": {
+          "title": "Add photos and prices",
+          "body": "In My page, so families can see your work."
+        },
+        "review": {
+          "title": "We look it over",
+          "body": "The Wedded team checks every new page before families see it."
+        },
+        "found": {
+          "title": "Families find you",
+          "body": "When they ask about a date, you'll see it in Leads."
+        }
+      },
+      "open": "Open my business"
+    },
+    "entry": {
+      "list": "For business",
+      "listSpoken": "For business: list your business on Wedded",
+      "switch": "Business",
+      "switchSpoken": "Switch to your business",
+      "cardTitle": "Run a wedding business?",
+      "cardBody": "List it on Wedded for free, so families planning nearby can find you.",
+      "cardButton": "List your business"
+    }
+  },
+  "forVendors": {
+    "title": "Talk to us first",
+    "intro": "Leave your details and we'll call or text you to set up your page together. Listing on Wedded is free.",
     "claimTitle": "Claim your profile",
     "claimIntro": "Is this your business? Tell us who you are. To keep families and your page safe, we check every claim twice.",
     "businessName": "Business name",
