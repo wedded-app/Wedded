@@ -81,15 +81,18 @@ export function DateCard({ planDate }: { planDate?: string | null }) {
     selectionHaptic();
     if (planning) router.push('/plan');
     else if (drafted) {
-      requireSignIn(() => {
-        save()
-          .then(() => router.navigate('/plan'))
-          .catch(() => {
-            const message = t('home.dateCard.saveFailed');
-            if (Platform.OS === 'web') globalThis.alert(message);
-            else Alert.alert(message);
-          });
-      });
+      requireSignIn(
+        () => {
+          save()
+            .then(() => router.navigate('/plan'))
+            .catch(() => {
+              const message = t('home.dateCard.saveFailed');
+              if (Platform.OS === 'web') globalThis.alert(message);
+              else Alert.alert(message);
+            });
+        },
+        { reason: { kind: 'plan' } },
+      );
     } else startPlanning();
   };
 

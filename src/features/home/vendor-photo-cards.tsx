@@ -154,7 +154,7 @@ function PhotoCard({
   const saveLabel = saved ? t('vendorCard.unsave', { name }) : t('vendorCard.save', { name });
   const save = () => {
     saveHaptic();
-    toggleSave(vendor.id, eventSlug);
+    toggleSave(vendor.id, eventSlug, { name, photo: vendor.photoUrl });
   };
 
   return (

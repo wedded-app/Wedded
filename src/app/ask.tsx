@@ -295,8 +295,9 @@ export default function AskScreen() {
       },
       sendAgain,
     };
-    requireSignIn(() =>
-      sending.mutate(draft, { onSuccess: (outcome) => handle(outcome, sendAgain) }),
+    requireSignIn(
+      () => sending.mutate(draft, { onSuccess: (outcome) => handle(outcome, sendAgain) }),
+      vendor.data ? { reason: { kind: 'ask', name: localized(vendor.data.name) } } : undefined,
     );
   }
 

@@ -33,6 +33,16 @@ export type Profile = Database['public']['Tables']['profiles']['Row'];
  */
 export type SessionStatus = 'loading' | 'signedOut' | 'needsProfile' | 'signedIn' | 'error';
 
+/**
+ * Why sign-in opened, so its first page says so (2026-11-11): after a
+ * heart, that vendor's photo and "Save Royal Orchard"; from the plan, "Save
+ * your plan"; from Ask, "Ask Dhol Di Awaaz". Without one it's a plain Sign in.
+ */
+export type SignInReason =
+  | { kind: 'plan' }
+  | { kind: 'save'; name: string; photo: string | null }
+  | { kind: 'ask'; name: string };
+
 type SessionContextValue = {
   status: SessionStatus;
   session: Session | null;
@@ -53,9 +63,15 @@ type SessionContextValue = {
    * Run `action` now if they're signed in with a profile; otherwise open
    * sign-in and run it once they finish (vision §8, "pending action after
    * login"). Kept in memory only. `planning` marks an action that opens the
-   * wedding questions, which a new account that came for something else skips.
+   * wedding questions, which a new account that came for something else skips;
+   * `reason` is what the sign-in page says it's for.
    */
-  requireSignIn: (action?: () => void, options?: { planning?: boolean }) => void;
+  requireSignIn: (
+    action?: () => void,
+    options?: { planning?: boolean; reason?: SignInReason },
+  ) => void;
+  /** Why the sign-in page now open was opened (requireSignIn's `reason`), or null. */
+  signInReason: () => SignInReason | null;
   /**
    * Called by the sign-in screen when it's done: closes it, then runs the
    * pending action, unless that's planning and a new account joined as
@@ -85,7 +101,11 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   const [sessionChecked, setSessionChecked] = useState(false);
   const [lookup, setLookup] = useState<ProfileLookup | null>(null);
   const [attempt, setAttempt] = useState(0);
-  const pendingAction = useRef<{ run?: () => void; planning?: boolean } | null>(null);
+  const pendingAction = useRef<{
+    run?: () => void;
+    planning?: boolean;
+    reason?: SignInReason;
+  } | null>(null);
 
   const userId = session?.user.id ?? null;
   const appleHint = useNameHint();
@@ -150,12 +170,16 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const requireSignIn = useCallback(
-    (action?: () => void, options?: { planning?: boolean }) => {
+    (action?: () => void, options?: { planning?: boolean; reason?: SignInReason }) => {
       if (status === 'signedIn') {
         action?.();
         return;
       }
-      pendingAction.current = { run: action, planning: options?.planning };
+      pendingAction.current = {
+        run: action,
+        planning: options?.planning,
+        reason: options?.reason,
+      };
       router.push('/sign-in');
     },
     [status],
@@ -175,6 +199,8 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   const cancelSignIn = useCallback(() => {
     pendingAction.current = null;
   }, []);
+
+  const signInReason = useCallback(() => pendingAction.current?.reason ?? null, []);
 
   // Apple's name is only offered to the account with that Apple ID.
   const user = session?.user;
@@ -204,6 +230,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
       profileSaved,
       signOut,
       requireSignIn,
+      signInReason,
       finishSignIn,
       cancelSignIn,
     }),
@@ -218,6 +245,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
       profileSaved,
       signOut,
       requireSignIn,
+      signInReason,
       finishSignIn,
       cancelSignIn,
     ],
