@@ -68,7 +68,7 @@ export default function BusinessTabsLayout() {
   }));
 
   return (
-    <TabBarSpaceProvider value={Sizes.tabBar + offset + Spacing.sm}>
+    <TabBarSpaceProvider value={{ space: Sizes.tabBar + offset + Spacing.sm }}>
       <Tabs
         tabBar={(props) => (
           <TabBar

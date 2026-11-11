@@ -47,6 +47,21 @@ export type TabSpec = {
   alsoFor?: string[];
 };
 
+/**
+ * A button that looks like a tab (its icon over its name, grey) but opens
+ * something instead of switching tabs: Wed, in the middle slot.
+ */
+export type TabAction = {
+  label: string;
+  /** The icon, drawn in `color`. */
+  renderIcon: (color: string) => ReactNode;
+  badge?: number;
+  accessibilityLabel: string;
+  accessibilityHint?: string;
+  onPress: () => void;
+  onLongPress?: () => void;
+};
+
 // Between the bar's edge and the tabs; each tab (and the lens behind the
 // selected one) fills the bar's height inside it
 const PADDING = 6;
@@ -93,29 +108,35 @@ export function useTabBarOffset() {
   return Math.max(insets.bottom - 12, Spacing.md);
 }
 
-// The space a screen inside the tabs leaves at the bottom of its scroll
-// content so the last row can scroll clear of the floating bar. Zero outside
-// the tabs (the vendor profile, sheets).
-const TabBarSpaceContext = createContext(0);
+/**
+ * What a screen inside the tabs leaves at the bottom so its last row can
+ * scroll clear of the tab bar: `space` under the floating bar drawn here, or
+ * `native` under iOS's own bar, whose height is already in the safe area
+ * (each native tab has its own). Null outside the tabs (the vendor profile,
+ * sheets).
+ */
+export type TabBarSpace = { space: number } | { native: true };
+const TabBarSpaceContext = createContext<TabBarSpace | null>(null);
 export const TabBarSpaceProvider = TabBarSpaceContext.Provider;
 
-/** Bottom padding for a scroll view: clears the floating tab bar, or the home indicator. */
+/** Bottom padding for a scroll view: clears the tab bar, or the home indicator. */
 export function useBottomSpace() {
-  const tabBarSpace = useContext(TabBarSpaceContext);
+  const tabBar = useContext(TabBarSpaceContext);
   const insets = useSafeAreaInsets();
-  return Math.max(tabBarSpace, insets.bottom) + Spacing.xl;
+  const space = tabBar && 'space' in tabBar ? tabBar.space : 0;
+  return Math.max(space, insets.bottom) + Spacing.xl;
 }
 
 /**
- * How far the floating tab bar's top edge sits above the bottom of the
- * screen, or the home indicator's outside the tabs: for full-screen media
- * like Reels, whose words and progress line sit right on it.
+ * How far the tab bar's top edge sits above the bottom of the screen, or
+ * the home indicator's outside the tabs: for full-screen media like Reels,
+ * whose words and progress line sit right on it.
  */
 export function useTabBarTop() {
-  const inTabs = useContext(TabBarSpaceContext) > 0;
+  const tabBar = useContext(TabBarSpaceContext);
   const insets = useSafeAreaInsets();
   const offset = useTabBarOffset();
-  return inTabs ? Sizes.tabBar + offset : insets.bottom;
+  return tabBar && 'space' in tabBar ? Sizes.tabBar + offset : insets.bottom;
 }
 
 /**
@@ -123,11 +144,12 @@ export function useTabBarTop() {
  * content (TabBarSpaceProvider leaves room for it), every tab its icon with
  * its name under it, and a soft grey lens behind the selected one that glides
  * from tab to tab. The selected tab's icon fills in and turns ink (saffron in
- * business mode); the others stay outlined and grey. `center` (Wed's button) takes
- * the middle slot between two halves of tabs, level with them; what it opens
- * (Wed's sheet) slides up over the tab, so the lens stays on the tab. Over
- * Reels the glass is always dark. Slides away while a screen asks with
- * useHideTabBar().
+ * business mode); the others stay outlined and grey. The middle slot, between
+ * two halves of tabs, takes `action` (Wed on the planning side, drawn like a
+ * tab) or `center` (business mode's bow); what it opens slides up over the
+ * tab, so the lens stays on the tab. Over Reels the glass is always dark.
+ * Slides away while a screen asks with useHideTabBar(). iPhone's planning
+ * tabs use iOS's own bar instead (src/app/(tabs)/_layout.tsx).
  */
 export function TabBar({
   state,
@@ -135,11 +157,13 @@ export function TabBar({
   navigateToTab,
   tabs,
   accent = 'text',
+  action,
   center,
 }: TabBarProps & {
   tabs: TabSpec[];
   /** The selected tab's colour: black (white in dark mode), or saffron in business mode, so it's clear which side this is. */
   accent?: 'text' | 'kesari';
+  action?: TabAction;
   center?: ReactNode;
 }) {
   const appColors = useColors();
@@ -158,7 +182,8 @@ export function TabBar({
   const tint = accent === 'kesari' ? Colors.kesari : Colors.text;
   // Only the routes with a tab: a hidden route (href: null) gets no slot
   const shown = state.routes.filter((route) => tabs.some((tab) => tab.name === route.name));
-  const half = center ? Math.ceil(shown.length / 2) : shown.length;
+  const middle = !!(action || center);
+  const half = middle ? Math.ceil(shown.length / 2) : shown.length;
   const keyboardShown = useKeyboardShown();
   const hidden = useSyncExternalStore(subscribeHidden, isHidden, neverHidden);
   const drop = useSharedValue(0);
@@ -169,10 +194,10 @@ export function TabBar({
     !!tabs.find((tab) => tab.name === route.name)?.alsoFor?.includes(current);
 
   // Equal slots in screen order: the first half, the middle button, the rest
-  const slots = shown.length + (center ? 1 : 0);
+  const slots = shown.length + (middle ? 1 : 0);
   const slotWidth = rowWidth > 0 ? rowWidth / slots : 0;
   const selectedAt = shown.findIndex(isSelected);
-  const lensSlot = selectedAt >= 0 ? selectedAt + (center && selectedAt >= half ? 1 : 0) : -1;
+  const lensSlot = selectedAt >= 0 ? selectedAt + (middle && selectedAt >= half ? 1 : 0) : -1;
 
   const lensX = useSharedValue(0);
   const lensOpacity = useSharedValue(0);
@@ -232,7 +257,22 @@ export function TabBar({
           }
         >
           {shown.slice(0, half).map(renderTab)}
-          {center ? <View style={styles.slot}>{center}</View> : null}
+          {action ? (
+            renderSlot({
+              key: 'action',
+              label: action.label,
+              selected: false,
+              badge: action.badge,
+              icon: action.renderIcon,
+              role: 'button',
+              accessibilityLabel: action.accessibilityLabel,
+              accessibilityHint: action.accessibilityHint,
+              onPress: action.onPress,
+              onLongPress: action.onLongPress,
+            })
+          ) : center ? (
+            <View style={styles.slot}>{center}</View>
+          ) : null}
           {shown.slice(half).map(renderTab)}
         </View>
       </Animated.View>
@@ -243,41 +283,68 @@ export function TabBar({
     const focused = route.name === current;
     const spec = tabs.find((tab) => tab.name === route.name)!;
     const selected = isSelected(route);
+
+    return renderSlot({
+      key: route.key,
+      label: spec.label,
+      selected,
+      badge: spec.badge,
+      icon: (color) =>
+        spec.renderIcon ? (
+          spec.renderIcon(color, selected)
+        ) : (
+          <Icon
+            name={(selected ? spec.iconFilled : spec.icon) ?? spec.icon}
+            size={Sizes.tabIcon}
+            color={color}
+            weight={selected ? 'semibold' : 'regular'}
+          />
+        ),
+      role: 'tab',
+      accessibilityLabel: spec.badge ? `${spec.label}, ${spec.badge}` : spec.label,
+      onPress: () => {
+        const event = emitter.emit({
+          type: 'tabPress',
+          target: route.key,
+          canPreventDefault: true,
+        });
+        if (!focused && !event.defaultPrevented) {
+          navigateToTab(route.key);
+        }
+      },
+      onLongPress: () => emitter.emit({ type: 'tabLongPress', target: route.key }),
+    });
+  }
+
+  // One slot: the icon (with its count) over the name
+  function renderSlot(slot: {
+    key: string;
+    label: string;
+    selected: boolean;
+    badge?: number;
+    icon: (color: string) => ReactNode;
+    role: 'tab' | 'button';
+    accessibilityLabel: string;
+    accessibilityHint?: string;
+    onPress: () => void;
+    onLongPress?: () => void;
+  }) {
+    const { selected, badge } = slot;
     const color = selected ? tint : Colors.text2;
-
-    const onPress = () => {
-      const event = emitter.emit({
-        type: 'tabPress',
-        target: route.key,
-        canPreventDefault: true,
-      });
-      if (!focused && !event.defaultPrevented) {
-        navigateToTab(route.key);
-      }
-    };
-
     return (
       <Pressable
-        key={route.key}
-        accessibilityRole="tab"
-        accessibilityState={{ selected }}
-        accessibilityLabel={spec.badge ? `${spec.label}, ${spec.badge}` : spec.label}
-        onPress={onPress}
-        onLongPress={() => emitter.emit({ type: 'tabLongPress', target: route.key })}
+        key={slot.key}
+        accessibilityRole={slot.role}
+        accessibilityState={slot.role === 'tab' ? { selected } : undefined}
+        accessibilityLabel={slot.accessibilityLabel}
+        accessibilityHint={slot.accessibilityHint}
+        onPress={slot.onPress}
+        onLongPress={slot.onLongPress}
         style={({ pressed }) => [styles.slot, pressed && !selected && styles.pressed]}
       >
         <View>
-          {spec.renderIcon ? (
-            spec.renderIcon(color, selected)
-          ) : (
-            <Icon
-              name={(selected ? spec.iconFilled : spec.icon) ?? spec.icon}
-              size={Sizes.tabIcon}
-              color={color}
-              weight={selected ? 'semibold' : 'regular'}
-            />
-          )}
-          {!!spec.badge && (
+          {slot.icon(color)}
+          {!!badge && (
             <View style={[styles.badge, { borderColor: Colors.surface }]}>
               <AppText
                 variant="caption"
@@ -286,7 +353,7 @@ export function TabBar({
                 maxFontSizeMultiplier={1.2}
                 style={styles.badgeText}
               >
-                {spec.badge > 99 ? '99+' : String(spec.badge)}
+                {badge > 99 ? '99+' : String(badge)}
               </AppText>
             </View>
           )}
@@ -301,7 +368,7 @@ export function TabBar({
           minimumFontScale={0.75}
           style={[styles.label, { color }]}
         >
-          {spec.label}
+          {slot.label}
         </AppText>
       </Pressable>
     );
