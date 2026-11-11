@@ -165,6 +165,9 @@
     "needsTitle": "Vendors you'll need",
     "essential": "Essential",
     "niceToHave": "Nice to have",
+    "planTitle": "Planning the {{event}}?",
+    "planBody": "Start your plan: each event with its own day, and what each one still needs. No account needed.",
+    "planStart": "Start my plan",
     "notFound": "We couldn't find that event."
   },
   "results": {
