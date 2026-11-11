@@ -1,5 +1,5 @@
 // In supabase/functions/_shared: deno test --allow-env (CI runs it).
-import { eventDatesRow } from './inquiry-email.ts';
+import { detailRows, eventDatesRow } from './inquiry-email.ts';
 
 function expectEqual(actual: unknown, expected: unknown, what: string) {
   const a = JSON.stringify(actual);
@@ -46,4 +46,27 @@ Deno.test('missing, odd or malformed dates are skipped', () => {
     null,
     'bad date',
   );
+});
+
+Deno.test("a hall's answers from Ask for a quote read as booking-sheet rows", () => {
+  expectEqual(
+    detailRows({
+      timeOfDay: 'evening',
+      catering: 'in_house',
+      food: 'jhatka',
+      liveStations: ['tandoor', 'chai'],
+      alcohol: 'yes',
+      ghoriDhol: true,
+    }),
+    [
+      ['Time of day', 'Evening (dinner)'],
+      ['Food', "The hall's kitchen"],
+      ['Alcohol', 'Yes'],
+      ['Baraat arriving with a horse and dhol', 'Yes'],
+      ['Food', 'Jhatka'],
+      ['Live counters', 'Tandoor, Chai'],
+    ],
+    'hall answers',
+  );
+  expectEqual(detailRows({ timeOfDay: 'midnight' }), [], 'an unknown time of day');
 });

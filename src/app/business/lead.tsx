@@ -79,10 +79,6 @@ function LeadDetails({ lead }: { lead: Lead }) {
         {lead.location ? (
           <ListRow title={t('business.leads.where')} subtitle={lead.location} />
         ) : null}
-        <ListRow
-          title={t('business.leads.replyBy')}
-          subtitle={t(`inquiry.replyWays.${lead.preferredContact}`)}
-        />
       </ListSection>
 
       {lead.message ? (

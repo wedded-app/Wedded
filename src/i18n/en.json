@@ -758,14 +758,211 @@
       "unavailable": "We couldn't find your location. Type your city instead."
     }
   },
+  "ask": {
+    "stepOf": "Step {{step}} of {{total}}",
+    "askVendor": "Ask {{vendor}}",
+    "visitVendor": "Visit {{vendor}}",
+    "next": "Next",
+    "close": "Close",
+    "event": {
+      "title": "Which event is it for?",
+      "subtitle": "Your events from your plan. Pick one, or a few to ask about together.",
+      "subtitleNoPlan": "Pick one, or a few to ask about together.",
+      "suggested": "Suggested",
+      "another": "Another event",
+      "guests": "{{band}} guests",
+      "summaryNone": "Not sure is fine too",
+      "summaryMany": "{{number}} events"
+    },
+    "when": {
+      "title": "When is it?",
+      "titleOne": "When is the {{event}}?",
+      "fromPlan": "{{date}} is in your plan. Tap another day to change it.",
+      "fromPlanMany": "Each event's day from your plan goes with your request. Tap a day to ask about that one instead.",
+      "pick": "Tap the day, or say you're not sure yet.",
+      "unsure": "Not sure of the day yet",
+      "unsureHint": "They can still give you a price.",
+      "summaryUnsure": "Not sure yet",
+      "status": {
+        "open": "Open on {{date}}, as of their calendar.",
+        "booked": "Booked on {{date}}, as of their calendar. You can still ask.",
+        "held": "Someone is holding {{date}}. Ask soon.",
+        "partly": "Part of {{date}} is booked. Ask which part is free."
+      }
+    },
+    "guests": {
+      "title": "About how many guests?",
+      "subtitle": "A rough number is fine.",
+      "subtitleSeats": "A rough number is fine. {{vendor}} seats {{seats}}.",
+      "unit": "guests",
+      "label": "About how many guests",
+      "count": "{{number}} guests",
+      "fewer": "Fewer guests",
+      "more": "More guests",
+      "each": "Each person here is {{number}} guests",
+      "seats": "Seats {{seats}}",
+      "fits": "Fits in the hall.",
+      "over": "More than they seat ({{seats}}). You can still ask.",
+      "unsure": "Not sure yet"
+    },
+    "details": {
+      "hallTitle": "What the hall needs to know",
+      "subtitle": "All optional. The more you answer, the closer their price.",
+      "catererTitle": "What the caterer needs to know",
+      "catererSubtitle": "Where it is, then anything you know about the food.",
+      "otherTitle": "A little more for {{vendor}}",
+      "otherSubtitle": "So they can give you a real price.",
+      "visitTitle": "When could you visit?",
+      "visitSubtitle": "Pick up to 3 days. They'll confirm one, with a time.",
+      "visitDays": "Which days?",
+      "visitPart": "What time of day?",
+      "visitPicked": "{{number}} of 3 days picked",
+      "answered": "{{number}} of {{total}} answered",
+      "timeOfDay": "Day or evening?",
+      "times": {
+        "day": "Daytime",
+        "evening": "Evening",
+        "both": "Both"
+      },
+      "timesSub": {
+        "day": "Lunch",
+        "evening": "Dinner",
+        "both": "Same day"
+      },
+      "food": "Who's bringing the food?",
+      "foodHallOnly": "{{vendor}} is hall only, so their kitchen isn't an option here.",
+      "foodKitchenOnly": "{{vendor}} does all the food here.",
+      "foodApproved": "{{vendor}} cooks, or you can bring a caterer from their list.",
+      "foodBoth": "{{vendor}} cooks, or you can bring your own caterer.",
+      "cooks": {
+        "kitchen": "Their kitchen",
+        "own": "Your caterer",
+        "not_sure": "Not sure"
+      },
+      "cooksSub": {
+        "kitchen": "They cook",
+        "kitchenOff": "Not here",
+        "own": "You bring it",
+        "ownList": "From their list",
+        "ownOff": "Not allowed",
+        "not_sure": "Decide later"
+      },
+      "kitchenOff": "{{vendor}} doesn't cook. Pick Your caterer or Not sure.",
+      "ownOff": "{{vendor}} doesn't allow outside caterers.",
+      "ownNote": "We'll tell them you're bringing your own caterer.",
+      "ownListNote": "They allow caterers from their list. We'll ask them to send it.",
+      "unsureNote": "We'll tell them you're still deciding on food.",
+      "menu": "What's on the menu?",
+      "menuHint": "Swipe, then tap.",
+      "menus": {
+        "veg": "Veg only",
+        "nonveg": "Veg and non-veg"
+      },
+      "menusSub": {
+        "veg": "Paneer, dal, sabzi and naan",
+        "nonveg": "Chicken and lamb as well"
+      },
+      "meat": "Jhatka or halal?",
+      "meats": {
+        "jhatka": "Jhatka",
+        "halal": "Halal",
+        "either": "Either"
+      },
+      "counters": "Any live counters?",
+      "tasting": "Would you like a tasting first?",
+      "tastingYes": "Yes, please",
+      "bar": "Will you use their bar?",
+      "barFull": "They have a full bar.",
+      "barBeerWine": "They serve beer and wine.",
+      "byob": "Bringing your own drinks?",
+      "byobNote": "There's no bar here. You can bring your own.",
+      "byobFee": "There's no bar here. You can bring your own, for a {{fee}} fee.",
+      "alcohol": "Will there be alcohol?",
+      "alcohols": {
+        "yes": "Yes",
+        "bring": "We'll bring",
+        "no": "No alcohol",
+        "not_sure": "Not decided"
+      },
+      "baraat": "Is the baraat arriving here?",
+      "baraatNote": "With a horse and dhol, the hall keeps the lot clear for it.",
+      "baraatAllowed": "They allow a horse, and dhol outside.",
+      "baraatHorse": "They allow a horse.",
+      "baraatNoHorse": "They don't allow a horse here.",
+      "yes": "Yes",
+      "no": "No",
+      "where": "Where is it?",
+      "whereHint": "The hall, or your town",
+      "whereMissing": "Type the hall or your town, so they can quote travel."
+    },
+    "message": {
+      "title": "Here's your message",
+      "subtitle": "Written from your answers. Tap it to change a word.",
+      "written": "Written for you",
+      "useWritten": "Use what we wrote",
+      "label": "Your message to {{vendor}}",
+      "sendingAs": "Sending as {{name}}",
+      "you": "you",
+      "contact": "{{phone}} and your email",
+      "contactEmail": "Your email",
+      "change": "Change",
+      "done": "Done",
+      "name": "Your name",
+      "phone": "Your phone",
+      "signIn": "When you tap Send, we'll ask you to sign in with your email. Nothing you wrote is lost.",
+      "consent": "{{vendor}} gets your name, number and email, and replies the way that suits them: a call, a text, or here in your chat. You get a copy by email.",
+      "send": "Send to {{vendor}}",
+      "sendVisit": "Ask {{vendor}} for a visit"
+    },
+    "write": {
+      "hello": "Sat Sri Akal!",
+      "and": "and",
+      "or": "or",
+      "our": "our {{events}}",
+      "aWedding": "a wedding",
+      "eventOn": "{{event}} on {{date}}",
+      "inPlace": " in {{place}}",
+      "onDate": " on {{date}}",
+      "time": {
+        "day": ", during the day",
+        "evening": ", in the evening",
+        "both": ", for lunch and the evening"
+      },
+      "guests": ", for about {{number}} guests",
+      "planning": "We're planning {{what}}{{place}}{{when}}{{time}}{{guests}}.",
+      "ownCaterer": "we're bringing our own caterer",
+      "foodUndecided": "we haven't decided on food yet",
+      "useBar": "we'd like to use your bar",
+      "ownDrinks": "we'll bring our own drinks",
+      "alcohol": "there will be alcohol",
+      "noAlcohol": "there won't be alcohol",
+      "baraat": "the baraat will arrive at the hall with a horse and dhol",
+      "kitchen": "We'd like your kitchen to do the food.",
+      "kitchenFood": "We'd like your kitchen to do the food: {{food}}.",
+      "catererFood": "For the menu, we'd like {{food}}.",
+      "tasting": "We'd love a tasting first.",
+      "menu": {
+        "veg": "veg only",
+        "nonveg": "veg and non-veg",
+        "jhatka": "veg and non-veg, jhatka",
+        "halal": "veg and non-veg, halal"
+      },
+      "counters": "with {{counters}} counters",
+      "price": "Could you share your price? Thank you.",
+      "priceAndDay": "Could you share your price, and is the {{day}} still open? Thank you.",
+      "priceAndDays": "Could you share your price, and are those days still open? Thank you.",
+      "visit": "We'd like to come and see the hall. Which days work for you? Thank you.",
+      "visitOn": "We'd like to come and see the hall. Could we visit on {{days}}, in the {{part}}? Thank you.",
+      "parts": {
+        "morning": "morning",
+        "afternoon": "afternoon",
+        "evening": "evening"
+      }
+    }
+  },
   "inquiry": {
-    "title": "Ask about price & date",
-    "whichEvent": "Which event?",
     "otherEvents": "Other events",
-    "date": "When is it?",
-    "pickDate": "Pick the date",
     "dateUnsure": "Not sure yet",
-    "guests": "About how many guests?",
     "guestBands": {
       "under_50": "Under 50",
       "50_100": "50 to 100",
@@ -774,50 +971,13 @@
       "500_plus": "500+",
       "not_sure": "Not sure"
     },
-    "guestsInMessage": {
-      "under_50": "fewer than 50",
-      "50_100": "50 to 100",
-      "100_250": "100 to 250",
-      "250_500": "250 to 500",
-      "500_plus": "500 or more"
-    },
-    "where": "Where?",
-    "whereHint": "Your city or the hall. Vendors need it to quote travel.",
-    "message": "Message",
-    "useSuggested": "Use the suggested message",
-    "signInAtSend": "When you tap Send, we'll ask you to sign in with your email. Nothing you typed is lost.",
-    "replyBy": "How should they reply?",
-    "replyWays": {
-      "call": "Call",
-      "text": "Text",
-      "whatsapp": "WhatsApp",
-      "email": "Email"
-    },
-    "consent": "We'll send your inquiry to {{vendor}} with your name, phone and email. They reply to you directly. You get a copy.",
-    "send": "Send",
     "alreadyAsked": "You already asked {{vendor}} on {{date}}. Send again?",
     "sendAgain": "Send again",
     "discardTitle": "Discard this message?",
     "discardBody": "What you typed won't be sent.",
     "keepEditing": "Keep editing",
     "discard": "Discard",
-    "auto": {
-      "withDateAndGuests": "Sat Sri Akal, we're planning {{events}} on {{date}} in {{place}} for about {{guests}} guests. Could you share your price and whether you're available? Thank you.",
-      "withDate": "Sat Sri Akal, we're planning {{events}} on {{date}} in {{place}}. Could you share your price and whether you're available? Thank you.",
-      "withGuests": "Sat Sri Akal, we're planning {{events}} in {{place}} for about {{guests}} guests. Could you share your price? Thank you.",
-      "plain": "Sat Sri Akal, we're planning {{events}} in {{place}}. Could you share your price? Thank you.",
-      "our": "our {{events}}",
-      "and": "and",
-      "wedding": "a wedding",
-      "ourCity": "our city",
-      "tour": "Sat Sri Akal, we're planning {{events}} in {{place}} and would like to visit your hall. Could we come and see it at one of the times we picked? Thank you.",
-      "eventOn": "{{event}} on {{date}}",
-      "dates": "Sat Sri Akal, we're planning {{dates}} in {{place}}. Could you share your price and whether you're available? Thank you.",
-      "datesAndGuests": "Sat Sri Akal, we're planning {{dates}} in {{place}} for about {{guests}} guests. Could you share your price and whether you're available? Thank you."
-    },
     "errors": {
-      "guests": "Pick about how many guests (or Not sure).",
-      "place": "Type your city or the hall.",
       "message": "Please write a message.",
       "tooManyHour": "You've sent 5 inquiries in the last hour. Please wait a little, or call the vendor.",
       "tooManyDay": "You've sent 15 inquiries today. Please try again tomorrow, or call the vendor.",
@@ -842,21 +1002,17 @@
       "nextNoEmail": "The vendor has your request and will reply by call or text.",
       "seeRequests": "See all my requests"
     },
-    "tourTitle": "Book a tour",
     "questions": {
       "yes": "Yes",
       "no": "No",
       "notSure": "Not sure",
       "catering": "Food",
-      "cateringInHouse": "Your hall's food",
+      "cateringInHouse": "The hall's kitchen",
       "cateringOwn": "Bringing our own caterer",
-      "whichCaterer": "Which caterer?",
       "alcohol": "Will there be alcohol?",
-      "ghoriDhol": "Baraat with ghori and dhol?",
+      "ghoriDhol": "Baraat arriving with a horse and dhol?",
       "sameDay": "Lunch and evening on the same day?",
       "tourSlots": "When could you visit?",
-      "tourSlotsHint": "Pick up to 3 times. The hall confirms one.",
-      "addTime": "Add another time",
       "parts": {
         "morning": "Morning",
         "afternoon": "Afternoon",
@@ -877,17 +1033,14 @@
         "chai": "Chai"
       },
       "whichHall": "Which hall?",
-      "whichHallHint": "Many halls only allow caterers on their list.",
-      "tasting": "Would you like a tasting?"
-    },
-    "dateStatus": {
-      "open": "Open on this date, as of their calendar.",
-      "booked": "Their calendar shows this date as booked. You can still ask, or pick another date.",
-      "held": "Someone is holding this date. Ask soon.",
-      "partly": "Part of this day is booked. Ask which part is free."
-    },
-    "fromPlan": "From My Wedding, these dates go with your request: {{dates}}",
-    "fromPlanOne": "From My Wedding: {{event}} is on {{date}}. You can change it."
+      "tasting": "Would you like a tasting?",
+      "timeOfDay": "Day or evening?",
+      "times": {
+        "day": "Daytime (lunch)",
+        "evening": "Evening (dinner)",
+        "both": "Both, the same day"
+      }
+    }
   },
   "deleteAccount": {
     "title": "Delete your account?",
@@ -3264,7 +3417,7 @@
     "pictures": "Video, photos and icons",
     "picturesFooter": "The welcome video is cut from free clips on Pexels, and the category photos are free photos from Pexels, used under the Pexels License.",
     "welcomeVideo": "Welcome video",
-    "categoryPhotos": "Category photos",
+    "categoryPhotos": "Category, event and food photos",
     "by": "By {{name}}",
     "software": "Software",
     "softwareFooter": "Thank you to everyone who builds and shares these.",

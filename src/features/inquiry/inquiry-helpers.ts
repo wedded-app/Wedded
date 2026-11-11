@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 
 import type { GuestBand } from '@/data/inquiries';
-import { asLocalizedText, localized, type LocalizedText } from '@/i18n/localized';
+import { asLocalizedText, type LocalizedText } from '@/i18n/localized';
 import { supabase } from '@/lib/supabase';
 
 import type { QuestionSet } from './details';
@@ -38,8 +38,6 @@ export function formatDate(value: string): string {
   }).format(fromDateString(value));
 }
 
-type Translate = (key: string, options?: Record<string, string | number>) => string;
-
 /**
  * The dates from My Wedding for the events a family is asking about: each
  * event's own day (in the order they picked), and the date to start the form
@@ -65,62 +63,6 @@ export function planDatesFor(
   return { start, dates };
 }
 
-/**
- * The suggested message (S11 item 5). It's rewritten as
- * the form changes until they edit it themselves.
- */
-export function suggestedMessage(
-  t: Translate,
-  parts: {
-    events: LocalizedText[];
-    date: string | null;
-    place: string;
-    guests: GuestBand | null;
-    /** Asking to visit a venue ("Book a tour"). */
-    tour?: boolean;
-    /** Each event's own day from My Wedding; with two or more, the message names each. */
-    eventDates?: { event: LocalizedText; date: string }[];
-  },
-): string {
-  const joiner = t('inquiry.auto.and');
-  // "our Jaago and Anand Karaj", or "a wedding" when none is picked
-  const events =
-    parts.events.length > 0
-      ? t('inquiry.auto.our', {
-          events: parts.events.map((event) => localized(event)).join(` ${joiner} `),
-        })
-      : t('inquiry.auto.wedding');
-  const knownGuests = parts.guests && parts.guests !== 'not_sure' ? parts.guests : null;
-  // "Jaago on Fri, Jun 11 and Anand Karaj on Sat, Jun 12"
-  if (!parts.tour && parts.eventDates && parts.eventDates.length >= 2) {
-    const dates = parts.eventDates
-      .map(({ event, date }) =>
-        t('inquiry.auto.eventOn', { event: localized(event), date: formatDate(date) }),
-      )
-      .join(` ${joiner} `);
-    return t(`inquiry.auto.${knownGuests ? 'datesAndGuests' : 'dates'}`, {
-      dates: t('inquiry.auto.our', { events: dates }),
-      place: parts.place.trim() || t('inquiry.auto.ourCity'),
-      guests: knownGuests ? t(`inquiry.guestsInMessage.${knownGuests}`) : '',
-    });
-  }
-  const key = parts.tour
-    ? 'tour'
-    : parts.date
-      ? knownGuests
-        ? 'withDateAndGuests'
-        : 'withDate'
-      : knownGuests
-        ? 'withGuests'
-        : 'plain';
-  return t(`inquiry.auto.${key}`, {
-    events,
-    date: parts.date ? formatDate(parts.date) : '',
-    place: parts.place.trim() || t('inquiry.auto.ourCity'),
-    guests: knownGuests ? t(`inquiry.guestsInMessage.${knownGuests}`) : '',
-  });
-}
-
 export type InquiryVendor = {
   id: string;
   slug: string;
@@ -134,19 +76,42 @@ export type InquiryVendor = {
   whatsappPhone: string | null;
   /** Events the vendor says they serve, to show those chips first. */
   eventSlugs: string[];
+  /** Its kinds (categories.slug), primary first: which of the family's events it's for. */
+  categorySlugs: string[];
+  /** A hall's answers to the questions Ask would otherwise put to the family. */
+  hall: HallAnswers;
+};
+
+/** What a hall said (venue_policies, venue_rooms); each is missing when it didn't say. */
+export type HallAnswers = {
+  /** The biggest room's seats. */
+  seats?: number;
+  /** yes, no or optional */
+  inHouseCatering?: string;
+  /** yes, approved_list or no */
+  outsideCatering?: string;
+  /** full_bar, beer_wine, byob or dry */
+  alcoholPolicy?: string;
+  /** Corkage in dollars, with byob. */
+  corkage?: number;
+  ghoriAllowed?: boolean;
+  dholOutsideAllowed?: boolean;
 };
 
 async function fetchInquiryVendor(vendorId: string): Promise<InquiryVendor | null> {
   const { data, error } = await supabase
     .from('vendors')
     .select(
-      'id, slug, name, base_city:cities(name), vendor_contacts(kind, value), vendor_categories(position, category:categories(name, inquiry_questions)), vendor_events(event_slug)',
+      'id, slug, name, base_city:cities(name), vendor_contacts(kind, value), vendor_categories(position, category:categories(slug, name, inquiry_questions)), vendor_events(event_slug), venue_policies(in_house_catering, outside_catering, alcohol_policy, corkage_cents, ghori_allowed, dhol_outside_allowed), venue_rooms(seated)',
     )
     .eq('id', vendorId)
     .maybeSingle();
   if (error) throw error;
   if (!data) return null;
-  const primary = [...data.vendor_categories].sort((a, b) => a.position - b.position)[0];
+  const categories = [...data.vendor_categories].sort((a, b) => a.position - b.position);
+  const primary = categories[0];
+  const policies = data.venue_policies;
+  const seats = data.venue_rooms.flatMap((room) => (room.seated === null ? [] : [room.seated]));
   const contact = (kind: string) =>
     data.vendor_contacts.find((c) => c.kind === kind)?.value ?? null;
   return {
@@ -160,6 +125,16 @@ async function fetchInquiryVendor(vendorId: string): Promise<InquiryVendor | nul
     textPhone: contact('text'),
     whatsappPhone: contact('whatsapp'),
     eventSlugs: data.vendor_events.map((row) => row.event_slug),
+    categorySlugs: categories.flatMap((link) => (link.category ? [link.category.slug] : [])),
+    hall: {
+      seats: seats.length > 0 ? Math.max(...seats) : undefined,
+      inHouseCatering: policies?.in_house_catering ?? undefined,
+      outsideCatering: policies?.outside_catering ?? undefined,
+      alcoholPolicy: policies?.alcohol_policy ?? undefined,
+      corkage: policies?.corkage_cents == null ? undefined : policies.corkage_cents / 100,
+      ghoriAllowed: policies?.ghori_allowed ?? undefined,
+      dholOutsideAllowed: policies?.dhol_outside_allowed ?? undefined,
+    },
   };
 }
 

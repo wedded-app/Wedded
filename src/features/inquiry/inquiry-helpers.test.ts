@@ -1,26 +1,12 @@
-import en from '@/i18n/en.json';
-
 import {
   eventChips,
   formatDate,
   fromDateString,
   planDatesFor,
-  suggestedMessage,
   toDateString,
 } from './inquiry-helpers';
 
 jest.mock('@/lib/supabase', () => ({ supabase: {} }));
-
-/** The app's own strings, with {{name}} filled in, like useLocale().t. */
-function translator(strings: Record<string, unknown>) {
-  return (key: string, options: Record<string, string | number> = {}) => {
-    const value = key
-      .split('.')
-      .reduce<unknown>((node, part) => (node as Record<string, unknown>)?.[part], strings);
-    if (typeof value !== 'string') throw new Error(`Missing string ${key}`);
-    return value.replace(/\{\{(\w+)\}\}/g, (_, name: string) => String(options[name] ?? ''));
-  };
-}
 
 describe('dates', () => {
   it('keeps the calendar day the phone picked, with no time zone shift', () => {
@@ -78,65 +64,6 @@ describe('planDatesFor', () => {
     expect(planDatesFor([], undefined, '2027-06-12', [], '2026-10-13').start).toBe('2027-06-12');
     // A wedding day already past is left out
     expect(planDatesFor([], undefined, '2025-01-01', [], '2026-10-13').start).toBeNull();
-  });
-});
-
-describe('suggestedMessage', () => {
-  const events = [{ en: 'Jaago' }];
-
-  it('names each event with its own day when they ask about several', () => {
-    expect(
-      suggestedMessage(translator(en), {
-        events: [events[0], { en: 'Anand Karaj' }],
-        date: '2027-06-11',
-        place: 'Yuba City',
-        guests: '100_250',
-        eventDates: [
-          { event: events[0], date: '2027-06-11' },
-          { event: { en: 'Anand Karaj' }, date: '2027-06-12' },
-        ],
-      }),
-    ).toBe(
-      "Sat Sri Akal, we're planning our Jaago on Fri, Jun 11, 2027 and Anand Karaj on Sat, Jun 12, 2027 in Yuba City for about 100 to 250 guests. Could you share your price and whether you're available? Thank you.",
-    );
-  });
-
-  it('writes the full sentence when date and guests are known', () => {
-    expect(
-      suggestedMessage(translator(en), {
-        events,
-        date: '2027-06-12',
-        place: 'Yuba City',
-        guests: '100_250',
-      }),
-    ).toBe(
-      "Sat Sri Akal, we're planning our Jaago on Sat, Jun 12, 2027 in Yuba City for about 100 to 250 guests. Could you share your price and whether you're available? Thank you.",
-    );
-  });
-
-  it('leaves out what they are not sure of', () => {
-    expect(
-      suggestedMessage(translator(en), {
-        events: [],
-        date: null,
-        place: '',
-        guests: 'not_sure',
-      }),
-    ).toBe(
-      "Sat Sri Akal, we're planning a wedding in our city. Could you share your price? Thank you.",
-    );
-  });
-
-  it('asks to visit for a tour', () => {
-    expect(
-      suggestedMessage(translator(en), {
-        events: [{ en: 'Reception' }],
-        date: '2027-06-13',
-        place: 'Yuba City',
-        guests: '500_plus',
-        tour: true,
-      }),
-    ).toContain('would like to visit your hall');
   });
 });
 

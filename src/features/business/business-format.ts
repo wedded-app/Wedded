@@ -49,6 +49,13 @@ export function leadAnswerRows(
       .map(([slug, date]) => `${eventName(slug)}: ${formatDate(date)}`);
     if (dates.length > 0) add(t('business.leads.eventDates'), dates.join('\n'));
   }
+  if (
+    details.timeOfDay === 'day' ||
+    details.timeOfDay === 'evening' ||
+    details.timeOfDay === 'both'
+  ) {
+    add(q('timeOfDay'), q(`times.${details.timeOfDay}`));
+  }
   if (details.catering === 'in_house') add(q('catering'), q('cateringInHouse'));
   if (details.catering === 'own') {
     const who = typeof details.ownCaterer === 'string' ? details.ownCaterer : '';
