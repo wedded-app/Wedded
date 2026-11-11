@@ -3,13 +3,9 @@ import { useRouter } from 'expo-router';
 import { Pressable, ScrollView, View } from 'react-native';
 
 import { AppText } from '@/components/app-text';
-import { Card } from '@/components/card';
-import { Icon } from '@/components/icon';
-import { ListRow, ListSection, SectionTitle } from '@/components/list';
+import { Icon, type IconName } from '@/components/icon';
 import { MenuCard } from '@/components/menu-card';
-import { StoryRing } from '@/components/story-ring';
-import { makeStyles, Radius, Sizes, Spacing, useColors } from '@/constants/theme';
-import { useHomeEvents } from '@/data/reference';
+import { makeStyles, Sizes, Spacing, useColors } from '@/constants/theme';
 import type { LinkedVendor } from '@/data/vendor-links';
 import { useRealWeddingsAt, type VendorPhoto } from '@/data/vendor-media';
 import { useVendorMenus } from '@/data/vendor-menus';
@@ -21,166 +17,141 @@ import { priceLine } from './profile-format';
 
 // The vendor page's sections (/v/[slug]), each with only what it shows.
 
+/** A section's name on the vendor page, flush with the text under it. */
+export function PageHeading({ children }: { children: string }) {
+  return (
+    <AppText variant="section" accessibilityRole="header">
+      {children}
+    </AppText>
+  );
+}
+
 /**
  * Other vendors linked to this one (approved caterers, venues that approved
  * them, worked with), each opening their own profile. Nothing when empty.
  */
 export function LinkedVendors({ title, vendors }: { title: string; vendors: LinkedVendor[] }) {
+  const Colors = useColors();
   const styles = useStyles();
   const router = useRouter();
   if (vendors.length === 0) return null;
 
   return (
     <View style={styles.block}>
-      <SectionTitle>{title}</SectionTitle>
-      <ListSection>
+      <PageHeading>{title}</PageHeading>
+      <View style={styles.rows}>
         {vendors.map((linked) => {
           const name = localized(linked.name);
           return (
-            <ListRow
+            <Pressable
               key={linked.id}
-              title={name}
-              subtitle={linked.city}
+              accessibilityRole="button"
               accessibilityLabel={`${name}, ${linked.city}`}
               onPress={() => router.push({ pathname: '/v/[slug]', params: { slug: linked.slug } })}
-            />
+              style={({ pressed }) => [styles.contact, pressed && styles.dimmed]}
+            >
+              <View style={styles.grow}>
+                <AppText variant="bodyLg" weight={600}>
+                  {name}
+                </AppText>
+                <AppText variant="label" color="text2">
+                  {linked.city}
+                </AppText>
+              </View>
+              <Icon name="chevron-forward" size={16} color={Colors.chevron} weight="semibold" />
+            </Pressable>
           );
         })}
-      </ListSection>
+      </View>
     </View>
   );
 }
 
 /**
- * Story highlights, as on an Instagram profile: all the photos, then one
- * circle per event they were taken at (Jaago, Reception...). Each opens the
- * full-screen story viewer at that photo.
+ * Their photos (Fezy, 2026-11-11): with four or more, one tall photo beside
+ * two, and a wide one under them; fewer sit side by side. See all opens the
+ * full-screen viewer, as does each photo.
  */
-export function Highlights({
-  slug,
-  photos,
-  name,
-}: {
-  slug: string;
-  photos: VendorPhoto[];
-  name: string;
-}) {
-  const styles = useStyles();
-  const router = useRouter();
-  const { t } = useLocale();
-  const events = useHomeEvents();
-  const eventNames = new Map(
-    (events.data ?? []).flatMap((section) => section.events).map((e) => [e.slug, e.name]),
-  );
-  const byEvent = new Map<string, VendorPhoto>();
-  for (const photo of photos) {
-    if (photo.eventSlug && !byEvent.has(photo.eventSlug)) byEvent.set(photo.eventSlug, photo);
-  }
-  // A lone "All photos" ring repeats the cover and the grid: only with event highlights
-  if (byEvent.size === 0) return null;
-  const open = (photoId?: string) =>
-    router.push({
-      pathname: '/story',
-      params: photoId ? { vendor: slug, photo: photoId } : { vendor: slug },
-    });
-
-  return (
-    <ScrollView
-      horizontal
-      showsHorizontalScrollIndicator={false}
-      style={styles.highlightStrip}
-      contentContainerStyle={styles.highlights}
-    >
-      <StoryRing
-        photoUrl={photos[0].url.small}
-        label={t('vendor.allPhotos')}
-        size={62}
-        accessibilityLabel={t('discover.openStory', { name })}
-        onPress={() => open()}
-      />
-      {[...byEvent.entries()].map(([eventSlug, photo]) => {
-        const eventName = eventNames.get(eventSlug);
-        const label = eventName ? localized(eventName) : eventSlug;
-        return (
-          <StoryRing
-            key={eventSlug}
-            photoUrl={photo.url.small}
-            label={label}
-            size={62}
-            accessibilityLabel={t('vendor.highlightSpoken', { name, event: label })}
-            onPress={() => open(photo.id)}
-          />
-        );
-      })}
-    </ScrollView>
-  );
-}
-
-/** Three square photos per row (vision doc S9 item 10), with credits read out. */
 export function PhotoGrid({ vendorId, photos }: { vendorId: string; photos: VendorPhoto[] }) {
   const styles = useStyles();
   const { t } = useLocale();
   const router = useRouter();
-  const rows: VendorPhoto[][] = [];
-  for (let i = 0; i < photos.length; i += 3) rows.push(photos.slice(i, i + 3));
+  const open = (index: number) =>
+    router.push({ pathname: '/gallery', params: { vendorId, index: String(index) } });
+  const tile = (photo: VendorPhoto, style: object) => {
+    const index = photos.indexOf(photo);
+    return (
+      <Pressable
+        key={photo.id}
+        accessibilityRole="imagebutton"
+        accessibilityLabel={t('gallery.open', { number: index + 1, total: photos.length })}
+        onPress={() => open(index)}
+        style={({ pressed }) => [styles.gridPhoto, style, pressed && styles.dimmed]}
+      >
+        <Image
+          source={{ uri: photo.url.medium }}
+          placeholder={photo.blurhash ? { blurhash: photo.blurhash } : undefined}
+          contentFit="cover"
+          transition={200}
+          accessible={false}
+          style={styles.gridImage}
+        />
+      </Pressable>
+    );
+  };
+  const [first, second, third, fourth] = photos;
 
   return (
-    <View style={styles.grid}>
-      {rows.map((row) => (
-        <View key={row[0].id} style={styles.gridRow}>
-          {row.map((photo) => {
-            const index = photos.indexOf(photo);
-            return (
-              <Pressable
-                key={photo.id}
-                accessibilityRole="imagebutton"
-                accessibilityLabel={t('gallery.open', {
-                  number: index + 1,
-                  total: photos.length,
-                })}
-                onPress={() =>
-                  router.push({ pathname: '/gallery', params: { vendorId, index: String(index) } })
-                }
-                style={({ pressed }) => [styles.gridPhoto, pressed && styles.dimmed]}
-              >
-                <Image
-                  source={{ uri: photo.url.small }}
-                  placeholder={photo.blurhash ? { blurhash: photo.blurhash } : undefined}
-                  contentFit="cover"
-                  transition={200}
-                  accessible={false}
-                  style={styles.gridImage}
-                />
-              </Pressable>
-            );
-          })}
-          {Array.from({ length: 3 - row.length }, (_, i) => (
-            <View key={`gap-${i}`} style={styles.gridGap} />
-          ))}
+    <View style={styles.block}>
+      <View style={styles.titleRow}>
+        <View style={styles.grow}>
+          <PageHeading>{t('vendor.photos')}</PageHeading>
         </View>
-      ))}
+        {photos.length > 4 && (
+          <Pressable
+            accessibilityRole="button"
+            hitSlop={10}
+            onPress={() => open(0)}
+            style={({ pressed }) => [styles.seeAll, pressed && styles.dimmed]}
+          >
+            <AppText variant="caption" weight={700} color="primary" style={styles.caps}>
+              {t('vendor.seeAllPhotos', { number: photos.length }).toUpperCase()}
+            </AppText>
+          </Pressable>
+        )}
+      </View>
+      {fourth ? (
+        <View style={styles.mosaic}>
+          <View style={styles.mosaicTop}>
+            {tile(first, styles.tall)}
+            <View style={styles.stack}>
+              {tile(second, styles.short)}
+              {tile(third, styles.short)}
+            </View>
+          </View>
+          {tile(fourth, styles.wide)}
+        </View>
+      ) : (
+        <View style={styles.mosaicTop}>{photos.map((photo) => tile(photo, styles.side))}</View>
+      )}
     </View>
   );
 }
 
-/** What they charge, as a line, with their note and the caption for a "from" price. */
+/** What they charge, big, with their note and the caption for a "from" price. No card. */
 export function PriceSection({ price, note }: { price: VendorPrice; note: string | null }) {
   const styles = useStyles();
   const { t } = useLocale();
   return (
-    <View style={styles.block}>
-      <SectionTitle>{t('vendor.price')}</SectionTitle>
-      <Card style={styles.priceCard}>
-        <AppText variant="section" style={styles.tabular}>
-          {priceLine(price, t)}
-        </AppText>
-        {note && <AppText>{note}</AppText>}
-        {(price.kind === 'starting_at' || price.kind === 'range') && (
-          <AppText variant="label" weight={400} color="text2">
-            {t('vendor.priceCaption')}
-          </AppText>
-        )}
-      </Card>
+    <View style={styles.price}>
+      <PageHeading>{t('vendor.price')}</PageHeading>
+      <AppText variant="title" style={styles.tabular}>
+        {priceLine(price, t)}
+      </AppText>
+      {note && <AppText variant="bodyLg">{note}</AppText>}
+      {(price.kind === 'starting_at' || price.kind === 'range') && (
+        <AppText color="text2">{t('vendor.priceCaption')}</AppText>
+      )}
     </View>
   );
 }
@@ -194,7 +165,7 @@ export function MenusSection({ vendorId }: { vendorId: string }) {
   if (!menus.data || menus.data.length === 0) return null;
   return (
     <View style={styles.block}>
-      <SectionTitle>{t('menus.title')}</SectionTitle>
+      <PageHeading>{t('menus.title')}</PageHeading>
       {menus.data.map((menu) => (
         <MenuCard
           key={menu.id}
@@ -206,7 +177,7 @@ export function MenusSection({ vendorId }: { vendorId: string }) {
   );
 }
 
-/** "Good to know": the vendor's facts as pills with a tick. Nothing when empty. */
+/** "Good to know": the vendor's facts, one to a row with thin lines between. Nothing when empty. */
 export function GoodToKnow({ facts }: { facts: string[] }) {
   const Colors = useColors();
   const styles = useStyles();
@@ -214,12 +185,14 @@ export function GoodToKnow({ facts }: { facts: string[] }) {
   if (facts.length === 0) return null;
   return (
     <View style={styles.block}>
-      <SectionTitle>{t('vendor.goodToKnow')}</SectionTitle>
-      <View style={styles.pills}>
+      <PageHeading>{t('vendor.goodToKnow')}</PageHeading>
+      <View style={styles.rows}>
         {facts.map((fact) => (
-          <View key={fact} style={styles.pill}>
-            <Icon name="checkmark-circle" size={17} color={Colors.success} />
-            <AppText variant="label">{fact}</AppText>
+          <View key={fact} style={styles.factRow}>
+            <Icon name="checkmark" size={17} color={Colors.success} weight="semibold" />
+            <AppText variant="bodyLg" style={styles.grow}>
+              {fact}
+            </AppText>
           </View>
         ))}
       </View>
@@ -237,7 +210,7 @@ export function RealWeddings({ vendorId }: { vendorId: string }) {
   if (!realWeddings.data || realWeddings.data.length === 0) return null;
   return (
     <View style={styles.block}>
-      <SectionTitle>{t('vendor.realWeddings')}</SectionTitle>
+      <PageHeading>{t('vendor.realWeddings')}</PageHeading>
       {/* Sideways, so a hall with many doesn't make the page endless */}
       <ScrollView
         horizontal
@@ -248,13 +221,14 @@ export function RealWeddings({ vendorId }: { vendorId: string }) {
         {realWeddings.data.map((photo) => {
           const by = localized(photo.vendor.name);
           return (
-            <Card
+            <Pressable
               key={photo.id}
+              accessibilityRole="button"
               onPress={() =>
                 router.push({ pathname: '/v/[slug]', params: { slug: photo.vendor.slug } })
               }
               accessibilityLabel={t('vendor.photoBy', { name: by })}
-              style={styles.realWedding}
+              style={({ pressed }) => [styles.realWedding, pressed && styles.dimmed]}
             >
               <Image
                 source={{ uri: photo.url.medium }}
@@ -270,7 +244,7 @@ export function RealWeddings({ vendorId }: { vendorId: string }) {
                 </AppText>
                 <Icon name="chevron-forward" size={17} color={Colors.chevron} weight="semibold" />
               </View>
-            </Card>
+            </Pressable>
           );
         })}
       </ScrollView>
@@ -278,88 +252,123 @@ export function RealWeddings({ vendorId }: { vendorId: string }) {
   );
 }
 
-export type ContactLine = { label: string; value: string; onPress?: () => void };
+export type ContactLine = {
+  icon: IconName;
+  /** The number, the address, or what it does ("Message Capitol Rose"). */
+  title: string;
+  /** What a tap does, or more about it ("Call", "Sacramento · Directions"). */
+  subtitle?: string;
+  onPress?: () => void;
+  /** Read out instead of the title and subtitle. */
+  spoken?: string;
+};
 
 /**
- * Printed out as well as behind buttons: elders often read a number aloud to
- * someone else (vision S9 item 12). Each line also does what its button
- * would. Nothing when empty.
+ * Contact (Fezy, 2026-11-11): message, call, directions and the rest as
+ * plain rows with thin lines between, the numbers printed in full as well
+ * (elders often read one aloud to someone else, vision S9 item 12). Each
+ * row does what it says. Nothing when empty.
  */
 export function ContactList({ contacts }: { contacts: ContactLine[] }) {
+  const Colors = useColors();
   const styles = useStyles();
   const { t } = useLocale();
   if (contacts.length === 0) return null;
   return (
     <View style={styles.block}>
-      <SectionTitle>{t('vendor.contact')}</SectionTitle>
-      <ListSection>
+      <PageHeading>{t('vendor.contact')}</PageHeading>
+      <View style={styles.rows}>
         {contacts.map((line) => (
           <Pressable
-            key={line.label}
+            key={line.title}
             accessibilityRole={line.onPress ? 'button' : undefined}
+            accessibilityLabel={line.spoken}
             disabled={!line.onPress}
             onPress={line.onPress}
-            style={({ pressed }) => [styles.contact, pressed && styles.contactPressed]}
+            style={({ pressed }) => [styles.contact, pressed && styles.dimmed]}
           >
-            <AppText variant="label" weight={400} color="text2">
-              {line.label}
-            </AppText>
-            <AppText variant="bodyLg" selectable style={styles.tabular}>
-              {line.value}
-            </AppText>
+            <Icon name={line.icon} size={22} color={Colors.text} />
+            <View style={styles.grow}>
+              <AppText variant="bodyLg" weight={600} selectable style={styles.tabular}>
+                {line.title}
+              </AppText>
+              {line.subtitle && (
+                <AppText variant="label" color="text2">
+                  {line.subtitle}
+                </AppText>
+              )}
+            </View>
+            {line.onPress && (
+              <Icon name="chevron-forward" size={16} color={Colors.chevron} weight="semibold" />
+            )}
           </Pressable>
         ))}
-      </ListSection>
+      </View>
     </View>
   );
 }
 
 const useStyles = makeStyles((Colors) => ({
-  highlightStrip: {
-    marginHorizontal: -Sizes.pageGutter,
-  },
-  highlights: {
-    gap: Spacing.xs,
-    paddingHorizontal: Sizes.pageGutter - 6,
-  },
   block: {
     gap: Spacing.lg,
   },
-  priceCard: {
-    gap: Spacing.xs,
-  },
-  pills: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
+  price: {
     gap: Spacing.sm,
   },
-  pill: {
+  rows: {
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.border,
+  },
+  factRow: {
+    minHeight: Sizes.row - 6,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: Spacing.xs,
-    paddingHorizontal: Spacing.md,
-    paddingVertical: Spacing.sm,
-    borderRadius: Radius.chip,
-    backgroundColor: Colors.surface,
+    gap: Spacing.md,
+    paddingVertical: Spacing.md,
+    borderTopWidth: 1,
+    borderTopColor: Colors.border,
   },
-  grid: {
-    gap: 3,
-    borderRadius: Radius.photo,
-    borderCurve: 'continuous',
-    overflow: 'hidden',
-  },
-  gridRow: {
+  titleRow: {
     flexDirection: 'row',
-    gap: 3,
+    alignItems: 'center',
+  },
+  seeAll: {
+    minHeight: Sizes.tapTarget - 8,
+    justifyContent: 'center',
+  },
+  caps: {
+    letterSpacing: 0.6,
+  },
+  mosaic: {
+    gap: Spacing.sm,
+  },
+  mosaicTop: {
+    flexDirection: 'row',
+    gap: Spacing.sm,
+  },
+  stack: {
+    flex: 1,
+    gap: Spacing.sm,
   },
   gridPhoto: {
-    flex: 1,
-    aspectRatio: 1,
+    overflow: 'hidden',
+    borderRadius: 16,
+    borderCurve: 'continuous',
     backgroundColor: Colors.skeleton,
   },
-  gridGap: {
+  tall: {
+    flex: 1.3,
+    height: 288,
+  },
+  short: {
+    height: 140,
+  },
+  wide: {
+    height: 160,
+  },
+  side: {
     flex: 1,
-    aspectRatio: 1,
+    height: 180,
   },
   gridImage: {
     flex: 1,
@@ -376,29 +385,31 @@ const useStyles = makeStyles((Colors) => ({
   },
   realWedding: {
     width: 240,
-    padding: 0,
+    gap: Spacing.sm,
   },
   realWeddingPhoto: {
     width: '100%',
     aspectRatio: 3 / 2,
+    borderRadius: 16,
+    borderCurve: 'continuous',
     backgroundColor: Colors.skeleton,
   },
   realWeddingCaption: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: Spacing.sm,
-    padding: Spacing.lg,
   },
   grow: {
     flex: 1,
   },
   contact: {
-    gap: 2,
-    paddingHorizontal: Spacing.lg,
+    minHeight: Sizes.row + 8,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.md,
     paddingVertical: Spacing.md,
-  },
-  contactPressed: {
-    backgroundColor: Colors.rowPressed,
+    borderTopWidth: 1,
+    borderTopColor: Colors.border,
   },
   tabular: {
     fontVariant: ['tabular-nums'],

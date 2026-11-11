@@ -9,7 +9,7 @@ import { useSession } from '@/features/auth/session';
 import { townNear } from '@/features/location/nearest-city';
 import { useSearchLocation } from '@/features/location/search-location';
 import { bandForCount, countForBand } from '@/features/onboarding/guest-count';
-import { useDraftPlanView, usePlanView } from '@/features/planner/use-plan-view';
+import { useFamilyPlan } from '@/features/planner/use-family-plan';
 import { localized } from '@/i18n/localized';
 import { useLocale } from '@/i18n/locale-context';
 
@@ -41,19 +41,7 @@ export function useAsk() {
   const { t } = useLocale();
   const vendor = useInquiryVendor(draft.vendorId);
   const photos = useVendorPhotos(draft.vendorId);
-  const account = usePlanView();
-  const phone = useDraftPlanView();
-  // Their plan in their account, or the one kept on this phone before they had one
-  const view =
-    account.wedding || account.loading
-      ? account
-      : {
-          ...account,
-          plan: phone.plan,
-          events: phone.events,
-          chosen: phone.chosen,
-          needsByEvent: phone.needsByEvent,
-        };
+  const view = useFamilyPlan();
   const home = useHomeEvents();
   const { profile } = useSession();
   const { place: searchPlace } = useSearchLocation();

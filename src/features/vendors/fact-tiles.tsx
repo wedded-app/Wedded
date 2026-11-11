@@ -1,7 +1,7 @@
 import { View } from 'react-native';
 
 import { AppText } from '@/components/app-text';
-import { makeStyles, Radius, Spacing } from '@/constants/theme';
+import { makeStyles, Spacing } from '@/constants/theme';
 import type { VendorProfile } from '@/data/vendors';
 import { useLocale } from '@/i18n/locale-context';
 
@@ -10,7 +10,9 @@ import { ALL_NORCAL_MILES, usd } from './profile-format';
 type Tile = { big: string; small: string };
 
 /**
- * The numbers a family asks first, as grey tiles under the vendor's name:
+ * The numbers a family asks first, in one row with thin lines between
+ * them, right under the vendor's name (Fezy, 2026-11-11: the numbers were
+ * too far down):
  * how many the hall seats, the starting price, and how far they travel (or
  * how many cars a hall or other venue parks). A tile the vendor hasn't filled in is left out;
  * none at all and the row is hidden.
@@ -53,24 +55,30 @@ export function FactTiles({ vendor: v }: { vendor: VendorProfile }) {
 
   return (
     <View style={styles.row}>
-      {tiles.map((tile) => (
+      {tiles.map((tile, index) => (
         <View
           key={tile.small}
-          style={styles.tile}
+          style={[styles.tile, index > 0 && styles.divided]}
           accessible
           accessibilityLabel={`${tile.big} ${tile.small}`}
         >
           <AppText
-            variant="heading"
             weight={700}
             numberOfLines={1}
             adjustsFontSizeToFit
-            style={styles.tabular}
+            style={styles.big}
+            maxFontSizeMultiplier={1.3}
           >
             {tile.big}
           </AppText>
-          <AppText variant="label" weight={500} color="text2" numberOfLines={2}>
-            {tile.small}
+          <AppText
+            variant="caption"
+            weight={600}
+            color="text2"
+            numberOfLines={2}
+            style={styles.caps}
+          >
+            {tile.small.toUpperCase()}
           </AppText>
         </View>
       ))}
@@ -81,17 +89,27 @@ export function FactTiles({ vendor: v }: { vendor: VendorProfile }) {
 const useStyles = makeStyles((Colors) => ({
   row: {
     flexDirection: 'row',
-    gap: Spacing.sm,
+    borderTopWidth: 1,
+    borderBottomWidth: 1,
+    borderColor: Colors.border,
   },
   tile: {
     flex: 1,
-    minHeight: 64,
-    gap: 2,
-    padding: Spacing.md,
-    borderRadius: Radius.photo,
-    backgroundColor: Colors.fill,
+    gap: Spacing.xs,
+    paddingVertical: Spacing.md + 2,
   },
-  tabular: {
+  divided: {
+    paddingLeft: Spacing.lg,
+    borderLeftWidth: 1,
+    borderLeftColor: Colors.border,
+  },
+  big: {
+    fontSize: 26,
+    lineHeight: 30,
+    letterSpacing: -0.4,
     fontVariant: ['tabular-nums'],
+  },
+  caps: {
+    letterSpacing: 0.6,
   },
 }));

@@ -210,7 +210,6 @@
     },
     "about": "About",
     "contact": "Contact",
-    "phone": "Phone",
     "website": "Website",
     "call": "Call",
     "text": "Text",
@@ -225,8 +224,6 @@
     "callTitle": "Call {{name}}?",
     "cancel": "Cancel",
     "openFailed": "This phone couldn't open that. Try the number under Contact.",
-    "save": "Save",
-    "saved": "Saved",
     "ask": "Ask about price & date",
     "approvedCaterers": "Approved caterers",
     "approvedAt": {
@@ -238,11 +235,8 @@
     "photos": "Photos",
     "realWeddings": "Real weddings here",
     "photoBy": "Photo by {{name}}",
-    "bookTour": "Book a tour",
     "pageTitle": "{{name}}, {{category}} in {{city}}",
     "openInApp": "Have the app? Open this page in it",
-    "allPhotos": "All photos",
-    "highlightSpoken": "{{name}}, photos from the {{event}}",
     "tiles": {
       "seats": "seats",
       "toStart": "to start",
@@ -253,6 +247,40 @@
       "travels": "travels to you",
       "norcal": "NorCal",
       "travelsAnywhere": "travels anywhere"
+    },
+    "from": "From",
+    "askQuote": "Ask for a quote",
+    "askQuoteSpoken": "Ask {{name}} for a quote",
+    "seeAllPhotos": "See all {{number}}",
+    "contactRows": {
+      "message": "Message {{name}}",
+      "messageSub": "In your chats on Wedded"
+    },
+    "reels": {
+      "title": "Their reels",
+      "seeAll": "See all",
+      "watch": "Watch: {{caption}}"
+    },
+    "visit": {
+      "title": "Visit the hall",
+      "body": "See it before you book. Pick up to {{number}} days, and they'll confirm one with a time.",
+      "pick": "Pick a day or two above",
+      "one": "Ask to visit on {{day}}",
+      "many": "Ask to visit on one of {{number}} days"
+    },
+    "wed": {
+      "booked": "Booked on your {{event}}, as of their calendar.",
+      "held": "Someone is holding your {{event}}'s day.",
+      "fits": "Fits your {{guests}} guests.",
+      "tooSmall": "Seats {{seats}}, fewer than your {{guests}} guests.",
+      "seats": "Seats {{seats}}.",
+      "hallOnly": "It's hall only, so you'd bring a caterer.",
+      "allFood": "They do all the food here.",
+      "cooks": "They cook, or you can bring your own caterer.",
+      "cooksList": "They cook, or you can bring a caterer from their list.",
+      "ask": "Is {{name}} a good fit for our {{event}}?",
+      "askNoEvent": "Is {{name}} a good fit for our wedding?",
+      "spoken": "Wed says: {{line}} Opens Wed about {{name}}."
     }
   },
   "gallery": {
@@ -2010,7 +2038,6 @@
       "visit": "Can we visit?",
       "thanks": "Thank you!"
     },
-    "message": "Message",
     "messageSpoken": "Message {{name}} in the app",
     "startFailed": "That didn't open. Check your internet and try again.",
     "signIn": "Sign in to message vendors and see their replies here.",
@@ -3934,7 +3961,13 @@
     "partly": "Partly free on your {{event}}",
     "ask": "Ask about your {{event}}",
     "askLine": "Tap to ask for a quote",
-    "hint": "Opens Ask for a quote for that event"
+    "calendar": "As of their calendar.",
+    "tapToCheck": "Tap to check your other days.",
+    "pickBelow": "Pick another of your days.",
+    "otherDay": "Other day",
+    "open": "Open",
+    "notFree": "Not free",
+    "askHere": "Ask about this day"
   },
   "businessToday": {
     "leadsCaps": "Leads",
