@@ -1727,7 +1727,6 @@
       "title": "Who's invited to the {{event}}?",
       "intro": "Tick the people to invite, or untick someone invited by mistake. On their RSVP page, they'll see only the events they're invited to.",
       "wholeList": "Tick a whole list",
-      "everyone": "Everyone",
       "already": "Invited · {{answer}}",
       "noEvent": "This event isn't in your plan anymore.",
       "noGuests": "Add guests first, then invite them to your events.",
