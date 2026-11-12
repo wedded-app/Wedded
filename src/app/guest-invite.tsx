@@ -31,7 +31,7 @@ import { confirm } from '@/lib/confirm';
 
 /**
  * Who's invited to one event (#308), /guest-invite?event={slug}: tick people,
- * or a whole list at once. Guests see only the events they're invited to on
+ * or a list the family made at once (never everyone in one tap). Guests see only the events they're invited to on
  * their RSVP page. Someone already invited starts ticked; unticking them takes
  * them off the event (#319), with their answer for it, so that asks first.
  */
@@ -161,17 +161,13 @@ export default function GuestInviteScreen() {
         ) : null
       }
     >
-      {event && everyone.length > 0 && (
+      {/* No "Everyone" chip: App Store rule 5.1.2(v) allows no Select All over people who came from Contacts */}
+      {event && (lists.data ?? []).length > 0 && (
         <View style={styles.lists}>
           <AppText variant="label" weight={600} color="text2" style={styles.pad}>
             {t('guests.invite.wholeList')}
           </AppText>
           <View style={styles.chips}>
-            <Chip
-              role="button"
-              label={t('guests.invite.everyone')}
-              onPress={() => tickAll(everyone.map((guest) => guest.id))}
-            />
             {(lists.data ?? []).map((list) => (
               <Chip
                 key={list.id}
