@@ -15,6 +15,7 @@ import { StateView } from '@/components/state-view';
 import { TextField } from '@/components/text-field';
 import { Sizes, Spacing, useColors } from '@/constants/theme';
 import { toLatinDigits } from '@/features/auth/about-you-validation';
+import { takeAppleAuthorizationCode } from '@/features/auth/apple-sign-in';
 import { authErrorKey, reauthMethod } from '@/features/auth/auth-helpers';
 import { useCaptcha } from '@/features/auth/captcha';
 import { confirmWithProvider } from '@/features/auth/providers';
@@ -127,7 +128,10 @@ export default function DeleteAccountScreen() {
   async function deleteNow() {
     setBusy(true);
     setError(undefined);
-    const { error: deleteError } = await supabase.functions.invoke('delete-account', { body: {} });
+    // After signing in again with Apple: its code lets the server revoke our access to the Apple ID
+    const { error: deleteError } = await supabase.functions.invoke('delete-account', {
+      body: { appleCode: takeAppleAuthorizationCode() ?? undefined },
+    });
     if (deleteError) {
       setBusy(false);
       const status =
