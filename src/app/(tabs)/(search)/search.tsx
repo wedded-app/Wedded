@@ -95,6 +95,7 @@ export default function SearchScreen() {
   const foundVendors = typed !== null && needle !== null ? (vendors.data ?? []) : [];
   // Wed (mockup): look past Wedded for what they typed, on the web and Instagram.
   const asked = query.trim();
+  const near = place ? ` near ${place.label}` : '';
   const aboutSearch: WedContext = { kind: 'query', label: `“${asked}” in Search` };
   const popular = [...all]
     .filter((category) => vendorCount(category.slug) > 0)
@@ -123,7 +124,7 @@ export default function SearchScreen() {
               onPress: () =>
                 openWed({
                   about: aboutSearch,
-                  ask: `Look for ${asked} near Yuba City, including Instagram pages`,
+                  ask: `Look for ${asked}${near}, including Instagram pages`,
                 }),
             }}
           />
@@ -183,7 +184,7 @@ export default function SearchScreen() {
                   variant="row"
                   label="Not finding it? Ask Wed to look on the web"
                   about={aboutSearch}
-                  ask={`Look on the web for ${asked} near Yuba City`}
+                  ask={`Look on the web for ${asked}${near}`}
                 />
               </View>
             </ListSection>

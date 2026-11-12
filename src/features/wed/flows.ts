@@ -890,19 +890,19 @@ export const FLOWS: Record<FlowKey, Flow> = {
               {
                 label: 'Searching Wedded for {q}',
                 short: 'Searching Wedded',
-                sources: [{ kind: 'wedded', label: 'Wedded', detail: '{q} near Yuba City' }],
-                result: 'Nothing on Wedded near Yuba City yet',
+                sources: [{ kind: 'wedded', label: 'Wedded', detail: '{q} near you' }],
+                result: 'Nothing on Wedded near you yet',
               },
               {
-                label: 'Finding {q} pages on Instagram near Yuba City',
+                label: 'Finding {q} pages on Instagram near you',
                 short: 'Looking for Instagram pages',
                 sources: [
                   {
                     kind: 'web',
                     label: 'Pages on the web',
-                    detail: 'instagram.com · {q} Yuba City',
+                    detail: 'instagram.com · {q}',
                   },
-                  { kind: 'maps', label: 'Google Maps', detail: '{q} near Yuba City' },
+                  { kind: 'maps', label: 'Google Maps', detail: '{q} near you' },
                 ],
                 result: '2 Instagram pages that look right',
               },
@@ -918,7 +918,7 @@ export const FLOWS: Record<FlowKey, Flow> = {
       {
         at: 5000,
         do: say(
-          "I couldn't find {q} on Wedded near Yuba City yet. I found 2 Instagram pages that look right, but I can't check their dates, so call before you count on them.",
+          "I couldn't find {q} on Wedded near you yet. I found 2 Instagram pages that look right, but I can't check their dates, so call before you count on them.",
         ),
       },
     ],

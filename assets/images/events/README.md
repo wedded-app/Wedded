@@ -21,6 +21,7 @@ after the demo, these should move there.
 | `jaago.jpg`          | [Marigold garlands in a vase](https://www.pexels.com/photo/vivid-display-of-marigold-garlands-in-vase-38697658/)                          |
 | `baraat.jpg`         | [Horse at an Indian wedding](https://www.pexels.com/photo/horse-at-indian-wedding-10597442/)                                              |
 | `anand-karaj.jpg`    | [Golden domes of a gurdwara](https://www.pexels.com/photo/golden-domes-of-gurdwara-in-amritsar-32536434/)                                 |
+| `nikah.jpg`          | [Wedding nikkah ceremony](https://www.pexels.com/photo/wedding-nikkah-ceremony-27164177/)                                                 |
 | `pheras.jpg`         | [Marigold and jasmine garlands](https://www.pexels.com/photo/vibrant-marigold-and-jasmine-flower-garlands-38705730/)                      |
 | `church-wedding.jpg` | [Outdoor ceremony with floral decor](https://www.pexels.com/photo/elegant-outdoor-wedding-ceremony-with-floral-decor-33485973/)           |
 | `reception.jpg`      | [Reception outdoors at night](https://www.pexels.com/photo/the-newlyweds-and-wedding-guests-at-the-reception-outdoors-at-night-15964967/) |
