@@ -343,6 +343,22 @@
     },
     "none": "None of those events are in your plan yet. Add them in My Wedding, then ask me again."
   },
+  "wedConsent": {
+    "title": "Before Wed helps",
+    "body": "Wed is an AI helper. To answer you, it shares some of what's in Wedded with an AI service run by another company.",
+    "sharedTitle": "What Wed shares",
+    "shared": {
+      "words": "What you write or say to Wed, and photos you send it",
+      "plan": "Your wedding plan: the events, days, towns and guest counts",
+      "guests": "Names on your guest list, when you ask about your guests"
+    },
+    "change": "You can turn this off any time in Wed's settings. Wed stops sharing from then on.",
+    "allow": "Allow",
+    "notNow": "Not now",
+    "failed": "That didn't save. Check your internet, then try again.",
+    "settingsRow": "Share with the AI service",
+    "settingsHint": "Wed needs this to answer you. Turn it off and Wed asks again before it shares anything."
+  },
   "wedSend": {
     "title": "Sending your cards",
     "how": "How to send",

@@ -9,6 +9,8 @@ jest.mock('expo-haptics', () => ({
   NotificationFeedbackType: { Success: 'success' },
 }));
 
+// The consent gate (ai-consent.ts) loads the client; it's off, so nothing is called
+jest.mock('@/lib/supabase', () => ({ supabase: {} }));
 jest.mock('@/data/vendor-media', () => ({ photoUrl: (path: string) => `https://photos/${path}` }));
 
 const mockSendToVendor = jest.fn(async (slug: string, _text: string) => `chat-${slug}`);
