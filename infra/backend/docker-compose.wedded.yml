@@ -14,9 +14,9 @@ services:
       GOTRUE_MAILER_SUBJECTS_CONFIRMATION: Your Wedded sign-in code
       GOTRUE_MAILER_TEMPLATES_MAGIC_LINK: http://email-templates/sign-in-code.html
       GOTRUE_MAILER_TEMPLATES_CONFIRMATION: http://email-templates/sign-in-code.html
-      # Sign in with Apple; host.exp.Exponent is Expo Go (HOSTED_SETUP.md, step 10)
+      # Sign in with Apple; host.exp.Exponent is Expo Go, com.wedded.app our own builds (HOSTED_SETUP.md, step 10)
       GOTRUE_EXTERNAL_APPLE_ENABLED: 'true'
-      GOTRUE_EXTERNAL_APPLE_CLIENT_ID: ${APPLE_CLIENT_IDS:-host.exp.Exponent}
+      GOTRUE_EXTERNAL_APPLE_CLIENT_ID: ${APPLE_CLIENT_IDS:-host.exp.Exponent,com.wedded.app}
 
   functions:
     env_file: functions.env

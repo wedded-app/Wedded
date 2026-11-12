@@ -5,7 +5,7 @@
  * Apple signs a SHA-256 hash of a one-time nonce into its token; Supabase gets
  * the raw nonce, hashes it and compares, so a stolen token can't be replayed.
  * In Expo Go the token is issued to Expo Go's bundle id, host.exp.Exponent,
- * which is why supabase/config.toml lists that as Apple's client id.
+ * and in a build to ours, so supabase/config.toml lists both as Apple's client ids.
  */
 import * as AppleAuthentication from 'expo-apple-authentication';
 import * as Crypto from 'expo-crypto';

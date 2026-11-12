@@ -362,7 +362,7 @@ max_frequency = "60s"
 # The secret (a JWT made from the .p8 key) is only for the web and Android browser flow.
 [auth.external.apple]
 enabled = true
-client_id = "host.exp.Exponent"
+client_id = "host.exp.Exponent,com.wedded.app"
 # DO NOT commit your OAuth provider secret to git. Use environment variable substitution instead:
 secret = "env(SUPABASE_AUTH_EXTERNAL_APPLE_SECRET)"
 # Overrides the default auth callback URL derived from auth.external_url.
