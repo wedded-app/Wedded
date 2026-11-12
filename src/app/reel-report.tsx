@@ -25,9 +25,9 @@ const REASONS: ReportReason[] = [
 ];
 
 /**
- * Report a reel, a comment, a person or a story (App Store rule 1.2): pick a
- * reason, add a note if you like, and the founders review it. `?reel=`,
- * `?comment=`, `?user=` or `?story=`.
+ * Report a reel, a comment, a person, a story or a chat (App Store rule 1.2):
+ * pick a reason, add a note if you like, and the founders review it. `?reel=`,
+ * `?comment=`, `?user=`, `?story=`, `?chat=` (a vendor chat) or `?group=`.
  */
 export default function ReelReportScreen() {
   const Colors = useColors();
@@ -37,6 +37,8 @@ export default function ReelReportScreen() {
     comment?: string;
     user?: string;
     story?: string;
+    chat?: string;
+    group?: string;
   }>();
   const report = useReport();
   const [reason, setReason] = useState<ReportReason | null>(null);
@@ -53,7 +55,13 @@ export default function ReelReportScreen() {
         ? { userId: params.user }
         : params.story
           ? { storyId: params.story }
-          : null;
+          : params.chat
+            ? { conversationId: params.chat }
+            : params.group
+              ? { threadId: params.group }
+              : null;
+  // "It's someone else's video" means nothing for a chat
+  const reasons = params.chat || params.group ? REASONS.filter((r) => r !== 'not_mine') : REASONS;
 
   const send = () => {
     if (!target || !reason) return;
@@ -94,7 +102,7 @@ export default function ReelReportScreen() {
             <AppText color="text2">{t('report.subtitle')}</AppText>
           </View>
           <ListSection>
-            {REASONS.map((r) => (
+            {reasons.map((r) => (
               <ListRow
                 key={r}
                 title={t(`report.reasons.${r}`)}

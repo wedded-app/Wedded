@@ -356,7 +356,13 @@ export function useRemoveComment(reelId: string) {
 export type ReportReason =
   'inappropriate' | 'not_mine' | 'privacy' | 'spam' | 'harassment' | 'other';
 export type ReportTarget =
-  { reelId: string } | { commentId: string } | { userId: string } | { storyId: string };
+  | { reelId: string }
+  | { commentId: string }
+  | { userId: string }
+  | { storyId: string }
+  // A vendor chat or a group chat: these go to chat_reports through report_chat()
+  | { conversationId: string }
+  | { threadId: string };
 
 export function useReport() {
   return useMutation({
@@ -369,6 +375,16 @@ export function useReport() {
       reason: ReportReason;
       note?: string;
     }) => {
+      if ('conversationId' in target || 'threadId' in target) {
+        const { error } = await supabase.rpc('report_chat', {
+          p_conversation_id: 'conversationId' in target ? target.conversationId : undefined,
+          p_thread_id: 'threadId' in target ? target.threadId : undefined,
+          p_reason: reason,
+          p_note: note?.trim() || undefined,
+        });
+        if (error) throw new Error(error.message);
+        return;
+      }
       const { error } = await supabase.rpc('report_reel_content', {
         p_reel_id: 'reelId' in target ? target.reelId : undefined,
         p_comment_id: 'commentId' in target ? target.commentId : undefined,
