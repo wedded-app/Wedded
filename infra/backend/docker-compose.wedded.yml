@@ -17,6 +17,17 @@ services:
       # Sign in with Apple; host.exp.Exponent is Expo Go (HOSTED_SETUP.md, step 10)
       GOTRUE_EXTERNAL_APPLE_ENABLED: 'true'
       GOTRUE_EXTERNAL_APPLE_CLIENT_ID: ${APPLE_CLIENT_IDS:-host.exp.Exponent}
+      # A code is only sent with a Cloudflare Turnstile token; deploy.sh turns it on
+      # when env/TURNSTILE_SECRET_KEY is in Parameter Store
+      GOTRUE_SECURITY_CAPTCHA_ENABLED: ${CAPTCHA_ENABLED:-false}
+      GOTRUE_SECURITY_CAPTCHA_PROVIDER: turnstile
+      GOTRUE_SECURITY_CAPTCHA_SECRET: ${TURNSTILE_SECRET_KEY:-}
+
+  # Off the internet (deploy.sh takes it out of Caddy); this port is only for the server
+  # itself, which is where a Systems Manager tunnel lands
+  studio:
+    ports:
+      - 127.0.0.1:3000:3000
 
   functions:
     env_file: functions.env
