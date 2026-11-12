@@ -1,6 +1,6 @@
 import { Redirect, Tabs } from 'expo-router';
-import { View } from 'react-native';
 
+import { PagePlaceholder } from '@/components/page-placeholder';
 import { TabBar, TabBarSpaceProvider, useTabBarOffset, type TabSpec } from '@/components/tab-bar';
 import { Sizes, Spacing, useColors } from '@/constants/theme';
 import { useBusinessLeads, waitingCount } from '@/data/business';
@@ -56,7 +56,7 @@ export default function BusinessTabsLayout() {
   const leads = useBusinessLeads(current.vendorId);
 
   if (status === 'loading' || (status === 'signedIn' && current.isPending)) {
-    return <View style={{ flex: 1, backgroundColor: Colors.canvas }} />;
+    return <PagePlaceholder screen />;
   }
   if (!current.business) return <Redirect href="/" />;
 
