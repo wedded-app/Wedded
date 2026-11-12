@@ -122,7 +122,8 @@ jobs:
   merge:
     name: Merge when checks pass
     needs: [check, database, functions, infra]
-    if: github.event_name == 'pull_request' && !github.event.pull_request.draft && github.event.pull_request.base.ref == 'main'
+    # Dependabot's PRs wait for a founder: a merge here goes straight to the server
+    if: github.event_name == 'pull_request' && !github.event.pull_request.draft && github.event.pull_request.base.ref == 'main' && github.event.pull_request.user.login != 'dependabot[bot]'
     runs-on: ubuntu-latest
     timeout-minutes: 5
     permissions:
