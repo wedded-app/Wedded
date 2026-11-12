@@ -1186,6 +1186,7 @@
     "planning": "Planning",
     "about": "About",
     "version": "Version",
+    "contact": "Contact us",
     "account": "Account",
     "madeIn": "Made in Northern California for Punjabi families",
     "legal": "Legal",
@@ -2041,10 +2042,21 @@
       "rate": "You're sending very fast. Wait a minute, then send again.",
       "empty": "Type a message first.",
       "notAllowed": "You can't send in this conversation.",
+      "blocked": "Messages can't be sent in this chat.",
       "invalid": "That message couldn't be sent. Check it and try again.",
       "failed": "That didn't send. Check your internet and try again.",
       "familyFirst": "You can reply once this family writes to you.",
       "waitForReply": "You've followed up twice. Wait for the family to reply before writing again."
+    },
+    "safety": {
+      "more": "Report or block",
+      "report": "Report this chat",
+      "block": "Block",
+      "unblock": "Unblock",
+      "cancel": "Cancel",
+      "blockTitle": "Block {{name}}?",
+      "blockBody": "Neither of you will be able to send messages here until you unblock it.",
+      "blockedByYou": "You blocked this chat. Unblock it to send messages again."
     },
     "quoteForm": {
       "title": "Send a quote",

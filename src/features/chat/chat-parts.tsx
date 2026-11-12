@@ -4,18 +4,21 @@ import { Alert, Platform, Pressable, View } from 'react-native';
 import { AppText } from '@/components/app-text';
 import { BackButton } from '@/components/back-button';
 import { Chip } from '@/components/chip';
+import { GlassButton } from '@/components/glass-button';
 import { makeStyles, Sizes, Spacing } from '@/constants/theme';
-import type { Conversation } from '@/data/chat';
+import { useBlockChat, useChatBlocked, type Conversation } from '@/data/chat';
 import { usePaymentAccount } from '@/data/deposits';
 import { localized } from '@/i18n/localized';
 import { useLocale } from '@/i18n/locale-context';
+import { confirm } from '@/lib/confirm';
 import { formatPhone } from '@/lib/phone';
 
 // The chat screen's title bar and the chips under its thread (/chat/[id]).
 
 /**
  * The chat's top bar: back, then who it's with. For a family the name opens
- * the vendor's page; a vendor sees which of their businesses it's for.
+ * the vendor's page; a vendor sees which of their businesses it's for. The
+ * dots at the end report the chat or block it (App Store rule 1.2).
  */
 export function ChatTitleBar({
   conversation,
@@ -27,6 +30,35 @@ export function ChatTitleBar({
   const styles = useStyles();
   const { t } = useLocale();
   const side = conversation?.side ?? 'family';
+  const id = conversation?.id ?? '';
+  const blocked = useChatBlocked(id).data ?? false;
+  const block = useBlockChat(id);
+  const more = () => {
+    const report = () => router.push({ pathname: '/reel-report', params: { chat: id } });
+    if (Platform.OS === 'web') {
+      // Alert does nothing in a browser: the first choice is the useful one
+      if (globalThis.confirm(t('chat.safety.report'))) report();
+      return;
+    }
+    Alert.alert(title, undefined, [
+      { text: t('chat.safety.report'), onPress: report },
+      blocked
+        ? { text: t('chat.safety.unblock'), onPress: () => block.mutate(false) }
+        : {
+            text: t('chat.safety.block'),
+            style: 'destructive',
+            onPress: () =>
+              confirm(
+                t('chat.safety.blockTitle', { name: title }),
+                t('chat.safety.blockBody'),
+                t('chat.safety.block'),
+                t('chat.safety.cancel'),
+                () => block.mutate(true),
+              ),
+          },
+      { text: t('chat.safety.cancel'), style: 'cancel' },
+    ]);
+  };
   return (
     <View style={styles.bar}>
       <BackButton />
@@ -53,6 +85,13 @@ export function ChatTitleBar({
               : t('chat.forBusiness', { name: localized(conversation.vendor.name) })}
           </AppText>
         </Pressable>
+      )}
+      {conversation && (
+        <GlassButton
+          icon="ellipsis-horizontal"
+          accessibilityLabel={t('chat.safety.more')}
+          onPress={more}
+        />
       )}
     </View>
   );
