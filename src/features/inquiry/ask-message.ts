@@ -24,6 +24,8 @@ export type MessageFacts = {
   set: 'venue' | 'caterer' | null;
   /** The hall's drinks: full_bar, beer_wine, byob or dry (unknown when it didn't say). */
   alcoholPolicy?: string;
+  /** Their arriving procession's name when it isn't a baraat (a Zaffa), which comes without the horse and dhol. */
+  procession?: string;
   /** The live counters' names, as the page shows them. */
   counters: string[];
 };
@@ -81,7 +83,7 @@ function menuWords(t: Translate, d: AskDraft, counters: string[]): string | null
 }
 
 /**
- * "Sat Sri Akal! We're planning our Reception on Saturday, June 19, 2027, in
+ * "Hello! We're planning our Reception on Saturday, June 19, 2027, in
  * the evening, for about 300 guests. We're bringing our own caterer, we'd
  * like to use your bar, and the baraat will arrive at the hall with a horse
  * and dhol. Could you share your price, and is the 19th still open? Thank you."
@@ -128,7 +130,13 @@ export function writtenMessage(t: Translate, d: AskDraft, facts: MessageFacts): 
       );
     }
     if (d.alcohol === 'no') wishes.push(t('ask.write.noAlcohol'));
-    if (d.baraat === true) wishes.push(t('ask.write.baraat'));
+    if (d.baraat === true) {
+      wishes.push(
+        facts.procession
+          ? t('ask.write.procession', { event: facts.procession })
+          : t('ask.write.baraat'),
+      );
+    }
   }
   if (wishes.length > 0) sentences.push(`${capitalise(listOf(wishes, and))}.`);
 

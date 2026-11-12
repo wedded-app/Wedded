@@ -12,6 +12,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { useReducedMotion } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { AppText } from '@/components/app-text';
 import { Button } from '@/components/button';
 import { Composer } from '@/components/chat/composer';
 import { ReactionPicker } from '@/components/chat/reaction-picker';
@@ -23,6 +24,8 @@ import { StateView } from '@/components/state-view';
 import { makeStyles, Sizes, Spacing } from '@/constants/theme';
 import {
   sendErrorKind,
+  useBlockChat,
+  useChatBlocked,
   useConversation,
   useReactToMessage,
   useSendMessage,
@@ -65,6 +68,9 @@ export default function ChatScreen() {
   const thread = useConversation(id);
   const send = useSendMessage(id);
   const react = useReactToMessage(id);
+  // Blocked by me (the title bar's dots): nothing to write in until it's unblocked
+  const blocked = useChatBlocked(id).data ?? false;
+  const block = useBlockChat(id);
   // The message being reacted to, while the picker is open (hold a message)
   const [reactingTo, setReactingTo] = useState<Message | null>(null);
   const myReaction = (message: Message) => message.reactions.find((r) => r.mine)?.code ?? null;
@@ -247,75 +253,89 @@ export default function ChatScreen() {
             )}
 
             <View style={[styles.bottom, { paddingBottom: Math.max(insets.bottom, Spacing.md) }]}>
-              {error && (
-                <View style={styles.error}>
-                  <FieldError message={error} />
-                  {voice.failed && (
-                    <View style={styles.voiceActions}>
-                      <Button
-                        variant="text"
-                        label={t('chat.photos.tryAgain')}
-                        onPress={voice.retry}
-                      />
-                      <Button
-                        variant="text"
-                        label={t('chat.photos.remove')}
-                        onPress={voice.dismiss}
-                      />
+              {blocked ? (
+                <View style={styles.blocked}>
+                  <AppText color="text2">{t('chat.safety.blockedByYou')}</AppText>
+                  <Button
+                    variant="secondary"
+                    label={t('chat.safety.unblock')}
+                    loading={block.isPending}
+                    onPress={() => block.mutate(false)}
+                  />
+                </View>
+              ) : (
+                <>
+                  {error && (
+                    <View style={styles.error}>
+                      <FieldError message={error} />
+                      {voice.failed && (
+                        <View style={styles.voiceActions}>
+                          <Button
+                            variant="text"
+                            label={t('chat.photos.tryAgain')}
+                            onPress={voice.retry}
+                          />
+                          <Button
+                            variant="text"
+                            label={t('chat.photos.remove')}
+                            onPress={voice.dismiss}
+                          />
+                        </View>
+                      )}
                     </View>
                   )}
-                </View>
+                  {side === 'vendor' && convo && (
+                    <VendorChatTools conversationId={id} vendorId={convo.vendor.id} />
+                  )}
+                  {side === 'family' && convo && profile?.phone && !sharedNumber && (
+                    <ShareNumberChip
+                      phone={profile.phone}
+                      onShare={() => send.mutate({ kind: 'phone' })}
+                    />
+                  )}
+                  {familyWrote && (
+                    <View style={styles.error}>
+                      <PushAskCard audience="family" />
+                    </View>
+                  )}
+                  {replyingTo && (
+                    <ReplyBar
+                      title={t('chat.reply.replyingTo', { name: authorOf(replyingTo) })}
+                      text={messageSnippet(replyingTo, t)}
+                      cancelLabel={t('chat.reply.cancel')}
+                      onCancel={() => setReplyingTo(null)}
+                    />
+                  )}
+                  <Composer
+                    inputRef={input}
+                    value={draft}
+                    onChangeText={changeDraft}
+                    onBlur={typing.stopped}
+                    onSend={() => sendText(draft)}
+                    onAddPhoto={convo ? sendPhoto : undefined}
+                    voice={
+                      convo
+                        ? {
+                            mode: voice.mode,
+                            elapsedMs: voice.elapsedMs,
+                            onHold: voice.hold,
+                            onRelease: voice.release,
+                            onTap: voice.tap,
+                            onCancel: voice.cancel,
+                            onSend: voice.sendNow,
+                          }
+                        : undefined
+                    }
+                    sending={send.isPending}
+                    quickReplies={
+                      side === 'family' && familyTexts < 2
+                        ? QUICK_REPLIES.map((key) => t(`chat.quickReplies.${key}`))
+                        : undefined
+                    }
+                    onQuickReply={sendText}
+                  />
+                </>
               )}
-              {side === 'vendor' && convo && (
-                <VendorChatTools conversationId={id} vendorId={convo.vendor.id} />
-              )}
-              {side === 'family' && convo && profile?.phone && !sharedNumber && (
-                <ShareNumberChip
-                  phone={profile.phone}
-                  onShare={() => send.mutate({ kind: 'phone' })}
-                />
-              )}
-              {familyWrote && (
-                <View style={styles.error}>
-                  <PushAskCard audience="family" />
-                </View>
-              )}
-              {replyingTo && (
-                <ReplyBar
-                  title={t('chat.reply.replyingTo', { name: authorOf(replyingTo) })}
-                  text={messageSnippet(replyingTo, t)}
-                  cancelLabel={t('chat.reply.cancel')}
-                  onCancel={() => setReplyingTo(null)}
-                />
-              )}
-              <Composer
-                inputRef={input}
-                value={draft}
-                onChangeText={changeDraft}
-                onBlur={typing.stopped}
-                onSend={() => sendText(draft)}
-                onAddPhoto={convo ? sendPhoto : undefined}
-                voice={
-                  convo
-                    ? {
-                        mode: voice.mode,
-                        elapsedMs: voice.elapsedMs,
-                        onHold: voice.hold,
-                        onRelease: voice.release,
-                        onTap: voice.tap,
-                        onCancel: voice.cancel,
-                        onSend: voice.sendNow,
-                      }
-                    : undefined
-                }
-                sending={send.isPending}
-                quickReplies={
-                  side === 'family' && familyTexts < 2
-                    ? QUICK_REPLIES.map((key) => t(`chat.quickReplies.${key}`))
-                    : undefined
-                }
-                onQuickReply={sendText}
-              />
             </View>
           </KeyboardAvoidingView>
           <ReactionPicker
@@ -358,6 +378,11 @@ const useStyles = makeStyles((Colors) => ({
   error: {
     paddingHorizontal: Sizes.pageGutter,
     paddingTop: Spacing.sm,
+  },
+  blocked: {
+    gap: Spacing.md,
+    paddingHorizontal: Sizes.pageGutter,
+    paddingTop: Spacing.md,
   },
   voiceActions: {
     flexDirection: 'row',

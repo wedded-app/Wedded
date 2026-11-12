@@ -28,6 +28,7 @@ import { AskStep } from '@/features/inquiry/ask-step';
 import type { DayPart } from '@/features/inquiry/details';
 import { fromDateString, toDateString, type HallAnswers } from '@/features/inquiry/inquiry-helpers';
 import { useAsk } from '@/features/inquiry/use-ask';
+import { localized } from '@/i18n/localized';
 import { useLocale } from '@/i18n/locale-context';
 import { selectionHaptic } from '@/lib/haptics';
 
@@ -35,7 +36,8 @@ type Translate = (key: string, options?: Record<string, string | number>) => str
 
 /**
  * Ask for a quote, page 4 of 5: what this vendor needs to know. A hall asks
- * day or evening, who's bringing the food, drinks and the baraat, each in
+ * day or evening, who's bringing the food, drinks and, when their traditions
+ * have one, the baraat or zaffa arriving, each in
  * the hall's own terms (a hall that doesn't cook shows Their kitchen as not
  * offered); choosing Their kitchen opens the menu under it. A caterer asks
  * about the menu; anyone else, day or evening and where. A visit asks which
@@ -74,7 +76,7 @@ export default function AskDetailsStep() {
           draft.timeOfDay,
           draft.whoCooks,
           hallQuestions?.alcohol ? draft.alcohol : 'skip',
-          draft.baraat,
+          ask.procession ? draft.baraat : 'skip',
         ].filter((answer) => answer !== null).length
       : 0;
 
@@ -109,7 +111,17 @@ export default function AskDetailsStep() {
         onContinue={next}
       >
         {set === 'venue' ? (
-          <HallQuestions draft={draft} hall={hall} vendor={name} />
+          <HallQuestions
+            draft={draft}
+            hall={hall}
+            vendor={name}
+            procession={
+              ask.procession && {
+                name: localized(ask.procession.name),
+                horse: ask.procession.slug === 'baraat',
+              }
+            }
+          />
         ) : set === 'caterer' ? (
           <>
             <WhereQuestion place={ask.place} />
@@ -188,10 +200,13 @@ function HallQuestions({
   draft,
   hall,
   vendor,
+  procession,
 }: {
   draft: AskDraft;
   hall: HallAnswers;
   vendor: string;
+  /** Their tradition's arriving procession; a baraat comes with a horse. */
+  procession: { name: string; horse: boolean } | null;
 }) {
   const { t } = useLocale();
   const asks = hallAsks(hall);
@@ -273,17 +288,22 @@ function HallQuestions({
 
       {asks.alcohol && <DrinksQuestion draft={draft} hall={hall} />}
 
-      <Question title={t('ask.details.baraat')} note={baraatNote(hall, t)}>
-        <ChoicePills
-          label={t('ask.details.baraat')}
-          options={[
-            { value: 'yes', label: t('ask.details.yes') },
-            { value: 'no', label: t('ask.details.no') },
-          ]}
-          value={draft.baraat === null ? null : draft.baraat ? 'yes' : 'no'}
-          onChange={(value) => setAsk({ baraat: value === 'yes' })}
-        />
-      </Question>
+      {procession && (
+        <Question
+          title={t('ask.details.baraat', { event: procession.name })}
+          note={procession.horse ? baraatNote(hall, t) : t('ask.details.processionNote')}
+        >
+          <ChoicePills
+            label={t('ask.details.baraat', { event: procession.name })}
+            options={[
+              { value: 'yes', label: t('ask.details.yes') },
+              { value: 'no', label: t('ask.details.no') },
+            ]}
+            value={draft.baraat === null ? null : draft.baraat ? 'yes' : 'no'}
+            onChange={(value) => setAsk({ baraat: value === 'yes' })}
+          />
+        </Question>
+      )}
     </>
   );
 }

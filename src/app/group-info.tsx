@@ -176,6 +176,11 @@ export default function GroupInfoScreen() {
       {failed && <FieldError message={t(`groupChat.errors.${groupErrorKind(failed.error)}`)} />}
 
       <ListSection>
+        <ListRow
+          icon="flag-outline"
+          title={t('chat.safety.report')}
+          onPress={() => router.push({ pathname: '/reel-report', params: { group: id } })}
+        />
         {(members.data ?? [])
           .filter((m) => m.isMe)
           .map((me) => (

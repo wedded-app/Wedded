@@ -17,6 +17,9 @@ export const EVENT_PHOTOS: Readonly<Record<string, number>> = {
   baraat: require('../../../assets/images/events/baraat.jpg'),
   'sehra-ghori': require('../../../assets/images/events/baraat.jpg'),
   'anand-karaj': require('../../../assets/images/events/anand-karaj.jpg'),
+  nikah: require('../../../assets/images/events/nikah.jpg'),
+  // Pakistani weddings' Shadi / Baraat
+  shadi: require('../../../assets/images/events/baraat.jpg'),
   pheras: require('../../../assets/images/events/pheras.jpg'),
   'church-wedding': require('../../../assets/images/events/church-wedding.jpg'),
   reception: require('../../../assets/images/events/reception.jpg'),

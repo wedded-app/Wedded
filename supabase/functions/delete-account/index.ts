@@ -9,13 +9,20 @@
 // in the database: profile and saved vendors are deleted, and inquiries keep
 // the vendor's history with the sender's name, phone and email scrubbed.
 //
+// Someone who signed in with Apple sends `appleCode`, the authorization code
+// from signing in again; it's used to revoke Wedded's access to their Apple
+// ID first (apple-revoke.ts). If Apple can't be reached the account is still
+// deleted: a person must always be able to delete it.
+//
 //   200 { deleted: true }
 //   401 { error: 'unauthorized' }
 //   403 { error: 'reauth_required' }   verify a fresh code, or sign in again, first
+//                                      (also when the Apple code is used or too old)
 //   500 { error: 'server_error' }
 
 import { createClient } from '@supabase/supabase-js';
 
+import { appleKeyFromEnv, revokeAppleSignIn } from './apple-revoke.ts';
 import { type AuthMethod, signedInRecently } from './fresh-sign-in.ts';
 
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL') ?? '';
@@ -61,6 +68,19 @@ Deno.serve(async (request) => {
   const now = Math.floor(Date.now() / 1000);
   if (!signedInRecently(claimsOf(token).amr, now)) {
     return json({ error: 'reauth_required' }, 403);
+  }
+
+  if (data.user.identities?.some((identity) => identity.provider === 'apple')) {
+    const appleKey = appleKeyFromEnv((name) => Deno.env.get(name));
+    const body = await request.json().catch(() => null);
+    const appleCode = typeof body?.appleCode === 'string' ? body.appleCode : '';
+    if (appleKey && appleCode) {
+      const result = await revokeAppleSignIn(appleKey, appleCode, now);
+      if (result === 'expired') return json({ error: 'reauth_required' }, 403);
+    } else {
+      // No key yet (Expo Go), or deleted from a device without Apple's sheet
+      console.warn('apple sign-in not revoked', data.user.id, appleKey ? 'no code' : 'no key');
+    }
   }
 
   const { error: deleteError } = await admin.auth.admin.deleteUser(data.user.id);

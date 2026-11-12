@@ -13,3 +13,7 @@ export async function appleSignInAvailable(): Promise<boolean> {
 export async function appleSignIn(): Promise<ProviderResult> {
   return 'unavailable';
 }
+
+export function takeAppleAuthorizationCode(): string | null {
+  return null;
+}

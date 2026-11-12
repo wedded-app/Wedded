@@ -24,6 +24,12 @@ export const SITE_URL = (process.env.EXPO_PUBLIC_SITE_URL || PLACEHOLDER_SITE_UR
 
 export const SITE_URL_IS_PLACEHOLDER = !process.env.EXPO_PUBLIC_SITE_URL;
 
+/**
+ * Where people reach us (App Store rule 1.2 asks for a published address).
+ * Empty until EXPO_PUBLIC_SUPPORT_EMAIL is set; Settings shows the row once it is.
+ */
+export const SUPPORT_EMAIL = process.env.EXPO_PUBLIC_SUPPORT_EMAIL || null;
+
 /** A page on the website, e.g. siteLink('/v/royal-orchard') for a QR code. */
 export function siteLink(path: string): string {
   return `${SITE_URL}/${path.replace(/^\//, '')}`;

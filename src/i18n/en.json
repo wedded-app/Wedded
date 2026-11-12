@@ -884,7 +884,8 @@
         "no": "No alcohol",
         "not_sure": "Not decided"
       },
-      "baraat": "Is the baraat arriving here?",
+      "baraat": "Is the {{event}} arriving here?",
+      "processionNote": "The hall keeps the lot clear for it.",
       "baraatNote": "With a horse and dhol, the hall keeps the lot clear for it.",
       "baraatAllowed": "They allow a horse, and dhol outside.",
       "baraatHorse": "They allow a horse.",
@@ -915,7 +916,7 @@
       "sendVisit": "Ask {{vendor}} for a visit"
     },
     "write": {
-      "hello": "Sat Sri Akal!",
+      "hello": "Hello!",
       "and": "and",
       "or": "or",
       "our": "our {{events}}",
@@ -937,6 +938,7 @@
       "alcohol": "there will be alcohol",
       "noAlcohol": "there won't be alcohol",
       "baraat": "the baraat will arrive at the hall with a horse and dhol",
+      "procession": "the {{event}} will arrive at the hall",
       "kitchen": "We'd like your kitchen to do the food.",
       "kitchenFood": "We'd like your kitchen to do the food: {{food}}.",
       "catererFood": "For the menu, we'd like {{food}}.",
@@ -1175,7 +1177,7 @@
       "large": "Large",
       "xlarge": "Extra large"
     },
-    "textSample": "Sat Sri Akal! This is how text will look.",
+    "textSample": "Hello! This is how text will look.",
     "general": "General",
     "haptics": "Haptics",
     "hapticsHint": "A small tap you can feel when you save or pick",
@@ -1186,8 +1188,9 @@
     "planning": "Planning",
     "about": "About",
     "version": "Version",
+    "contact": "Contact us",
     "account": "Account",
-    "madeIn": "Made in Northern California for Punjabi families",
+    "madeIn": "Made in Northern California for families planning a wedding",
     "legal": "Legal",
     "legalSoon": "The Terms, Privacy and Refund pages open on the Wedded website once it's live.",
     "soon": "Soon",
@@ -2041,10 +2044,21 @@
       "rate": "You're sending very fast. Wait a minute, then send again.",
       "empty": "Type a message first.",
       "notAllowed": "You can't send in this conversation.",
+      "blocked": "Messages can't be sent in this chat.",
       "invalid": "That message couldn't be sent. Check it and try again.",
       "failed": "That didn't send. Check your internet and try again.",
       "familyFirst": "You can reply once this family writes to you.",
       "waitForReply": "You've followed up twice. Wait for the family to reply before writing again."
+    },
+    "safety": {
+      "more": "Report or block",
+      "report": "Report this chat",
+      "block": "Block",
+      "unblock": "Unblock",
+      "cancel": "Cancel",
+      "blockTitle": "Block {{name}}?",
+      "blockBody": "Neither of you will be able to send messages here until you unblock it.",
+      "blockedByYou": "You blocked this chat. Unblock it to send messages again."
     },
     "quoteForm": {
       "title": "Send a quote",
