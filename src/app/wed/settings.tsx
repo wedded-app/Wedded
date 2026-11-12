@@ -5,14 +5,18 @@ import { View } from 'react-native';
 import { AppText } from '@/components/app-text';
 import { ListRow, ListSection, SectionTitle } from '@/components/list';
 import { NavScreen } from '@/components/nav';
+import { Switch } from '@/components/switch';
 import { Segmented } from '@/components/segmented';
 import { makeStyles, Spacing } from '@/constants/theme';
 import { SHOW_TESTING } from '@/features/settings/settings';
+import { useSession } from '@/features/auth/session';
+import { answerAiConsent, useAiConsent, WED_SHARES_WITH_AI } from '@/features/wed/ai-consent';
 import { FAMILY } from '@/features/wed/mock';
 import { ModeSwitch } from '@/features/wed/mode-switch';
 import { WedCloseButton } from '@/features/wed/close-wed';
 import { WED_BACK } from '@/features/wed/open-wed';
 import { useWed, wed, type CheckIns, type Role } from '@/features/wed/wed-store';
+import { useLocale } from '@/i18n/locale-context';
 import { selectionHaptic } from '@/lib/haptics';
 
 // The same in both modes; there is no "do everything" choice
@@ -126,6 +130,8 @@ export default function WedSettingsScreen() {
         />
       </ListSection>
 
+      {WED_SHARES_WITH_AI && <AiSharingRow />}
+
       {SHOW_TESTING ? (
         <ListSection header="Demo (mockup only)">
           <View style={styles.preview}>
@@ -155,6 +161,30 @@ export default function WedSettingsScreen() {
         </ListSection>
       ) : null}
     </NavScreen>
+  );
+}
+
+/** Taking back (or giving) permission to share with the AI service, for someone signed in. */
+function AiSharingRow() {
+  const { t } = useLocale();
+  const { session } = useSession();
+  const consent = useAiConsent(session?.user.id);
+  if (!session) return null;
+  return (
+    <ListSection inset footer={t('wedConsent.settingsHint')}>
+      <ListRow
+        icon="sparkles-outline"
+        iconColor="text"
+        title={t('wedConsent.settingsRow')}
+        trailing={
+          <Switch
+            value={consent.data ?? false}
+            onValueChange={(allowed) => void answerAiConsent(allowed).catch(() => {})}
+            accessibilityLabel={t('wedConsent.settingsRow')}
+          />
+        }
+      />
+    </ListSection>
   );
 }
 

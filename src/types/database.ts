@@ -374,6 +374,41 @@ export type Database = {
           },
         ];
       };
+      consents: {
+        Row: {
+          accepted_at: string;
+          created_at: string;
+          document_id: string;
+          id: string;
+          user_id: string;
+          withdrawn_at: string | null;
+        };
+        Insert: {
+          accepted_at?: string;
+          created_at?: string;
+          document_id: string;
+          id?: string;
+          user_id: string;
+          withdrawn_at?: string | null;
+        };
+        Update: {
+          accepted_at?: string;
+          created_at?: string;
+          document_id?: string;
+          id?: string;
+          user_id?: string;
+          withdrawn_at?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'consents_document_id_fkey';
+            columns: ['document_id'];
+            isOneToOne: false;
+            referencedRelation: 'legal_documents';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
       conversations: {
         Row: {
           created_at: string;
@@ -1345,6 +1380,33 @@ export type Database = {
           created_at?: string;
           name?: NonNullable<Json>;
           sort_order?: number;
+        };
+        Relationships: [];
+      };
+      legal_documents: {
+        Row: {
+          created_at: string;
+          id: string;
+          kind: string;
+          published_at: string;
+          url: string | null;
+          version: string;
+        };
+        Insert: {
+          created_at?: string;
+          id?: string;
+          kind: string;
+          published_at?: string;
+          url?: string | null;
+          version: string;
+        };
+        Update: {
+          created_at?: string;
+          id?: string;
+          kind?: string;
+          published_at?: string;
+          url?: string | null;
+          version?: string;
         };
         Relationships: [];
       };
@@ -4401,6 +4463,7 @@ export type Database = {
           yes: number;
         }[];
       };
+      has_ai_consent: { Args: Record<PropertyKey, never>; Returns: boolean };
       hide_reel_comment: { Args: { p_comment_id: string }; Returns: undefined };
       hide_vault_item: { Args: { p_hidden?: boolean; p_item_id: string }; Returns: undefined };
       inquiry_emails_left_today: { Args: Record<PropertyKey, never>; Returns: number };
@@ -4773,6 +4836,7 @@ export type Database = {
         };
         Returns: string;
       };
+      set_ai_consent: { Args: { p_allowed: boolean }; Returns: undefined };
       set_booked: {
         Args: {
           p_booked: boolean;

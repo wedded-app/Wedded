@@ -27,6 +27,7 @@ import {
   type FoundPage,
   type MockVendor,
 } from './mock';
+import { requireAiConsent } from './ai-consent';
 import type { GuestChannel, GuestSend } from './send-to-guests';
 import type { Step } from './step-list';
 
@@ -577,6 +578,11 @@ export const wed = {
    * words match, or the fallback. Clears the composer and the context chip.
    */
   send(text: string, options: { spoken?: boolean; photo?: string } = {}) {
+    // Once Wed shares with an AI service, nothing goes before they've said yes (ai-consent.ts)
+    void requireAiConsent(() => wed.sendNow(text, options));
+  },
+
+  sendNow(text: string, options: { spoken?: boolean; photo?: string } = {}) {
     const words = text.trim();
     if (!words && !options.photo) return;
     const context = state.context;

@@ -217,6 +217,7 @@ function AppShell() {
           {/* Wed: connecting an app, sending to guests, and talking to Wed full screen */}
           <Stack.Screen name="wed-connect" options={{ presentation: 'modal' }} />
           <Stack.Screen name="wed-send" options={{ presentation: 'modal' }} />
+          <Stack.Screen name="wed-consent" options={{ presentation: 'modal' }} />
           <Stack.Screen
             name="wed-voice"
             options={{ presentation: 'fullScreenModal', animation: 'fade' }}
