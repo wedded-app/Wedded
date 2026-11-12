@@ -5,9 +5,10 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import { AppText, useFontScale } from '@/components/app-text';
 import { Icon } from '@/components/icon';
 import { makeStyles, Radius, Sizes, Spacing, useColors } from '@/constants/theme';
+import { useSession } from '@/features/auth/session';
 import { daysUntil, usePlan } from '@/features/planner/plan';
 
-import { daysToGo, FAMILY, greetingWords, STARTERS, WEDDING } from '../mock';
+import { daysToGo, greetingWords, STARTERS, WEDDING } from '../mock';
 import { useWed, wed, type WedState } from '../wed-store';
 import { WedMark } from '../wed-mark';
 
@@ -21,8 +22,8 @@ const waitingTitles = (s: WedState) =>
         .map((a) => a.title);
 
 /**
- * The top of today in the thread: the mark, "Good evening, Simran" in the
- * serif, how many days are left and how much is left to book, the promise
+ * The top of today in the thread: the mark, "Good evening" with the
+ * signed-in person's first name (no name when there isn't one), how many days are left and how much is left to book, the promise
  * that nothing is sent without a yes, then three things to try and More
  * ideas. When cards wait for a yes, a row under the promise says which
  * and opens Updates. With `minHeight` (an empty day) it fills the screen and
@@ -34,6 +35,7 @@ export function Greeting({ minHeight, inset = 0 }: { minHeight?: number; inset?:
   const styles = useStyles();
   const left = WEDDING.essentials - WEDDING.booked;
   const { weddingDate } = usePlan();
+  const firstName = useSession().profile?.full_name?.trim().split(' ')[0];
   const realDays = weddingDate ? daysUntil(weddingDate) : null;
   const days =
     realDays !== null && realDays >= 0
@@ -56,7 +58,7 @@ export function Greeting({ minHeight, inset = 0 }: { minHeight?: number; inset?:
           style={styles.center}
           accessibilityRole="header"
         >
-          {`${greetingWords()}, ${FAMILY.me}`}
+          {firstName ? `${greetingWords()}, ${firstName}` : greetingWords()}
         </AppText>
         <View>
           <AppText color="text2" style={styles.center}>

@@ -1,3 +1,4 @@
+import Constants, { ExecutionEnvironment } from 'expo-constants';
 import * as SystemUI from 'expo-system-ui';
 import {
   createContext,
@@ -13,6 +14,11 @@ import { useColorScheme } from 'react-native';
 import { Palettes, SchemeContext, TextScaleContext, type Scheme } from '@/constants/theme';
 import { setHapticsEnabled } from '@/lib/haptics';
 import { readSetting, StorageKeys, writeSetting } from '@/lib/storage';
+
+// Testing and demo tools: in development, and in Expo Go, where the shared
+// demo runs a published bundle with __DEV__ off. Never in the store app.
+export const SHOW_TESTING =
+  __DEV__ || Constants.executionEnvironment === ExecutionEnvironment.StoreClient;
 
 export type Appearance = 'system' | 'light' | 'dark';
 export type TextSize = 'default' | 'large' | 'xlarge';

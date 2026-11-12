@@ -1,4 +1,4 @@
-import Constants, { ExecutionEnvironment } from 'expo-constants';
+import Constants from 'expo-constants';
 import { router } from 'expo-router';
 import { Linking, Pressable, View } from 'react-native';
 
@@ -18,14 +18,10 @@ import { useEnablePush, usePushStatus } from '@/features/chat/push-ask';
 import { useSearchLocation } from '@/features/location/search-location';
 import { resetOnboarding } from '@/features/onboarding/onboarding-state';
 import { resetTour } from '@/features/planner/tour-state';
-import { TEXT_SIZES, useSettings, type TextSize } from '@/features/settings/settings';
+import { SHOW_TESTING, TEXT_SIZES, useSettings, type TextSize } from '@/features/settings/settings';
 import { Initial } from '@/features/settings/settings-button';
 import { useLocale } from '@/i18n/locale-context';
 import { selectionHaptic } from '@/lib/haptics';
-
-// Testing tools: in development, and in Expo Go, where the shared demo runs a
-// published bundle with __DEV__ off. Never in the store app.
-const SHOW_TESTING = __DEV__ || Constants.executionEnvironment === ExecutionEnvironment.StoreClient;
 
 const LEGAL_PAGES: { page: LegalPage; icon: IconName }[] = [
   { page: 'terms', icon: 'reader-outline' },

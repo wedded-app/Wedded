@@ -29,7 +29,8 @@ import { HALL } from './mock';
 import { VoiceBars } from './voice-bars';
 import { getWed, useWed, wed } from './wed-store';
 
-// Speech to text needs a development build, so dictation plays this script
+// Speech to text needs a development build, so the mic says voice is coming
+// and plays this example to send
 const TRANSCRIPT = 'Find a dhol player for the Jaago';
 const WORD_MS = 280;
 const LINES = 5;
@@ -154,7 +155,7 @@ export function WedComposer({
                 onCancel={() => setListening(false)}
                 onDone={() => {
                   setListening(false);
-                  wed.send(TRANSCRIPT, { spoken: true });
+                  wed.send(TRANSCRIPT);
                 }}
               />
             ) : (
@@ -291,7 +292,7 @@ function Typing({
   );
 }
 
-/** Dictation in the capsule: Cancel, the words as they're heard, Done. */
+/** The mic in the capsule: Cancel, an example arriving word by word, Done. */
 function Dictation({ onCancel, onDone }: { onCancel: () => void; onDone: () => void }) {
   const Colors = useColors();
   const styles = useStyles();
@@ -323,12 +324,12 @@ function Dictation({ onCancel, onDone }: { onCancel: () => void; onDone: () => v
           style={styles.grow}
           accessibilityLiveRegion="polite"
         >
-          {heard === 0 ? 'Listening…' : words.slice(0, heard).join(' ')}
+          {heard === 0 ? 'Voice is coming soon. Try this:' : words.slice(0, heard).join(' ')}
         </AppText>
       </View>
       <Pressable
         accessibilityRole="button"
-        accessibilityLabel="Done, send it"
+        accessibilityLabel="Done, send the example"
         onPress={onDone}
         style={({ pressed }) => [styles.done, styles.sendFill, pressed && styles.sendPressed]}
       >

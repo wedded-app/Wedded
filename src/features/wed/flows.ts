@@ -991,7 +991,7 @@ export const FLOWS: Record<FlowKey, Flow> = {
     ops: [
       {
         at: 600,
-        do: say('This is a preview, so I can do a few things so far. Try one of these:'),
+        do: say("I can't help with that one yet. Here's what I can do today:"),
       },
       { at: 900, do: { op: 'starters' } },
     ],

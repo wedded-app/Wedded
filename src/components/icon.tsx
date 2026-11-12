@@ -170,7 +170,6 @@ const SF_SYMBOLS: Partial<Record<IconName, SFSymbol>> = {
   'flag-outline': 'flag',
   'apps-outline': 'square.grid.2x2',
   'book-outline': 'book',
-  'mic-off-outline': 'mic.slash',
   'stats-chart-outline': 'chart.bar',
   'at-outline': 'at',
   'hourglass-outline': 'hourglass',
