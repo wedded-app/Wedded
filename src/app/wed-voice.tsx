@@ -13,8 +13,8 @@ import { wed } from '@/features/wed/wed-store';
 import { WedMark } from '@/features/wed/wed-mark';
 import { selectionHaptic } from '@/lib/haptics';
 
-// Speech to text needs a development build, so for now what Wed "hears" is
-// scripted, one word at a time
+// Speech to text needs a development build, so this page says voice is
+// coming and plays an example to send, one word at a time
 const SAID = 'Find a dhol player for the Jaago';
 const FIRST_WORD_MS = 900;
 const WORD_MS = 280;
@@ -22,9 +22,9 @@ const BARS = 44;
 const ROUND = 64;
 
 /**
- * MOCKUP: talking to Wed, full screen (a long press on Wed's bow). Wed
- * listens, the words appear big as they're heard (the newest one lighter
- * until the next arrives), and Done sends them to the chat, which takes this
+ * MOCKUP: talking to Wed, full screen (a long press on Wed's bow). It says
+ * voice is coming soon, an example appears big, word by word (the newest one
+ * lighter until the next arrives), and Done sends it to the chat, which takes this
  * screen's place (openWed), where Wed gets to work. Mute stops it listening
  * without leaving. Close leaves without sending anything.
  */
@@ -57,7 +57,7 @@ export default function WedVoiceScreen() {
       close();
       return;
     }
-    wed.send(SAID, { spoken: true });
+    wed.send(SAID);
     openWed();
   }
 
@@ -74,7 +74,7 @@ export default function WedVoiceScreen() {
       <View style={styles.middle}>
         <WedMark size={64} />
         <AppText variant="heading" color="text2" style={styles.center}>
-          {muted ? "You're muted" : 'Wed is listening…'}
+          {muted ? 'Paused' : 'Talking to Wed is coming soon'}
         </AppText>
         <View style={[styles.captions, { minHeight: captionHeight }]}>
           <AppText
@@ -97,12 +97,12 @@ export default function WedVoiceScreen() {
 
       <View style={styles.bottom}>
         <AppText color="text2" style={styles.center}>
-          Wed keeps working while you talk
+          For now, here&apos;s something you could say. Done sends it.
         </AppText>
         <View style={styles.actions}>
           <RoundAction
-            icon="mic-off-outline"
-            label={muted ? 'Unmute' : 'Mute'}
+            icon="pause"
+            label={muted ? 'Resume' : 'Pause'}
             fill={muted ? 'text' : 'fill'}
             tint={muted ? 'canvas' : 'text'}
             selected={muted}
@@ -115,7 +115,7 @@ export default function WedVoiceScreen() {
           <RoundAction
             icon="checkmark"
             label="Done"
-            a11y="Done, send what you said"
+            a11y="Done, send the example"
             fill="primaryFill"
             tint="onPrimary"
             onPress={end}

@@ -7,6 +7,7 @@ import { ListRow, ListSection, SectionTitle } from '@/components/list';
 import { NavScreen } from '@/components/nav';
 import { Segmented } from '@/components/segmented';
 import { makeStyles, Spacing } from '@/constants/theme';
+import { SHOW_TESTING } from '@/features/settings/settings';
 import { FAMILY } from '@/features/wed/mock';
 import { ModeSwitch } from '@/features/wed/mode-switch';
 import { WedCloseButton } from '@/features/wed/close-wed';
@@ -125,32 +126,34 @@ export default function WedSettingsScreen() {
         />
       </ListSection>
 
-      <ListSection header="Demo (mockup only)">
-        <View style={styles.preview}>
-          <AppText weight={500}>Preview as</AppText>
-          <Segmented<Role>
-            accessibilityLabel="Preview the cards as"
-            value={role}
-            onChange={wed.setRole}
-            options={ROLES.map(({ value, label }) => ({ value, label }))}
+      {SHOW_TESTING ? (
+        <ListSection header="Demo (mockup only)">
+          <View style={styles.preview}>
+            <AppText weight={500}>Preview as</AppText>
+            <Segmented<Role>
+              accessibilityLabel="Preview the cards as"
+              value={role}
+              onChange={wed.setRole}
+              options={ROLES.map(({ value, label }) => ({ value, label }))}
+            />
+            <AppText variant="label" weight={400} color="text2">
+              {ROLES.find((option) => option.value === role)?.words}
+            </AppText>
+          </View>
+          <ListRow
+            icon="refresh-outline"
+            iconColor="text"
+            title="Replay the demo"
+            subtitle={replayed ? 'Started over' : 'Starts the chat and the cards over'}
+            chevron={false}
+            onPress={() => {
+              selectionHaptic();
+              wed.reset();
+              setReplayed(true);
+            }}
           />
-          <AppText variant="label" weight={400} color="text2">
-            {ROLES.find((option) => option.value === role)?.words}
-          </AppText>
-        </View>
-        <ListRow
-          icon="refresh-outline"
-          iconColor="text"
-          title="Replay the demo"
-          subtitle={replayed ? 'Started over' : 'Starts the chat and the cards over'}
-          chevron={false}
-          onPress={() => {
-            selectionHaptic();
-            wed.reset();
-            setReplayed(true);
-          }}
-        />
-      </ListSection>
+        </ListSection>
+      ) : null}
     </NavScreen>
   );
 }
