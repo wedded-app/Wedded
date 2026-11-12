@@ -16,6 +16,17 @@ import { appleFullName } from './auth-helpers';
 import { setNameHint } from './name-hint';
 import type { ProviderResult } from './providers';
 
+// The last sign-in's one-time authorization code. Deleting the account sends
+// it to the server, which uses it to revoke Wedded's access to the Apple ID.
+let authorizationCode: string | null = null;
+
+/** The latest Apple sign-in's authorization code, once (Apple takes each code only once). */
+export function takeAppleAuthorizationCode(): string | null {
+  const code = authorizationCode;
+  authorizationCode = null;
+  return code;
+}
+
 /** True when this iPhone can show Apple's sign-in sheet. */
 export function appleSignInAvailable(): Promise<boolean> {
   return AppleAuthentication.isAvailableAsync().catch(() => false);
@@ -46,6 +57,7 @@ export async function appleSignIn(): Promise<ProviderResult> {
     return 'failed';
   }
   if (!credential.identityToken) return 'failed';
+  authorizationCode = credential.authorizationCode;
 
   // Apple shares the name only the first time; keep it for About you. Set
   // before Supabase answers, so About you has it when it opens.
