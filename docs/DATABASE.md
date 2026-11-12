@@ -1,6 +1,6 @@
 # The database
 
-Postgres on Supabase, 84 tables in `public`, built by the migrations in `supabase/migrations/`. This page is the map: the core on one diagram, then every table in one line. The one-liners are the tables' own `comment on table` text, so the database is the source of truth; refresh this page with the query at the bottom.
+Postgres on Supabase, 86 tables in `public`, built by the migrations in `supabase/migrations/`. This page is the map: the core on one diagram, then every table in one line. The one-liners are the tables' own `comment on table` text, so the database is the source of truth; refresh this page with the query at the bottom.
 
 ## The core
 
@@ -72,6 +72,8 @@ Keys: the reference tables (`events`, `categories`, `cultures`, `cities`, …) a
 - `follows`: Following a person or a vendor; exactly one of the two.
 - `user_blocks`: People someone blocked: neither sees the other's reels, comments or stories.
 - `reports`: Reports of a reel, a comment, a story or a person (exactly one), for the founders' queue. Open until handled: actioned or dismissed, by whom and when.
+- `chat_reports`: Reports of a vendor chat or a group chat (exactly one), for the founders' queue. Written only by report_chat(); nobody reads them through the API.
+- `chat_blocks`: Vendor chats someone blocked: nobody can send in one until they unblock it. Written only by block_chat(); each person reads their own.
 - `email_opt_outs`: Addresses that asked for no more email from Wedded. Written by the email-unsubscribe function; read by the email senders.
 - `linked_accounts`: A TikTok or Instagram account someone linked to import their reels. Written by Edge Functions; the owner reads and removes it.
 - `linked_account_tokens`: Login tokens for linked accounts. No API access: Edge Functions only.

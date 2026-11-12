@@ -45,8 +45,18 @@ describe('writtenMessage', () => {
         }),
       ),
     ).toBe(
-      "Sat Sri Akal! We're planning our Reception on Saturday, June 19, 2027, in the evening, for about 300 guests. We're bringing our own caterer, we'd like to use your bar and the baraat will arrive at the hall with a horse and dhol. Could you share your price, and is the 19th still open? Thank you.",
+      "Hello! We're planning our Reception on Saturday, June 19, 2027, in the evening, for about 300 guests. We're bringing our own caterer, we'd like to use your bar and the baraat will arrive at the hall with a horse and dhol. Could you share your price, and is the 19th still open? Thank you.",
     );
+  });
+
+  it('names a procession that is not a baraat, without the horse and dhol', () => {
+    expect(
+      writtenMessage(
+        t,
+        draft({ baraat: true }),
+        facts({ events: ['Wedding party'], set: 'venue', procession: 'Zaffa' }),
+      ),
+    ).toContain('The Zaffa will arrive at the hall.');
   });
 
   it("asks a hall's kitchen for the menu they picked", () => {
@@ -57,7 +67,7 @@ describe('writtenMessage', () => {
         facts({ events: ['Walima'], set: 'venue', counters: ['tandoor', 'chai'] }),
       ),
     ).toBe(
-      "Sat Sri Akal! We're planning our Walima. We'd like your kitchen to do the food: veg and non-veg, halal, with tandoor and chai counters. Could you share your price? Thank you.",
+      "Hello! We're planning our Walima. We'd like your kitchen to do the food: veg and non-veg, halal, with tandoor and chai counters. Could you share your price? Thank you.",
     );
   });
 
@@ -69,12 +79,12 @@ describe('writtenMessage', () => {
         facts({ events: ['Jaago'], place: 'Yuba City', guests: 120, set: null }),
       ),
     ).toBe(
-      "Sat Sri Akal! We're planning our Jaago in Yuba City, during the day, for about 120 guests. Could you share your price? Thank you.",
+      "Hello! We're planning our Jaago in Yuba City, during the day, for about 120 guests. Could you share your price? Thank you.",
     );
     expect(
       writtenMessage(t, draft({ alcohol: 'yes' }), facts({ set: 'venue', alcoholPolicy: 'byob' })),
     ).toBe(
-      "Sat Sri Akal! We're planning a wedding. We'll bring our own drinks. Could you share your price? Thank you.",
+      "Hello! We're planning a wedding. We'll bring our own drinks. Could you share your price? Thank you.",
     );
   });
 
@@ -93,7 +103,7 @@ describe('writtenMessage', () => {
         }),
       ),
     ).toBe(
-      "Sat Sri Akal! We're planning our Sangeet on Wednesday, June 16, 2027 and Reception on Saturday, June 19, 2027. Could you share your price, and are those days still open? Thank you.",
+      "Hello! We're planning our Sangeet on Wednesday, June 16, 2027 and Reception on Saturday, June 19, 2027. Could you share your price, and are those days still open? Thank you.",
     );
   });
 
@@ -105,7 +115,7 @@ describe('writtenMessage', () => {
         facts({ events: ['Anand Karaj'], set: 'caterer', place: 'Gurdwara Sahib, Sacramento' }),
       ),
     ).toBe(
-      "Sat Sri Akal! We're planning our Anand Karaj in Gurdwara Sahib, Sacramento. For the menu, we'd like veg only. We'd love a tasting first. Could you share your price? Thank you.",
+      "Hello! We're planning our Anand Karaj in Gurdwara Sahib, Sacramento. For the menu, we'd like veg only. We'd love a tasting first. Could you share your price? Thank you.",
     );
   });
 
@@ -117,7 +127,7 @@ describe('writtenMessage', () => {
         facts({ events: ['Reception'], set: 'venue' }),
       ),
     ).toBe(
-      "Sat Sri Akal! We're planning our Reception. We'd like to come and see the hall. Could we visit on Sat, Nov 14 or Mon, Nov 16, in the morning? Thank you.",
+      "Hello! We're planning our Reception. We'd like to come and see the hall. Could we visit on Sat, Nov 14 or Mon, Nov 16, in the morning? Thank you.",
     );
   });
 });

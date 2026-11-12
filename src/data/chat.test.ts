@@ -104,6 +104,7 @@ describe('sending', () => {
   it('explains failures', () => {
     expect(sendErrorKind(new Error('message_rate'))).toBe('rate');
     expect(sendErrorKind(new Error('invalid_quote'))).toBe('invalid');
+    expect(sendErrorKind(new Error('chat_blocked'))).toBe('blocked');
     expect(sendErrorKind(new Error('offline'))).toBe('failed');
   });
 });

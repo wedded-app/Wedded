@@ -103,6 +103,7 @@ export const chatKeys = {
   conversations: (userId: string) => [...chatKeys.all, 'conversations', userId] as const,
   messages: (conversationId: string) => [...chatKeys.all, 'messages', conversationId] as const,
   reactions: (conversationId: string) => [...chatKeys.all, 'reactions', conversationId] as const,
+  blocked: (conversationId: string) => [...chatKeys.all, 'blocked', conversationId] as const,
   vendor: (userId: string) => [...chatKeys.all, 'vendor-of', userId] as const,
 };
 
@@ -574,8 +575,18 @@ export function useSendMessage(conversationId: string) {
 /** Which message to show when sending fails (the database's error names). */
 export function sendErrorKind(
   error: unknown,
-): 'rate' | 'empty' | 'notAllowed' | 'familyFirst' | 'waitForReply' | 'invalid' | 'failed' {
+):
+  | 'rate'
+  | 'empty'
+  | 'notAllowed'
+  | 'blocked'
+  | 'familyFirst'
+  | 'waitForReply'
+  | 'invalid'
+  | 'failed' {
   const message = error instanceof Error ? error.message : String(error ?? '');
+  // Either side blocked the chat (App Store rule 1.2)
+  if (message.includes('chat_blocked')) return 'blocked';
   if (message.includes('message_rate')) return 'rate';
   // The no-spam rules (C2): vendors only reply, and follow up at most twice
   if (message.includes('family_first')) return 'familyFirst';
@@ -584,6 +595,39 @@ export function sendErrorKind(
   if (message.includes('not_allowed')) return 'notAllowed';
   if (message.includes('invalid_')) return 'invalid';
   return 'failed';
+}
+
+// Blocking ----------------------------------------------------------------------------------------
+
+/** Whether the signed-in person blocked this chat (they only see their own block). */
+export function useChatBlocked(conversationId: string) {
+  return useQuery({
+    queryKey: chatKeys.blocked(conversationId),
+    enabled: conversationId.length > 0,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('chat_blocks')
+        .select('conversation_id')
+        .eq('conversation_id', conversationId);
+      if (error) throw new Error(error.message);
+      return data.length > 0;
+    },
+  });
+}
+
+/** Block or unblock a vendor chat: while blocked, neither side can send in it. */
+export function useBlockChat(conversationId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (block: boolean) => {
+      const { error } = await supabase.rpc('block_chat', {
+        p_conversation_id: conversationId,
+        p_block: block,
+      });
+      if (error) throw new Error(error.message);
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: chatKeys.blocked(conversationId) }),
+  });
 }
 
 // Photos ------------------------------------------------------------------------------------------

@@ -244,6 +244,86 @@ export type Database = {
         };
         Relationships: [];
       };
+      chat_blocks: {
+        Row: {
+          blocked_by: string;
+          conversation_id: string;
+          created_at: string;
+        };
+        Insert: {
+          blocked_by?: string;
+          conversation_id: string;
+          created_at?: string;
+        };
+        Update: {
+          blocked_by?: string;
+          conversation_id?: string;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'chat_blocks_conversation_id_fkey';
+            columns: ['conversation_id'];
+            isOneToOne: false;
+            referencedRelation: 'conversations';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      chat_reports: {
+        Row: {
+          conversation_id: string | null;
+          created_at: string;
+          handled_at: string | null;
+          handled_by: string | null;
+          id: string;
+          note: string | null;
+          reason: string;
+          reporter_id: string | null;
+          status: string;
+          thread_id: string | null;
+        };
+        Insert: {
+          conversation_id?: string | null;
+          created_at?: string;
+          handled_at?: string | null;
+          handled_by?: string | null;
+          id?: string;
+          note?: string | null;
+          reason: string;
+          reporter_id?: string | null;
+          status?: string;
+          thread_id?: string | null;
+        };
+        Update: {
+          conversation_id?: string | null;
+          created_at?: string;
+          handled_at?: string | null;
+          handled_by?: string | null;
+          id?: string;
+          note?: string | null;
+          reason?: string;
+          reporter_id?: string | null;
+          status?: string;
+          thread_id?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'chat_reports_conversation_id_fkey';
+            columns: ['conversation_id'];
+            isOneToOne: false;
+            referencedRelation: 'conversations';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'chat_reports_thread_id_fkey';
+            columns: ['thread_id'];
+            isOneToOne: false;
+            referencedRelation: 'group_threads';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
       cities: {
         Row: {
           area_code: string;
@@ -4006,6 +4086,7 @@ export type Database = {
         Args: { p_deposit_id: string; p_payment_intent_id: string };
         Returns: undefined;
       };
+      block_chat: { Args: { p_block: boolean; p_conversation_id: string }; Returns: undefined };
       business_checklist: {
         Args: { p_vendor_id: string };
         Returns: {
@@ -4535,6 +4616,15 @@ export type Database = {
       rename_guest_list: { Args: { p_list_id: string; p_name: string }; Returns: undefined };
       reorder_vendor_photos: {
         Args: { p_media_ids: string[]; p_vendor_id: string };
+        Returns: undefined;
+      };
+      report_chat: {
+        Args: {
+          p_conversation_id?: string;
+          p_note?: string;
+          p_reason?: string;
+          p_thread_id?: string;
+        };
         Returns: undefined;
       };
       report_reel_content: {

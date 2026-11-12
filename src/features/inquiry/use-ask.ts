@@ -18,6 +18,11 @@ import { writtenMessage } from './ask-message';
 import { clampGuests } from './guest-picker';
 import { GUEST_BANDS, planDatesFor, useInquiryVendor } from './inquiry-helpers';
 
+// The event that arrives at the hall as a procession, by slug. Display only,
+// like EVENT_PHOTOS: the events still come from the database, and a tradition
+// with none of these is simply not asked.
+const PROCESSIONS = ['baraat', 'shadi', 'zaffa'];
+
 /** The biggest guest band among the events, from their plan. */
 function biggestBand(
   slugs: string[],
@@ -70,6 +75,7 @@ export function useAsk() {
     ...view.events,
     ...homeEvents.filter((event) => !view.events.some((other) => other.slug === event.slug)),
   ];
+  const procession = view.events.find((event) => PROCESSIONS.includes(event.slug)) ?? null;
   const weddingDaySlugs = allEvents
     .filter((event) => event.phase === 'wedding_day')
     .map((event) => event.slug);
@@ -111,6 +117,8 @@ export function useAsk() {
       place: set === 'venue' ? null : place,
       set,
       alcoholPolicy: v?.hall.alcoholPolicy,
+      procession:
+        procession && procession.slug !== 'baraat' ? localized(procession.name) : undefined,
       counters: draft.liveCounters.map((c) => t(`inquiry.questions.stations.${c}`).toLowerCase()),
     });
 
@@ -124,6 +132,8 @@ export function useAsk() {
     photo: photos.data?.[0]?.url.small ?? null,
     view,
     allEvents,
+    /** The baraat, zaffa or the like in their traditions; null when they have none. */
+    procession,
     date,
     eventDates,
     count,

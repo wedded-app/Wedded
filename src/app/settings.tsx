@@ -9,7 +9,7 @@ import { ListRow, ListSection } from '@/components/list';
 import { NavScreen } from '@/components/nav';
 import { Segmented } from '@/components/segmented';
 import { Switch } from '@/components/switch';
-import { SITE_URL_IS_PLACEHOLDER } from '@/constants/links';
+import { SITE_URL_IS_PLACEHOLDER, SUPPORT_EMAIL } from '@/constants/links';
 import { makeStyles, Palettes, Spacing, useColors, type Scheme } from '@/constants/theme';
 import { useIsVendor } from '@/data/chat';
 import { useSession } from '@/features/auth/session';
@@ -156,6 +156,14 @@ export default function SettingsScreen() {
             icon="storefront-outline"
             title={t('home.forVendors')}
             onPress={() => router.push('/for-vendors')}
+          />
+        )}
+        {SUPPORT_EMAIL && (
+          <ListRow
+            icon="mail-outline"
+            title={t('settings.contact')}
+            subtitle={SUPPORT_EMAIL}
+            onPress={() => void Linking.openURL(`mailto:${SUPPORT_EMAIL}`)}
           />
         )}
         <ListRow icon="information-circle-outline" title={t('settings.version')} value={version} />
