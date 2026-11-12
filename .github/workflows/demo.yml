@@ -14,6 +14,10 @@ name: Shared demo
 #                          robot needs the Developer role: without it, it can't read
 #                          the "preview" environment and the publish step fails
 # Until they're set, the steps that need them are skipped with a note.
+#
+# Deploy freeze, for a live demo: while the repository variable DEPLOY_FREEZE is
+# "true" this workflow does nothing, so merges wait on main and neither the
+# server nor the app changes (infra/README.md, "Day to day").
 on:
   push:
     branches: [main]
@@ -27,6 +31,7 @@ concurrency:
 jobs:
   publish:
     name: Publish to the shared demo
+    if: vars.DEPLOY_FREEZE != 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
