@@ -17,6 +17,11 @@ curl -fsS -H "apikey: $key" "$url/auth/v1/health" >/dev/null
 curl -fsS -H "apikey: $key" "$url/rest/v1/categories?select=slug&limit=1" | grep -q '"slug"'
 curl -fsS -H "apikey: $key" -H 'Content-Type: application/json' -d '{}' \
   "$url/rest/v1/rpc/search_vendors" >/dev/null
+# Studio must not answer on the internet (deploy.sh)
+[ "$(curl -s -o /dev/null -w '%{http_code}' "$url/")" = 404 ] || {
+  echo "$url/ isn't a 404: is Studio public again?" >&2
+  exit 1
+}
 web=https://$(env_value WEB_DOMAIN)
 page=$(curl -fsS --retry 6 --retry-delay 5 --retry-all-errors "$web/w/check")
 # Every script the page loads, so a half-updated export fails here rather than for guests
