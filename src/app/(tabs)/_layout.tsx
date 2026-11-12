@@ -1,8 +1,8 @@
 import { Redirect, Tabs } from 'expo-router';
 import { useState } from 'react';
-import { View } from 'react-native';
 
 import { RingsIcon } from '@/components/rings-icon';
+import { PagePlaceholder } from '@/components/page-placeholder';
 import { TabBar, TabBarSpaceProvider, useTabBarOffset, type TabSpec } from '@/components/tab-bar';
 import { Sizes, Spacing, useColors } from '@/constants/theme';
 import { useSession } from '@/features/auth/session';
@@ -79,7 +79,7 @@ export default function TabsLayout() {
   // Business mode has its own tabs (features/business/app-mode.ts)
   const business = useOpensInBusiness();
   if (gate === 'wait' || business === 'wait') {
-    return <View style={{ flex: 1, backgroundColor: Colors.canvas }} />;
+    return <PagePlaceholder screen />;
   }
   if (gate) return <Redirect href={gate} />;
   if (business) return <Redirect href="/today" />;

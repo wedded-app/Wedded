@@ -5,6 +5,7 @@ import { RefreshControl, StyleSheet, View } from 'react-native';
 import Animated from 'react-native-reanimated';
 
 import { AppText } from '@/components/app-text';
+import { PagePlaceholder } from '@/components/page-placeholder';
 import { NavBar, useNavScroll, useNavTop } from '@/components/nav';
 import { useBottomSpace } from '@/components/tab-bar';
 import { Sizes, Spacing, useColors } from '@/constants/theme';
@@ -157,7 +158,9 @@ export default function HomeScreen() {
               {wedding && <WebsiteCard weddingId={wedding.id} canEdit={view.canEdit} />}
               {wedding && <YourFamily weddingId={wedding.id} eventName={eventName} />}
             </>
-          ) : loading ? null : (
+          ) : loading ? (
+            <PagePlaceholder />
+          ) : (
             <>
               {drafted ? (
                 <>
