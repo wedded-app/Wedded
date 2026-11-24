@@ -63,7 +63,7 @@ Supabase's open-source stack runs on our own server: the same Postgres, sign-in,
 - **Files** are in the stack's S3 bucket. **Backups**: a snapshot of the disk every night at 3 AM California time, kept 7 days. To go back to one: EC2 → Instances → the server → Actions → Monitor and troubleshoot → Replace root volume, and pick the snapshot.
 - **Settings and secrets** live in Parameter Store (Systems Manager), never in git. Deploy again after changing one:
   - `/wedded/backend/functions/<NAME>`: the server functions' settings, what `supabase secrets set` did on the hosted project: `RESEND_API_KEY`, `FOUNDERS_EMAIL`, `INQUIRY_TEST_INBOX`, `INQUIRY_FROM` (only once the domain is verified; docs/HOSTED_SETUP.md step 4), `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `EXPO_ACCESS_TOKEN` and the rest.
-  - `/wedded/backend/env/<NAME>`: lines in the server's `.env`, for the sign-in email: `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `SMTP_ADMIN_EMAIL` (the From address), `SMTP_SENDER_NAME`.
+  - `/wedded/backend/env/<NAME>`: lines in the server's `.env`, for the sign-in email: `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `SMTP_ADMIN_EMAIL` (the From address), `SMTP_SENDER_NAME`. And `TURNSTILE_SECRET_KEY`: while it's set, a sign-in code is only sent with a Cloudflare Turnstile token (docs/HOSTED_SETUP.md, "OTP abuse protection": set the app's site key and check sign-in first, or nobody can sign in by code). Delete the parameter and deploy to turn it off.
 
 ### Set it up (once)
 
@@ -100,7 +100,7 @@ Supabase's open-source stack runs on our own server: the same Postgres, sign-in,
 
 - Every merge to `main` runs `npm run backend -- deploy` in `.github/workflows/demo.yml`, then `npm run backend -- check` (Auth health, a table read and a search with the app's key; the run goes red if any fails), before the app is published. By hand, the same command from an up-to-date `main` (never a branch: the server is shared).
 - Scripts (`vendors:import`, `photos:upload`, `demo:check`, the samples): run `eval "$(npm run -s backend -- env)"` first instead of pasting the hosted keys.
-- The dashboard (Studio) is at the `Url`: user `supabase`, password from `aws ssm get-parameter --profile wedded --region us-east-2 --with-decryption --name /wedded/backend/keys/dashboard --query Parameter.Value --output text`.
+- The dashboard (Studio) is not on the internet: it is the whole database's admin page, so only someone signed in to the AWS account can reach it. Open a tunnel with `aws ssm start-session --profile wedded --region us-east-2 --target <InstanceId> --document-name AWS-StartPortForwardingSession --parameters portNumber=3000,localPortNumber=3000` (needs the session-manager-plugin below), leave it running and open `http://localhost:3000`. No password. `npm run backend -- check` fails if the server's address ever shows Studio again.
 - A shell on the server: `aws ssm start-session --profile wedded --region us-east-2 --target <InstanceId>` (needs `brew install --cask session-manager-plugin`), then `sudo -i`, `cd /opt/wedded/supabase` and `sh run.sh status`, `sh run.sh logs auth` and so on.
 - Updating Supabase: on the server, as in [their guide](https://supabase.com/docs/guides/self-hosting/updating) (`sh update.sh`). Take a snapshot first (EC2 → Volumes → Create snapshot).
 

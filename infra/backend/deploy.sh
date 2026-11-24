@@ -67,7 +67,12 @@ set_env GLOBAL_S3_BUCKET "$STORAGE_BUCKET"
 set_env REGION "$AWS_REGION"
 set_env STUDIO_DEFAULT_ORGANIZATION Wedded
 set_env STUDIO_DEFAULT_PROJECT Wedded
+# Emptied first, so deleting the parameter turns the bot check off again
+set_env TURNSTILE_SECRET_KEY ''
 while IFS=$'\t' read -r key value; do [ -z "$key" ] || set_env "$key" "$value"; done <<<"$env_parameters"
+# Sign-in codes need a Cloudflare Turnstile token only while env/TURNSTILE_SECRET_KEY is set
+# (docs/HOSTED_SETUP.md, OTP abuse protection: the app must already be sending tokens)
+set_env CAPTCHA_ENABLED "$([ -n "$(read_env TURNSTILE_SECRET_KEY)" ] && echo true || echo false)"
 chmod 600 .env
 
 : >functions.env
@@ -94,6 +99,14 @@ caddy_before=$(caddyfiles)
 cp "$APP/infra/backend/web.Caddyfile" volumes/proxy/caddy/
 grep -qx 'import web.Caddyfile' volumes/proxy/caddy/Caddyfile ||
   echo 'import web.Caddyfile' >>volumes/proxy/caddy/Caddyfile
+# Studio is the whole database's admin page, so it's off the internet: Supabase's Caddyfile
+# sends everything that isn't the API to it behind one password, and here that becomes a 404.
+# Founders open Studio through Systems Manager instead (infra/README.md, "Day to day")
+sed -i '/basic_auth {/,/^ *}$/d; s/reverse_proxy studio:3000/respond 404/' volumes/proxy/caddy/Caddyfile
+if grep -q studio volumes/proxy/caddy/Caddyfile; then
+  echo "Supabase's Caddyfile has changed and still serves Studio: update the sed above it in deploy.sh" >&2
+  exit 1
+fi
 
 cp "$APP/infra/backend/docker-compose.wedded.yml" .
 sh run.sh config add caddy wedded >/dev/null
@@ -124,8 +137,5 @@ aws ssm put-parameter --overwrite --name /wedded/backend/keys/publishable --type
   --value "$(read_env SUPABASE_PUBLISHABLE_KEY)" >/dev/null
 aws ssm put-parameter --overwrite --name /wedded/backend/keys/secret --type SecureString \
   --value "$(read_env SERVICE_ROLE_KEY)" >/dev/null
-# The dashboard (Studio) at the server's address, user "supabase"
-aws ssm put-parameter --overwrite --name /wedded/backend/keys/dashboard --type SecureString \
-  --value "$(read_env DASHBOARD_PASSWORD)" >/dev/null
 
 echo "Up to date: $url (the web app: https://$(read_env WEB_DOMAIN))"
