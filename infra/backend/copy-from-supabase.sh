@@ -2,11 +2,11 @@
 # Copies accounts and data from the hosted Supabase demo into this server, once,
 # at the move (infra/README.md). Runs on the server as root through
 # `npm run backend -- copy-from-supabase`. The demo's database address, with
-# its password, is read from Parameter Store at /wedded/backend/copy/SOURCE_DB_URL.
+# its password, is read from Parameter Store at $PARAMETER_PREFIX/copy/SOURCE_DB_URL (the demo: /wedded/backend).
 # Files in Storage are copied separately (npm run storage:copy).
 set -euo pipefail
 
-source_db=$(aws ssm get-parameter --name /wedded/backend/copy/SOURCE_DB_URL --with-decryption \
+source_db=$(aws ssm get-parameter --name "${PARAMETER_PREFIX:-/wedded/backend}/copy/SOURCE_DB_URL" --with-decryption \
   --query Parameter.Value --output text)
 sql() { docker exec -i supabase-db psql -qAt -v ON_ERROR_STOP=1 -U supabase_admin -d postgres "$@"; }
 

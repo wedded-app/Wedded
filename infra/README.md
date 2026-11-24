@@ -1,6 +1,6 @@
 # Wedded on AWS
 
-Infrastructure as code with the [AWS CDK](https://docs.aws.amazon.com/cdk/v2/guide/home.html) (TypeScript). Two stacks: `WeddedMedia`, vendor photos (below), and `WeddedBackend`, the app's whole backend on one server ([further down](#the-backend-server-weddedbackend)).
+Infrastructure as code with the [AWS CDK](https://docs.aws.amazon.com/cdk/v2/guide/home.html) (TypeScript). Three stacks: `WeddedMedia`, vendor photos (below); `WeddedBackend`, the app's whole backend on one server, the shared demo that doubles as staging ([further down](#the-backend-server-weddedbackend)); and `WeddedBackendProd`, the same for production ([Production](#production)).
 
 ```
 app ──PUT──▶ S3 uploads ──event──▶ Lambda (sharp) ──▶ S3 media ◀── CloudFront ◀── app
@@ -98,12 +98,39 @@ Supabase's open-source stack runs on our own server: the same Postgres, sign-in,
 
 ### Day to day
 
-- Every merge to `main` runs `npm run backend -- deploy` in `.github/workflows/demo.yml`, then `npm run backend -- check` (Auth health, a table read and a search with the app's key; the run goes red if any fails), before the app is published. By hand, the same command from an up-to-date `main` (never a branch: the server is shared).
+- Every merge to `main` runs `npm run backend -- deploy` in `.github/workflows/demo.yml`, then `npm run backend -- check` (Auth health, a table read and a search with the app's key; the run goes red if any fails), before the app is published. By hand, the same command from an up-to-date `main` (never a branch: the server is shared). Production never changes from a merge: see [Production](#production).
 - Scripts (`vendors:import`, `photos:upload`, `demo:check`, the samples): run `eval "$(npm run -s backend -- env)"` first instead of pasting the hosted keys.
 - The dashboard (Studio) is at the `Url`: user `supabase`, password from `aws ssm get-parameter --profile wedded --region us-east-2 --with-decryption --name /wedded/backend/keys/dashboard --query Parameter.Value --output text`.
 - A shell on the server: `aws ssm start-session --profile wedded --region us-east-2 --target <InstanceId>` (needs `brew install --cask session-manager-plugin`), then `sudo -i`, `cd /opt/wedded/supabase` and `sh run.sh status`, `sh run.sh logs auth` and so on.
 - Updating Supabase: on the server, as in [their guide](https://supabase.com/docs/guides/self-hosting/updating) (`sh update.sh`). Take a snapshot first (EC2 → Volumes → Create snapshot).
 
+### Production
+
+`WeddedBackendProd` is this same stack deployed a second time with `stage: 'prod'` (`bin/infra.ts`): its own server, address, S3 bucket, nightly snapshots and deploy user, with its settings under `/wedded/prod/` instead of `/wedded/backend/` (the stack's `ParameterPrefix` output), so nothing on the demo can reach it. The demo is staging: every merge to `main` runs there first. Production changes only when a founder publishes a GitHub Release.
+
+Every `npm run backend` command takes `STAGE=prod` for the production server; without it, it means the demo. `--seed` is refused on production: seed.sql is made-up vendors, and production starts empty, with the reference data from the migrations.
+
+**Set it up (once).** Signed in to Fezy's AWS account as in "First time":
+
+1. `cd infra && npx cdk deploy WeddedBackendProd --profile wedded`. The first boot takes about 10 minutes.
+2. Its settings, as in step 3 of the demo's setup but under `prod/`:
+   ```
+   put() { aws ssm put-parameter --profile wedded --region us-east-2 --overwrite --type SecureString --name "/wedded/prod/$1" --value "$2"; }
+   ```
+   then the `env/SMTP_*` lines and the `functions/*` settings. Real inboxes and sender only, never `INQUIRY_TEST_INBOX`: production emails go to real families and vendors.
+3. `STAGE=prod npm run backend -- deploy` (no `--seed`). Real vendors come in afterwards with `eval "$(STAGE=prod npm run -s backend -- env)"` and `npm run vendors:import`.
+4. `STAGE=prod npm run backend -- check`.
+5. The app: on expo.dev → the project → **Environment variables** → `production`, set `EXPO_PUBLIC_SUPABASE_URL` to the stack's `Url`, `EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY` from `STAGE=prod npm run backend -- env`, `EXPO_PUBLIC_WEB_URL` to `https://www.<the same name>`, and `EXPO_PUBLIC_SENTRY_DSN` as in `preview`.
+6. Deploys from a Release: make the production `DeployUser`'s key as in step 8 of the demo's setup, with the user from `aws cloudformation describe-stacks --profile wedded --region us-east-2 --stack-name WeddedBackendProd --query "Stacks[0].Outputs[?OutputKey=='DeployUser'].OutputValue" --output text`, and save it as the repo secrets `PROD_AWS_ACCESS_KEY_ID` and `PROD_AWS_SECRET_ACCESS_KEY`. The Expo robot (`EXPO_TOKEN`) must be able to read the `production` environment.
+
+**Releasing.** From an up-to-date `main`:
+
+```
+gh release create v2026.11.23 --generate-notes --target main
+```
+
+Publishing the release runs `.github/workflows/prod.yml`: the web export with the `production` values, `STAGE=prod npm run backend -- deploy`, `STAGE=prod npm run backend -- check`, then `eas update --channel production --environment production`. A release whose commit isn't on `main` is refused. Name releases by the day (`v2026.11.23`; `v2026.11.23-2` for a second one). The server only moves forward, since migrations don't run backwards: to undo a release, land a fix or a revert on `main`, watch it on the demo, and publish a new release. Until there is a store build (docs/PROJECT_PLAN.md, Phase 4), the production channel opens in Expo Go like the demo's: `exp://u.expo.dev/b5558b15-659d-4436-9469-dcd2b7a8e213?runtime-version=exposdk%3A58.0.0&channel-name=production`.
+
 ### Cost
 
-The t4g.small is free until 2026-12-31 (EC2's t4g.small trial), then about $12 a month. Add about $2.40 for the 30 GB disk, $3.60 for the Elastic IP, under $1 for snapshots and cents for S3. The Free plan's credits cover it until 2027-04-06.
+The t4g.small is free until 2026-12-31 (EC2's t4g.small trial), then about $12 a month. Add about $2.40 for the 30 GB disk, $3.60 for the Elastic IP, under $1 for snapshots and cents for S3. The Free plan's credits cover it until 2027-04-06. Production is a second server, and the trial covers one server's hours, so it costs about $12 a month from its first day plus about $7 for its disk, address and snapshots: about $38 a month for both after the trial, from the same credits.
