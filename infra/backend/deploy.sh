@@ -81,7 +81,8 @@ cp -R "$APP/supabase/functions/." volumes/functions/
 jq -s '{imports: (map(.imports // {}) | add)}' "$APP"/supabase/functions/*/deno.json \
   >volumes/functions/deno.jsonc
 mkdir -p volumes/email-templates
-templates() { cat volumes/email-templates/*.html 2>/dev/null | md5sum; }
+# A new server has no templates yet: without the `|| true`, set -e and pipefail would stop the deploy here with no message
+templates() { { cat volumes/email-templates/*.html 2>/dev/null || true; } | md5sum; }
 templates_before=$(templates)
 # The emails' pictures are on the web app (public/email), so email apps load them from its address
 web_url="https://$(read_env WEB_DOMAIN)"
@@ -90,7 +91,7 @@ for template in "$APP"/supabase/templates/*.html; do
 done
 
 # The web app's site next to Supabase's in their Caddyfile
-caddyfiles() { cat volumes/proxy/caddy/*Caddyfile 2>/dev/null | md5sum; }
+caddyfiles() { { cat volumes/proxy/caddy/*Caddyfile 2>/dev/null || true; } | md5sum; }
 caddy_before=$(caddyfiles)
 cp "$APP/infra/backend/web.Caddyfile" volumes/proxy/caddy/
 grep -qx 'import web.Caddyfile' volumes/proxy/caddy/Caddyfile ||
