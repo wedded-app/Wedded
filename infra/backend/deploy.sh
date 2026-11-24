@@ -5,7 +5,7 @@
 # repo's supabase/ and infra/backend/ folders (and with WEB=, the web export)
 # to /opt/wedded/app and starts this through AWS Systems Manager.
 #
-#   DOMAIN=… STORAGE_BUCKET=… AWS_REGION=… [SEED=1] bash deploy.sh
+#   DOMAIN=… STORAGE_BUCKET=… AWS_REGION=… [SEED=1] [PARAMETER_PREFIX=/wedded/backend] bash deploy.sh
 set -euo pipefail
 
 : "${DOMAIN:?}" "${STORAGE_BUCKET:?}" "${AWS_REGION:?}"
@@ -13,6 +13,7 @@ export AWS_REGION HOME=${HOME:-/root} # Systems Manager runs commands without a 
 APP=$(cd "$(dirname "$0")/../.." && pwd)
 PROJECT=${PROJECT:-/opt/wedded/supabase} # Supabase's self-hosting files (first-boot.sh)
 SUPABASE_CLI=2.118.0                     # the version CI uses (.github/workflows/demo.yml)
+PARAMETER_PREFIX=${PARAMETER_PREFIX:-/wedded/backend} # where this server keeps its settings in Parameter Store (production: /wedded/prod)
 
 # A new server may still be on its first boot
 if command -v cloud-init >/dev/null; then
@@ -39,16 +40,16 @@ set_env() {
 read_env() { grep "^$1=" .env | tail -n1 | cut -d= -f2- | tr -d "'\""; }
 
 # Settings and secrets in AWS Systems Manager Parameter Store:
-#   /wedded/backend/env/<KEY>        a line in .env, e.g. SMTP_HOST and SMTP_PASS
-#   /wedded/backend/functions/<KEY>  a server function setting, e.g. RESEND_API_KEY
+#   $PARAMETER_PREFIX/env/<KEY>        a line in .env, e.g. SMTP_HOST and SMTP_PASS
+#   $PARAMETER_PREFIX/functions/<KEY>  a server function setting, e.g. RESEND_API_KEY
 parameters() {
   aws ssm get-parameters-by-path --path "$1" --with-decryption --output json \
     --query 'Parameters[].[Name, Value]' | jq -r '.[] | "\(.[0] | split("/") | last)\t\(.[1])"'
 }
 
 # Read first, so a failed read stops the deploy instead of dropping the secrets
-env_parameters=$(parameters /wedded/backend/env/)
-function_parameters=$(parameters /wedded/backend/functions/)
+env_parameters=$(parameters "$PARAMETER_PREFIX/env/")
+function_parameters=$(parameters "$PARAMETER_PREFIX/functions/")
 
 url="https://$DOMAIN"
 set_env SUPABASE_PUBLIC_URL "$url"
@@ -80,7 +81,8 @@ cp -R "$APP/supabase/functions/." volumes/functions/
 jq -s '{imports: (map(.imports // {}) | add)}' "$APP"/supabase/functions/*/deno.json \
   >volumes/functions/deno.jsonc
 mkdir -p volumes/email-templates
-templates() { cat volumes/email-templates/*.html 2>/dev/null | md5sum; }
+# A new server has no templates yet: without the `|| true`, set -e and pipefail would stop the deploy here with no message
+templates() { { cat volumes/email-templates/*.html 2>/dev/null || true; } | md5sum; }
 templates_before=$(templates)
 # The emails' pictures are on the web app (public/email), so email apps load them from its address
 web_url="https://$(read_env WEB_DOMAIN)"
@@ -89,7 +91,7 @@ for template in "$APP"/supabase/templates/*.html; do
 done
 
 # The web app's site next to Supabase's in their Caddyfile
-caddyfiles() { cat volumes/proxy/caddy/*Caddyfile 2>/dev/null | md5sum; }
+caddyfiles() { { cat volumes/proxy/caddy/*Caddyfile 2>/dev/null || true; } | md5sum; }
 caddy_before=$(caddyfiles)
 cp "$APP/infra/backend/web.Caddyfile" volumes/proxy/caddy/
 grep -qx 'import web.Caddyfile' volumes/proxy/caddy/Caddyfile ||
@@ -120,12 +122,12 @@ select vault.create_secret('$(read_env SERVICE_ROLE_KEY)', 'service_role_key');
 SQL
 
 # For laptops and scripts: `npm run backend -- env`
-aws ssm put-parameter --overwrite --name /wedded/backend/keys/publishable --type String \
+aws ssm put-parameter --overwrite --name "$PARAMETER_PREFIX/keys/publishable" --type String \
   --value "$(read_env SUPABASE_PUBLISHABLE_KEY)" >/dev/null
-aws ssm put-parameter --overwrite --name /wedded/backend/keys/secret --type SecureString \
+aws ssm put-parameter --overwrite --name "$PARAMETER_PREFIX/keys/secret" --type SecureString \
   --value "$(read_env SERVICE_ROLE_KEY)" >/dev/null
 # The dashboard (Studio) at the server's address, user "supabase"
-aws ssm put-parameter --overwrite --name /wedded/backend/keys/dashboard --type SecureString \
+aws ssm put-parameter --overwrite --name "$PARAMETER_PREFIX/keys/dashboard" --type SecureString \
   --value "$(read_env DASHBOARD_PASSWORD)" >/dev/null
 
 echo "Up to date: $url (the web app: https://$(read_env WEB_DOMAIN))"

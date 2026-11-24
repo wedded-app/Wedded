@@ -1,14 +1,19 @@
 #!/usr/bin/env bash
-# The backend server on AWS (infra/lib/backend-stack.ts, infra/README.md):
+# The backend servers on AWS (infra/lib/backend-stack.ts, infra/README.md): the
+# shared demo, which is also staging (the default), and production (STAGE=prod).
 #
 #   npm run backend -- deploy [--seed]      bring it up to date with this checkout:
-#                                            settings, functions, migrations (--seed: sample vendors, new server only)
+#                                            settings, functions, migrations (--seed: sample vendors, new demo server only)
 #                                            WEB=dist also replaces the web app with that web export,
 #                                            built with the "preview" values (demo.yml)
 #   npm run backend -- check                ask the server the three things the app asks before sign-in
 #   npm run backend -- env                  print the address and keys for scripts:
 #                                            eval "$(npm run -s backend -- env)"
 #   npm run backend -- copy-from-supabase   copy accounts and data from the hosted Supabase demo, once
+#
+#   STAGE=prod npm run backend -- <command> the same on the production server (stack WeddedBackendProd,
+#                                            settings under /wedded/prod/). Deploys to it come from a
+#                                            GitHub Release (.github/workflows/prod.yml); by hand only to fix one
 #
 # Signs in with the AWS CLI profile "wedded" (aws login --profile wedded), or AWS_PROFILE.
 set -euo pipefail
@@ -18,12 +23,29 @@ export AWS_REGION=us-east-2
 # Git Bash on Windows turns /wedded/… and /opt/… into Windows paths unless told not to
 export MSYS_NO_PATHCONV=1
 
-key() { aws ssm get-parameter --name "/wedded/backend/keys/$1" --with-decryption --query Parameter.Value --output text; }
+STAGE=${STAGE:-staging}
+case "$STAGE" in
+  staging) STACK=WeddedBackend ;;
+  prod) STACK=WeddedBackendProd ;;
+  *)
+    echo "STAGE must be staging (the shared demo, the default) or prod, not '$STAGE'" >&2
+    exit 1
+    ;;
+esac
 
 output() {
-  aws cloudformation describe-stacks --stack-name WeddedBackend --output text \
+  aws cloudformation describe-stacks --stack-name "$STACK" --output text \
     --query "Stacks[0].Outputs[?OutputKey=='$1'].OutputValue"
 }
+
+# Where this server keeps its settings in Parameter Store, from the stack (a demo
+# stack deployed before it had the output means the demo's path)
+parameter_prefix() {
+  local prefix
+  prefix=$(output ParameterPrefix)
+  echo "${prefix:-/wedded/backend}"
+}
+key() { aws ssm get-parameter --name "$1" --with-decryption --query Parameter.Value --output text; }
 
 # Runs a command on the server through Systems Manager, prints its output, and fails if it failed
 on_server() {
@@ -64,7 +86,18 @@ prune_web_scripts() {
 
 case "${1:-}" in
   deploy)
+    seed=$([ "${2:-}" = --seed ] && echo 1 || true)
+    if [ "$STAGE" = prod ]; then
+      # seed.sql is made-up vendors for development; production starts from the
+      # migrations' reference data and gets real vendors with `npm run vendors:import`
+      [ -z "$seed" ] || {
+        echo "No --seed on production: seed.sql is sample vendors. Production starts empty, with the reference data from the migrations." >&2
+        exit 1
+      }
+      echo "Production ($STACK)."
+    fi
     bucket=$(output Bucket)
+    prefix=$(parameter_prefix)
     aws s3 sync supabase "s3://$bucket/app/supabase" --delete --quiet \
       --exclude '.temp/*' --exclude '.branches/*' --exclude 'tests/*'
     aws s3 sync infra/backend "s3://$bucket/app/infra/backend" --delete --quiet
@@ -75,7 +108,6 @@ case "${1:-}" in
       prune_web_scripts "$bucket" ||
         echo "Couldn't remove the web app's old scripts; the next deploy tries again." >&2
     fi
-    seed=$([ "${2:-}" = --seed ] && echo 1 || true)
     # A new server may still be on its first boot, which installs the AWS CLI. Without
     # --exact-timestamps a download skips a changed file of the same size (most web pages).
     # New web scripts come down first, so no page arrives before the scripts it loads
@@ -85,7 +117,7 @@ case "${1:-}" in
       }
       aws s3 sync s3://$bucket/app/web/_expo/static /opt/wedded/app/web/_expo/static --exact-timestamps --quiet --region $AWS_REGION &&
       aws s3 sync s3://$bucket/app /opt/wedded/app --delete --exact-timestamps --quiet --region $AWS_REGION &&
-      DOMAIN=$(output Domain) STORAGE_BUCKET=$bucket AWS_REGION=$AWS_REGION SEED=$seed \
+      DOMAIN=$(output Domain) STORAGE_BUCKET=$bucket AWS_REGION=$AWS_REGION SEED=$seed PARAMETER_PREFIX=$prefix \
       bash /opt/wedded/app/infra/backend/deploy.sh"
     ;;
   check)
@@ -93,15 +125,16 @@ case "${1:-}" in
     on_server "DOMAIN=$(output Domain) bash /opt/wedded/app/infra/backend/check.sh"
     ;;
   env)
+    prefix=$(parameter_prefix)
     echo "export SUPABASE_URL=$(output Url)"
-    echo "export SUPABASE_PUBLISHABLE_KEY=$(key publishable)"
-    echo "export SUPABASE_SECRET_KEY=$(key secret)"
+    echo "export SUPABASE_PUBLISHABLE_KEY=$(key "$prefix/keys/publishable")"
+    echo "export SUPABASE_SECRET_KEY=$(key "$prefix/keys/secret")"
     ;;
   copy-from-supabase)
-    on_server "REPLACE=${REPLACE:-} bash /opt/wedded/app/infra/backend/copy-from-supabase.sh"
+    on_server "REPLACE=${REPLACE:-} PARAMETER_PREFIX=$(parameter_prefix) bash /opt/wedded/app/infra/backend/copy-from-supabase.sh"
     ;;
   *)
-    sed -n '2,13p' "$0"
+    sed -n '2,/^# Signs in with/p' "$0" | sed '$d'
     exit 1
     ;;
 esac

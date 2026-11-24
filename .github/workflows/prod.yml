@@ -1,0 +1,105 @@
+name: Production
+
+# A GitHub Release is the production deploy. Publishing one from main
+# (`gh release create v2026.11.23 --generate-notes --target main`) runs this:
+# the web app is built with the Expo "production" values, the production
+# server on AWS (the WeddedBackendProd stack, infra/README.md "Production")
+# gets the release's migrations, server code, settings and web app, the server
+# is checked, and the app is published to the "production" channel. Nothing
+# else deploys to production: merges to main go to the shared demo (demo.yml),
+# which doubles as staging.
+#
+# Needs these repository secrets (Settings → Secrets and variables → Actions):
+#   PROD_AWS_ACCESS_KEY_ID      the WeddedBackendProd stack's DeployUser key (infra/README.md)
+#   PROD_AWS_SECRET_ACCESS_KEY
+#   EXPO_TOKEN                  the Expo robot's token that demo.yml uses too; the robot
+#                               must be able to read the "production" environment
+# Until they're set, the steps that need them are skipped with a note.
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+# One production deploy at a time, in order
+concurrency:
+  group: production
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    name: Publish to production
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # Only what has landed on main goes to production: a release made from a
+      # branch, or a run started on one, stops here
+      - name: Check the release is on main
+        shell: bash
+        run: |
+          git fetch --no-tags origin main
+          git merge-base --is-ancestor "$GITHUB_SHA" FETCH_HEAD || {
+            echo "::error::$GITHUB_SHA isn't on main, so it can't go to production."
+            exit 1
+          }
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+
+      # The web app the server shows guests without the app (wedding websites,
+      # RSVPs, invites), built with the "production" values like the app
+      - name: Build the web app
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+        shell: bash
+        run: |
+          if [ -z "$EXPO_TOKEN" ]; then
+            echo "::notice::EXPO_TOKEN isn't set, so the web app wasn't built."
+            exit 0
+          fi
+          npx eas-cli@latest env:exec production 'npx expo export --platform web' --non-interactive
+
+      # The backend first, so the app never runs against an older schema
+      - name: Update the production server on AWS
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.PROD_AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.PROD_AWS_SECRET_ACCESS_KEY }}
+          STAGE: prod
+        shell: bash
+        run: |
+          if [ -z "$AWS_ACCESS_KEY_ID" ] || [ -z "$AWS_SECRET_ACCESS_KEY" ]; then
+            echo "::notice::PROD_AWS_ACCESS_KEY_ID or PROD_AWS_SECRET_ACCESS_KEY isn't set, so the production server wasn't updated."
+            exit 0
+          fi
+          if [ -d dist ]; then export WEB=dist; fi
+          npm run backend -- deploy
+
+      # A green deploy only proves the migrations ran; this proves the app can read
+      - name: Check the server answers
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.PROD_AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.PROD_AWS_SECRET_ACCESS_KEY }}
+          STAGE: prod
+        shell: bash
+        run: |
+          [ -n "$AWS_ACCESS_KEY_ID" ] || exit 0
+          npm run backend -- check
+
+      - name: Publish the app to the production channel
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+          RELEASE: ${{ github.event.release.tag_name }}
+        shell: bash
+        run: |
+          if [ -z "$EXPO_TOKEN" ]; then
+            echo "::notice::EXPO_TOKEN isn't set, so the app wasn't published to production."
+            exit 0
+          fi
+          npx eas-cli@latest update --channel production --environment production \
+            --message "${RELEASE:-$(git log -1 --pretty=%s)}" --non-interactive

@@ -9,18 +9,41 @@ import * as s3 from 'aws-cdk-lib/aws-s3';
 import type { Construct } from 'constructs';
 
 /**
+ * Which server a stack is. `staging` is the shared demo, which every merge to
+ * main updates; `prod` is production, which only a GitHub Release deploys.
+ */
+export type Stage = 'staging' | 'prod';
+
+export interface BackendStackProps extends StackProps {
+  stage: Stage;
+}
+
+/**
  * The app's backend on one server: Supabase's open-source stack (Postgres,
  * sign-in, Realtime, Storage, the server functions) in Docker, with Caddy for
  * HTTPS. Storage keeps its files in S3; the disk is snapshotted every night.
  *
  *   app ──HTTPS──▶ Caddy ──▶ Supabase (EC2, Docker) ──▶ S3 (files)
  *
+ * The stack is deployed once per stage (bin/infra.ts): `WeddedBackend` is the
+ * shared demo, which doubles as staging, and `WeddedBackendProd` is
+ * production. Each has its own server, address, files, settings in Parameter
+ * Store, snapshots and deploy user, so nothing on one can reach the other.
+ *
  * The server only installs Supabase on its first boot (backend/first-boot.sh);
- * `npm run backend -- deploy` brings our settings, functions and migrations.
+ * `npm run backend -- deploy` (`STAGE=prod` for production) brings our
+ * settings, functions and migrations.
  */
 export class BackendStack extends Stack {
-  constructor(scope: Construct, id: string, props?: StackProps) {
+  constructor(scope: Construct, id: string, props: BackendStackProps) {
     super(scope, id, props);
+    const { stage } = props;
+
+    // Where this server's settings and secrets live in Parameter Store (deploy.sh reads
+    // them; scripts/backend.sh takes the prefix from the ParameterPrefix output below)
+    const parameterPrefix = stage === 'prod' ? '/wedded/prod' : '/wedded/backend';
+    // The nightly snapshot policy below finds this stack's disk, and only it, by this tag
+    const backupTag = stage === 'prod' ? 'nightly-prod' : 'nightly';
 
     // Public subnets only: no NAT gateway to pay for
     const vpc = new ec2.Vpc(this, 'Vpc', {
@@ -81,18 +104,18 @@ export class BackendStack extends Stack {
       disableApiTermination: true,
     });
     server.applyRemovalPolicy(RemovalPolicy.RETAIN);
-    Tags.of(server).add('wedded-backup', 'nightly');
+    Tags.of(server).add('wedded-backup', backupTag);
     bucket.grantReadWrite(server);
     server.addToRolePolicy(
       new iam.PolicyStatement({
         actions: ['ssm:GetParameter', 'ssm:GetParametersByPath'],
-        resources: [this.parameterArn('wedded/backend/*')],
+        resources: [this.parameterArn(`${parameterPrefix.slice(1)}/*`)],
       }),
     );
     server.addToRolePolicy(
       new iam.PolicyStatement({
         actions: ['ssm:PutParameter'],
-        resources: [this.parameterArn('wedded/backend/keys/*')],
+        resources: [this.parameterArn(`${parameterPrefix.slice(1)}/keys/*`)],
       }),
     );
 
@@ -100,9 +123,10 @@ export class BackendStack extends Stack {
       allocationId: address.attrAllocationId,
       instanceId: server.instanceId,
     });
-    // shortcut: sslip.io turns the address into a name for the certificate; use api.<domain> once #148 lands
+    // shortcut: sslip.io turns the address into a name for the certificate; use api.<domain>
+    // once #148 lands (`-c domain=…` for the demo, `-c prodDomain=…` for production)
     const domain =
-      (this.node.tryGetContext('domain') as string | undefined) ??
+      (this.node.tryGetContext(stage === 'prod' ? 'prodDomain' : 'domain') as string | undefined) ??
       Fn.join('', [Fn.join('-', Fn.split('.', address.attrPublicIp)), '.sslip.io']);
 
     // A snapshot of the disk (the database) every night at 3 AM in California, kept a week
@@ -115,12 +139,15 @@ export class BackendStack extends Stack {
       ],
     });
     new dlm.CfnLifecyclePolicy(this, 'NightlySnapshots', {
-      description: 'Wedded backend disk nightly kept 7 days',
+      description:
+        stage === 'prod'
+          ? 'Wedded production backend disk nightly kept 7 days'
+          : 'Wedded backend disk nightly kept 7 days',
       state: 'ENABLED',
       executionRoleArn: snapshots.roleArn,
       policyDetails: {
         resourceTypes: ['VOLUME'],
-        targetTags: [{ key: 'wedded-backup', value: 'nightly' }],
+        targetTags: [{ key: 'wedded-backup', value: backupTag }],
         schedules: [
           {
             name: 'Nightly',
@@ -132,8 +159,9 @@ export class BackendStack extends Stack {
       },
     });
 
-    // What GitHub Actions deploys with (`npm run backend -- deploy` in demo.yml): upload the
-    // repo's supabase/ under app/, run the deploy on this server, read this stack's outputs.
+    // What GitHub Actions deploys with (`npm run backend -- deploy` in demo.yml, and with
+    // STAGE=prod in prod.yml): upload the repo's supabase/ under app/, run the deploy on this
+    // server, read this stack's outputs.
     // shortcut: an access key, because this account's organization denies IAM OIDC providers,
     // so GitHub can't assume a role. The key is made by hand (README), never in CloudFormation
     const deployer = new iam.User(this, 'Deployer');
@@ -186,6 +214,8 @@ export class BackendStack extends Stack {
     new CfnOutput(this, 'InstanceId', { value: server.instanceId });
     new CfnOutput(this, 'Bucket', { value: bucket.bucketName });
     new CfnOutput(this, 'DeployUser', { value: deployer.userName });
+    new CfnOutput(this, 'Stage', { value: stage });
+    new CfnOutput(this, 'ParameterPrefix', { value: parameterPrefix });
   }
 
   private parameterArn(name: string): string {
