@@ -99,6 +99,7 @@ Supabase's open-source stack runs on our own server: the same Postgres, sign-in,
 ### Day to day
 
 - Every merge to `main` runs `npm run backend -- deploy` in `.github/workflows/demo.yml`, then `npm run backend -- check` (Auth health, a table read and a search with the app's key; the run goes red if any fails), before the app is published. By hand, the same command from an up-to-date `main` (never a branch: the server is shared).
+- **Deploy freeze** (before a live demo): `gh variable set DEPLOY_FREEZE --body true` and `demo.yml` does nothing, so PRs still merge but the server and the app stay as they are. It doesn't stop a run that has already started (`gh run list --workflow demo.yml`), so freeze a few minutes early. Afterwards: `gh variable delete DEPLOY_FREEZE`, then `gh workflow run demo.yml --ref main` to ship what waited. Needs admin on the repo; nobody deploys by hand while it's on.
 - Scripts (`vendors:import`, `photos:upload`, `demo:check`, the samples): run `eval "$(npm run -s backend -- env)"` first instead of pasting the hosted keys.
 - The dashboard (Studio) is at the `Url`: user `supabase`, password from `aws ssm get-parameter --profile wedded --region us-east-2 --with-decryption --name /wedded/backend/keys/dashboard --query Parameter.Value --output text`.
 - A shell on the server: `aws ssm start-session --profile wedded --region us-east-2 --target <InstanceId>` (needs `brew install --cask session-manager-plugin`), then `sudo -i`, `cd /opt/wedded/supabase` and `sh run.sh status`, `sh run.sh logs auth` and so on.
